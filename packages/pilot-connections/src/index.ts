@@ -1,14 +1,14 @@
 export type ConnectionState = "ready" | "missing" | "invalid";
 
 export interface ReadOnlyConnectionConfig {
-  shopDomain?: string;
-  shopAccessToken?: string;
-  shopApiVersion?: string;
-  gscSiteUrl?: string;
-  ga4PropertyId?: string;
-  googleAccessToken?: string;
-  seoProviderConfigured?: boolean;
-  publicSiteWritesEnabled?: string;
+  shopDomain?: string | undefined;
+  shopAccessToken?: string | undefined;
+  shopApiVersion?: string | undefined;
+  gscSiteUrl?: string | undefined;
+  ga4PropertyId?: string | undefined;
+  googleAccessToken?: string | undefined;
+  seoProviderConfigured?: boolean | undefined;
+  publicSiteWritesEnabled?: string | undefined;
 }
 
 export interface ConnectionCheck {
