@@ -24,6 +24,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Load the SEO operations dashboard
+      responses:
+        "200":
+          description: Current dashboard snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSnapshot"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +45,97 @@ components:
           type: string
       required:
         - status
+    DashboardMetric:
+      type: object
+      required: [label, value, delta]
+      properties:
+        label: { type: string }
+        value: { type: string }
+        delta: { type: string }
+    DashboardOpportunity:
+      type: object
+      required: [title, score, evidence, risk, state]
+      properties:
+        title: { type: string }
+        score: { type: string }
+        evidence: { type: string }
+        risk: { type: string }
+        state: { type: string }
+    DashboardActivity:
+      type: object
+      required: [title, detail, result, tone]
+      properties:
+        title: { type: string }
+        detail: { type: string }
+        result: { type: string }
+        tone:
+          type: string
+          enum: [verified, ready, approval, normal]
+    DashboardSnapshot:
+      type: object
+      required: [state, reason, siteName, domain, generatedAt, dataFreshness, stale, approvalsPending, metrics, engine, opportunities, activity, verification, aiVisibility, learning, impact]
+      properties:
+        state:
+          type: string
+          enum: [live, unavailable]
+        reason:
+          type: [string, "null"]
+        siteName: { type: string }
+        domain: { type: string }
+        generatedAt: { type: string }
+        dataFreshness: { type: string }
+        stale: { type: boolean }
+        approvalsPending: { type: integer }
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardMetric"
+        engine:
+          type: object
+          required: [pagesAnalyzed, opportunities, actionsPrepared, executed, verified, regressions]
+          properties:
+            pagesAnalyzed: { type: integer }
+            opportunities: { type: integer }
+            actionsPrepared: { type: integer }
+            executed: { type: integer }
+            verified: { type: integer }
+            regressions: { type: integer }
+        opportunities:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardOpportunity"
+        activity:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardActivity"
+        verification:
+          type: object
+          required: [verified, total, pending, rolledBack, regressions]
+          properties:
+            verified: { type: integer }
+            total: { type: integer }
+            pending: { type: integer }
+            rolledBack: { type: integer }
+            regressions: { type: integer }
+        aiVisibility:
+          type: object
+          required: [citationRate, brandMentionRate, citationShare]
+          properties:
+            citationRate: { type: string }
+            brandMentionRate: { type: string }
+            citationShare: { type: string }
+        learning:
+          type: object
+          required: [signalCount, averageConfidence]
+          properties:
+            signalCount: { type: integer }
+            averageConfidence: { type: string }
+        impact:
+          type: object
+          required: [verifiedOptimizations, completedExperiments, rollbacks, regressionsDetected]
+          properties:
+            verifiedOptimizations: { type: integer }
+            completedExperiments: { type: integer }
+            rollbacks: { type: integer }
+            regressionsDetected: { type: integer }
 

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "SEO Engine"
+description = "An AI SEO command center for monitoring search performance, reviewing opportunities, tracking automated actions, and verifying operational impact."
+version = "1.0.0"
+id = "artifacts/seo-engine"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19475
+
+[services.development]
+run = "pnpm --filter @workspace/seo-engine run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/seo-engine", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/seo-engine/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19475"
+BASE_PATH = "/"

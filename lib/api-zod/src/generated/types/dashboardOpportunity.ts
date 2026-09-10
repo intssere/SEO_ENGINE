@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface DashboardOpportunity {
+  title: string;
+  score: string;
+  evidence: string;
+  risk: string;
+  state: string;
 }
