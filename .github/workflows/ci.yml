@@ -110,6 +110,9 @@ jobs:
       - name: Test Diamond Shelf full baseline gate
         run: pnpm --filter @seo-engine/pilot-baseline test
 
+      - name: Test first real opportunity run gate
+        run: pnpm --filter @seo-engine/pilot-opportunity-run test
+
       - name: Typecheck
         run: pnpm typecheck
 
