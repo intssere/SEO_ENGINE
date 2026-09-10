@@ -92,6 +92,9 @@ jobs:
       - name: Test action planner and safety engine
         run: pnpm --filter @seo-engine/action-planner test
 
+      - name: Test Shopify write connector safety gates
+        run: pnpm --filter @seo-engine/shopify-write test
+
       - name: Typecheck
         run: pnpm typecheck
 
