@@ -104,6 +104,9 @@ jobs:
       - name: Test bounded learning engine
         run: pnpm --filter @seo-engine/learning-engine test
 
+      - name: Test Diamond Shelf read-only connection gates
+        run: pnpm --filter @seo-engine/pilot-connections test
+
       - name: Typecheck
         run: pnpm typecheck
 
