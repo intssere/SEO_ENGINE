@@ -109,9 +109,10 @@ export async function saveOAuthConnection(input: {
     const siteId = await diamondShelfSiteId(sql);
     const secretRef = serializeEnvelope(input.bundle);
     const metadata = sanitizedConnectionMetadata(input.provider, input.bundle, input.metadata ?? {});
+    const metadataJson = JSON.parse(JSON.stringify(metadata)) as Parameters<typeof sql.json>[0];
     await sql`
       INSERT INTO connections (site_id, provider, external_account_id, secret_ref, scopes, status, metadata)
-      VALUES (${siteId}::uuid, ${input.provider}, ${input.externalAccountId}, ${secretRef}, ${input.bundle.scopes}, ${input.status ?? "connected"}, ${sql.json(metadata)})
+      VALUES (${siteId}::uuid, ${input.provider}, ${input.externalAccountId}, ${secretRef}, ${input.bundle.scopes}, ${input.status ?? "connected"}, ${sql.json(metadataJson)})
       ON CONFLICT (site_id, provider, external_account_id)
       DO UPDATE SET secret_ref = EXCLUDED.secret_ref, scopes = EXCLUDED.scopes, status = EXCLUDED.status, metadata = EXCLUDED.metadata, updated_at = now()
     `;
