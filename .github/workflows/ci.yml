@@ -62,6 +62,9 @@ jobs:
       - name: Test crawler extraction and URL normalization
         run: pnpm --filter @seo-engine/crawler test
 
+      - name: Test Google read-only ingestion normalization
+        run: pnpm --filter @seo-engine/google-ingestion test
+
       - name: Typecheck
         run: pnpm typecheck
 
