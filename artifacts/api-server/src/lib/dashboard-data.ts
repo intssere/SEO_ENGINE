@@ -252,7 +252,10 @@ export async function loadDashboardData(): Promise<DashboardSnapshot> {
     const learning = learningRows[0] ?? {};
     const impact = impactRows[0] ?? {};
     const freshestRaw = freshnessRows[0]?.freshest;
-    const freshest = freshestRaw && String(freshestRaw) !== "-infinity" ? new Date(String(freshestRaw)) : null;
+    const freshestCandidate = freshestRaw ? new Date(String(freshestRaw)) : null;
+    const freshest = freshestCandidate && Number.isFinite(freshestCandidate.getTime())
+      ? freshestCandidate
+      : null;
     const stale = !freshest || Date.now() - freshest.getTime() > 72 * 60 * 60 * 1000;
 
     const opportunities: DashboardOpportunity[] = opportunityRows.map((row) => ({
