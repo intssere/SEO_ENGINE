@@ -74,6 +74,9 @@ jobs:
       - name: Test deterministic technical SEO findings
         run: pnpm --filter @seo-engine/technical-seo test
 
+      - name: Test ranking accelerator opportunities
+        run: pnpm --filter @seo-engine/ranking-accelerator test
+
       - name: Typecheck
         run: pnpm typecheck
 
