@@ -116,6 +116,9 @@ jobs:
       - name: Test dry-run autonomous SEO gate
         run: pnpm --filter @seo-engine/pilot-dry-run test
 
+      - name: Test first controlled production optimization gate
+        run: pnpm --filter @seo-engine/pilot-controlled-optimization test
+
       - name: Typecheck
         run: pnpm typecheck
 
