@@ -59,6 +59,9 @@ jobs:
       - name: Test Shopify read-only safety contract
         run: pnpm --filter @seo-engine/shopify test
 
+      - name: Test crawler extraction and URL normalization
+        run: pnpm --filter @seo-engine/crawler test
+
       - name: Typecheck
         run: pnpm typecheck
 
