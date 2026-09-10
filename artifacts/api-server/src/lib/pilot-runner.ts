@@ -34,8 +34,8 @@ export type CrawlObservation = { pages: CrawlPage[]; discovered: number; fetched
 export type PilotReadiness = { state: "ready" | "partial"; blockers: string[]; coverage: { shopify: boolean; gsc: boolean; ga4: boolean; crawl: boolean } };
 export type PilotResult = { runId: string; status: "completed"; readiness: PilotReadiness; counts: { products: number; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number } };
 
-type ConnectionRecord = { id: string; provider: "shopify" | "google"; secret_ref: string; status: string; scopes: string[]; metadata: Record<string, unknown> };
-type PilotContext = { siteId: string; canonicalOrigin: string; connections: Record<"shopify" | "google", ConnectionRecord> };
+export type ConnectionRecord = { id: string; provider: "shopify" | "google"; secret_ref: string; status: string; scopes: string[]; metadata: Record<string, unknown> };
+export type PilotContext = { siteId: string; canonicalOrigin: string; connections: Record<"shopify" | "google", ConnectionRecord> };
 type PersistedCounts = { products: number; gscRows: number; ga4Rows: number; pages: number };
 
 export interface PilotDependencies {
@@ -48,6 +48,7 @@ export interface PilotDependencies {
   crawl(origin: string): Promise<Outcome<CrawlObservation>>;
   persist(runId: string, context: PilotContext, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }): Promise<PersistedCounts>;
   evaluate(runId: string, context: PilotContext, readiness: PilotReadiness): Promise<{ findings: number; opportunities: number }>;
+  progress(runId: string, phase: string): Promise<void>;
   finish(runId: string, result: Omit<PilotResult, "runId" | "status">): Promise<void>;
   fail(runId: string, category: string): Promise<void>;
 }
@@ -80,30 +81,34 @@ export function computeBaselineReadiness(input: { shopify: Outcome<ShopifyObserv
   };
 }
 
-export async function executePilot(deps: PilotDependencies): Promise<PilotResult> {
-  if (deps.publicWritesEnabled) throw new Error("pilot_blocked_public_site_writes_enabled");
-  const context = await deps.loadContext();
-  const runId = await deps.createRun(context.siteId);
+export async function executePilot(deps: PilotDependencies, existingRunId?: string): Promise<PilotResult> {
+  let runId = existingRunId;
   const safe = async <T>(category: string, operation: () => Promise<Outcome<T>>): Promise<Outcome<T>> => {
     try { return await operation(); }
     catch { return { ok: false, category, httpStatus: null }; }
   };
   try {
+    if (deps.publicWritesEnabled) throw new Error("pilot_blocked_public_site_writes_enabled");
+    const context = await deps.loadContext();
+    runId ??= await deps.createRun(context.siteId);
+    await deps.progress(runId, "provider_reads");
     const [shopify, gsc, ga4, crawl] = await Promise.all([
       safe("shopify_ingestion_failed", () => deps.readShopify(context)),
       safe("gsc_ingestion_failed", () => deps.readGsc(context)),
       safe("ga4_ingestion_failed", () => deps.readGa4(context)),
       safe("crawl_failed", () => deps.crawl(context.canonicalOrigin)),
     ]);
+    await deps.progress(runId, "persisting_observations");
     const persisted = await deps.persist(runId, context, { shopify, gsc, ga4, crawl });
     const readiness = computeBaselineReadiness({ shopify, gsc, ga4, crawl });
+    await deps.progress(runId, readiness.state === "ready" ? "evaluating_baseline" : "partial_evidence");
     const evaluated = await deps.evaluate(runId, context, readiness);
     const result = { readiness, counts: { ...persisted, ...evaluated } };
     await deps.finish(runId, result);
     return { runId, status: "completed", ...result };
   } catch (error) {
     const category = error instanceof Error && /^pilot_[a-z0-9_]+$/.test(error.message) ? error.message : "pilot_internal_failure";
-    await deps.fail(runId, category).catch(() => undefined);
+    if (runId) await deps.fail(runId, category).catch(() => undefined);
     throw new Error(category);
   }
 }
@@ -275,17 +280,26 @@ async function refreshGoogleIfNeeded(context: PilotContext): Promise<TokenBundle
   return bundle;
 }
 
-async function loadContext(): Promise<PilotContext> {
+export async function loadProductionPilotContext(): Promise<PilotContext> {
   const sql = database();
   try {
     const sites = await sql<{ id: string; canonical_origin: string }[]>`SELECT id::text,canonical_origin FROM sites WHERE lower(domain)='diamondshelf.us' AND is_active=true ORDER BY updated_at DESC LIMIT 1`;
     const site = sites[0];
     if (!site) throw new Error("pilot_site_missing");
     const rows = await sql<ConnectionRecord[]>`SELECT id::text,provider,secret_ref,status,scopes,metadata FROM connections WHERE site_id=${site.id}::uuid AND provider IN ('shopify','google') ORDER BY updated_at DESC`;
-    const shopify = rows.find((row) => row.provider === "shopify" && row.status === "connected");
-    const google = rows.find((row) => row.provider === "google" && row.status === "connected");
-    if (!shopify || !google || !shopify.secret_ref || !google.secret_ref) throw new Error("pilot_required_connections_missing");
-    return { siteId: site.id, canonicalOrigin: site.canonical_origin, connections: { shopify, google } };
+    const shopify = rows.find((row) => row.provider === "shopify");
+    const google = rows.find((row) => row.provider === "google");
+    if (!shopify || !google || shopify.status !== "connected" || google.status !== "connected" || !shopify.secret_ref || !google.secret_ref) throw new Error("pilot_required_connections_missing");
+    const context = { siteId: site.id, canonicalOrigin: site.canonical_origin, connections: { shopify, google } };
+    const origin = new URL(context.canonicalOrigin);
+    if (origin.protocol !== "https:" || !["diamondshelf.us", "www.diamondshelf.us"].includes(origin.hostname.toLowerCase())) throw new Error("pilot_site_identity_mismatch");
+    const shopifyBundle = tokenFromConnection(shopify);
+    const googleBundle = tokenFromConnection(google);
+    if (!shopifyBundle.accessToken || !googleBundle.accessToken) throw new Error("pilot_credentials_unavailable");
+    if (typeof shopify.metadata.shopDomain !== "string" || !/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/i.test(shopify.metadata.shopDomain)) throw new Error("pilot_shopify_resource_incomplete");
+    if (typeof google.metadata.gscSiteUrl !== "string" || typeof google.metadata.ga4PropertyId !== "string") throw new Error("pilot_google_resources_incomplete");
+    if (google.metadata.connectionState !== "connected" || google.metadata.needsConfirmation === true) throw new Error("pilot_google_connection_incomplete");
+    return context;
   } finally {
     await sql.end({ timeout: 2 });
   }
@@ -294,8 +308,22 @@ async function loadContext(): Promise<PilotContext> {
 async function createRun(siteId: string) {
   const sql = database();
   try {
-    const rows = await sql<{ id: string }[]>`INSERT INTO jobs(site_id,job_type,status,priority,payload,locked_at,attempts) VALUES(${siteId}::uuid,'pilot_ingestion_v1','active',10,${sql.json({ phase: "ingesting", limits: PILOT_LIMITS, publicSiteWrites: false })},now(),1) RETURNING id::text`;
-    return rows[0]!.id;
+    return await sql.begin(async (tx) => {
+      await tx`SELECT pg_advisory_xact_lock(hashtext(${'pilot_ingestion_v1:' + siteId}))`;
+      const active = await tx<{ id: string }[]>`SELECT id::text FROM jobs WHERE site_id=${siteId}::uuid AND job_type='pilot_ingestion_v1' AND status IN ('pending','active') LIMIT 1`;
+      if (active[0]) throw new Error("pilot_run_already_active");
+      const rows = await tx<{ id: string }[]>`INSERT INTO jobs(site_id,job_type,status,priority,payload,locked_at,attempts) VALUES(${siteId}::uuid,'pilot_ingestion_v1','active',10,${tx.json({ phase: "provider_reads", limits: PILOT_LIMITS, publicSiteWrites: false })},now(),1) RETURNING id::text`;
+      return rows[0]!.id;
+    });
+  } finally {
+    await sql.end({ timeout: 2 });
+  }
+}
+
+async function progress(runId: string, phase: string) {
+  const sql = database();
+  try {
+    await sql`UPDATE jobs SET status='active',payload=payload || ${sql.json({ phase, publicSiteWrites: false })},locked_at=COALESCE(locked_at,now()),updated_at=now() WHERE id=${runId}::uuid AND status IN ('pending','active')`;
   } finally {
     await sql.end({ timeout: 2 });
   }
@@ -482,7 +510,7 @@ async function fail(runId: string, category: string) {
 export function productionPilotDependencies(): PilotDependencies {
   return {
     publicWritesEnabled: process.env.PUBLIC_SITE_WRITES_ENABLED?.trim().toLowerCase() === "true",
-    loadContext,
+    loadContext: loadProductionPilotContext,
     createRun,
     readShopify,
     readGsc,
@@ -493,11 +521,18 @@ export function productionPilotDependencies(): PilotDependencies {
     },
     persist,
     evaluate,
+    progress,
     finish,
     fail,
   };
 }
 
-export async function runProductionPilot() {
-  return executePilot(productionPilotDependencies());
+export async function validateProductionPilotPreflight() {
+  const deps = productionPilotDependencies();
+  if (deps.publicWritesEnabled) throw new Error("pilot_blocked_public_site_writes_enabled");
+  return deps.loadContext();
+}
+
+export async function runProductionPilot(existingRunId?: string) {
+  return executePilot(productionPilotDependencies(), existingRunId);
 }

@@ -18,6 +18,68 @@ export interface OperationalResponse {
   rows: OperationalResponseRowsItem[];
 }
 
+export interface PilotCounts {
+  products: number;
+  gscRows: number;
+  ga4Rows: number;
+  pages: number;
+  findings: number;
+  opportunities: number;
+}
+
+export type PilotRunStatusStatus = typeof PilotRunStatusStatus[keyof typeof PilotRunStatusStatus];
+
+
+export const PilotRunStatusStatus = {
+  not_started: 'not_started',
+  queued: 'queued',
+  running: 'running',
+  completed: 'completed',
+  partial: 'partial',
+  failed: 'failed',
+} as const;
+
+export type PilotRunStatusReadiness = typeof PilotRunStatusReadiness[keyof typeof PilotRunStatusReadiness];
+
+
+export const PilotRunStatusReadiness = {
+  not_evaluated: 'not_evaluated',
+  ready: 'ready',
+  partial: 'partial',
+} as const;
+
+export interface PilotRunStatus {
+  /** @nullable */
+  runId: string | null;
+  status: PilotRunStatusStatus;
+  phase: string;
+  readiness: PilotRunStatusReadiness;
+  /** @nullable */
+  freshness: string | null;
+  blockers: string[];
+  counts: PilotCounts;
+  /** @nullable */
+  error: string | null;
+}
+
+export type PilotRunRequestStatus = typeof PilotRunRequestStatus[keyof typeof PilotRunRequestStatus];
+
+
+export const PilotRunRequestStatus = {
+  queued: 'queued',
+  running: 'running',
+  failed: 'failed',
+} as const;
+
+export interface PilotRunRequest {
+  accepted: boolean;
+  /** @nullable */
+  runId: string | null;
+  status: PilotRunRequestStatus;
+  /** @nullable */
+  error: string | null;
+}
+
 export interface DashboardMetric {
   label: string;
   value: string;
@@ -97,8 +159,10 @@ export type DashboardSnapshotPilotStatus = typeof DashboardSnapshotPilotStatus[k
 
 export const DashboardSnapshotPilotStatus = {
   not_started: 'not_started',
-  active: 'active',
+  queued: 'queued',
+  running: 'running',
   completed: 'completed',
+  partial: 'partial',
   failed: 'failed',
 } as const;
 
@@ -111,15 +175,6 @@ export const DashboardSnapshotPilotReadiness = {
   partial: 'partial',
 } as const;
 
-export type DashboardSnapshotPilotCounts = {
-  products: number;
-  gscRows: number;
-  ga4Rows: number;
-  pages: number;
-  findings: number;
-  opportunities: number;
-};
-
 export type DashboardSnapshotPilot = {
   status: DashboardSnapshotPilotStatus;
   readiness: DashboardSnapshotPilotReadiness;
@@ -127,7 +182,7 @@ export type DashboardSnapshotPilot = {
   /** @nullable */
   freshness: string | null;
   blockers: string[];
-  counts: DashboardSnapshotPilotCounts;
+  counts: PilotCounts;
 };
 
 export interface DashboardSnapshot {
@@ -175,6 +230,10 @@ export const GetDashboardDevice = {
   mobile: 'mobile',
   tablet: 'tablet',
 } as const;
+
+export type GetPilotAuthorization200 = {
+  authorization: string;
+};
 
 export type GetPerformanceParams = {
 days?: GetPerformanceDays;

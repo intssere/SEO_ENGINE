@@ -1,9 +1,14 @@
-import { useGetDashboard, GetDashboardDays, GetDashboardDevice } from "@workspace/api-client-react";
-import { Loader2, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetDashboard, GetDashboardDays, GetDashboardDevice, getPilotAuthorization, startPilotRun, getGetDashboardQueryKey } from "@workspace/api-client-react";
+import { Loader2, AlertCircle, RefreshCw, Play } from "lucide-react";
 import { Link, useSearch, useLocation } from "wouter";
 import { Badge, riskTone, useAskModal } from "../components/layout";
 
 export default function DashboardPage() {
+  const queryClient = useQueryClient();
+  const [isStartingPilot, setIsStartingPilot] = useState(false);
+  const [pilotActionError, setPilotActionError] = useState<string | null>(null);
   const searchString = useSearch();
   const [, setLocation] = useLocation();
   const searchParams = new URLSearchParams(searchString);
@@ -20,13 +25,32 @@ export default function DashboardPage() {
 
   const country = searchParams.get("country") || "";
 
-  const { data, isLoading, isError } = useGetDashboard({
+  const dashboardParams = {
     days,
     device,
     ...(country ? { country } : {})
+  };
+  const { data, isLoading, isError } = useGetDashboard(dashboardParams, {
+    query: {
+      queryKey: getGetDashboardQueryKey(dashboardParams),
+      refetchInterval: (query) => ["queued", "running"].includes(query.state.data?.pilot.status ?? "") ? 2000 : 30000,
+    },
   });
 
   const openAskModal = useAskModal();
+  const startBaseline = async () => {
+    setIsStartingPilot(true);
+    setPilotActionError(null);
+    try {
+      const capability = await getPilotAuthorization();
+      await startPilotRun({ headers: { "x-pilot-authorization": capability.authorization } });
+      await queryClient.invalidateQueries({ queryKey: getGetDashboardQueryKey(dashboardParams) });
+    } catch {
+      setPilotActionError("The read-only baseline could not start. Check connection readiness and try again.");
+    } finally {
+      setIsStartingPilot(false);
+    }
+  };
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchString);
@@ -128,9 +152,32 @@ export default function DashboardPage() {
               <p className="eyebrow">READ-ONLY PILOT</p>
               <h2>Ingestion and baseline readiness</h2>
             </div>
-            <Badge tone={data.pilot.readiness === "ready" ? "verified" : data.pilot.status === "failed" ? "approval" : "ready"}>
-              {data.pilot.status.replaceAll("_", " ").toUpperCase()}
-            </Badge>
+            <div className="pilotActions">
+              <Badge tone={data.pilot.readiness === "ready" ? "verified" : ["failed", "partial"].includes(data.pilot.status) ? "approval" : "ready"}>
+                {data.pilot.status.replaceAll("_", " ").toUpperCase()}
+              </Badge>
+              <button
+                className="pilotRunButton"
+                type="button"
+                onClick={startBaseline}
+                disabled={isStartingPilot || ["queued", "running"].includes(data.pilot.status)}
+              >
+                {isStartingPilot || ["queued", "running"].includes(data.pilot.status)
+                  ? <Loader2 className="pilotButtonIcon animate-spin" />
+                  : data.pilot.status === "not_started"
+                    ? <Play className="pilotButtonIcon" />
+                    : <RefreshCw className="pilotButtonIcon" />}
+                {isStartingPilot
+                  ? "Starting…"
+                  : data.pilot.status === "queued"
+                    ? "Queued"
+                    : data.pilot.status === "running"
+                      ? "Running…"
+                      : data.pilot.status === "not_started"
+                        ? "Run Baseline"
+                        : "Refresh Data"}
+              </button>
+            </div>
           </div>
           <div className="pilotGrid">
             <div><strong>{data.pilot.counts.products}</strong><span>Products observed</span></div>
@@ -145,6 +192,7 @@ export default function DashboardPage() {
           {data.pilot.blockers.length > 0 && (
             <p className="pilotBlockers">Blocked: {data.pilot.blockers.map((item) => item.replaceAll("_", " ")).join(", ")}</p>
           )}
+          {pilotActionError && <p className="pilotBlockers" role="alert">{pilotActionError}</p>}
         </section>
 
         <div className="titleRow">

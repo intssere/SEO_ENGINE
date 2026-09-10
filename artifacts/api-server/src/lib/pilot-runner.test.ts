@@ -25,6 +25,7 @@ function dependencies(overrides: Partial<PilotDependencies> = {}) {
     crawl: async () => crawl,
     persist: async () => { calls.push("persist"); return { products: 2, gscRows: 1, ga4Rows: 1, pages: 1 }; },
     evaluate: async (_run, _context, readiness) => { calls.push(`evaluate:${readiness.state}`); return { findings: 1, opportunities: 1 }; },
+    progress: async (_run, phase) => { calls.push(`progress:${phase}`); },
     finish: async () => { calls.push("finish"); },
     fail: async () => { calls.push("fail"); },
     ...overrides,
@@ -64,7 +65,7 @@ test("successful provider observations persist and make baseline ready", async (
   const { deps, calls } = dependencies();
   const result = await executePilot(deps);
   assert.equal(result.readiness.state, "ready");
-  assert.deepEqual(calls, ["persist", "evaluate:ready", "finish"]);
+  assert.deepEqual(calls, ["progress:provider_reads", "progress:persisting_observations", "persist", "progress:evaluating_baseline", "evaluate:ready", "finish"]);
 });
 
 test("partial provider failure persists available evidence but keeps baseline partial", async () => {
@@ -72,7 +73,15 @@ test("partial provider failure persists available evidence but keeps baseline pa
   const result = await executePilot(deps);
   assert.equal(result.readiness.state, "partial");
   assert.deepEqual(result.readiness.blockers, ["ga4_evidence_unavailable"]);
-  assert.deepEqual(calls, ["persist", "evaluate:partial", "finish"]);
+  assert.deepEqual(calls, ["progress:provider_reads", "progress:persisting_observations", "persist", "progress:partial_evidence", "evaluate:partial", "finish"]);
+});
+
+test("pilot records a sanitized failure transition and does not finish after persistence failure", async () => {
+  const { deps, calls } = dependencies({
+    persist: async () => { calls.push("persist"); throw new Error("database detail that must not escape"); },
+  });
+  await assert.rejects(() => executePilot(deps, "existing-run"), /pilot_internal_failure/);
+  assert.deepEqual(calls, ["progress:provider_reads", "progress:persisting_observations", "persist", "fail"]);
 });
 
 test("readiness requires real rows rather than synthetic zero metrics", () => {

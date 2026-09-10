@@ -84,7 +84,7 @@ export const GetDashboardResponse = zod.object({
   "regressionsDetected": zod.number().int()
 }),
   "pilot": zod.object({
-  "status": zod.enum(['not_started', 'active', 'completed', 'failed']),
+  "status": zod.enum(['not_started', 'queued', 'running', 'completed', 'partial', 'failed']),
   "readiness": zod.enum(['not_evaluated', 'ready', 'partial']),
   "phase": zod.string(),
   "freshness": zod.string().nullable(),
@@ -98,6 +98,51 @@ export const GetDashboardResponse = zod.object({
   "opportunities": zod.number().int()
 })
 })
+})
+
+
+/**
+ * @summary Issue a short-lived same-origin pilot action capability
+ */
+export const GetPilotAuthorizationResponse = zod.object({
+  "authorization": zod.string()
+})
+
+
+/**
+ * @summary Load sanitized pilot run status
+ */
+export const GetPilotStatusResponse = zod.object({
+  "runId": zod.string().nullable(),
+  "status": zod.enum(['not_started', 'queued', 'running', 'completed', 'partial', 'failed']),
+  "phase": zod.string(),
+  "readiness": zod.enum(['not_evaluated', 'ready', 'partial']),
+  "freshness": zod.string().nullable(),
+  "blockers": zod.array(zod.string()),
+  "counts": zod.object({
+  "products": zod.number().int(),
+  "gscRows": zod.number().int(),
+  "ga4Rows": zod.number().int(),
+  "pages": zod.number().int(),
+  "findings": zod.number().int(),
+  "opportunities": zod.number().int()
+}),
+  "error": zod.string().nullable()
+})
+
+
+/**
+ * @summary Queue a guarded read-only Diamond Shelf pilot run
+ */
+export const StartPilotRunHeader = zod.object({
+  "x-pilot-authorization": zod.string()
+})
+
+export const StartPilotRunResponse = zod.object({
+  "accepted": zod.boolean(),
+  "runId": zod.string().nullable(),
+  "status": zod.enum(['queued', 'running', 'failed']),
+  "error": zod.string().nullable()
 })
 
 

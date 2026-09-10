@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type DashboardSnapshotPilotCounts = {
+export interface PilotCounts {
   products: number;
   gscRows: number;
   ga4Rows: number;
   pages: number;
   findings: number;
   opportunities: number;
-};
+}

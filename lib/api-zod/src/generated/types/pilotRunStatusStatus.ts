@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type DashboardSnapshotPilotStatus = typeof DashboardSnapshotPilotStatus[keyof typeof DashboardSnapshotPilotStatus];
+export type PilotRunStatusStatus = typeof PilotRunStatusStatus[keyof typeof PilotRunStatusStatus];
 
 
-export const DashboardSnapshotPilotStatus = {
+export const PilotRunStatusStatus = {
   not_started: 'not_started',
   queued: 'queued',
   running: 'running',

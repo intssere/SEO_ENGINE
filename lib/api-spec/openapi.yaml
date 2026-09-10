@@ -40,6 +40,62 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DashboardSnapshot"
+  /pilot/authorization:
+    get:
+      operationId: getPilotAuthorization
+      tags: [dashboard]
+      summary: Issue a short-lived same-origin pilot action capability
+      responses:
+        "200":
+          description: Short-lived authorization capability
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [authorization]
+                properties:
+                  authorization: { type: string }
+  /pilot/status:
+    get:
+      operationId: getPilotStatus
+      tags: [dashboard]
+      summary: Load sanitized pilot run status
+      responses:
+        "200":
+          description: Current pilot run status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PilotRunStatus"
+  /pilot/run:
+    post:
+      operationId: startPilotRun
+      tags: [dashboard]
+      summary: Queue a guarded read-only Diamond Shelf pilot run
+      parameters:
+        - name: x-pilot-authorization
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        "202":
+          description: Pilot run queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PilotRunRequest"
+        "409":
+          description: A pilot run is already queued or running
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PilotRunRequest"
+        "412":
+          description: Pilot preflight failed closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PilotRunRequest"
   /performance:
     get:
       operationId: getPerformance
@@ -82,6 +138,45 @@ components:
         readiness: { type: object }
         rows: { type: array, items: { type: object, additionalProperties: true } }
       required: [readiness, rows]
+    PilotCounts:
+      type: object
+      required: [products, gscRows, ga4Rows, pages, findings, opportunities]
+      properties:
+        products: { type: integer }
+        gscRows: { type: integer }
+        ga4Rows: { type: integer }
+        pages: { type: integer }
+        findings: { type: integer }
+        opportunities: { type: integer }
+    PilotRunStatus:
+      type: object
+      required: [runId, status, phase, readiness, freshness, blockers, counts, error]
+      properties:
+        runId: { type: [string, "null"] }
+        status:
+          type: string
+          enum: [not_started, queued, running, completed, partial, failed]
+        phase: { type: string }
+        readiness:
+          type: string
+          enum: [not_evaluated, ready, partial]
+        freshness: { type: [string, "null"] }
+        blockers:
+          type: array
+          items: { type: string }
+        counts:
+          $ref: "#/components/schemas/PilotCounts"
+        error: { type: [string, "null"] }
+    PilotRunRequest:
+      type: object
+      required: [accepted, runId, status, error]
+      properties:
+        accepted: { type: boolean }
+        runId: { type: [string, "null"] }
+        status:
+          type: string
+          enum: [queued, running, failed]
+        error: { type: [string, "null"] }
     DashboardMetric:
       type: object
       required: [label, value, delta]
@@ -181,7 +276,7 @@ components:
           properties:
             status:
               type: string
-              enum: [not_started, active, completed, failed]
+              enum: [not_started, queued, running, completed, partial, failed]
             readiness:
               type: string
               enum: [not_evaluated, ready, partial]
@@ -192,13 +287,5 @@ components:
               type: array
               items: { type: string }
             counts:
-              type: object
-              required: [products, gscRows, ga4Rows, pages, findings, opportunities]
-              properties:
-                products: { type: integer }
-                gscRows: { type: integer }
-                ga4Rows: { type: integer }
-                pages: { type: integer }
-                findings: { type: integer }
-                opportunities: { type: integer }
+              $ref: "#/components/schemas/PilotCounts"
 

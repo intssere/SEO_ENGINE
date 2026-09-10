@@ -66,7 +66,7 @@ export interface DashboardSnapshot {
     regressionsDetected: number;
   };
   pilot: {
-    status: "not_started" | "active" | "completed" | "failed";
+    status: "not_started" | "queued" | "running" | "completed" | "partial" | "failed";
     readiness: "not_evaluated" | "ready" | "partial";
     phase: string;
     freshness: string | null;
@@ -273,6 +273,18 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
     const pilotPayload = pilotRow?.payload ?? {};
     const pilotCounts = typeof pilotPayload.counts === "object" && pilotPayload.counts ? pilotPayload.counts as Record<string, unknown> : {};
     const pilotReadiness = typeof pilotPayload.readiness === "object" && pilotPayload.readiness ? pilotPayload.readiness as Record<string, unknown> : {};
+    const pilotReadinessState = ["ready", "partial"].includes(String(pilotReadiness.state)) ? String(pilotReadiness.state) as "ready" | "partial" : "not_evaluated";
+    const pilotStatus = pilotRow?.status === "pending"
+      ? "queued"
+      : pilotRow?.status === "active"
+        ? "running"
+        : pilotRow?.status === "failed"
+          ? "failed"
+          : pilotRow?.status === "completed" && pilotReadinessState === "partial"
+            ? "partial"
+            : pilotRow?.status === "completed"
+              ? "completed"
+              : "not_started";
     const freshestRaw = freshnessRows[0]?.freshest;
     const freshestCandidate = freshestRaw ? new Date(String(freshestRaw)) : null;
     const freshest = freshestCandidate && Number.isFinite(freshestCandidate.getTime())
@@ -296,7 +308,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       title: "Diamond Shelf pilot",
       detail: `Run ${String(pilotRow.status ?? "unknown")} · readiness ${String(pilotReadiness.state ?? "not evaluated")}`,
       result: "Read-only provider observations and crawl evidence",
-      tone: pilotRow.status === "completed" && pilotReadiness.state === "ready" ? "verified" : pilotRow.status === "failed" ? "approval" : "ready",
+      tone: pilotStatus === "completed" ? "verified" : ["failed", "partial"].includes(pilotStatus) ? "approval" : "ready",
     });
     if (activity.length === 0) activity.push({ title: "No recent operational events", detail: "No verified actions, new opportunities or pending approvals in the last 24 hours", result: "Live database checked", tone: "normal" });
 
@@ -327,8 +339,8 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       learning: { signalCount: n(learning.signal_count), averageConfidence: learning.average_confidence == null ? "—" : percent(n(learning.average_confidence)) },
       impact: { verifiedOptimizations: n(impact.verified_optimizations), completedExperiments: n(impact.completed_experiments), rollbacks: n(impact.rollbacks), regressionsDetected: n(impact.regressions_detected) },
       pilot: {
-        status: ["active", "completed", "failed"].includes(String(pilotRow?.status)) ? String(pilotRow?.status) as "active" | "completed" | "failed" : "not_started",
-        readiness: ["ready", "partial"].includes(String(pilotReadiness.state)) ? String(pilotReadiness.state) as "ready" | "partial" : "not_evaluated",
+        status: pilotStatus,
+        readiness: pilotReadinessState,
         phase: typeof pilotPayload.phase === "string" ? pilotPayload.phase : "not_started",
         freshness: pilotRow ? new Date(String(pilotRow.completed_at ?? pilotRow.updated_at ?? pilotRow.created_at)).toISOString() : null,
         blockers: Array.isArray(pilotReadiness.blockers) ? pilotReadiness.blockers.filter((item): item is string => typeof item === "string") : [],

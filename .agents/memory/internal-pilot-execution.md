@@ -3,8 +3,8 @@ name: Internal pilot execution
 description: Why the read-only ingestion pilot has no public run endpoint.
 ---
 
-Keep the ingestion and baseline pilot shell-invoked rather than exposing a public HTTP mutation until the app has an authenticated operator trigger.
+In-app pilot runs must use a short-lived signed same-origin capability and a database-backed single-run lock. The endpoint may only enqueue the existing read-only runner after all production preflight gates pass.
 
-**Why:** The current app has no authenticated admin control. A public run endpoint would let anonymous callers consume provider quotas, crawl capacity, and database resources even if public-site mutations remain disabled.
+**Why:** The app has no user-login layer, while its deployment can be public. Same-origin authorization prevents cross-site triggering, and the database lock prevents retries or concurrent callers from multiplying provider, crawl, and database work.
 
-**How to apply:** Run the pilot through the API artifact's internal CLI. If a UI trigger is added later, require authenticated operator authorization and retain the public-write safety gate.
+**How to apply:** Keep the capability short-lived, signed, cookie-bound, and same-origin. Retain exact-site, connection, credential-decryption, and public-write preflight gates. Persist queue/run state in internal jobs and reject pending or active duplicates.

@@ -30,4 +30,9 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  if (process.env.DATABASE_URL?.trim()) {
+    void import("./lib/pilot-orchestration")
+      .then(({ resumeQueuedPilots }) => resumeQueuedPilots())
+      .catch(() => undefined);
+  }
 });

@@ -25,8 +25,11 @@ import type {
   DashboardSnapshot,
   GetDashboardParams,
   GetPerformanceParams,
+  GetPilotAuthorization200,
   HealthStatus,
-  OperationalResponse
+  OperationalResponse,
+  PilotRunRequest,
+  PilotRunStatus
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -217,6 +220,231 @@ export function useGetDashboard<TData = Awaited<ReturnType<typeof getDashboard>>
 
 
 
+
+export const getGetPilotAuthorizationUrl = () => {
+
+
+
+
+  return `/api/pilot/authorization`
+}
+
+/**
+ * @summary Issue a short-lived same-origin pilot action capability
+ */
+export const getPilotAuthorization = async ( options?: Parameters<typeof customFetch>[1]): Promise<GetPilotAuthorization200> => {
+
+  return customFetch<GetPilotAuthorization200>(getGetPilotAuthorizationUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPilotAuthorizationQueryKey = () => {
+    return [
+    `/api/pilot/authorization`
+    ] as const;
+    }
+
+
+export const getGetPilotAuthorizationQueryOptions = <TData = Awaited<ReturnType<typeof getPilotAuthorization>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPilotAuthorization>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPilotAuthorizationQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPilotAuthorization>>> = ({ signal }) => getPilotAuthorization({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPilotAuthorization>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPilotAuthorizationQueryResult = NonNullable<Awaited<ReturnType<typeof getPilotAuthorization>>>
+export type GetPilotAuthorizationQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Issue a short-lived same-origin pilot action capability
+ */
+
+export function useGetPilotAuthorization<TData = Awaited<ReturnType<typeof getPilotAuthorization>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPilotAuthorization>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPilotAuthorizationQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetPilotStatusUrl = () => {
+
+
+
+
+  return `/api/pilot/status`
+}
+
+/**
+ * @summary Load sanitized pilot run status
+ */
+export const getPilotStatus = async ( options?: Parameters<typeof customFetch>[1]): Promise<PilotRunStatus> => {
+
+  return customFetch<PilotRunStatus>(getGetPilotStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPilotStatusQueryKey = () => {
+    return [
+    `/api/pilot/status`
+    ] as const;
+    }
+
+
+export const getGetPilotStatusQueryOptions = <TData = Awaited<ReturnType<typeof getPilotStatus>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPilotStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPilotStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPilotStatus>>> = ({ signal }) => getPilotStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPilotStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPilotStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getPilotStatus>>>
+export type GetPilotStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Load sanitized pilot run status
+ */
+
+export function useGetPilotStatus<TData = Awaited<ReturnType<typeof getPilotStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPilotStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPilotStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getStartPilotRunUrl = () => {
+
+
+
+
+  return `/api/pilot/run`
+}
+
+/**
+ * @summary Queue a guarded read-only Diamond Shelf pilot run
+ */
+export const startPilotRun = async ( options?: Parameters<typeof customFetch>[1]): Promise<PilotRunRequest> => {
+
+  return customFetch<PilotRunRequest>(getStartPilotRunUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getStartPilotRunMutationOptions = <TError = ErrorType<PilotRunRequest>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startPilotRun>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof startPilotRun>>, TError,void, TContext> => {
+
+const mutationKey = ['startPilotRun'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startPilotRun>>, void> = () => {
+
+
+          return  startPilotRun(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StartPilotRunMutationResult = NonNullable<Awaited<ReturnType<typeof startPilotRun>>>
+
+    export type StartPilotRunMutationError = ErrorType<PilotRunRequest>
+
+    /**
+ * @summary Queue a guarded read-only Diamond Shelf pilot run
+ */
+export const useStartPilotRun = <TError = ErrorType<PilotRunRequest>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startPilotRun>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof startPilotRun>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getStartPilotRunMutationOptions(options));
+    }
 
 export const getGetPerformanceUrl = (params?: GetPerformanceParams,) => {
   const normalizedParams = new URLSearchParams();
