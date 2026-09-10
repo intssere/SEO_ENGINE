@@ -13,15 +13,17 @@ export interface ActivationEvidence {
 }
 
 export function activationConfigFromEnvironment(env: NodeJS.ProcessEnv = process.env): LiveActivationConfig {
+  const shopApiVersion = env.SHOPIFY_ADMIN_API_VERSION?.trim();
+  const publicSiteWritesEnabled = env.PUBLIC_SITE_WRITES_ENABLED;
   return {
     siteDomain: "diamondshelf.us",
     shopDomain: env.SHOPIFY_SHOP_DOMAIN?.trim() ?? "",
     shopAccessToken: env.SHOPIFY_ADMIN_ACCESS_TOKEN?.trim() ?? "",
-    shopApiVersion: env.SHOPIFY_ADMIN_API_VERSION?.trim() || undefined,
+    ...(shopApiVersion ? { shopApiVersion } : {}),
     gscSiteUrl: env.GOOGLE_SEARCH_CONSOLE_SITE_URL?.trim() ?? "https://diamondshelf.us/",
     ga4PropertyId: env.GA4_PROPERTY_ID?.trim() ?? "",
     googleAccessToken: env.GOOGLE_OAUTH_ACCESS_TOKEN?.trim() ?? "",
-    publicSiteWritesEnabled: env.PUBLIC_SITE_WRITES_ENABLED,
+    ...(publicSiteWritesEnabled !== undefined ? { publicSiteWritesEnabled } : {}),
   };
 }
 
@@ -62,10 +64,11 @@ export async function runActivationFromEnvironment(
   const now = options.now ?? (() => new Date());
   const startedAt = now().toISOString();
   const runId = env.SEO_ENGINE_ACTIVATION_RUN_ID?.trim() || `activation-${startedAt.replace(/[:.]/g, "-")}`;
-  const result = await runSecureReadOnlyActivation(activationConfigFromEnvironment(env), {
-    fetchImpl: options.fetchImpl,
+  const activationOptions = {
     seoProviderProbe: createSeoProviderProbe(env, options.fetchImpl ?? fetch),
-  });
+    ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+  };
+  const result = await runSecureReadOnlyActivation(activationConfigFromEnvironment(env), activationOptions);
   const completedAt = now().toISOString();
 
   return {
