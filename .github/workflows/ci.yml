@@ -128,6 +128,9 @@ jobs:
       - name: Test V1 production certification gate
         run: pnpm --filter @seo-engine/pilot-production-certification test
 
+      - name: Test secure runtime read-only activation probes
+        run: pnpm --filter @seo-engine/pilot-live-activation test
+
       - name: Typecheck
         run: pnpm typecheck
 
