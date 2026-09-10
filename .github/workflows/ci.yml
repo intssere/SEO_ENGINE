@@ -56,6 +56,14 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f packages/db/migrations/0001_core.sql
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'" | grep -q '^29$'
 
+      - name: Test runtime database bootstrap
+        env:
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
+        run: |
+          pnpm --filter @seo-engine/db test
+          pnpm db:bootstrap
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT domain FROM sites WHERE domain='diamondshelf.us' AND is_active=true" | grep -q '^diamondshelf.us$'
+
       - name: Test Shopify read-only safety contract
         run: pnpm --filter @seo-engine/shopify test
 
