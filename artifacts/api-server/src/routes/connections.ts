@@ -13,6 +13,7 @@ import {
   save,
   list,
   selectGoogleProperties,
+  GoogleSelectionError,
   GOOGLE_STATE_COOKIE,
   SHOPIFY_STATE_COOKIE,
   origin,
@@ -238,17 +239,25 @@ router.get("/connections/google/callback", async (req, res) => {
 });
 
 router.post("/connections/google/select", async (req, res) => {
+  let stage = "write_gate";
   try {
     if (blocked()) throw new Error();
+    stage = "state_cookie";
     const state = open(req.cookies[GOOGLE_STATE_COOKIE]);
+    stage = "state_validation";
     assertOAuthState(state, state.state, "google");
+    stage = "form_parsing";
     const gsc = String(req.body?.gscSiteUrl ?? "").trim();
     const ga4 = String(req.body?.ga4PropertyId ?? "").trim();
-    if (!/^https:\/\/diamondshelf\.us\/?$/i.test(gsc) || !/^\d+$/.test(ga4)) throw new Error();
+    if (!gsc || !ga4) throw new GoogleSelectionError("form_validation");
+    stage = "resource_validation";
     await selectGoogleProperties(gsc, ga4);
+    logger.info({ provider: "google", stage: "property_selection", outcome: "connected" }, "Google properties confirmed");
     res.clearCookie(GOOGLE_STATE_COOKIE);
     return res.redirect(`${origin()}/connections?success=google`);
-  } catch {
+  } catch (error) {
+    const category = error instanceof GoogleSelectionError ? error.category : "request";
+    logger.warn({ provider: "google", stage, category }, "Google property selection failed");
     return res.redirect(`${origin()}/connections?error=google_selection`);
   }
 });

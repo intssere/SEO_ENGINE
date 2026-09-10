@@ -20,15 +20,44 @@ export async function save(provider: OAuthProvider, externalAccountId: string, b
   try { const sites = await sql<{ id: string }[]>`SELECT id FROM sites WHERE lower(domain)='diamondshelf.us' AND is_active=true ORDER BY created_at LIMIT 1`; if (!sites[0]) throw new Error("Diamond Shelf site record is not available."); const envelope = encryptTokenBundle(bundle, required("OAUTH_CREDENTIAL_ENCRYPTION_KEY")); const secretRef = `enc:v1:${Buffer.from(JSON.stringify(envelope)).toString("base64url")}`; const clean = JSON.parse(JSON.stringify(sanitizedConnectionMetadata(provider, bundle, metadata))); await sql`INSERT INTO connections(site_id,provider,external_account_id,secret_ref,scopes,status,metadata) VALUES(${sites[0].id}::uuid,${provider},${externalAccountId},${secretRef},${bundle.scopes},${status},${sql.json(clean)}) ON CONFLICT(site_id,provider,external_account_id) DO UPDATE SET secret_ref=EXCLUDED.secret_ref,scopes=EXCLUDED.scopes,status=EXCLUDED.status,metadata=EXCLUDED.metadata,updated_at=now()`; } finally { await sql.end({ timeout: 2 }); }
 }
 export async function list(): Promise<Array<{ provider: string; status: string; metadata: Record<string, unknown> }>> { const sql = db(); try { return await sql<{ provider: string; status: string; metadata: Record<string, unknown> }[]>`SELECT c.provider,c.status,c.metadata FROM connections c JOIN sites s ON s.id=c.site_id WHERE lower(s.domain)='diamondshelf.us' ORDER BY c.provider,c.updated_at DESC`; } finally { await sql.end({ timeout: 2 }); } }
+
+export type GoogleSelectionFailure = "site_lookup" | "connection_lookup" | "form_validation" | "resource_validation" | "database_update";
+
+export class GoogleSelectionError extends Error {
+  constructor(public readonly category: GoogleSelectionFailure) {
+    super(`Google property selection failed: ${category}`);
+    this.name = "GoogleSelectionError";
+  }
+}
+
+export function isGoogleSelectionDiscovered(metadata: Record<string, unknown>, gscSiteUrl: string, ga4PropertyId: string) {
+  const gsc = Array.isArray(metadata.discoveredSearchConsoleProperties)
+    ? metadata.discoveredSearchConsoleProperties as Array<{ siteUrl?: string }>
+    : [];
+  const ga4 = Array.isArray(metadata.discoveredGa4Properties)
+    ? metadata.discoveredGa4Properties as Array<{ propertyId?: string }>
+    : [];
+  const normalizeSiteUrl = (value: string) => value.trim().replace(/\/$/, "").toLowerCase();
+  return gsc.some((x) => typeof x.siteUrl === "string" && normalizeSiteUrl(x.siteUrl) === normalizeSiteUrl(gscSiteUrl))
+    && ga4.some((x) => typeof x.propertyId === "string" && x.propertyId === ga4PropertyId);
+}
+
 export async function selectGoogleProperties(gscSiteUrl: string, ga4PropertyId: string) {
   const sql = db();
   try {
-    const rows = await sql<{ id: string; metadata: Record<string, unknown> }[]>`SELECT c.id,c.metadata FROM connections c JOIN sites s ON s.id=c.site_id WHERE lower(s.domain)='diamondshelf.us' AND c.provider='google' AND c.external_account_id='google' ORDER BY c.updated_at DESC LIMIT 1`;
-    const row = rows[0]; if (!row) throw new Error("Google connection is not available.");
-    const gsc = Array.isArray(row.metadata.discoveredSearchConsoleProperties) ? row.metadata.discoveredSearchConsoleProperties as Array<{ siteUrl?: string }> : [];
-    const ga4 = Array.isArray(row.metadata.discoveredGa4Properties) ? row.metadata.discoveredGa4Properties as Array<{ propertyId?: string }> : [];
-    if (!gsc.some((x) => x.siteUrl?.replace(/\/$/, "").toLowerCase() === gscSiteUrl.replace(/\/$/, "").toLowerCase()) || !ga4.some((x) => x.propertyId === ga4PropertyId)) throw new Error("Selected Google properties were not discovered.");
-    await sql`UPDATE connections SET status='connected',metadata=${sql.json({ ...row.metadata, gscSiteUrl, ga4PropertyId, needsConfirmation: false, connectionState: "connected" })},updated_at=now() WHERE id=${row.id}::uuid`;
+    if (!gscSiteUrl.trim() || !ga4PropertyId.trim()) throw new GoogleSelectionError("form_validation");
+    const sites = await sql<{ id: string }[]>`SELECT id FROM sites WHERE lower(domain)='diamondshelf.us' AND is_active=true ORDER BY created_at LIMIT 1`;
+    const site = sites[0];
+    if (!site) throw new GoogleSelectionError("site_lookup");
+    const rows = await sql<{ id: string; metadata: Record<string, unknown> }[]>`SELECT id,metadata FROM connections WHERE site_id=${site.id}::uuid AND provider='google' AND external_account_id='google' ORDER BY updated_at DESC LIMIT 1`;
+    const row = rows[0];
+    if (!row) throw new GoogleSelectionError("connection_lookup");
+    if (!isGoogleSelectionDiscovered(row.metadata, gscSiteUrl, ga4PropertyId)) throw new GoogleSelectionError("resource_validation");
+    try {
+      await sql`UPDATE connections SET status='connected',metadata=${sql.json({ ...row.metadata, gscSiteUrl: gscSiteUrl.trim(), ga4PropertyId: ga4PropertyId.trim(), needsConfirmation: false, connectionState: "connected" })},updated_at=now() WHERE id=${row.id}::uuid`;
+    } catch {
+      throw new GoogleSelectionError("database_update");
+    }
   } finally { await sql.end({ timeout: 2 }); }
 }
 export { assertOAuthState, exchangeGoogleCode, exchangeShopifyCode, discoverGoogleResources, autoMatchDiamondShelf };
