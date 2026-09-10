@@ -147,14 +147,17 @@ export function prepareShopifyMutation(action: ShopifyWriteAction): PreparedShop
       requiredScopes: ["write_products"],
     };
   }
-  assertGid(action.fileId, "MediaImage");
-  return {
-    actionType: "image.alt",
-    operationName: "SeoEngineFileAltUpdate",
-    query: FILE_ALT_UPDATE,
-    variables: { files: [{ id: action.fileId, alt: value }] },
-    requiredScopes: ["write_files", "write_themes"],
-  };
+  if (action.actionType === "image.alt" && "fileId" in action) {
+    assertGid(action.fileId, "MediaImage");
+    return {
+      actionType: "image.alt",
+      operationName: "SeoEngineFileAltUpdate",
+      query: FILE_ALT_UPDATE,
+      variables: { files: [{ id: action.fileId, alt: value }] },
+      requiredScopes: ["write_files", "write_themes"],
+    };
+  }
+  return unsupportedShopifyAction((action as { actionType?: string }).actionType ?? "unknown");
 }
 
 function userErrorMessage(errors: UserError[]): string {
