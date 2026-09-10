@@ -86,6 +86,9 @@ jobs:
       - name: Test GEO and AI visibility normalization
         run: pnpm --filter @seo-engine/ai-visibility test
 
+      - name: Test search intelligence policy normalization
+        run: pnpm --filter @seo-engine/search-intelligence test
+
       - name: Typecheck
         run: pnpm typecheck
 
