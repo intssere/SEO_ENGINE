@@ -1,74 +1,72 @@
 import { loadDashboardData } from "../lib/dashboard-data";
+import { getRuntimeReadiness, loadPerformance, parsePerformanceFilters } from "../lib/operational-data";
+import { DashboardShell } from "./components/dashboard-shell";
+import { SeoCommand } from "./components/seo-command";
 
 export const dynamic = "force-dynamic";
+interface Props { searchParams: Promise<Record<string, string | string[] | undefined>> }
 
-const nav = ["Overview", "Opportunities", "Actions", "Approvals", "Performance", "Rankings", "Technical SEO", "Internal Links", "AI Visibility", "Experiments", "Search Intelligence", "Learning", "Deployments", "Impact", "Connections", "Settings"];
+function Badge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: string }) { return <span className={`badge ${tone}`}>{children}</span>; }
+function riskTone(risk: string) { if (risk === "approval") return "approval"; if (risk === "blocked") return "experiment"; return "verified"; }
 
-function Badge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: string }) {
-  return <span className={`badge ${tone}`}>{children}</span>;
-}
+export default async function HomePage({ searchParams }: Props) {
+  const params = await searchParams;
+  const filters = parsePerformanceFilters(params);
+  const readiness = await getRuntimeReadiness();
+  const data = readiness.state === "live" ? await loadDashboardData() : null;
+  const performance = await loadPerformance(filters);
+  const approvalsPending = data?.approvalsPending ?? 0;
+  const verificationPct = data && data.verification.total > 0 ? Math.round((data.verification.verified / data.verification.total) * 100) : 0;
+  const metrics = data ? data.metrics : [
+    { label: "Organic clicks", value: "—", delta: "Awaiting live GSC data" },
+    { label: "Impressions", value: "—", delta: "Awaiting live GSC data" },
+    { label: "Top-10 keywords", value: "—", delta: "Awaiting live GSC data" },
+    { label: "Average position", value: "—", delta: "Awaiting live GSC data" },
+    { label: "AI citation rate", value: "—", delta: "Awaiting AI observations" },
+    { label: "Open findings", value: "—", delta: "Awaiting baseline" },
+  ];
+  if (performance.summary) {
+    metrics[0] = { label: "Organic clicks", value: performance.summary.clicks.toLocaleString("en-US"), delta: `${filters.days}-day filtered GSC` };
+    metrics[1] = { label: "Impressions", value: performance.summary.impressions.toLocaleString("en-US"), delta: `${filters.country === "all" ? "All countries" : filters.country} · ${filters.device}` };
+  }
 
-function riskTone(risk: string) {
-  if (risk === "approval") return "approval";
-  if (risk === "blocked") return "experiment";
-  return "verified";
-}
+  return <DashboardShell approvalsPending={approvalsPending} dataState={readiness.state}>
+    <header className="topbar">
+      <div><strong>{data?.siteName ?? "Diamond Shelf"}</strong><span className="muted"> {data?.domain ?? "diamondshelf.us"}</span></div>
+      <div className="filters"><a href={`/performance?days=${filters.days}&country=${filters.country}&device=${filters.device}`}>Performance detail</a><Badge tone={readiness.state === "live" ? "verified" : "approval"}>{readiness.state === "live" ? "LIVE DATA" : readiness.state === "setup_required" ? "SETUP REQUIRED" : "DATA UNAVAILABLE"}</Badge></div>
+    </header>
+    <div className="content">
+      <div className={`dataBanner ${readiness.state === "live" ? data?.stale ? "stale" : "live" : readiness.state === "setup_required" ? "stale" : "unavailable"}`}>
+        <strong>{readiness.state === "live" ? data?.stale ? "Operational database connected · observations may be stale" : "Operational database connected" : readiness.state === "setup_required" ? "Complete runtime setup" : "Production data unavailable"}</strong>
+        <span>{readiness.state === "live" ? `Updated ${data?.dataFreshness ?? "now"}` : readiness.message}</span>
+      </div>
 
-export default async function HomePage() {
-  const data = await loadDashboardData();
-  const verificationPct = data.verification.total > 0 ? Math.round((data.verification.verified / data.verification.total) * 100) : 0;
-  const updatedLabel = data.state === "live" ? `Updated ${data.dataFreshness}` : "Live data unavailable";
+      <div className="titleRow"><div><p className="eyebrow">OVERVIEW</p><h1>SEO operations command center</h1><p className="muted">Persisted evidence, decisions, actions and verification. No demo metrics are substituted for missing production data.</p></div><SeoCommand /></div>
 
-  return (
-    <main className="shell">
-      <aside className="sidebar">
-        <div className="brand"><span className="brandMark">S</span><div><strong>SEO ENGINE</strong><small>AI SEO Command Center</small></div></div>
-        <nav>{nav.map((item, index) => <a className={index === 0 ? "active" : ""} href="#" key={item}>{item}{item === "Approvals" && data.approvalsPending > 0 ? ` · ${data.approvalsPending}` : ""}</a>)}</nav>
-        <div className="sidebarFoot"><span className={`statusDot ${data.state === "live" ? "" : "offline"}`} /> {data.state === "live" ? "Engine online" : "Data unavailable"}<br/><small>Guarded autonomy</small></div>
-      </aside>
+      <form className="filterForm overviewFilters" method="get">
+        <label>Period<select name="days" defaultValue={String(filters.days)}><option value="7">Last 7 days</option><option value="28">Last 28 days</option><option value="90">Last 90 days</option></select></label>
+        <label>Country<select name="country" defaultValue={filters.country}><option value="all">All countries</option><option value="US">US</option><option value="PK">PK</option></select></label>
+        <label>Device<select name="device" defaultValue={filters.device}><option value="all">All devices</option><option value="desktop">Desktop</option><option value="mobile">Mobile</option><option value="tablet">Tablet</option></select></label>
+        <button type="submit">Apply</button>
+      </form>
 
-      <section className="workspace">
-        <header className="topbar">
-          <div><strong>{data.siteName}</strong><span className="muted"> {data.domain}</span></div>
-          <div className="filters"><button>Last 28 days ▾</button><button>US ▾</button><button>All devices ▾</button><Badge tone={data.state === "live" ? "verified" : "approval"}>{data.state === "live" ? "LIVE DATA" : "DATA UNAVAILABLE"}</Badge>{data.approvalsPending > 0 && <Badge tone="approval">{data.approvalsPending} approvals</Badge>}</div>
-        </header>
+      <section className="metricGrid">{metrics.map((metric) => <article className="card metric" key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong><small className={readiness.state === "live" ? "positive" : "muted"}>{metric.delta}</small></article>)}</section>
 
-        <div className="content">
-          <div className={`dataBanner ${data.state === "live" ? data.stale ? "stale" : "live" : "unavailable"}`}>
-            <strong>{data.state === "live" ? data.stale ? "Live database connected · data may be stale" : "Live database connected" : "No production metrics are being shown"}</strong>
-            <span>{data.state === "live" ? updatedLabel : data.reason}</span>
-          </div>
-
-          <div className="titleRow"><div><p className="eyebrow">OVERVIEW</p><h1>SEO operations command center</h1><p className="muted">Persisted evidence, decisions, actions and verification. Demo fixtures are disabled.</p></div><button className="ask">⌘ K &nbsp; Ask SEO ENGINE</button></div>
-
-          <section className="metricGrid">{data.metrics.map((metric) => <article className="card metric" key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong><small className={data.state === "live" ? "positive" : "muted"}>{metric.delta}</small></article>)}</section>
-
-          <section className="engine card">
-            <div className="sectionHead"><div><p className="eyebrow">AI SEO ENGINE · LAST 24 HOURS</p><h2>Engine activity</h2></div><Badge tone={data.state === "live" ? "verified" : "approval"}>{data.state === "live" ? "DATABASE-BACKED" : "NO LIVE DATA"}</Badge></div>
-            <div className="engineStats"><div><strong>{data.engine.pagesAnalyzed}</strong><span>Pages analyzed</span></div><div><strong>{data.engine.opportunities}</strong><span>Opportunities</span></div><div><strong>{data.engine.actionsPrepared}</strong><span>Actions prepared</span></div><div><strong>{data.engine.executed}</strong><span>Executed</span></div><div><strong>{data.engine.verified}</strong><span>Verified</span></div><div><strong>{data.engine.regressions}</strong><span>Regressions</span></div></div>
-          </section>
-
-          <div className="twoCol">
-            <section className="card">
-              <div className="sectionHead"><div><p className="eyebrow">DECISION QUEUE</p><h2>Top opportunities</h2></div><button className="linkButton">View all →</button></div>
-              <div className="tableWrap"><table><thead><tr><th>Opportunity</th><th>Score</th><th>Evidence</th><th>Risk</th><th>State</th></tr></thead><tbody>{data.opportunities.length > 0 ? data.opportunities.map((row) => <tr key={`${row.title}-${row.score}`}><td>{row.title}</td><td>{row.score}</td><td>{row.evidence}</td><td><Badge tone={riskTone(row.risk)}>{row.risk}</Badge></td><td>{row.state}</td></tr>) : <tr><td colSpan={5} className="emptyCell">No persisted opportunities available.</td></tr>}</tbody></table></div>
-            </section>
-
-            <section className="card activity">
-              <div className="sectionHead"><div><p className="eyebrow">TRACEABLE AI</p><h2>What changed</h2></div></div>
-              {data.activity.length > 0 ? data.activity.map((item) => <div className="activityItem" key={`${item.title}-${item.detail}`}><span className={`activityDot ${item.tone}`} /><div><strong>{item.title}</strong><p>{item.detail}</p><small>{item.result}</small></div><span>›</span></div>) : <p className="muted">No live activity available.</p>}
-            </section>
-          </div>
-
-          <div className="threeCol">
-            <section className="card"><p className="eyebrow">VERIFICATION</p><h2>Changes & proof</h2><div className="bigStat">{data.verification.verified} <span>/ {data.verification.total} verified</span></div><div className="progress"><i style={{width:`${verificationPct}%`}} /></div><p className="muted">{data.verification.pending} pending · {data.verification.rolledBack} rolled back · {data.verification.regressions} regressions</p><button className="linkButton">View deployment proof →</button></section>
-            <section className="card"><p className="eyebrow">AI VISIBILITY</p><h2>Generative search</h2><div className="splitStats"><div><strong>{data.aiVisibility.citationRate}</strong><span>Citation rate</span></div><div><strong>{data.aiVisibility.brandMentionRate}</strong><span>Brand mentions</span></div><div><strong>{data.aiVisibility.citationShare}</strong><span>Citation share</span></div></div><p className="muted">Computed only from persisted AI-response and citation observations.</p></section>
-            <section className="card"><p className="eyebrow">LEARNING ENGINE</p><h2>Evidence becoming signal</h2><div className="learning"><strong>{data.learning.signalCount} persisted signals</strong><Badge tone="verified">{data.learning.averageConfidence} avg confidence</Badge></div><p className="muted">Learning adjusts prioritization only; official policy and safety remain authoritative.</p></section>
-          </div>
-
-          <section className="impact card"><div><p className="eyebrow">VERIFIED IMPACT</p><h2>Persisted operational outcomes</h2></div><div className="impactStats"><div><strong>{data.impact.verifiedOptimizations}</strong><span>Verified optimizations</span></div><div><strong>{data.impact.completedExperiments}</strong><span>Completed experiments</span></div><div><strong>{data.impact.rollbacks}</strong><span>Completed rollbacks</span></div><div><strong>{data.impact.regressionsDetected}</strong><span>Regressions detected</span></div></div></section>
-        </div>
+      <section className="engine card">
+        <div className="sectionHead"><div><p className="eyebrow">AI SEO ENGINE · LAST 24 HOURS</p><h2>Engine activity</h2></div><Badge tone={readiness.state === "live" ? "verified" : "approval"}>{readiness.state === "live" ? "DATABASE-BACKED" : "NOT READY"}</Badge></div>
+        <div className="engineStats"><div><strong>{data?.engine.pagesAnalyzed ?? 0}</strong><span>Pages analyzed</span></div><div><strong>{data?.engine.opportunities ?? 0}</strong><span>Opportunities</span></div><div><strong>{data?.engine.actionsPrepared ?? 0}</strong><span>Actions prepared</span></div><div><strong>{data?.engine.executed ?? 0}</strong><span>Executed</span></div><div><strong>{data?.engine.verified ?? 0}</strong><span>Verified</span></div><div><strong>{data?.engine.regressions ?? 0}</strong><span>Regressions</span></div></div>
       </section>
-    </main>
-  );
+
+      <div className="twoCol">
+        <section className="card"><div className="sectionHead"><div><p className="eyebrow">DECISION QUEUE</p><h2>Top opportunities</h2></div><a className="linkButton" href="/opportunities">View all →</a></div><div className="tableWrap"><table><thead><tr><th>Opportunity</th><th>Score</th><th>Evidence</th><th>Risk</th><th>State</th></tr></thead><tbody>{data?.opportunities.length ? data.opportunities.map((row) => <tr key={`${row.title}-${row.score}`}><td>{row.title}</td><td>{row.score}</td><td>{row.evidence}</td><td><Badge tone={riskTone(row.risk)}>{row.risk}</Badge></td><td>{row.state}</td></tr>) : <tr><td colSpan={5} className="emptyCell">No persisted opportunities available.</td></tr>}</tbody></table></div></section>
+        <section className="card activity"><div className="sectionHead"><div><p className="eyebrow">TRACEABLE AI</p><h2>What changed</h2></div></div>{data?.activity.length ? data.activity.map((item) => <div className="activityItem" key={`${item.title}-${item.detail}`}><span className={`activityDot ${item.tone}`} /><div><strong>{item.title}</strong><p>{item.detail}</p><small>{item.result}</small></div><span>›</span></div>) : <p className="muted">No live activity available.</p>}</section>
+      </div>
+
+      <div className="threeCol">
+        <section className="card"><p className="eyebrow">VERIFICATION</p><h2>Changes & proof</h2><div className="bigStat">{data?.verification.verified ?? 0} <span>/ {data?.verification.total ?? 0} verified</span></div><div className="progress"><i style={{width:`${verificationPct}%`}} /></div><p className="muted">{data?.verification.pending ?? 0} pending · {data?.verification.rolledBack ?? 0} rolled back · {data?.verification.regressions ?? 0} regressions</p><a className="linkButton" href="/deployments">View deployment proof →</a></section>
+        <section className="card"><p className="eyebrow">AI VISIBILITY</p><h2>Generative search</h2><div className="splitStats"><div><strong>{data?.aiVisibility.citationRate ?? "—"}</strong><span>Citation rate</span></div><div><strong>{data?.aiVisibility.brandMentionRate ?? "—"}</strong><span>Brand mentions</span></div><div><strong>{data?.aiVisibility.citationShare ?? "—"}</strong><span>Citation share</span></div></div><a className="linkButton" href="/ai-visibility">Open AI visibility →</a></section>
+        <section className="card"><p className="eyebrow">LEARNING ENGINE</p><h2>Evidence becoming signal</h2><div className="learning"><strong>{data?.learning.signalCount ?? 0} persisted signals</strong><Badge tone="verified">{data?.learning.averageConfidence ?? "—"} avg confidence</Badge></div><p className="muted">Learning adjusts prioritization only; official policy and safety remain authoritative.</p><a className="linkButton" href="/learning">Inspect learning →</a></section>
+      </div>
+    </div>
+  </DashboardShell>;
 }

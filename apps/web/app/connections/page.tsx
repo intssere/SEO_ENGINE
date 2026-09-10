@@ -1,90 +1,37 @@
 import { listConnectionSummaries } from "../../lib/oauth-connections";
+import { getRuntimeReadiness } from "../../lib/operational-data";
+import { DashboardShell } from "../components/dashboard-shell";
+import { SeoCommand } from "../components/seo-command";
 
 export const dynamic = "force-dynamic";
-
-interface PageProps {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}
-
-function text(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
-}
+interface PageProps { searchParams: Promise<Record<string, string | string[] | undefined>> }
+function text(value: string | string[] | undefined): string { return Array.isArray(value) ? value[0] ?? "" : value ?? ""; }
+function safeConnectionError(value: string): string { return value ? "Connection authorization did not complete. Review the provider configuration and retry." : ""; }
 
 export default async function ConnectionsPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const connections = await listConnectionSummaries();
+  const readiness = await getRuntimeReadiness();
+  const connections = readiness.state === "live" ? await listConnectionSummaries().catch(() => []) : [];
   const shopify = connections.find((item) => item.provider === "shopify");
   const google = connections.find((item) => item.provider === "google");
-  const error = text(params.error);
+  const error = safeConnectionError(text(params.error));
   const connected = text(params.connected);
   const needsConfirmation = google?.metadata.needsConfirmation === true;
-  const gscOptions = Array.isArray(google?.metadata.discoveredSearchConsoleProperties)
-    ? google.metadata.discoveredSearchConsoleProperties as Array<{ siteUrl?: string; permissionLevel?: string | null }>
-    : [];
-  const ga4Options = Array.isArray(google?.metadata.discoveredGa4Properties)
-    ? google.metadata.discoveredGa4Properties as Array<{ propertyId?: string; displayName?: string | null }>
-    : [];
+  const gscOptions = Array.isArray(google?.metadata.discoveredSearchConsoleProperties) ? google.metadata.discoveredSearchConsoleProperties as Array<{ siteUrl?: string; permissionLevel?: string | null }> : [];
+  const ga4Options = Array.isArray(google?.metadata.discoveredGa4Properties) ? google.metadata.discoveredGa4Properties as Array<{ propertyId?: string; displayName?: string | null }> : [];
 
-  return (
-    <main style={{ maxWidth: 920, margin: "0 auto", padding: "48px 24px", fontFamily: "system-ui, sans-serif" }}>
-      <p style={{ margin: 0, color: "#666", fontSize: 13, letterSpacing: 1 }}>SEO ENGINE · DIAMOND SHELF</p>
-      <h1 style={{ marginTop: 8 }}>Connections</h1>
-      <p style={{ color: "#555", maxWidth: 720 }}>
-        Authorize accounts once. SEO ENGINE stores credentials server-side in encrypted form, discovers the correct properties, refreshes Google access automatically, and keeps the pilot read-only.
-      </p>
-
-      {error ? <div style={{ padding: 14, border: "1px solid #b42318", borderRadius: 8, margin: "20px 0" }}>Connection error: {error}</div> : null}
-      {connected ? <div style={{ padding: 14, border: "1px solid #16803c", borderRadius: 8, margin: "20px 0" }}>{connected === "google" ? "Google" : "Shopify"} authorization completed.</div> : null}
-
-      <section style={{ display: "grid", gap: 18, marginTop: 28 }}>
-        <article style={{ border: "1px solid #ddd", borderRadius: 12, padding: 22 }}>
-          <h2 style={{ marginTop: 0 }}>Shopify</h2>
-          <p>Status: <strong>{shopify?.status ?? "not connected"}</strong></p>
-          {shopify ? (
-            <p style={{ color: "#555" }}>Store: {shopify.externalAccountId} · Read-only scopes: {shopify.scopes.join(", ") || "—"}</p>
-          ) : (
-            <form action="/api/connections/shopify/start" method="get" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <input name="shop" required placeholder="your-store.myshopify.com" style={{ minWidth: 280, padding: "10px 12px", border: "1px solid #bbb", borderRadius: 7 }} />
-              <button type="submit" style={{ padding: "10px 16px", borderRadius: 7, border: "1px solid #111", cursor: "pointer" }}>Connect Shopify</button>
-            </form>
-          )}
-        </article>
-
-        <article style={{ border: "1px solid #ddd", borderRadius: 12, padding: 22 }}>
-          <h2 style={{ marginTop: 0 }}>Google Search Console + GA4</h2>
-          <p>Status: <strong>{google?.status ?? "not connected"}</strong></p>
-          {!google ? (
-            <a href="/api/connections/google/start" style={{ display: "inline-block", padding: "10px 16px", border: "1px solid #111", borderRadius: 7, color: "inherit", textDecoration: "none" }}>Connect Google</a>
-          ) : needsConfirmation ? (
-            <form action="/api/connections/google/select" method="post" style={{ display: "grid", gap: 12, maxWidth: 620 }}>
-              <p style={{ color: "#555", marginBottom: 0 }}>Multiple properties were found. Confirm the Diamond Shelf properties before activation.</p>
-              <label>
-                Search Console property
-                <select name="gscSiteUrl" required style={{ display: "block", width: "100%", marginTop: 6, padding: 10 }}>
-                  <option value="">Select…</option>
-                  {gscOptions.map((item) => item.siteUrl ? <option key={item.siteUrl} value={item.siteUrl}>{item.siteUrl}</option> : null)}
-                </select>
-              </label>
-              <label>
-                GA4 property
-                <select name="ga4PropertyId" required style={{ display: "block", width: "100%", marginTop: 6, padding: 10 }}>
-                  <option value="">Select…</option>
-                  {ga4Options.map((item) => item.propertyId ? <option key={item.propertyId} value={item.propertyId}>{item.displayName ?? "GA4"} · {item.propertyId}</option> : null)}
-                </select>
-              </label>
-              <button type="submit" style={{ width: "fit-content", padding: "10px 16px", borderRadius: 7, border: "1px solid #111", cursor: "pointer" }}>Confirm Google properties</button>
-            </form>
-          ) : (
-            <div style={{ color: "#555" }}>
-              <p>Search Console: {String(google.metadata.gscSiteUrl ?? "connected")}</p>
-              <p>GA4: {String(google.metadata.ga4PropertyId ?? "connected")}</p>
-              <p>Refresh token retained securely: {google.metadata.hasRefreshToken === true ? "yes" : "no"}</p>
-            </div>
-          )}
-        </article>
-      </section>
-
-      <p style={{ marginTop: 28, color: "#666" }}>Public-site writes remain disabled. OAuth authorization does not grant SEO ENGINE permission to publish changes.</p>
-    </main>
-  );
+  return <DashboardShell dataState={readiness.state}>
+    <header className="topbar"><div><strong>Diamond Shelf</strong><span className="muted"> diamondshelf.us</span></div><SeoCommand /></header>
+    <div className="content">
+      {readiness.state !== "live" ? <div className={`dataBanner ${readiness.state === "setup_required" ? "stale" : "unavailable"}`}><strong>{readiness.state === "setup_required" ? "Database setup required before OAuth activation" : "Database unavailable"}</strong><span>{readiness.message}</span></div> : null}
+      <div className="titleRow"><div><p className="eyebrow">ACCOUNT ACCESS</p><h1>Connections</h1><p className="muted">Authorize accounts once. Credentials remain encrypted server-side and Google access can refresh automatically.</p></div></div>
+      {error ? <div className="dataBanner unavailable"><strong>Connection error</strong><span>{error}</span></div> : null}
+      {connected ? <div className="dataBanner live"><strong>Authorization completed</strong><span>{connected === "google" ? "Google" : "Shopify"} connection returned successfully.</span></div> : null}
+      <div className="twoCol">
+        <section className="card"><p className="eyebrow">COMMERCE</p><h2>Shopify</h2><p>Status: <strong>{shopify?.status ?? "not connected"}</strong></p>{shopify ? <p className="muted">Store: {shopify.externalAccountId} · Scopes: {shopify.scopes.join(", ") || "—"}</p> : readiness.state === "live" ? <form action="/api/connections/shopify/start" method="get" className="connectionForm"><input name="shop" required placeholder="your-store.myshopify.com" /><button type="submit">Connect Shopify</button></form> : <p className="muted">Initialize the database first; connection tokens cannot be stored safely until then.</p>}</section>
+        <section className="card"><p className="eyebrow">SEARCH + ANALYTICS</p><h2>Google Search Console + GA4</h2><p>Status: <strong>{google?.status ?? "not connected"}</strong></p>{!google ? readiness.state === "live" ? <a className="linkButton" href="/api/connections/google/start">Connect Google →</a> : <p className="muted">Initialize the database first.</p> : needsConfirmation ? <form action="/api/connections/google/select" method="post" className="connectionForm stacked"><label>Search Console property<select name="gscSiteUrl" required><option value="">Select…</option>{gscOptions.map((item) => item.siteUrl ? <option key={item.siteUrl} value={item.siteUrl}>{item.siteUrl}</option> : null)}</select></label><label>GA4 property<select name="ga4PropertyId" required><option value="">Select…</option>{ga4Options.map((item) => item.propertyId ? <option key={item.propertyId} value={item.propertyId}>{item.displayName ?? "GA4"} · {item.propertyId}</option> : null)}</select></label><button type="submit">Confirm properties</button></form> : <div className="muted"><p>Search Console: {String(google.metadata.gscSiteUrl ?? "connected")}</p><p>GA4: {String(google.metadata.ga4PropertyId ?? "connected")}</p><p>Refresh token retained securely: {google.metadata.hasRefreshToken === true ? "yes" : "no"}</p></div>}</section>
+      </div>
+      <section className="card readinessCard"><h2>Safety state</h2><p>Public-site writes remain disabled. OAuth authorization alone does not authorize SEO ENGINE to publish changes.</p></section>
+    </div>
+  </DashboardShell>;
 }

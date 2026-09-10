@@ -1,0 +1,18 @@
+export const dashboardNav = [
+  { label: "Overview", href: "/" },
+  { label: "Opportunities", href: "/opportunities" },
+  { label: "Actions", href: "/actions" },
+  { label: "Approvals", href: "/approvals" },
+  { label: "Performance", href: "/performance" },
+  { label: "Rankings", href: "/rankings" },
+  { label: "Technical SEO", href: "/technical-seo" },
+  { label: "Internal Links", href: "/internal-links" },
+  { label: "AI Visibility", href: "/ai-visibility" },
+  { label: "Experiments", href: "/experiments" },
+  { label: "Search Intelligence", href: "/search-intelligence" },
+  { label: "Learning", href: "/learning" },
+  { label: "Deployments", href: "/deployments" },
+  { label: "Impact", href: "/impact" },
+  { label: "Connections", href: "/connections" },
+  { label: "Settings", href: "/settings" },
+] as const;
