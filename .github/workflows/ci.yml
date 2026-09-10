@@ -71,6 +71,9 @@ jobs:
       - name: Test canonical evidence normalization
         run: pnpm --filter @seo-engine/evidence-normalizer test
 
+      - name: Test deterministic technical SEO findings
+        run: pnpm --filter @seo-engine/technical-seo test
+
       - name: Typecheck
         run: pnpm typecheck
 
