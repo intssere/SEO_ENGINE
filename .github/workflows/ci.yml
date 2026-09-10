@@ -89,6 +89,9 @@ jobs:
       - name: Test search intelligence policy normalization
         run: pnpm --filter @seo-engine/search-intelligence test
 
+      - name: Test action planner and safety engine
+        run: pnpm --filter @seo-engine/action-planner test
+
       - name: Typecheck
         run: pnpm typecheck
 
