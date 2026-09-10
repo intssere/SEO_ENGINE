@@ -77,6 +77,9 @@ jobs:
       - name: Test ranking accelerator opportunities
         run: pnpm --filter @seo-engine/ranking-accelerator test
 
+      - name: Test unified opportunity engine
+        run: pnpm --filter @seo-engine/opportunity-engine test
+
       - name: Typecheck
         run: pnpm typecheck
 
