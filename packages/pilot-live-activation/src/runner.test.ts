@@ -60,11 +60,11 @@ test("secure runner returns sanitized evidence without secrets", async () => {
 
 test("write-enabled runtime blocks before network probes", async () => {
   let calls = 0;
-  const blockedFetch = async () => {
+  const blockedFetch = (async () => {
     calls += 1;
     return new Response("should not be called", { status: 500 });
-  };
-  const evidence = await runActivationFromEnvironment({ ...env, PUBLIC_SITE_WRITES_ENABLED: "true" }, { fetchImpl: blockedFetch as typeof fetch });
+  }) as typeof fetch;
+  const evidence = await runActivationFromEnvironment({ ...env, PUBLIC_SITE_WRITES_ENABLED: "true" }, { fetchImpl: blockedFetch });
   assert.equal(evidence.readOnlyReady, false);
   assert.equal(evidence.status, "blocked");
   assert.equal(calls, 0);
@@ -72,10 +72,11 @@ test("write-enabled runtime blocks before network probes", async () => {
 
 test("provider probe rejects insecure remote HTTP endpoints without network access", async () => {
   let calls = 0;
-  const probe = createSeoProviderProbe({ SEO_PROVIDER_PROBE_URL: "http://provider.example/health" }, async () => {
+  const noNetworkFetch = (async () => {
     calls += 1;
     return new Response("ok", { status: 200 });
-  } as typeof fetch);
+  }) as typeof fetch;
+  const probe = createSeoProviderProbe({ SEO_PROVIDER_PROBE_URL: "http://provider.example/health" }, noNetworkFetch);
   const result = await probe();
   assert.equal(result.ok, false);
   assert.equal(calls, 0);
