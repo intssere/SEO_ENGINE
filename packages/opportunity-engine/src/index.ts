@@ -63,8 +63,10 @@ function clamp(value: number, min = 0, max = 100): number {
 function businessMap(rows: BusinessContext[] = []): Map<string, BusinessContext> {
   const out = new Map<string, BusinessContext>();
   for (const row of rows) {
-    const key = row.pageId?.trim() || row.pageUrl?.trim();
-    if (key) out.set(key, row);
+    const pageId = row.pageId?.trim();
+    const pageUrl = row.pageUrl?.trim();
+    if (pageId) out.set(pageId, row);
+    if (pageUrl) out.set(pageUrl, row);
   }
   return out;
 }
