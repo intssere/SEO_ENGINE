@@ -122,6 +122,9 @@ jobs:
       - name: Test controlled experiment measurement gate
         run: pnpm --filter @seo-engine/pilot-measurement test
 
+      - name: Test guarded autonomy pilot gate
+        run: pnpm --filter @seo-engine/pilot-guarded-autonomy test
+
       - name: Typecheck
         run: pnpm typecheck
 
