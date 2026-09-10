@@ -82,6 +82,21 @@ test("Google property discovery and Diamond Shelf auto-match are deterministic",
   assert.equal(matched.gscSiteUrl, "https://diamondshelf.us/");
   assert.equal(matched.ga4PropertyId, "123456");
   assert.equal(matched.needsConfirmation, false);
+  assert.equal(resources.searchConsoleStatus.ok, true);
+  assert.equal(resources.ga4Status.ok, true);
+});
+
+test("Google discovery returns sanitized partial-failure status without discarding successful resources", async () => {
+  const fetchImpl = async (input: URL | Request | string) => {
+    const url = String(input);
+    if (url.includes("webmasters")) return new Response(JSON.stringify({ siteEntry: [{ siteUrl: "https://diamondshelf.us/" }] }), { status: 200 });
+    return new Response(JSON.stringify({ error: { message: "sensitive provider detail" } }), { status: 403 });
+  };
+  const resources = await discoverGoogleResources("access-token", fetchImpl as typeof fetch);
+  assert.equal(resources.searchConsoleProperties.length, 1);
+  assert.equal(resources.ga4Properties.length, 0);
+  assert.deepEqual(resources.ga4Status, { ok: false, httpStatus: 403, category: "provider_error" });
+  assert.doesNotMatch(JSON.stringify(resources), /sensitive provider detail/);
 });
 
 test("AES-GCM credential envelope round-trips and keeps raw tokens out of metadata", () => {

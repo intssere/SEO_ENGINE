@@ -8,12 +8,50 @@ type ConnectionsStatus = {
   shopify: { connected: boolean; domain?: string };
   google: {
     connected: boolean;
-    email?: string;
+    authorized?: boolean;
     needsConfirmation?: boolean;
+    needsAttention?: boolean;
+    hasRefreshToken?: boolean;
+    searchConsoleDiscovery?: DiscoveryStatus | null;
+    ga4Discovery?: DiscoveryStatus | null;
     searchConsoleProperties?: Array<{ siteUrl?: string; permissionLevel?: string | null }>;
     ga4Properties?: Array<{ propertyId?: string; displayName?: string | null }>;
   };
 };
+
+type DiscoveryStatus = {
+  ok: boolean;
+  httpStatus: number | null;
+  category: "ok" | "provider_error" | "network_error" | "invalid_response";
+};
+
+const successMessages: Record<string, string> = {
+  shopify: "Shopify connected successfully.",
+  google: "Google Search Console and GA4 connected successfully.",
+  google_pending: "Google authorization succeeded. Confirm the matching Search Console and GA4 properties below.",
+  google_attention: "Google authorization was stored securely, but additional setup is required.",
+};
+
+const errorMessages: Record<string, string> = {
+  shopify_start: "Unable to start Shopify authorization.",
+  shopify_callback: "Shopify authorization could not be completed.",
+  google_start: "Unable to start Google authorization.",
+  google_state: "Google authorization expired or could not be verified. Please start again.",
+  google_token_provider: "Google rejected the token exchange. Check the authorized redirect URI and try again.",
+  google_token_network: "Google's token service could not be reached. Please try again.",
+  google_persistence: "Google authorization succeeded, but the encrypted connection could not be saved.",
+  google_write_gate: "Google authorization is unavailable while public-site writes are enabled.",
+  google_configuration: "Google authorization configuration is incomplete.",
+  google_selection: "The selected Google properties could not be saved. Please authorize again.",
+};
+
+function discoveryLabel(status?: DiscoveryStatus | null) {
+  if (!status) return "Not checked";
+  if (status.ok) return "Available";
+  if (status.category === "provider_error") return `Provider rejected request${status.httpStatus ? ` (${status.httpStatus})` : ""}`;
+  if (status.category === "network_error") return "Provider unavailable";
+  return "Invalid provider response";
+}
 
 export default function ConnectionsPage() {
   const searchString = useSearch();
@@ -41,6 +79,8 @@ export default function ConnectionsPage() {
   }, []);
 
   const oauthDisabled = status?.readOnly === false;
+  const successMessage = successParam ? successMessages[successParam] : null;
+  const errorMessage = errorParam ? errorMessages[errorParam] ?? "The connection could not be completed safely." : null;
 
   return (
     <>
@@ -60,17 +100,17 @@ export default function ConnectionsPage() {
           </div>
         </div>
 
-        {successParam && (
+        {successMessage && (
           <div className="mb-6 p-4 bg-[#e7f8ef] border border-[#bfead2] text-[#14764a] rounded-md text-sm font-medium flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" />
-            Connection established successfully.
+            {successMessage}
           </div>
         )}
 
-        {errorParam && (
+        {errorMessage && (
           <div className="mb-6 p-4 bg-[#fff3dc] border border-[#f1d49b] text-[#8d5c0d] rounded-md text-sm font-medium flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
-            {errorParam}
+            {errorMessage}
           </div>
         )}
 
@@ -133,8 +173,8 @@ export default function ConnectionsPage() {
                   <p className="text-xs text-[#77839a]">Search Performance Data</p>
                 </div>
               </div>
-              <Badge tone={status?.google.connected ? "verified" : "neutral"}>
-                {status?.google.connected ? "CONNECTED" : "DISCONNECTED"}
+              <Badge tone={status?.google.connected ? "verified" : status?.google.authorized ? "approval" : "neutral"}>
+                {status?.google.connected ? "CONNECTED" : status?.google.authorized ? "AUTHORIZED" : "DISCONNECTED"}
               </Badge>
             </div>
 
@@ -171,11 +211,38 @@ export default function ConnectionsPage() {
               </form>
             ) : status?.google.connected ? (
               <div className="bg-[#f8fafc] p-4 rounded-md border border-[#e5e9f0]">
-                <p className="text-sm text-[#455168] mb-1">Authenticated account:</p>
-                <p className="font-bold text-[#172033]">{status.google.email}</p>
+                <p className="font-bold text-[#172033]">Google authorization stored securely</p>
                 <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
                   <p className="text-xs text-[#77839a]">Read-only access granted. Engine relies on this for impact verification.</p>
                 </div>
+              </div>
+            ) : status?.google.authorized ? (
+              <div className="space-y-4">
+                <div className="bg-[#fff8e8] p-4 rounded-md border border-[#f1d49b]">
+                  <p className="font-bold text-[#8d5c0d]">Authorization needs attention</p>
+                  <dl className="mt-3 space-y-2 text-xs text-[#455168]">
+                    <div className="flex justify-between gap-4">
+                      <dt>Refresh access</dt>
+                      <dd className="font-semibold">{status.google.hasRefreshToken ? "Ready" : "Reauthorization required"}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt>Search Console discovery</dt>
+                      <dd className="font-semibold text-right">{discoveryLabel(status.google.searchConsoleDiscovery)}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt>GA4 discovery</dt>
+                      <dd className="font-semibold text-right">{discoveryLabel(status.google.ga4Discovery)}</dd>
+                    </div>
+                  </dl>
+                </div>
+                {!oauthDisabled && (
+                  <a
+                    href="/api/connections/google/start"
+                    className="inline-block w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]"
+                  >
+                    Reauthorize Google
+                  </a>
+                )}
               </div>
             ) : (
               <div>

@@ -54,6 +54,14 @@ export interface EncryptedSecretEnvelope {
 export interface DiscoveredGoogleResources {
   searchConsoleProperties: Array<{ siteUrl: string; permissionLevel: string | null }>;
   ga4Properties: Array<{ propertyId: string; displayName: string | null; account: string | null }>;
+  searchConsoleStatus: GoogleDiscoveryStatus;
+  ga4Status: GoogleDiscoveryStatus;
+}
+
+export interface GoogleDiscoveryStatus {
+  ok: boolean;
+  httpStatus: number | null;
+  category: "ok" | "provider_error" | "network_error" | "invalid_response";
 }
 
 function clean(value: string): string {
@@ -191,20 +199,33 @@ export async function refreshGoogleAccessToken(config: GoogleOAuthConfig, refres
 
 export async function discoverGoogleResources(accessToken: string, fetchImpl: typeof fetch = fetch): Promise<DiscoveredGoogleResources> {
   const headers = { Authorization: `Bearer ${clean(accessToken)}`, Accept: "application/json" };
-  const [gscResponse, ga4Response] = await Promise.all([
-    fetchImpl("https://www.googleapis.com/webmasters/v3/sites", { headers, signal: AbortSignal.timeout(15_000) }),
-    fetchImpl("https://analyticsadmin.googleapis.com/v1beta/accountSummaries?pageSize=200", { headers, signal: AbortSignal.timeout(15_000) }),
+  const discover = async <T>(url: string): Promise<{ payload: T | null; status: GoogleDiscoveryStatus }> => {
+    try {
+      const response = await fetchImpl(url, { headers, signal: AbortSignal.timeout(15_000) });
+      if (!response.ok) return { payload: null, status: { ok: false, httpStatus: response.status, category: "provider_error" } };
+      try {
+        return { payload: await response.json() as T, status: { ok: true, httpStatus: response.status, category: "ok" } };
+      } catch {
+        return { payload: null, status: { ok: false, httpStatus: response.status, category: "invalid_response" } };
+      }
+    } catch {
+      return { payload: null, status: { ok: false, httpStatus: null, category: "network_error" } };
+    }
+  };
+  const [gscResult, ga4Result] = await Promise.all([
+    discover<{ siteEntry?: Array<{ siteUrl?: string; permissionLevel?: string }> }>("https://www.googleapis.com/webmasters/v3/sites"),
+    discover<{ accountSummaries?: Array<{ account?: string; propertySummaries?: Array<{ property?: string; displayName?: string }> }> }>("https://analyticsadmin.googleapis.com/v1beta/accountSummaries?pageSize=200"),
   ]);
-  if (!gscResponse.ok) throw new Error(`GSC property discovery failed with HTTP ${gscResponse.status}.`);
-  if (!ga4Response.ok) throw new Error(`GA4 property discovery failed with HTTP ${ga4Response.status}.`);
-  const gsc = await gscResponse.json() as { siteEntry?: Array<{ siteUrl?: string; permissionLevel?: string }> };
-  const ga4 = await ga4Response.json() as { accountSummaries?: Array<{ account?: string; propertySummaries?: Array<{ property?: string; displayName?: string }> }> };
+  const gsc = gscResult.payload ?? {};
+  const ga4 = ga4Result.payload ?? {};
   return {
     searchConsoleProperties: (gsc.siteEntry ?? []).flatMap((entry) => entry.siteUrl ? [{ siteUrl: entry.siteUrl, permissionLevel: entry.permissionLevel?.trim() || null }] : []),
     ga4Properties: (ga4.accountSummaries ?? []).flatMap((account) => (account.propertySummaries ?? []).flatMap((property) => {
       const match = property.property?.match(/^properties\/(\d+)$/);
       return match ? [{ propertyId: match[1]!, displayName: property.displayName?.trim() || null, account: account.account?.trim() || null }] : [];
     })),
+    searchConsoleStatus: gscResult.status,
+    ga4Status: ga4Result.status,
   };
 }
 
