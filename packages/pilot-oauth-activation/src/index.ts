@@ -1,14 +1,14 @@
 export const DIAMOND_SHELF_DOMAIN = "diamondshelf.us";
 
 export interface OAuthActivationEnv {
-  appOrigin?: string;
-  shopifyClientId?: string;
-  shopifyClientSecret?: string;
-  googleClientId?: string;
-  googleClientSecret?: string;
-  credentialEncryptionKey?: string;
-  stateSigningSecret?: string;
-  publicSiteWritesEnabled?: string;
+  appOrigin?: string | undefined;
+  shopifyClientId?: string | undefined;
+  shopifyClientSecret?: string | undefined;
+  googleClientId?: string | undefined;
+  googleClientSecret?: string | undefined;
+  credentialEncryptionKey?: string | undefined;
+  stateSigningSecret?: string | undefined;
+  publicSiteWritesEnabled?: string | undefined;
 }
 
 export interface OAuthRegistrationManifest {
