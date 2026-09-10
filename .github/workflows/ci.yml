@@ -83,6 +83,9 @@ jobs:
       - name: Test internal-link intelligence
         run: pnpm --filter @seo-engine/internal-link-intelligence test
 
+      - name: Test GEO and AI visibility normalization
+        run: pnpm --filter @seo-engine/ai-visibility test
+
       - name: Typecheck
         run: pnpm typecheck
 
