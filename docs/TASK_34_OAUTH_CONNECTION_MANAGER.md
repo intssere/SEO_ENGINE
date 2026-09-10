@@ -4,16 +4,17 @@
 Replace the manual customer-secret onboarding path with a production-style authorization flow for Shopify and Google while preserving the read-only pilot boundary.
 
 ## User flow
-1. User clicks **Connect Shopify**.
-2. SEO ENGINE creates a short-lived state record bound to the permanent `*.myshopify.com` domain.
-3. User approves Shopify read-only scopes.
-4. SEO ENGINE exchanges the callback code server-side and stores the credential only as encrypted secret material / `secret_ref`.
-5. User clicks **Connect Google**.
-6. SEO ENGINE uses OAuth 2.0 Authorization Code + PKCE with offline access and read-only Search Console + Analytics scopes.
-7. SEO ENGINE exchanges the callback code server-side, securely stores the refresh token, and refreshes access tokens automatically.
-8. SEO ENGINE discovers accessible Search Console and GA4 properties and auto-matches Diamond Shelf where unambiguous.
-9. If multiple candidate properties exist, the UI must require explicit user selection rather than guessing.
-10. Existing Task #31 live probes then verify the resulting connections before a baseline can start.
+1. User opens `/connections`.
+2. User clicks **Connect Shopify** and supplies only the permanent `*.myshopify.com` store identity, not an Admin API token.
+3. SEO ENGINE creates a short-lived signed state record bound to that store and redirects to Shopify authorization.
+4. User approves Shopify read-only scopes.
+5. SEO ENGINE validates callback state + Shopify HMAC, exchanges the code server-side, encrypts the token, and persists only ciphertext in `connections.secret_ref` plus sanitized metadata.
+6. User clicks **Connect Google**.
+7. SEO ENGINE uses OAuth 2.0 Authorization Code + PKCE with offline access and read-only Search Console + Analytics scopes.
+8. SEO ENGINE validates state, exchanges the callback code server-side, encrypts the access/refresh token bundle, and persists sanitized connection metadata.
+9. SEO ENGINE discovers accessible Search Console and GA4 properties and auto-matches Diamond Shelf where unambiguous.
+10. If multiple candidate properties exist, `/connections` requires explicit selection from resources actually returned by Google; the server rejects arbitrary property IDs.
+11. Existing Task #31 live probes then verify the resulting connections before a baseline can start.
 
 ## Read-only scopes
 Shopify V1 requests only:
@@ -26,37 +27,61 @@ Google V1 requests only:
 
 Task #34 does not request Shopify write scopes and does not enable `PUBLIC_SITE_WRITES_ENABLED`.
 
+## Runtime platform configuration
+The SaaS operator configures these once for the deployment; customers do not paste raw access tokens:
+- `APP_ORIGIN`
+- `SHOPIFY_OAUTH_CLIENT_ID`
+- `SHOPIFY_OAUTH_CLIENT_SECRET`
+- `GOOGLE_OAUTH_CLIENT_ID`
+- `GOOGLE_OAUTH_CLIENT_SECRET`
+- `OAUTH_CREDENTIAL_ENCRYPTION_KEY` — base64 encoding of exactly 32 random bytes
+- optional `OAUTH_STATE_SIGNING_SECRET` — otherwise the encryption key is used for state HMAC signing
+- `DATABASE_URL`
+
+These are application/platform secrets, not per-customer onboarding fields.
+
 ## Credential storage contract
-The existing `connections` table already separates durable connection metadata from `secret_ref`. Raw tokens must never be stored in `metadata`, logs, browser state, or dashboard payloads.
+The existing `connections` table separates durable connection metadata from `secret_ref`. Raw tokens are never stored in `metadata`, browser-visible payloads, connection status pages, or logs.
 
-The package includes an AES-256-GCM envelope helper for deployments that need application-layer encryption. Production deployments may instead use a managed secret/KMS service, with only its opaque reference persisted in `connections.secret_ref`.
+For the current V1 runtime, OAuth token bundles are encrypted with AES-256-GCM and serialized into `connections.secret_ref` with an `enc:v1:` envelope. The 256-bit encryption key remains outside the database in runtime configuration.
 
-The encryption key is runtime/platform configuration and must never be committed to Git.
+A later KMS/managed-secret migration can replace the encrypted envelope with an opaque secret-manager reference without changing the public connection model.
 
 ## OAuth safety
 - 256-bit random state values
 - 10-minute default state lifetime
+- signed HttpOnly SameSite=Lax state cookie
 - provider binding
 - Shopify permanent-domain binding
+- Shopify callback HMAC verification
 - Google PKCE S256
 - callback state validation before token exchange
 - server-side client-secret use only
-- HTTPS callback/provider endpoints in production
+- HTTPS application origin outside localhost
 - access/refresh tokens excluded from sanitized connection metadata
+- Google property-selection fallback accepts only properties discovered during the authorized session
 
 ## Automatic discovery
 After Google authorization, the manager lists:
 - accessible Search Console properties
 - accessible GA4 properties
 
-For the Diamond Shelf pilot, `https://diamondshelf.us/` is auto-matched when it is unique. GA4 is auto-matched by an unambiguous `Diamond Shelf` display name; ambiguity requires confirmation.
+For the Diamond Shelf pilot, `https://diamondshelf.us/` is auto-matched when it is unique. GA4 is auto-matched by an unambiguous `Diamond Shelf` display name. Ambiguity is shown in the UI and requires confirmation.
 
 ## Refresh lifecycle
-Google access tokens are ephemeral. The refresh token is retained as encrypted secret material and used server-side to obtain fresh access tokens without asking the customer to reconnect each session.
+The package includes `refreshGoogleAccessToken()`. Google access tokens are ephemeral; the retained encrypted refresh token lets the server obtain fresh access without asking the customer to reconnect each session.
 
-Shopify offline Admin API tokens are retained as encrypted secret material. Revocation or scope errors transition the connection to an error/reconnect state.
+Shopify offline Admin API tokens are retained as encrypted secret material. Revocation or scope errors should transition the connection into an error/reconnect state when later live probes detect them.
+
+## Implemented web endpoints
+- `GET /api/connections/shopify/start`
+- `GET /api/connections/shopify/callback`
+- `GET /api/connections/google/start`
+- `GET /api/connections/google/callback`
+- `POST /api/connections/google/select`
+- `GET /connections` connection/status UI
 
 ## Boundary
-This task supplies the OAuth domain logic. It does not yet expose public web callback routes or write connection records to a production database. Those are the next integration step after this package passes CI.
+Task #34 creates authorization URLs, exchanges OAuth codes, discovers authorized resources, encrypts credentials, and persists connection records. It still does **not** perform an SEO mutation, request Shopify write scopes, or enable public-site writes.
 
-No public-site mutation is authorized or performed by Task #34.
+A green CI run proves the OAuth connection software behaves as designed. Real Diamond Shelf activation still requires registering the OAuth applications/redirect URIs with Shopify and Google and completing the consent flows against the deployed runtime.
