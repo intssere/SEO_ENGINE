@@ -119,6 +119,9 @@ jobs:
       - name: Test first controlled production optimization gate
         run: pnpm --filter @seo-engine/pilot-controlled-optimization test
 
+      - name: Test controlled experiment measurement gate
+        run: pnpm --filter @seo-engine/pilot-measurement test
+
       - name: Typecheck
         run: pnpm typecheck
 
