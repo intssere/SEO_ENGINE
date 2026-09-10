@@ -65,6 +65,9 @@ jobs:
       - name: Test Google read-only ingestion normalization
         run: pnpm --filter @seo-engine/google-ingestion test
 
+      - name: Test provider-neutral OpenSEO adapter
+        run: pnpm --filter @seo-engine/seo-data test
+
       - name: Typecheck
         run: pnpm typecheck
 
