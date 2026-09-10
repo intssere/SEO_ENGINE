@@ -92,6 +92,44 @@ export type DashboardSnapshotImpact = {
   regressionsDetected: number;
 };
 
+export type DashboardSnapshotPilotStatus = typeof DashboardSnapshotPilotStatus[keyof typeof DashboardSnapshotPilotStatus];
+
+
+export const DashboardSnapshotPilotStatus = {
+  not_started: 'not_started',
+  active: 'active',
+  completed: 'completed',
+  failed: 'failed',
+} as const;
+
+export type DashboardSnapshotPilotReadiness = typeof DashboardSnapshotPilotReadiness[keyof typeof DashboardSnapshotPilotReadiness];
+
+
+export const DashboardSnapshotPilotReadiness = {
+  not_evaluated: 'not_evaluated',
+  ready: 'ready',
+  partial: 'partial',
+} as const;
+
+export type DashboardSnapshotPilotCounts = {
+  products: number;
+  gscRows: number;
+  ga4Rows: number;
+  pages: number;
+  findings: number;
+  opportunities: number;
+};
+
+export type DashboardSnapshotPilot = {
+  status: DashboardSnapshotPilotStatus;
+  readiness: DashboardSnapshotPilotReadiness;
+  phase: string;
+  /** @nullable */
+  freshness: string | null;
+  blockers: string[];
+  counts: DashboardSnapshotPilotCounts;
+};
+
 export interface DashboardSnapshot {
   state: DashboardSnapshotState;
   /** @nullable */
@@ -110,6 +148,7 @@ export interface DashboardSnapshot {
   aiVisibility: DashboardSnapshotAiVisibility;
   learning: DashboardSnapshotLearning;
   impact: DashboardSnapshotImpact;
+  pilot: DashboardSnapshotPilot;
 }
 
 export type GetDashboardParams = {

@@ -1,2 +1,3 @@
 - [OAuth secret validation](oauth-secret-validation.md) — readiness checks and encryption key derivation must accept the same secret formats.
 - [OAuth resource selection](oauth-resource-selection.md) — confirm provider resources against persisted discovery results, not assumed identifier formats.
+- [Internal pilot execution](internal-pilot-execution.md) — keep ingestion shell-invoked until an authenticated operator trigger exists.

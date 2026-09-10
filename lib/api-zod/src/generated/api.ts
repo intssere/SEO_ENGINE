@@ -82,6 +82,21 @@ export const GetDashboardResponse = zod.object({
   "completedExperiments": zod.number().int(),
   "rollbacks": zod.number().int(),
   "regressionsDetected": zod.number().int()
+}),
+  "pilot": zod.object({
+  "status": zod.enum(['not_started', 'active', 'completed', 'failed']),
+  "readiness": zod.enum(['not_evaluated', 'ready', 'partial']),
+  "phase": zod.string(),
+  "freshness": zod.string().nullable(),
+  "blockers": zod.array(zod.string()),
+  "counts": zod.object({
+  "products": zod.number().int(),
+  "gscRows": zod.number().int(),
+  "ga4Rows": zod.number().int(),
+  "pages": zod.number().int(),
+  "findings": zod.number().int(),
+  "opportunities": zod.number().int()
+})
 })
 })
 

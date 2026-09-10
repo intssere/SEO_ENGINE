@@ -10,7 +10,7 @@ function database() {
 export function parsePerformanceFilters(input: Record<string, unknown>): PerformanceFilters {
   const value = (key: string) => Array.isArray(input[key]) ? input[key][0] : input[key];
   const days = ([7, 28, 90] as const).includes(Number(value("days")) as 7 | 28 | 90) ? Number(value("days")) as 7 | 28 | 90 : 28;
-  const country = typeof value("country") === "string" && /^[A-Za-z]{2}$/.test(value("country") as string) ? (value("country") as string).toUpperCase() : "all";
+  const country = typeof value("country") === "string" && /^[A-Za-z]{2,3}$/.test(value("country") as string) ? (value("country") as string).toUpperCase() : "all";
   const rawDevice = String(value("device") ?? "").toLowerCase();
   return { days, country, device: ["desktop", "mobile", "tablet"].includes(rawDevice) ? rawDevice as PerformanceFilters["device"] : "all" };
 }

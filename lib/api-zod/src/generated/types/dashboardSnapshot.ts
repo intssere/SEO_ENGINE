@@ -12,6 +12,7 @@ import type { DashboardSnapshotAiVisibility } from './dashboardSnapshotAiVisibil
 import type { DashboardSnapshotEngine } from './dashboardSnapshotEngine';
 import type { DashboardSnapshotImpact } from './dashboardSnapshotImpact';
 import type { DashboardSnapshotLearning } from './dashboardSnapshotLearning';
+import type { DashboardSnapshotPilot } from './dashboardSnapshotPilot';
 import type { DashboardSnapshotState } from './dashboardSnapshotState';
 import type { DashboardSnapshotVerification } from './dashboardSnapshotVerification';
 
@@ -33,4 +34,5 @@ export interface DashboardSnapshot {
   aiVisibility: DashboardSnapshotAiVisibility;
   learning: DashboardSnapshotLearning;
   impact: DashboardSnapshotImpact;
+  pilot: DashboardSnapshotPilot;
 }

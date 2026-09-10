@@ -265,6 +265,13 @@
 .dataBanner.stale { background: #fff3dc; border-color: #f1d49b; color: #8d5c0d; }
 .dataBanner.unavailable { background: #fff3dc; border-color: #f1d49b; color: #8d5c0d; }
 .dataBanner span { font-weight: 500; overflow-wrap: anywhere; }
+.pilotStatus { margin-bottom: 16px; }
+.pilotGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+.pilotGrid div { display: flex; flex-direction: column; border-right: 1px solid #edf0f5; }
+.pilotGrid div:last-child { border-right: 0; }
+.pilotGrid strong { color: #172033; font-size: 22px; }
+.pilotGrid span { color: #77839a; font-size: 11px; margin-top: 3px; }
+.pilotBlockers { margin-top: 10px; padding: 9px 11px; border-radius: 7px; background: #fff3dc; color: #8d5c0d; font-size: 12px; }
 .titleRow, .sectionHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .titleRow { margin-bottom: 22px; }
 .eyebrow { font-size: 11px; letter-spacing: .1em; font-weight: 750; color: #76839a; margin: 0 0 6px; }
@@ -335,6 +342,7 @@ td:first-child { font-weight: 650; color: #263249; }
 
 @media(max-width: 1180px) {
   .metricGrid { grid-template-columns: repeat(3, 1fr); }
+  .pilotGrid { grid-template-columns: repeat(2, 1fr); }
   .threeCol { grid-template-columns: 1fr 1fr; }
   .impact { align-items: flex-start; gap: 25px; flex-direction: column; }
   .impactStats { width: 100%; }

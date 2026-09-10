@@ -65,6 +65,14 @@ export interface DashboardSnapshot {
     rollbacks: number;
     regressionsDetected: number;
   };
+  pilot: {
+    status: "not_started" | "active" | "completed" | "failed";
+    readiness: "not_evaluated" | "ready" | "partial";
+    phase: string;
+    freshness: string | null;
+    blockers: string[];
+    counts: { products: number; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
+  };
 }
 export interface DashboardFilters { days: 7 | 28 | 90; country: string; device: "all" | "desktop" | "mobile" | "tablet" }
 
@@ -93,6 +101,7 @@ function unavailable(reason: string): DashboardSnapshot {
     aiVisibility: { citationRate: "—", brandMentionRate: "—", citationShare: "—" },
     learning: { signalCount: 0, averageConfidence: "—" },
     impact: { verifiedOptimizations: 0, completedExperiments: 0, rollbacks: 0, regressionsDetected: 0 },
+    pilot: { status: "not_started", readiness: "not_evaluated", phase: "not_started", freshness: null, blockers: [], counts: { products: 0, gscRows: 0, ga4Rows: 0, pages: 0, findings: 0, opportunities: 0 } },
   };
 }
 
@@ -131,7 +140,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
     const site = sites[0];
     if (!site) return unavailable("Diamond Shelf is not present in the production database.");
 
-    const [searchRows, topTenRows, findingsRows, engineRows, approvalsRows, verificationRows, aiRows, learningRows, impactRows, opportunityRows, freshnessRows] = await Promise.all([
+    const [searchRows, topTenRows, findingsRows, engineRows, approvalsRows, verificationRows, aiRows, learningRows, impactRows, opportunityRows, freshnessRows, pilotRows] = await Promise.all([
       sql`
         SELECT
            COALESCE(SUM(clicks) FILTER (WHERE metric_date >= current_date - (${filters.days - 1}::int)), 0)::bigint AS current_clicks,
@@ -231,9 +240,12 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
         SELECT GREATEST(
           COALESCE((SELECT MAX(completed_at) FROM crawl_runs WHERE site_id = ${site.id}::uuid), '-infinity'::timestamptz),
           COALESCE((SELECT MAX(sm.metric_date)::timestamptz FROM search_metrics sm JOIN search_queries sq ON sq.id = sm.query_id WHERE sq.site_id = ${site.id}::uuid), '-infinity'::timestamptz),
-          COALESCE((SELECT MAX(ar.observed_at) FROM ai_responses ar JOIN ai_queries aq ON aq.id = ar.ai_query_id WHERE aq.site_id = ${site.id}::uuid), '-infinity'::timestamptz)
+          COALESCE((SELECT MAX(ar.observed_at) FROM ai_responses ar JOIN ai_queries aq ON aq.id = ar.ai_query_id WHERE aq.site_id = ${site.id}::uuid), '-infinity'::timestamptz),
+          COALESCE((SELECT MAX(observed_at) FROM evidence WHERE site_id = ${site.id}::uuid), '-infinity'::timestamptz),
+          COALESCE((SELECT MAX(updated_at) FROM jobs WHERE site_id = ${site.id}::uuid AND job_type='pilot_ingestion_v1'), '-infinity'::timestamptz)
         ) AS freshest
       `,
+      sql`SELECT status,payload,created_at,updated_at,completed_at,last_error FROM jobs WHERE site_id=${site.id}::uuid AND job_type='pilot_ingestion_v1' ORDER BY created_at DESC LIMIT 1`,
     ]);
 
     const search = searchRows[0] ?? {};
@@ -257,6 +269,10 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
     const verification = verificationRows[0] ?? {};
     const learning = learningRows[0] ?? {};
     const impact = impactRows[0] ?? {};
+    const pilotRow = pilotRows[0] as { status?: string; payload?: Record<string, unknown>; created_at?: unknown; updated_at?: unknown; completed_at?: unknown } | undefined;
+    const pilotPayload = pilotRow?.payload ?? {};
+    const pilotCounts = typeof pilotPayload.counts === "object" && pilotPayload.counts ? pilotPayload.counts as Record<string, unknown> : {};
+    const pilotReadiness = typeof pilotPayload.readiness === "object" && pilotPayload.readiness ? pilotPayload.readiness as Record<string, unknown> : {};
     const freshestRaw = freshnessRows[0]?.freshest;
     const freshestCandidate = freshestRaw ? new Date(String(freshestRaw)) : null;
     const freshest = freshestCandidate && Number.isFinite(freshestCandidate.getTime())
@@ -276,6 +292,12 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
     if (n(engine.verified) > 0) activity.push({ title: "Verification completed", detail: `${n(engine.verified)} changes verified in the last 24 hours`, result: "Persisted verification evidence", tone: "verified" });
     if (n(engine.opportunities) > 0) activity.push({ title: "Opportunities discovered", detail: `${n(engine.opportunities)} candidates created in the last 24 hours`, result: "Ranked from persisted evidence", tone: "ready" });
     if (n(approvalsRows[0]?.pending) > 0) activity.push({ title: "Approval required", detail: `${n(approvalsRows[0]?.pending)} plans awaiting a decision`, result: "No approval bypass", tone: "approval" });
+    if (pilotRow) activity.push({
+      title: "Diamond Shelf pilot",
+      detail: `Run ${String(pilotRow.status ?? "unknown")} · readiness ${String(pilotReadiness.state ?? "not evaluated")}`,
+      result: "Read-only provider observations and crawl evidence",
+      tone: pilotRow.status === "completed" && pilotReadiness.state === "ready" ? "verified" : pilotRow.status === "failed" ? "approval" : "ready",
+    });
     if (activity.length === 0) activity.push({ title: "No recent operational events", detail: "No verified actions, new opportunities or pending approvals in the last 24 hours", result: "Live database checked", tone: "normal" });
 
     return {
@@ -304,6 +326,14 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       aiVisibility: { citationRate: responses > 0 ? percent(citationRate) : "—", brandMentionRate: responses > 0 ? percent(mentionRate) : "—", citationShare: allCitations > 0 ? percent(citationShare) : "—" },
       learning: { signalCount: n(learning.signal_count), averageConfidence: learning.average_confidence == null ? "—" : percent(n(learning.average_confidence)) },
       impact: { verifiedOptimizations: n(impact.verified_optimizations), completedExperiments: n(impact.completed_experiments), rollbacks: n(impact.rollbacks), regressionsDetected: n(impact.regressions_detected) },
+      pilot: {
+        status: ["active", "completed", "failed"].includes(String(pilotRow?.status)) ? String(pilotRow?.status) as "active" | "completed" | "failed" : "not_started",
+        readiness: ["ready", "partial"].includes(String(pilotReadiness.state)) ? String(pilotReadiness.state) as "ready" | "partial" : "not_evaluated",
+        phase: typeof pilotPayload.phase === "string" ? pilotPayload.phase : "not_started",
+        freshness: pilotRow ? new Date(String(pilotRow.completed_at ?? pilotRow.updated_at ?? pilotRow.created_at)).toISOString() : null,
+        blockers: Array.isArray(pilotReadiness.blockers) ? pilotReadiness.blockers.filter((item): item is string => typeof item === "string") : [],
+        counts: { products: n(pilotCounts.products), gscRows: n(pilotCounts.gscRows), ga4Rows: n(pilotCounts.ga4Rows), pages: n(pilotCounts.pages), findings: n(pilotCounts.findings), opportunities: n(pilotCounts.opportunities) },
+      },
     };
   } catch (error) {
     return unavailable(`Live dashboard query failed: ${error instanceof Error ? error.message : "unknown database error"}`);

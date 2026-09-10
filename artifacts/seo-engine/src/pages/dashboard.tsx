@@ -89,9 +89,9 @@ export default function DashboardPage() {
             onChange={(e) => updateParam("country", e.target.value)}
           >
             <option value="">All</option>
-            <option value="US">US</option>
-            <option value="GB">GB</option>
-            <option value="CA">Canada</option>
+            <option value="USA">US</option>
+            <option value="GBR">GB</option>
+            <option value="CAN">Canada</option>
           </select>
           <select
             className="border border-[#dce2eb] rounded-md px-2 py-1 text-sm bg-white text-[#536078]"
@@ -121,6 +121,31 @@ export default function DashboardPage() {
           </strong>
           <span>{data.state === "live" ? updatedLabel : data.reason}</span>
         </div>
+
+        <section className="pilotStatus card">
+          <div className="sectionHead">
+            <div>
+              <p className="eyebrow">READ-ONLY PILOT</p>
+              <h2>Ingestion and baseline readiness</h2>
+            </div>
+            <Badge tone={data.pilot.readiness === "ready" ? "verified" : data.pilot.status === "failed" ? "approval" : "ready"}>
+              {data.pilot.status.replaceAll("_", " ").toUpperCase()}
+            </Badge>
+          </div>
+          <div className="pilotGrid">
+            <div><strong>{data.pilot.counts.products}</strong><span>Products observed</span></div>
+            <div><strong>{data.pilot.counts.gscRows}</strong><span>GSC rows</span></div>
+            <div><strong>{data.pilot.counts.ga4Rows}</strong><span>GA4 rows</span></div>
+            <div><strong>{data.pilot.counts.pages}</strong><span>Pages crawled</span></div>
+          </div>
+          <p className="muted mt-4">
+            Phase: {data.pilot.phase.replaceAll("_", " ")} · Readiness: {data.pilot.readiness.replaceAll("_", " ")}
+            {data.pilot.freshness ? ` · Fresh ${data.pilot.freshness}` : ""}
+          </p>
+          {data.pilot.blockers.length > 0 && (
+            <p className="pilotBlockers">Blocked: {data.pilot.blockers.map((item) => item.replaceAll("_", " ")).join(", ")}</p>
+          )}
+        </section>
 
         <div className="titleRow">
           <div>

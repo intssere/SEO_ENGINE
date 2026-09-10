@@ -110,7 +110,7 @@ components:
           enum: [verified, ready, approval, normal]
     DashboardSnapshot:
       type: object
-      required: [state, reason, siteName, domain, generatedAt, dataFreshness, stale, approvalsPending, metrics, engine, opportunities, activity, verification, aiVisibility, learning, impact]
+      required: [state, reason, siteName, domain, generatedAt, dataFreshness, stale, approvalsPending, metrics, engine, opportunities, activity, verification, aiVisibility, learning, impact, pilot]
       properties:
         state:
           type: string
@@ -175,4 +175,30 @@ components:
             completedExperiments: { type: integer }
             rollbacks: { type: integer }
             regressionsDetected: { type: integer }
+        pilot:
+          type: object
+          required: [status, readiness, phase, freshness, blockers, counts]
+          properties:
+            status:
+              type: string
+              enum: [not_started, active, completed, failed]
+            readiness:
+              type: string
+              enum: [not_evaluated, ready, partial]
+            phase: { type: string }
+            freshness:
+              type: [string, "null"]
+            blockers:
+              type: array
+              items: { type: string }
+            counts:
+              type: object
+              required: [products, gscRows, ga4Rows, pages, findings, opportunities]
+              properties:
+                products: { type: integer }
+                gscRows: { type: integer }
+                ga4Rows: { type: integer }
+                pages: { type: integer }
+                findings: { type: integer }
+                opportunities: { type: integer }
 
