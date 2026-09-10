@@ -54,7 +54,7 @@ jobs:
       - name: Validate PostgreSQL schema
         run: |
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f packages/db/migrations/0001_core.sql
-          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'" | grep -q '^27$'
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'" | grep -q '^29$'
 
       - name: Typecheck
         run: pnpm typecheck
