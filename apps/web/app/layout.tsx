@@ -1,14 +1,15 @@
 import type { ReactNode } from "react";
+import "./globals.css";
 
 export const metadata = {
-  title: "SEO Engine",
-  description: "AI-native SEO, AIO, and GEO optimization platform",
+  title: "SEO ENGINE — AI SEO Command Center",
+  description: "AI-native SEO, AIO, GEO optimization, verification, experiments and learning",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, background: "#f7f8fb", color: "#121826" }}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
