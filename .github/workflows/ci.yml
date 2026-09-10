@@ -134,6 +134,9 @@ jobs:
       - name: Test live baseline run orchestrator
         run: pnpm --filter @seo-engine/pilot-live-baseline test
 
+      - name: Test OAuth connection manager
+        run: pnpm --filter @seo-engine/oauth-connection-manager test
+
       - name: Typecheck
         run: pnpm typecheck
 
