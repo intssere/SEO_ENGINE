@@ -80,6 +80,9 @@ jobs:
       - name: Test unified opportunity engine
         run: pnpm --filter @seo-engine/opportunity-engine test
 
+      - name: Test internal-link intelligence
+        run: pnpm --filter @seo-engine/internal-link-intelligence test
+
       - name: Typecheck
         run: pnpm typecheck
 
