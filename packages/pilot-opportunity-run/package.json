@@ -6,7 +6,7 @@
   "exports": { ".": "./dist/index.js" },
   "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "tsx --test src/*.test.ts",
+    "test": "pnpm --filter @seo-engine/opportunity-engine build && tsx --test src/*.test.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "tsc -p tsconfig.json --noEmit"
