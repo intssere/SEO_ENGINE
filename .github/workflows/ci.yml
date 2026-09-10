@@ -95,6 +95,9 @@ jobs:
       - name: Test Shopify write connector safety gates
         run: pnpm --filter @seo-engine/shopify-write test
 
+      - name: Test verification and rollback safety contract
+        run: pnpm --filter @seo-engine/verification-rollback test
+
       - name: Typecheck
         run: pnpm typecheck
 
