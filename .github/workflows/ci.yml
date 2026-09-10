@@ -113,6 +113,9 @@ jobs:
       - name: Test first real opportunity run gate
         run: pnpm --filter @seo-engine/pilot-opportunity-run test
 
+      - name: Test dry-run autonomous SEO gate
+        run: pnpm --filter @seo-engine/pilot-dry-run test
+
       - name: Typecheck
         run: pnpm typecheck
 
