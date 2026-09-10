@@ -68,6 +68,9 @@ jobs:
       - name: Test provider-neutral OpenSEO adapter
         run: pnpm --filter @seo-engine/seo-data test
 
+      - name: Test canonical evidence normalization
+        run: pnpm --filter @seo-engine/evidence-normalizer test
+
       - name: Typecheck
         run: pnpm typecheck
 
