@@ -9,6 +9,15 @@ export interface HealthStatus {
   status: string;
 }
 
+export type OperationalResponseReadiness = { [key: string]: unknown };
+
+export type OperationalResponseRowsItem = { [key: string]: unknown };
+
+export interface OperationalResponse {
+  readiness: OperationalResponseReadiness;
+  rows: OperationalResponseRowsItem[];
+}
+
 export interface DashboardMetric {
   label: string;
   value: string;
@@ -102,4 +111,62 @@ export interface DashboardSnapshot {
   learning: DashboardSnapshotLearning;
   impact: DashboardSnapshotImpact;
 }
+
+export type GetDashboardParams = {
+days?: GetDashboardDays;
+country?: string;
+device?: GetDashboardDevice;
+};
+
+export type GetDashboardDays = typeof GetDashboardDays[keyof typeof GetDashboardDays];
+
+
+export const GetDashboardDays = {
+  NUMBER_7: 7,
+  NUMBER_28: 28,
+  NUMBER_90: 90,
+} as const;
+
+export type GetDashboardDevice = typeof GetDashboardDevice[keyof typeof GetDashboardDevice];
+
+
+export const GetDashboardDevice = {
+  all: 'all',
+  desktop: 'desktop',
+  mobile: 'mobile',
+  tablet: 'tablet',
+} as const;
+
+export type GetPerformanceParams = {
+days?: GetPerformanceDays;
+country?: string;
+device?: GetPerformanceDevice;
+};
+
+export type GetPerformanceDays = typeof GetPerformanceDays[keyof typeof GetPerformanceDays];
+
+
+export const GetPerformanceDays = {
+  NUMBER_7: 7,
+  NUMBER_28: 28,
+  NUMBER_90: 90,
+} as const;
+
+export type GetPerformanceDevice = typeof GetPerformanceDevice[keyof typeof GetPerformanceDevice];
+
+
+export const GetPerformanceDevice = {
+  all: 'all',
+  desktop: 'desktop',
+  mobile: 'mobile',
+  tablet: 'tablet',
+} as const;
+
+export type AskSeoEngineBody = {
+  question: string;
+};
+
+export type AskSeoEngine200 = {
+  answer?: string;
+};
 

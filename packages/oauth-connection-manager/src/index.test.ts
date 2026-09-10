@@ -72,7 +72,7 @@ test("Google refresh preserves refresh token", async () => {
 });
 
 test("Google property discovery and Diamond Shelf auto-match are deterministic", async () => {
-  const fetchImpl = async (input: URL | RequestInfo) => {
+  const fetchImpl = async (input: URL | Request | string) => {
     const url = String(input);
     if (url.includes("webmasters")) return new Response(JSON.stringify({ siteEntry: [{ siteUrl: "https://diamondshelf.us/", permissionLevel: "siteOwner" }] }), { status: 200 });
     return new Response(JSON.stringify({ accountSummaries: [{ account: "accounts/1", propertySummaries: [{ property: "properties/123456", displayName: "Diamond Shelf" }] }] }), { status: 200 });
@@ -91,4 +91,17 @@ test("AES-GCM credential envelope round-trips and keeps raw tokens out of metada
   assert.doesNotMatch(JSON.stringify(encrypted), /access-secret|refresh-secret/);
   assert.deepEqual(decryptTokenBundle(encrypted, key), bundle);
   assert.throws(() => decryptTokenBundle(encrypted, Buffer.alloc(32, 8).toString("base64")));
+});
+
+test("AES-GCM accepts a strong non-Base64 passphrase", () => {
+  const secret = "a-strong-oauth-credential-secret-with-32-plus-characters";
+  const bundle = {
+    accessToken: "access",
+    refreshToken: "refresh",
+    expiresAt: null,
+    scopes: ["read_products"],
+    tokenType: "Bearer",
+  };
+  const encrypted = encryptTokenBundle(bundle, secret);
+  assert.deepEqual(decryptTokenBundle(encrypted, secret), bundle);
 });

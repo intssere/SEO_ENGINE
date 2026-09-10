@@ -20,6 +20,12 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary Load the SEO operations dashboard
  */
+export const GetDashboardQueryParams = zod.object({
+  "days": zod.union([zod.literal(7),zod.literal(28),zod.literal(90)]).optional(),
+  "country": zod.coerce.string().optional(),
+  "device": zod.enum(['all', 'desktop', 'mobile', 'tablet']).optional()
+})
+
 export const GetDashboardResponse = zod.object({
   "state": zod.enum(['live', 'unavailable']),
   "reason": zod.string().nullable(),
@@ -77,6 +83,69 @@ export const GetDashboardResponse = zod.object({
   "rollbacks": zod.number().int(),
   "regressionsDetected": zod.number().int()
 })
+})
+
+
+export const GetPerformanceQueryParams = zod.object({
+  "days": zod.union([zod.literal(7),zod.literal(28),zod.literal(90)]).optional(),
+  "country": zod.coerce.string().optional(),
+  "device": zod.enum(['all', 'desktop', 'mobile', 'tablet']).optional()
+})
+
+export const GetPerformanceResponse = zod.object({
+  "readiness": zod.object({
+
+}).passthrough(),
+  "rows": zod.array(zod.record(zod.string(), zod.unknown()))
+})
+
+
+export const ListOpportunitiesResponse = zod.object({
+  "readiness": zod.object({
+
+}).passthrough(),
+  "rows": zod.array(zod.record(zod.string(), zod.unknown()))
+})
+
+
+export const ListActionsResponse = zod.object({
+  "readiness": zod.object({
+
+}).passthrough(),
+  "rows": zod.array(zod.record(zod.string(), zod.unknown()))
+})
+
+
+export const ListApprovalsResponse = zod.object({
+  "readiness": zod.object({
+
+}).passthrough(),
+  "rows": zod.array(zod.record(zod.string(), zod.unknown()))
+})
+
+
+export const ListDeploymentsResponse = zod.object({
+  "readiness": zod.object({
+
+}).passthrough(),
+  "rows": zod.array(zod.record(zod.string(), zod.unknown()))
+})
+
+
+export const ListTechnicalFindingsResponse = zod.object({
+  "readiness": zod.object({
+
+}).passthrough(),
+  "rows": zod.array(zod.record(zod.string(), zod.unknown()))
+})
+
+
+export const AskSeoEngineBody = zod.object({
+  "question": zod.string()
+})
+
+export const AskSeoEngineResponse = zod.object({
+  "answer": zod.string().optional()
 })
 
 

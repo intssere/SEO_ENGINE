@@ -129,3 +129,17 @@ export async function bootstrapRuntimeDatabase(databaseUrl = process.env.DATABAS
     await sql.end({ timeout: 1 }).catch(() => undefined);
   }
 }
+
+/** Ensures identity only; unlike bootstrapRuntimeDatabase this never runs DDL. */
+export async function ensureDiamondShelfIdentity(databaseUrl = process.env.DATABASE_URL?.trim()): Promise<BootstrapResult> {
+  if (!databaseUrl) return { status: "blocked", migrationApplied: false, tableCount: 0, reason: "DATABASE_URL is not configured." };
+  const sql = postgres(databaseUrl, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
+  try {
+    const tableCount = await publicTableCount(sql);
+    if (tableCount !== EXPECTED_CORE_TABLE_COUNT) return { status: "blocked", migrationApplied: false, tableCount, reason: tableCount === 0 ? "Public schema is empty; apply the core migration explicitly." : `Public schema is partial (${tableCount}/${EXPECTED_CORE_TABLE_COUNT} tables).` };
+    const ids = await upsertDiamondShelf(sql);
+    return { status: "ready", migrationApplied: false, tableCount, organizationId: ids.organizationId, siteId: ids.siteId, domain: DIAMOND_SHELF_SITE.domain };
+  } catch (error) {
+    return { status: "blocked", migrationApplied: false, tableCount: 0, reason: error instanceof Error ? error.message : "Identity check failed." };
+  } finally { await sql.end({ timeout: 1 }).catch(() => undefined); }
+}

@@ -15,6 +15,14 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
+if (process.env.DATABASE_URL?.trim()) {
+  const { ensureDiamondShelfIdentity } = await import("@workspace/db");
+  const identity = await ensureDiamondShelfIdentity();
+  logger.info({ status: identity.status, tableCount: identity.tableCount, reason: identity.reason ?? undefined }, "Diamond Shelf identity check");
+} else {
+  logger.info({ status: "blocked", reason: "DATABASE_URL is not configured." }, "Diamond Shelf identity check");
+}
+
 app.listen(port, (err) => {
   if (err) {
     logger.error({ err }, "Error listening on port");

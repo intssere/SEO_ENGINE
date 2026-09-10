@@ -1,6 +1,10 @@
 import { createCipheriv, createDecipheriv, randomBytes, createHash } from "node:crypto";
 
-export const SHOPIFY_READ_SCOPES = ["read_products", "read_content"] as const;
+export const SHOPIFY_READ_SCOPES = [
+  "read_products",
+  "read_content",
+  "read_online_store_navigation",
+] as const;
 export const GOOGLE_READ_SCOPES = [
   "https://www.googleapis.com/auth/webmasters.readonly",
   "https://www.googleapis.com/auth/analytics.readonly",
@@ -214,9 +218,15 @@ export function autoMatchDiamondShelf(resources: DiscoveredGoogleResources): { g
   };
 }
 
+function credentialEncryptionKey(secret: string): Buffer {
+  const value = clean(secret);
+  if (value.length < 32) throw new Error("Credential encryption key must be at least 32 characters.");
+  const decoded = Buffer.from(value, "base64");
+  return decoded.length === 32 ? decoded : createHash("sha256").update(value, "utf8").digest();
+}
+
 export function encryptTokenBundle(bundle: TokenBundle, base64Key: string): EncryptedSecretEnvelope {
-  const key = Buffer.from(clean(base64Key), "base64");
-  if (key.length !== 32) throw new Error("Credential encryption key must decode to exactly 32 bytes.");
+  const key = credentialEncryptionKey(base64Key);
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key, iv);
   const ciphertext = Buffer.concat([cipher.update(JSON.stringify(bundle), "utf8"), cipher.final()]);
@@ -225,8 +235,7 @@ export function encryptTokenBundle(bundle: TokenBundle, base64Key: string): Encr
 
 export function decryptTokenBundle(envelope: EncryptedSecretEnvelope, base64Key: string): TokenBundle {
   if (envelope.version !== 1 || envelope.algorithm !== "aes-256-gcm") throw new Error("Unsupported credential envelope.");
-  const key = Buffer.from(clean(base64Key), "base64");
-  if (key.length !== 32) throw new Error("Credential encryption key must decode to exactly 32 bytes.");
+  const key = credentialEncryptionKey(base64Key);
   const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(envelope.iv, "base64"));
   decipher.setAuthTag(Buffer.from(envelope.authTag, "base64"));
   return JSON.parse(Buffer.concat([decipher.update(Buffer.from(envelope.ciphertext, "base64")), decipher.final()]).toString("utf8")) as TokenBundle;

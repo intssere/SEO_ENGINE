@@ -1,2 +1,4 @@
 export * from "./generated/api";
-export * from "./generated/types";
+// Response schemas are exported from generated/api. Generated request body
+// names can overlap with the type-only output, so consumers should import
+// generated/types directly when they need a static type.

@@ -29,6 +29,10 @@ paths:
       operationId: getDashboard
       tags: [dashboard]
       summary: Load the SEO operations dashboard
+      parameters:
+        - { name: days, in: query, schema: { type: integer, enum: [7, 28, 90] } }
+        - { name: country, in: query, schema: { type: string } }
+        - { name: device, in: query, schema: { type: string, enum: [all, desktop, mobile, tablet] } }
       responses:
         "200":
           description: Current dashboard snapshot
@@ -36,6 +40,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DashboardSnapshot"
+  /performance:
+    get:
+      operationId: getPerformance
+      parameters:
+        - { name: days, in: query, schema: { type: integer, enum: [7, 28, 90] } }
+        - { name: country, in: query, schema: { type: string } }
+        - { name: device, in: query, schema: { type: string, enum: [all, desktop, mobile, tablet] } }
+      responses:
+        "200": { description: Performance data, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } }
+  /opportunities:
+    get: { operationId: listOpportunities, responses: { "200": { description: Opportunities, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+  /actions:
+    get: { operationId: listActions, responses: { "200": { description: Actions, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+  /approvals:
+    get: { operationId: listApprovals, responses: { "200": { description: Approvals, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+  /deployments:
+    get: { operationId: listDeployments, responses: { "200": { description: Deployments, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+  /technical-seo:
+    get: { operationId: listTechnicalFindings, responses: { "200": { description: Findings, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+  /command:
+    post:
+      operationId: askSeoEngine
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [question], properties: { question: { type: string } } } } }
+      responses:
+        "200": { description: Read-only answer, content: { application/json: { schema: { type: object, properties: { answer: { type: string } } } } } }
 components:
   schemas:
     HealthStatus:
@@ -45,6 +76,12 @@ components:
           type: string
       required:
         - status
+    OperationalResponse:
+      type: object
+      properties:
+        readiness: { type: object }
+        rows: { type: array, items: { type: object, additionalProperties: true } }
+      required: [readiness, rows]
     DashboardMetric:
       type: object
       required: [label, value, delta]

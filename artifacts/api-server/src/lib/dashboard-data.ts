@@ -66,6 +66,7 @@ export interface DashboardSnapshot {
     regressionsDetected: number;
   };
 }
+export interface DashboardFilters { days: 7 | 28 | 90; country: string; device: "all" | "desktop" | "mobile" | "tablet" }
 
 function unavailable(reason: string): DashboardSnapshot {
   return {
@@ -114,7 +115,7 @@ function delta(current: number, previous: number, suffix = "%"): string {
   return `${change >= 0 ? "+" : ""}${change.toFixed(1)}${suffix}`;
 }
 
-export async function loadDashboardData(): Promise<DashboardSnapshot> {
+export async function loadDashboardData(filters: DashboardFilters = { days: 28, country: "all", device: "all" }): Promise<DashboardSnapshot> {
   const databaseUrl = process.env.DATABASE_URL?.trim();
   if (!databaseUrl) return unavailable("DATABASE_URL is not configured. Preview fixtures are disabled.");
 
@@ -133,15 +134,18 @@ export async function loadDashboardData(): Promise<DashboardSnapshot> {
     const [searchRows, topTenRows, findingsRows, engineRows, approvalsRows, verificationRows, aiRows, learningRows, impactRows, opportunityRows, freshnessRows] = await Promise.all([
       sql`
         SELECT
-          COALESCE(SUM(clicks) FILTER (WHERE metric_date >= current_date - 27), 0)::bigint AS current_clicks,
-          COALESCE(SUM(clicks) FILTER (WHERE metric_date BETWEEN current_date - 55 AND current_date - 28), 0)::bigint AS previous_clicks,
-          COALESCE(SUM(impressions) FILTER (WHERE metric_date >= current_date - 27), 0)::bigint AS current_impressions,
-          COALESCE(SUM(impressions) FILTER (WHERE metric_date BETWEEN current_date - 55 AND current_date - 28), 0)::bigint AS previous_impressions,
-          AVG(average_position) FILTER (WHERE metric_date >= current_date - 27 AND average_position IS NOT NULL) AS current_position,
-          AVG(average_position) FILTER (WHERE metric_date BETWEEN current_date - 55 AND current_date - 28 AND average_position IS NOT NULL) AS previous_position
+           COALESCE(SUM(clicks) FILTER (WHERE metric_date >= current_date - (${filters.days - 1}::int)), 0)::bigint AS current_clicks,
+           COALESCE(SUM(clicks) FILTER (WHERE metric_date BETWEEN current_date - (${filters.days * 2 - 1}::int) AND current_date - (${filters.days}::int)), 0)::bigint AS previous_clicks,
+           COALESCE(SUM(impressions) FILTER (WHERE metric_date >= current_date - (${filters.days - 1}::int)), 0)::bigint AS current_impressions,
+           COALESCE(SUM(impressions) FILTER (WHERE metric_date BETWEEN current_date - (${filters.days * 2 - 1}::int) AND current_date - (${filters.days}::int)), 0)::bigint AS previous_impressions,
+           AVG(average_position) FILTER (WHERE metric_date >= current_date - (${filters.days - 1}::int) AND average_position IS NOT NULL) AS current_position,
+           AVG(average_position) FILTER (WHERE metric_date BETWEEN current_date - (${filters.days * 2 - 1}::int) AND current_date - (${filters.days}::int) AND average_position IS NOT NULL) AS previous_position
         FROM search_metrics sm
         JOIN search_queries sq ON sq.id = sm.query_id
-        WHERE sq.site_id = ${site.id}::uuid AND sm.source = 'gsc'
+         WHERE sq.site_id = ${site.id}::uuid AND sm.source = 'gsc'
+           AND sm.metric_date >= current_date - (${filters.days * 2 - 1}::int)
+           AND (${filters.country} = 'all' OR upper(coalesce(sq.country,'')) = ${filters.country})
+           AND (${filters.device} = 'all' OR lower(coalesce(sq.device,'')) = ${filters.device})
       `,
       sql`
         SELECT COUNT(*)::int AS top_ten
@@ -149,9 +153,11 @@ export async function loadDashboardData(): Promise<DashboardSnapshot> {
           SELECT sm.query_id
           FROM search_metrics sm
           JOIN search_queries sq ON sq.id = sm.query_id
-          WHERE sq.site_id = ${site.id}::uuid
+         WHERE sq.site_id = ${site.id}::uuid
             AND sm.source = 'gsc'
-            AND sm.metric_date >= current_date - 27
+            AND sm.metric_date >= current_date - (${filters.days - 1}::int)
+            AND (${filters.country} = 'all' OR upper(coalesce(sq.country,'')) = ${filters.country})
+            AND (${filters.device} = 'all' OR lower(coalesce(sq.device,'')) = ${filters.device})
             AND sm.average_position IS NOT NULL
           GROUP BY sm.query_id
           HAVING AVG(sm.average_position) <= 10
@@ -284,7 +290,7 @@ export async function loadDashboardData(): Promise<DashboardSnapshot> {
       metrics: [
         { label: "Organic clicks", value: integer(currentClicks), delta: delta(currentClicks, previousClicks) },
         { label: "Impressions", value: integer(currentImpressions), delta: delta(currentImpressions, previousImpressions) },
-        { label: "Top-10 keywords", value: integer(topTen), delta: "Live GSC · 28 days" },
+         { label: "Top-10 keywords", value: integer(topTen), delta: `Live GSC · ${filters.days} days` },
         { label: "Average position", value: currentPosition > 0 ? currentPosition.toFixed(1) : "—", delta: previousPosition > 0 && currentPosition > 0 ? `${(previousPosition - currentPosition) >= 0 ? "+" : ""}${(previousPosition - currentPosition).toFixed(1)} positions` : "No prior comparison" },
         { label: "AI citation rate", value: responses > 0 ? percent(citationRate) : "—", delta: responses > 0 ? `${responses} observations` : "No live AI observations" },
         { label: "Open findings", value: integer(openFindings), delta: "Persisted technical findings" },

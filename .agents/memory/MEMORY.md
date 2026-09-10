@@ -1,0 +1,1 @@
+- [OAuth secret validation](oauth-secret-validation.md) — readiness checks and encryption key derivation must accept the same secret formats.

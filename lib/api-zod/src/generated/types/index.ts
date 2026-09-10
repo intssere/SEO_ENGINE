@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './askSeoEngine200';
+export * from './askSeoEngineBody';
 export * from './dashboardActivity';
 export * from './dashboardActivityTone';
 export * from './dashboardMetric';
@@ -17,4 +19,13 @@ export * from './dashboardSnapshotImpact';
 export * from './dashboardSnapshotLearning';
 export * from './dashboardSnapshotState';
 export * from './dashboardSnapshotVerification';
+export * from './getDashboardDays';
+export * from './getDashboardDevice';
+export * from './getDashboardParams';
+export * from './getPerformanceDays';
+export * from './getPerformanceDevice';
+export * from './getPerformanceParams';
 export * from './healthStatus';
+export * from './operationalResponse';
+export * from './operationalResponseReadiness';
+export * from './operationalResponseRowsItem';
