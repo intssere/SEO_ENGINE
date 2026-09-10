@@ -137,6 +137,9 @@ jobs:
       - name: Test OAuth connection manager
         run: pnpm --filter @seo-engine/oauth-connection-manager test
 
+      - name: Test OAuth live activation readiness
+        run: pnpm --filter @seo-engine/pilot-oauth-activation test
+
       - name: Typecheck
         run: pnpm typecheck
 
