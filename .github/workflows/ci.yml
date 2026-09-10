@@ -131,6 +131,9 @@ jobs:
       - name: Test secure runtime read-only activation probes
         run: pnpm --filter @seo-engine/pilot-live-activation test
 
+      - name: Test live baseline run orchestrator
+        run: pnpm --filter @seo-engine/pilot-live-baseline test
+
       - name: Typecheck
         run: pnpm typecheck
 
