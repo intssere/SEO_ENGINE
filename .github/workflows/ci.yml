@@ -101,6 +101,9 @@ jobs:
       - name: Test deterministic experiment engine
         run: pnpm --filter @seo-engine/experiment-engine test
 
+      - name: Test bounded learning engine
+        run: pnpm --filter @seo-engine/learning-engine test
+
       - name: Typecheck
         run: pnpm typecheck
 
