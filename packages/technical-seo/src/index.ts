@@ -1,5 +1,12 @@
 import { createHash } from "node:crypto";
-import type { CanonicalEvidence } from "@seo-engine/evidence-normalizer";
+
+export interface CanonicalEvidenceLike {
+  siteId: string;
+  pageId: string | null;
+  kind: string;
+  payload: Record<string, unknown>;
+  dedupeKey: string;
+}
 
 export type TechnicalSeverity = "info" | "low" | "medium" | "high" | "critical";
 
@@ -16,7 +23,7 @@ export interface TechnicalFinding {
 }
 
 interface PageSignals {
-  evidence: CanonicalEvidence;
+  evidence: CanonicalEvidenceLike;
   url: string | null;
   statusCode: number | null;
   title: string | null;
@@ -39,10 +46,12 @@ function asNumber(value: unknown): number | null {
 }
 
 function asRecords(value: unknown): Array<Record<string, unknown>> {
-  return Array.isArray(value) ? value.filter((v): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v)) : [];
+  return Array.isArray(value)
+    ? value.filter((v): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v))
+    : [];
 }
 
-function toPageSignals(evidence: CanonicalEvidence): PageSignals | null {
+function toPageSignals(evidence: CanonicalEvidenceLike): PageSignals | null {
   if (evidence.kind !== "page_snapshot") return null;
   const p = evidence.payload;
   return {
@@ -62,11 +71,19 @@ function toPageSignals(evidence: CanonicalEvidence): PageSignals | null {
 }
 
 function finding(input: Omit<TechnicalFinding, "dedupeKey">): TechnicalFinding {
-  const material = [input.siteId, input.pageId ?? "", input.ruleId, input.title, ...input.evidenceDedupeKeys.sort()].join("|");
-  return { ...input, dedupeKey: createHash("sha256").update(material).digest("hex") };
+  const evidenceKeys = [...input.evidenceDedupeKeys].sort();
+  const material = [input.siteId, input.pageId ?? "", input.ruleId, input.title, ...evidenceKeys].join("|");
+  return { ...input, evidenceDedupeKeys: evidenceKeys, dedupeKey: createHash("sha256").update(material).digest("hex") };
 }
 
-function pageFinding(page: PageSignals, ruleId: string, category: TechnicalFinding["category"], severity: TechnicalSeverity, title: string, description: string): TechnicalFinding {
+function pageFinding(
+  page: PageSignals,
+  ruleId: string,
+  category: TechnicalFinding["category"],
+  severity: TechnicalSeverity,
+  title: string,
+  description: string,
+): TechnicalFinding {
   return finding({
     siteId: page.evidence.siteId,
     pageId: page.evidence.pageId,
@@ -97,7 +114,7 @@ function absoluteUrl(value: unknown, base: string | null): string | null {
   }
 }
 
-export function evaluateTechnicalSeo(evidence: CanonicalEvidence[]): TechnicalFinding[] {
+export function evaluateTechnicalSeo(evidence: CanonicalEvidenceLike[]): TechnicalFinding[] {
   const pages = evidence.map(toPageSignals).filter((v): v is PageSignals => v !== null);
   const findings: TechnicalFinding[] = [];
   const byUrl = new Map<string, PageSignals>();
@@ -111,14 +128,24 @@ export function evaluateTechnicalSeo(evidence: CanonicalEvidence[]): TechnicalFi
       findings.push(pageFinding(page, "crawl.http_4xx", "crawl", "high", "Client error response", `Page returned HTTP ${page.statusCode}.`));
     }
 
-    const successHtml = page.statusCode === null || (page.statusCode >= 200 && page.statusCode < 300);
-    if (!successHtml) continue;
+    const successful = page.statusCode === null || (page.statusCode >= 200 && page.statusCode < 300);
+    if (!successful) continue;
 
-    if (!page.title) findings.push(pageFinding(page, "metadata.missing_title", "metadata", "high", "Missing title", "Indexable HTML pages should expose a unique document title."));
-    if (!page.metaDescription) findings.push(pageFinding(page, "metadata.missing_meta_description", "metadata", "medium", "Missing meta description", "Page has no meta description."));
-    if (!page.canonicalUrl) findings.push(pageFinding(page, "canonical.missing", "canonical", "medium", "Missing canonical", "Page does not expose a canonical URL."));
-    if (h1Count(page) === 0) findings.push(pageFinding(page, "headings.missing_h1", "headings", "medium", "Missing H1", "Page has no H1 heading."));
-    if (h1Count(page) > 1) findings.push(pageFinding(page, "headings.multiple_h1", "headings", "low", "Multiple H1 headings", `Page exposes ${h1Count(page)} H1 headings.`));
+    if (!page.title) {
+      findings.push(pageFinding(page, "metadata.missing_title", "metadata", "high", "Missing title", "Successful HTML page exposes no document title."));
+    }
+    if (!page.metaDescription) {
+      findings.push(pageFinding(page, "metadata.missing_meta_description", "metadata", "medium", "Missing meta description", "Page has no meta description."));
+    }
+    if (!page.canonicalUrl) {
+      findings.push(pageFinding(page, "canonical.missing", "canonical", "medium", "Missing canonical", "Page does not expose a canonical URL."));
+    }
+    if (h1Count(page) === 0) {
+      findings.push(pageFinding(page, "headings.missing_h1", "headings", "medium", "Missing H1", "Page has no H1 heading."));
+    }
+    if (h1Count(page) > 1) {
+      findings.push(pageFinding(page, "headings.multiple_h1", "headings", "low", "Multiple H1 headings", `Page exposes ${h1Count(page)} H1 headings.`));
+    }
 
     if (robotsHasNoindex(page.robots) && page.indexable === true) {
       findings.push(pageFinding(page, "indexability.noindex_conflict", "indexability", "high", "Noindex conflict", "Crawler signals mark the page indexable while robots directives contain noindex."));
@@ -136,16 +163,18 @@ export function evaluateTechnicalSeo(evidence: CanonicalEvidence[]): TechnicalFi
       const alt = img.alt;
       return !!src && (typeof alt !== "string" || !alt.trim());
     }).length;
-    if (missingAlt > 0) findings.push(pageFinding(page, "images.missing_alt", "images", "low", "Images missing alt text", `${missingAlt} image${missingAlt === 1 ? "" : "s"} have no non-empty alt attribute.`));
+    if (missingAlt > 0) {
+      findings.push(pageFinding(page, "images.missing_alt", "images", "low", "Images missing alt text", `${missingAlt} image${missingAlt === 1 ? "" : "s"} have no non-empty alt attribute.`));
+    }
   }
 
   const titleGroups = new Map<string, PageSignals[]>();
   for (const page of pages) {
     if (!page.title || page.indexable === false) continue;
     const key = page.title.toLocaleLowerCase();
-    const list = titleGroups.get(key) ?? [];
-    list.push(page);
-    titleGroups.set(key, list);
+    const group = titleGroups.get(key) ?? [];
+    group.push(page);
+    titleGroups.set(key, group);
   }
   for (const group of titleGroups.values()) {
     if (group.length < 2) continue;
@@ -162,7 +191,11 @@ export function evaluateTechnicalSeo(evidence: CanonicalEvidence[]): TechnicalFi
       const target = byUrl.get(href);
       if (!target || target.statusCode === null || target.statusCode < 400) continue;
       let sameOrigin = false;
-      try { sameOrigin = new URL(href).origin === new URL(source.url).origin; } catch { sameOrigin = false; }
+      try {
+        sameOrigin = new URL(href).origin === new URL(source.url).origin;
+      } catch {
+        sameOrigin = false;
+      }
       if (!sameOrigin) continue;
       findings.push(pageFinding(source, "links.broken_internal", "links", "high", "Broken internal link", `Internal link points to ${href}, which returned HTTP ${target.statusCode}.`));
     }
