@@ -98,6 +98,9 @@ jobs:
       - name: Test verification and rollback safety contract
         run: pnpm --filter @seo-engine/verification-rollback test
 
+      - name: Test deterministic experiment engine
+        run: pnpm --filter @seo-engine/experiment-engine test
+
       - name: Typecheck
         run: pnpm typecheck
 
