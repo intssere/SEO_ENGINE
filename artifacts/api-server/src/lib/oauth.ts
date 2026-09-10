@@ -28,7 +28,7 @@ export async function selectGoogleProperties(gscSiteUrl: string, ga4PropertyId: 
     const gsc = Array.isArray(row.metadata.discoveredSearchConsoleProperties) ? row.metadata.discoveredSearchConsoleProperties as Array<{ siteUrl?: string }> : [];
     const ga4 = Array.isArray(row.metadata.discoveredGa4Properties) ? row.metadata.discoveredGa4Properties as Array<{ propertyId?: string }> : [];
     if (!gsc.some((x) => x.siteUrl?.replace(/\/$/, "").toLowerCase() === gscSiteUrl.replace(/\/$/, "").toLowerCase()) || !ga4.some((x) => x.propertyId === ga4PropertyId)) throw new Error("Selected Google properties were not discovered.");
-    await sql`UPDATE connections SET status='connected',metadata=${sql.json({ ...row.metadata, gscSiteUrl, ga4PropertyId, needsConfirmation: false })},updated_at=now() WHERE id=${row.id}::uuid`;
+    await sql`UPDATE connections SET status='connected',metadata=${sql.json({ ...row.metadata, gscSiteUrl, ga4PropertyId, needsConfirmation: false, connectionState: "connected" })},updated_at=now() WHERE id=${row.id}::uuid`;
   } finally { await sql.end({ timeout: 2 }); }
 }
 export { assertOAuthState, exchangeGoogleCode, exchangeShopifyCode, discoverGoogleResources, autoMatchDiamondShelf };

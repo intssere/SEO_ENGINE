@@ -64,6 +64,25 @@ test("token exchanges normalize Shopify and Google credentials without logging s
   assert.doesNotMatch(JSON.stringify(sanitizedConnectionMetadata("google", google)), /google-secret|refresh-secret/);
 });
 
+test("Google token exchange accepts a successful response without a new refresh token", async () => {
+  const state = createOAuthState("google", { now });
+  const googleFetch = async () => new Response(JSON.stringify({
+    access_token: "short-lived-access",
+    expires_in: 3600,
+    scope: GOOGLE_READ_SCOPES.join(" "),
+    token_type: "Bearer",
+  }), { status: 200 });
+  const google = await exchangeGoogleCode(
+    { clientId: "id", clientSecret: "secret", redirectUri: "https://x/cb" },
+    "code",
+    state,
+    googleFetch as typeof fetch,
+    now,
+  );
+  assert.equal(google.refreshToken, null);
+  assert.equal(sanitizedConnectionMetadata("google", google).hasRefreshToken, false);
+});
+
 test("Google refresh preserves refresh token", async () => {
   const fetchImpl = async () => new Response(JSON.stringify({ access_token: "new-access", expires_in: 1800, token_type: "Bearer" }), { status: 200 });
   const refreshed = await refreshGoogleAccessToken({ clientId: "id", clientSecret: "secret", redirectUri: "https://x/cb" }, "refresh-secret", fetchImpl as typeof fetch, now);

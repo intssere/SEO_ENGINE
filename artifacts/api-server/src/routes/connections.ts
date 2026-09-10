@@ -58,9 +58,10 @@ router.get("/connections/status", async (_req, res) => {
     const latest = (provider: string) => rows.find((row) => row.provider === provider);
     const shop = latest("shopify");
     const google = latest("google");
-    const needsConfirmation = google?.status === "pending_confirmation" && google.metadata.needsConfirmation === true;
-    const authorized = Boolean(google);
-    const needsAttention = google?.status === "authorized" || google?.status === "reauthorization_required";
+    const connectionState = typeof google?.metadata.connectionState === "string" ? google.metadata.connectionState : google?.status;
+    const needsConfirmation = google?.status === "pending" && connectionState === "pending_confirmation" && google.metadata.needsConfirmation === true;
+    const authorized = Boolean(google && !["revoked", "error"].includes(google.status));
+    const needsAttention = connectionState === "authorized" || connectionState === "reauthorization_required";
 
     return res.json({
       readOnly: !blocked(),
@@ -174,7 +175,7 @@ router.get("/connections/google/callback", async (req, res) => {
     const discoveryFailed = !discovered.searchConsoleStatus.ok || !discovered.ga4Status.ok;
     const hasRefreshToken = Boolean(bundle.refreshToken);
     const needsConfirmation = !discoveryFailed && missingScopes.length === 0 && match.needsConfirmation;
-    const status =
+    const connectionState =
       !hasRefreshToken || missingScopes.length > 0
         ? "reauthorization_required"
         : discoveryFailed
@@ -182,6 +183,7 @@ router.get("/connections/google/callback", async (req, res) => {
           : needsConfirmation
             ? "pending_confirmation"
             : "connected";
+    const databaseStatus = connectionState === "connected" ? "connected" : "pending";
 
     logger.info({
       provider: "google",
@@ -208,18 +210,19 @@ router.get("/connections/google/callback", async (req, res) => {
       ga4PropertyId: match.ga4PropertyId,
       needsConfirmation,
       missingRequiredScopeCount: missingScopes.length,
-    }, status);
+      connectionState,
+    }, databaseStatus);
 
     logger.info({
       provider: "google",
       stage: "credential_persistence",
-      status,
+      status: connectionState,
       hasRefreshToken,
       needsConfirmation,
     }, "Google OAuth connection persisted");
 
     if (!needsConfirmation) res.clearCookie(GOOGLE_STATE_COOKIE);
-    const outcome = status === "connected" ? "google" : status === "pending_confirmation" ? "google_pending" : "google_attention";
+    const outcome = connectionState === "connected" ? "google" : connectionState === "pending_confirmation" ? "google_pending" : "google_attention";
     return res.redirect(`${origin()}/connections?success=${outcome}`);
   } catch (error) {
     const failure = safeGoogleFailure(stage, error);
