@@ -3,7 +3,13 @@ import test from "node:test";
 import { createDryRunProposal } from "./action-planner.js";
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
 import { applyProposalQualityGate, evaluateProposalQuality } from "./proposal-quality.js";
-import { buildSemanticPageProfile, generateMetaDescriptionFromProfile, hasSafeSnippetIntegrity, type ShopifySemanticResource } from "./semantic-evidence.js";
+import {
+  buildSemanticPageProfile,
+  generateMetaDescriptionFromProfile,
+  hasSafeSnippetIntegrity,
+  validateCollectionMembershipCertification,
+  type ShopifySemanticResource,
+} from "./semantic-evidence.js";
 
 const page: CrawlPageSignal = {
   pageId: "page-1",
@@ -238,6 +244,20 @@ test("collection composition requires complete exact-path Shopify membership", (
   assert.deepEqual(profile.composition.categoryTypes, ["Bath Soak", "Body Lotion", "Body Scrub"]);
   assert.equal(profile.composition.matchedProducts, 3);
   assert.equal(profile.composition.membershipComplete, true);
+  assert.deepEqual(profile.composition.membershipCertification, {
+    collectionPath: "/collections/bath-body",
+    sourceEndpoint: "/admin/api/2025-10/collections/42/products.json",
+    expectedMemberCount: 3,
+    observedMemberCount: 3,
+    coverageRatio: 1,
+    cardinalityValid: true,
+    catalogProductCount: 2_997,
+    boundedLimit: 500,
+    complete: true,
+    truncated: false,
+    suspiciouslyBroad: false,
+    evidenceId: "shopify-1",
+  });
   assert.match(value, /in this Shopify collection/i);
   assert.match(value, /[.!?]$/);
   assert.doesNotMatch(value, /best|premium|guaranteed|free shipping/i);
@@ -253,7 +273,63 @@ test("collection composition requires complete exact-path Shopify membership", (
   });
   assert.equal(gate.status, "pass");
   assert.equal(gate.approvalEligible, true);
+  assert.equal(gate.checks.find((item) => item.id === "collection_membership_certification")?.status, "pass");
+  const corruptedProposal = structuredClone(proposal);
+  corruptedProposal.expectedOutcome.semanticProfile!.composition.membershipCertification!.sourceEndpoint = "";
+  const corruptedGate = evaluateProposalQuality({
+    proposal: corruptedProposal,
+    candidate,
+    page,
+    activeProposalValues: [],
+    evidence: { crawl: "crawl-1", shopify: "shopify-1", opportunity: "opportunity-1" },
+  });
+  assert.equal(corruptedGate.checks.find((item) => item.id === "collection_membership_certification")?.status, "blocked");
+  assert.equal(corruptedGate.approvalEligible, false);
   assert.equal(profile.blockers.length, 0);
+});
+
+test("collection membership certification rejects missing or inconsistent evidence and permits explicit null expected count", () => {
+  const members = [
+    { path: "/products/body-lotion", title: "Body Lotion", productType: "Body Lotion", tags: [] },
+    { path: "/products/body-scrub", title: "Body Scrub", productType: "Body Scrub", tags: [] },
+  ];
+  const valid: NonNullable<ShopifySemanticResource["collectionMembership"]> = {
+    collectionPath: "/collections/bath-body",
+    sourceEndpoint: "/admin/api/2025-10/collections/42/products.json",
+    expectedCount: 2,
+    observedCount: 2,
+    coverageRatio: 1,
+    cardinalityValid: true,
+    catalogProductCount: 100,
+    limit: 500,
+    complete: true,
+    truncated: false,
+    suspiciouslyBroad: false,
+    members,
+  };
+  const cases: Array<{ name: string; membership: NonNullable<ShopifySemanticResource["collectionMembership"]>; valid: boolean }> = [
+    { name: "valid exact membership", membership: valid, valid: true },
+    { name: "missing endpoint", membership: { ...valid, sourceEndpoint: "" }, valid: false },
+    { name: "missing expected count field", membership: (() => { const value = { ...valid } as Record<string, unknown>; delete value.expectedCount; return value as NonNullable<ShopifySemanticResource["collectionMembership"]>; })(), valid: false },
+    { name: "missing observed count field", membership: (() => { const value = { ...valid } as Record<string, unknown>; delete value.observedCount; return value as NonNullable<ShopifySemanticResource["collectionMembership"]>; })(), valid: false },
+    { name: "null expected count", membership: { ...valid, expectedCount: null }, valid: true },
+    { name: "partial retrieval", membership: { ...valid, expectedCount: 3, observedCount: 2, coverageRatio: 2 / 3, cardinalityValid: false, complete: false, truncated: true }, valid: false },
+    { name: "truncated retrieval", membership: { ...valid, complete: false, truncated: true }, valid: false },
+    { name: "overbroad counts", membership: { ...valid, expectedCount: 80, observedCount: 80, catalogProductCount: 100, members: Array.from({ length: 80 }, (_, index) => ({ path: `/products/${index}`, title: `Product ${index}`, productType: index % 2 ? "Body Lotion" : "Body Scrub", tags: [] })), suspiciouslyBroad: false }, valid: false },
+    { name: "path mismatch", membership: { ...valid, collectionPath: "/collections/other" }, valid: false },
+  ];
+  for (const item of cases) {
+    const profile = buildSemanticPageProfile({
+      page: { ...page, structuredData: [], contentText: "" },
+      candidate,
+      shopifyResources: [{ ...shopifyCollection, description: null, collectionMembership: item.membership }],
+      shopifyEvidenceId: "shopify-1",
+    });
+    const certification = profile.composition.membershipCertification;
+    assert.equal(validateCollectionMembershipCertification(certification, "/collections/bath-body").valid, item.valid, item.name);
+    assert.equal(profile.candidateSentences.some((candidateSentence) => candidateSentence.source === "shopify_collection_composition"), item.valid, item.name);
+    assert.equal(generateMetaDescriptionFromProfile(profile) !== null, item.valid, item.name);
+  }
 });
 
 test("Task 48 collection paths cannot synthesize from broad catalog similarity", () => {

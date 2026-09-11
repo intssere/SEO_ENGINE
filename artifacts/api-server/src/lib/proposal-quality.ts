@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import type { DryRunProposal } from "./action-planner.js";
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
 import { containsProposalBoilerplate, hasRawTemplatePrefix } from "./proposal-content.js";
-import { hasSafeSnippetIntegrity } from "./semantic-evidence.js";
+import { hasSafeSnippetIntegrity, validateCollectionMembershipCertification } from "./semantic-evidence.js";
 
 export const proposalQualityCheckIds = [
   "evidence_consistency",
@@ -15,6 +15,7 @@ export const proposalQualityCheckIds = [
   "generic_filler",
   "format_integrity",
   "snippet_integrity",
+  "collection_membership_certification",
   "template_boilerplate",
   "page_specific_content",
 ] as const;
@@ -175,6 +176,18 @@ function snippetIntegrityCheck(field: string, proposed: string) {
     : check("snippet_integrity", "Semantic snippet integrity", "blocked", 0, "The meta description has an incomplete, dangling, malformed, or syntactically unsafe ending.");
 }
 
+function collectionMembershipCertificationCheck(input: ProposalQualityInput) {
+  const profile = input.proposal.expectedOutcome.semanticProfile;
+  const compositionUsed = profile?.candidateSentences.some((item) => item.source === "shopify_collection_composition") === true;
+  if (!compositionUsed) {
+    return check("collection_membership_certification", "Collection membership certification", "pass", 100, "Direct collection membership certification is not required for this proposal.");
+  }
+  const result = validateCollectionMembershipCertification(profile?.composition.membershipCertification, profile?.path ?? "");
+  return result.valid
+    ? check("collection_membership_certification", "Collection membership certification", "pass", 100, "The composition is bound to complete, internally consistent direct collection membership evidence.")
+    : check("collection_membership_certification", "Collection membership certification", "blocked", 0, `Direct collection membership evidence is missing or inconsistent: ${result.reason}.`);
+}
+
 function templateBoilerplateCheck(input: ProposalQualityInput, proposed: string, evidenceIds: string[]) {
   if (containsProposalBoilerplate(proposed)) return check("template_boilerplate", "Template/navigation boilerplate", "blocked", 0, "Known navigation, header/footer, utility, or promotional template text is not valid page metadata.", evidenceIds);
   if (hasRawTemplatePrefix(proposed, input.page)) return check("template_boilerplate", "Template/navigation boilerplate", "blocked", 0, "The proposal contains a raw prefix from the crawled page template.", evidenceIds);
@@ -220,6 +233,7 @@ export function evaluateProposalQuality(input: ProposalQualityInput): ProposalQu
     genericFillerCheck(proposed),
     formatCheck(proposed),
     snippetIntegrityCheck(input.proposal.expectedOutcome.proposal.field, proposed),
+    collectionMembershipCertificationCheck(input),
     templateBoilerplateCheck(input, proposed, proposalEvidence),
     pageSpecificContentCheck(input, proposed, proposalEvidence),
   ];

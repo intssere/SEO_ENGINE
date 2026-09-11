@@ -75,8 +75,8 @@ Page identity comparison may resolve only narrow, path-specific presentation ali
 
 **How to apply:** Canonicalize approved aliases for their known paths, retain true conflicts, exclude legal and site-chrome sentences, count corroboration by independent evidence records, and keep synthesis factual, bounded, deterministic, and fully attributed to Shopify evidence.
 
-Collection composition requires a direct, exact-resource membership listing with complete bounded cardinality; global catalog term matching is never membership evidence. Meta descriptions must close at a sentence or safe clause boundary.
+Collection composition requires a direct, exact-resource membership certification with complete bounded cardinality; global catalog term matching and an unproven matched-product count are never membership evidence. Meta descriptions must close at a sentence or safe clause boundary.
 
 **Why:** Broad title/tag matching made narrow collections appear to contain most of the catalog, and hard character truncation produced dangling endings that passed other quality checks.
 
-**How to apply:** Persist the collection endpoint, path, expected/observed counts, coverage, truncation, and broadness decision. Reject incomplete, mismatched, or suspicious membership and any snippet ending in a dangling article, preposition, conjunction, or malformed phrase.
+**How to apply:** Persist the collection endpoint, path, explicit expected/observed counts, coverage, cardinality validity, completeness, truncation, broadness decision, and evidence ID as one provenance-bound certification. Recompute its internal consistency independently in both generation and the final quality gate. An explicit null expected count is allowed when unavailable; a missing field is not. Reject incomplete, mismatched, suspicious, or path-unbound membership and any snippet ending in a dangling article, preposition, conjunction, or malformed phrase.

@@ -49,6 +49,23 @@ export type SemanticProvenance = {
   field: string;
   confidence: number;
   usedForCopy: boolean;
+  resourcePath?: string;
+  sourceEndpoint?: string;
+};
+
+export type CollectionMembershipCertification = {
+  collectionPath: string;
+  sourceEndpoint: string;
+  expectedMemberCount: number | null;
+  observedMemberCount: number;
+  coverageRatio: number;
+  cardinalityValid: boolean;
+  catalogProductCount: number;
+  boundedLimit: number;
+  complete: boolean;
+  truncated: boolean;
+  suspiciouslyBroad: boolean;
+  evidenceId: string | null;
 };
 
 export type SemanticPageProfile = {
@@ -81,6 +98,7 @@ export type SemanticPageProfile = {
     membershipTruncated: boolean;
     membershipSuspiciouslyBroad: boolean;
     membershipPath: string | null;
+    membershipCertification: CollectionMembershipCertification | null;
   };
   supportingQueries: string[];
   provenance: SemanticProvenance[];
@@ -117,6 +135,73 @@ const cleanIdentity = (value: string | null | undefined) => normalizeProposalTex
   .replace(/\s+[–—-]\s+Diamond Shelf$/i, "")
   .trim() || null;
 const unique = <T>(values: T[]) => [...new Set(values)];
+const hasOwn = (value: object, key: PropertyKey) => Object.prototype.hasOwnProperty.call(value, key);
+
+function normalizedEndpointPath(value: string | null | undefined) {
+  if (!value) return null;
+  try {
+    return new URL(value, "https://shopify.invalid").pathname.replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
+
+export function validateCollectionMembershipCertification(
+  certification: CollectionMembershipCertification | null | undefined,
+  expectedCollectionPath: string,
+) {
+  if (!certification) return { valid: false, reason: "missing_certification" } as const;
+  if (!hasOwn(certification, "expectedMemberCount")) return { valid: false, reason: "missing_expected_count_field" } as const;
+  if (!hasOwn(certification, "observedMemberCount") || !Number.isInteger(certification.observedMemberCount) || certification.observedMemberCount < 0) {
+    return { valid: false, reason: "missing_or_invalid_observed_count" } as const;
+  }
+  const collectionPath = pathOf(certification.collectionPath);
+  if (collectionPath !== pathOf(expectedCollectionPath)) return { valid: false, reason: "collection_path_mismatch" } as const;
+  const endpoint = normalizedEndpointPath(certification.sourceEndpoint);
+  if (!endpoint || !/\/collections\/\d+\/products\.json$/i.test(endpoint)) return { valid: false, reason: "missing_or_invalid_direct_endpoint" } as const;
+  if (certification.expectedMemberCount !== null
+    && (!Number.isInteger(certification.expectedMemberCount) || certification.expectedMemberCount < 0)) {
+    return { valid: false, reason: "invalid_expected_count" } as const;
+  }
+  const expectedCoverage = certification.expectedMemberCount === null || certification.expectedMemberCount === 0
+    ? (certification.complete && certification.observedMemberCount === (certification.expectedMemberCount ?? certification.observedMemberCount) ? 1 : 0)
+    : Math.min(1, certification.observedMemberCount / certification.expectedMemberCount);
+  if (!Number.isFinite(certification.coverageRatio) || Math.abs(certification.coverageRatio - expectedCoverage) > 1e-9) {
+    return { valid: false, reason: "coverage_ratio_mismatch" } as const;
+  }
+  const expectedCardinality = certification.expectedMemberCount === null || certification.expectedMemberCount === certification.observedMemberCount;
+  if (certification.cardinalityValid !== expectedCardinality) return { valid: false, reason: "cardinality_mismatch" } as const;
+  const computedBroad = certification.catalogProductCount > 0 && (
+    certification.observedMemberCount > certification.catalogProductCount
+    || (certification.observedMemberCount >= 50 && certification.observedMemberCount / certification.catalogProductCount >= 0.8)
+  );
+  if (certification.suspiciouslyBroad !== computedBroad || computedBroad) return { valid: false, reason: "suspiciously_broad_membership" } as const;
+  if (!certification.complete || certification.truncated || !certification.cardinalityValid || certification.coverageRatio !== 1) {
+    return { valid: false, reason: "incomplete_membership" } as const;
+  }
+  return { valid: true, reason: null } as const;
+}
+
+function certificationFromMembership(
+  membership: NonNullable<ShopifySemanticResource["collectionMembership"]> | undefined,
+  evidenceId: string | null,
+): CollectionMembershipCertification | null {
+  if (!membership) return null;
+  return {
+    collectionPath: membership.collectionPath,
+    sourceEndpoint: membership.sourceEndpoint,
+    expectedMemberCount: membership.expectedCount,
+    observedMemberCount: membership.observedCount,
+    coverageRatio: membership.coverageRatio ?? 0,
+    cardinalityValid: membership.cardinalityValid,
+    catalogProductCount: membership.catalogProductCount,
+    boundedLimit: membership.limit,
+    complete: membership.complete,
+    truncated: membership.truncated,
+    suspiciouslyBroad: membership.suspiciouslyBroad,
+    evidenceId,
+  };
+}
 
 function cleanNaturalSentences(value: string | null | undefined) {
   return cleanPageEvidence(value)
@@ -169,13 +254,9 @@ function collectionComposition(resource: ShopifySemanticResource | undefined, id
   if (!resource || resource.kind !== "collection" || !identity) return null;
   const membership = resource.collectionMembership;
   const resourcePath = pathOf(resource.path);
+  const certification = certificationFromMembership(membership, null);
   if (!membership
-    || pathOf(membership.collectionPath) !== resourcePath
-    || membership.complete !== true
-    || !membership.cardinalityValid
-    || membership.coverageRatio !== 1
-    || membership.truncated
-    || membership.suspiciouslyBroad
+    || !validateCollectionMembershipCertification(certification, resourcePath).valid
     || membership.observedCount < 2
     || membership.members.length !== membership.observedCount
     || (membership.expectedCount !== null && membership.expectedCount !== membership.observedCount)) return null;
@@ -230,6 +311,8 @@ export function buildSemanticPageProfile(input: {
         field: "exact_collection_membership",
         confidence: membership.complete && !membership.truncated && !membership.suspiciouslyBroad ? 0.98 : 0,
         usedForCopy: false,
+        resourcePath: membership.collectionPath,
+        sourceEndpoint: membership.sourceEndpoint,
       });
     }
     const composition = collectionComposition(resource, selected);
@@ -256,6 +339,7 @@ export function buildSemanticPageProfile(input: {
   const confidence = Number(Math.min(0.99, Math.max(0, sourceConfidence + corroborationBonus - conflicts.length * 0.2)).toFixed(2));
   const resolvedComposition = collectionComposition(resource, selected);
   const membership = resource?.collectionMembership;
+  const membershipCertification = certificationFromMembership(membership, input.shopifyEvidenceId ?? null);
   const profile: SemanticPageProfile = {
     version: "semantic_evidence_v1",
     pageId: input.page.pageId,
@@ -276,6 +360,7 @@ export function buildSemanticPageProfile(input: {
       membershipTruncated: membership?.truncated ?? false,
       membershipSuspiciouslyBroad: membership?.suspiciouslyBroad ?? false,
       membershipPath: membership?.collectionPath ?? null,
+      membershipCertification,
     },
     supportingQueries,
     provenance,
@@ -350,6 +435,8 @@ export function generateMetaDescriptionFromProfile(profile: SemanticPageProfile)
   const identity = profile.identity.selected;
   const source = selectProfileSentence(profile);
   if (!identity || !source) return null;
+  if (source.source === "shopify_collection_composition"
+    && !validateCollectionMembershipCertification(profile.composition.membershipCertification, profile.path).valid) return null;
   const sourceContainsIdentity = comparable(source.text).includes(comparable(identity));
   const value = source.text.toLowerCase().startsWith(identity.toLowerCase()) || sourceContainsIdentity ? source.text : `${identity}. ${source.text}`;
   const description = fitMetaDescriptionSafely(value);
