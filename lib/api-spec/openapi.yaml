@@ -140,17 +140,37 @@ components:
       required: [readiness, rows]
     PilotCounts:
       type: object
-      required: [products, gscRows, ga4Rows, pages, findings, opportunities]
+      required: [products, catalogProducts, productsObserved, shopifyComplete, gscRows, ga4Rows, pages, findings, opportunities]
       properties:
         products: { type: integer }
+        catalogProducts: { type: integer }
+        productsObserved: { type: integer }
+        shopifyComplete: { type: boolean }
         gscRows: { type: integer }
         ga4Rows: { type: integer }
         pages: { type: integer }
         findings: { type: integer }
         opportunities: { type: integer }
+    PilotProviderDiagnostic:
+      type: object
+      required: [status, category, httpStatus]
+      properties:
+        status:
+          type: string
+          enum: [available, empty, failed]
+        category: { type: [string, "null"] }
+        httpStatus: { type: [integer, "null"] }
+    PilotDiagnostics:
+      type: object
+      required: [shopify, gsc, ga4, crawl]
+      properties:
+        shopify: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+        gsc: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+        ga4: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+        crawl: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
     PilotRunStatus:
       type: object
-      required: [runId, status, phase, readiness, freshness, blockers, counts, error]
+      required: [runId, status, phase, readiness, freshness, blockers, counts, diagnostics, error]
       properties:
         runId: { type: [string, "null"] }
         status:
@@ -166,6 +186,8 @@ components:
           items: { type: string }
         counts:
           $ref: "#/components/schemas/PilotCounts"
+        diagnostics:
+          $ref: "#/components/schemas/PilotDiagnostics"
         error: { type: [string, "null"] }
     PilotRunRequest:
       type: object
@@ -272,7 +294,7 @@ components:
             regressionsDetected: { type: integer }
         pilot:
           type: object
-          required: [status, readiness, phase, freshness, blockers, counts]
+          required: [status, readiness, phase, freshness, blockers, counts, diagnostics]
           properties:
             status:
               type: string
@@ -288,4 +310,6 @@ components:
               items: { type: string }
             counts:
               $ref: "#/components/schemas/PilotCounts"
+            diagnostics:
+              $ref: "#/components/schemas/PilotDiagnostics"
 

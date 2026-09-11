@@ -20,11 +20,38 @@ export interface OperationalResponse {
 
 export interface PilotCounts {
   products: number;
+  catalogProducts: number;
+  productsObserved: number;
+  shopifyComplete: boolean;
   gscRows: number;
   ga4Rows: number;
   pages: number;
   findings: number;
   opportunities: number;
+}
+
+export type PilotProviderDiagnosticStatus = typeof PilotProviderDiagnosticStatus[keyof typeof PilotProviderDiagnosticStatus];
+
+
+export const PilotProviderDiagnosticStatus = {
+  available: 'available',
+  empty: 'empty',
+  failed: 'failed',
+} as const;
+
+export interface PilotProviderDiagnostic {
+  status: PilotProviderDiagnosticStatus;
+  /** @nullable */
+  category: string | null;
+  /** @nullable */
+  httpStatus: number | null;
+}
+
+export interface PilotDiagnostics {
+  shopify: PilotProviderDiagnostic;
+  gsc: PilotProviderDiagnostic;
+  ga4: PilotProviderDiagnostic;
+  crawl: PilotProviderDiagnostic;
 }
 
 export type PilotRunStatusStatus = typeof PilotRunStatusStatus[keyof typeof PilotRunStatusStatus];
@@ -58,6 +85,7 @@ export interface PilotRunStatus {
   freshness: string | null;
   blockers: string[];
   counts: PilotCounts;
+  diagnostics: PilotDiagnostics;
   /** @nullable */
   error: string | null;
 }
@@ -183,6 +211,7 @@ export type DashboardSnapshotPilot = {
   freshness: string | null;
   blockers: string[];
   counts: PilotCounts;
+  diagnostics: PilotDiagnostics;
 };
 
 export interface DashboardSnapshot {

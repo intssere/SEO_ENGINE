@@ -12,7 +12,13 @@ test("pilot API contracts accept queued, running, completed, partial, and failed
       readiness: status === "partial" ? "partial" : status === "completed" ? "ready" : "not_evaluated",
       freshness: null,
       blockers: [],
-      counts: { products: 0, gscRows: 0, ga4Rows: 0, pages: 0, findings: 0, opportunities: 0 },
+      counts: { products: 0, catalogProducts: 0, productsObserved: 0, shopifyComplete: false, gscRows: 0, ga4Rows: 0, pages: 0, findings: 0, opportunities: 0 },
+      diagnostics: {
+        shopify: { status: "failed", category: "not_evaluated", httpStatus: null },
+        gsc: { status: "failed", category: "not_evaluated", httpStatus: null },
+        ga4: { status: status === "partial" ? "failed" : "available", category: status === "partial" ? "permission_denied" : null, httpStatus: status === "partial" ? 403 : 200 },
+        crawl: { status: "failed", category: "not_evaluated", httpStatus: null },
+      },
       error: status === "failed" ? "pilot_internal_failure" : null,
     });
     assert.equal(parsed.status, status);

@@ -91,11 +91,36 @@ export const GetDashboardResponse = zod.object({
   "blockers": zod.array(zod.string()),
   "counts": zod.object({
   "products": zod.number().int(),
+  "catalogProducts": zod.number().int(),
+  "productsObserved": zod.number().int(),
+  "shopifyComplete": zod.boolean(),
   "gscRows": zod.number().int(),
   "ga4Rows": zod.number().int(),
   "pages": zod.number().int(),
   "findings": zod.number().int(),
   "opportunities": zod.number().int()
+}),
+  "diagnostics": zod.object({
+  "shopify": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+}),
+  "gsc": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+}),
+  "ga4": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+}),
+  "crawl": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+})
 })
 })
 })
@@ -121,11 +146,36 @@ export const GetPilotStatusResponse = zod.object({
   "blockers": zod.array(zod.string()),
   "counts": zod.object({
   "products": zod.number().int(),
+  "catalogProducts": zod.number().int(),
+  "productsObserved": zod.number().int(),
+  "shopifyComplete": zod.boolean(),
   "gscRows": zod.number().int(),
   "ga4Rows": zod.number().int(),
   "pages": zod.number().int(),
   "findings": zod.number().int(),
   "opportunities": zod.number().int()
+}),
+  "diagnostics": zod.object({
+  "shopify": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+}),
+  "gsc": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+}),
+  "ga4": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+}),
+  "crawl": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+})
 }),
   "error": zod.string().nullable()
 })

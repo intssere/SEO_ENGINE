@@ -180,9 +180,23 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="pilotGrid">
-            <div><strong>{data.pilot.counts.products}</strong><span>Products observed</span></div>
+            <div>
+              <strong>{data.pilot.counts.catalogProducts || "—"}</strong>
+              <span>Shopify catalog total</span>
+              <small>{data.pilot.counts.productsObserved} observed{data.pilot.counts.shopifyComplete ? " · complete" : " · bounded/incomplete"}</small>
+            </div>
             <div><strong>{data.pilot.counts.gscRows}</strong><span>GSC rows</span></div>
-            <div><strong>{data.pilot.counts.ga4Rows}</strong><span>GA4 rows</span></div>
+            <div>
+              <strong>{data.pilot.counts.ga4Rows}</strong>
+              <span>GA4 rows</span>
+              <small>
+                {data.pilot.diagnostics.ga4.status === "failed"
+                  ? `Failed · ${(data.pilot.diagnostics.ga4.category ?? "unknown").replaceAll("_", " ")}${data.pilot.diagnostics.ga4.httpStatus ? ` (${data.pilot.diagnostics.ga4.httpStatus})` : ""}`
+                  : data.pilot.diagnostics.ga4.status === "empty"
+                    ? "Successful query · no rows"
+                    : "Available"}
+              </small>
+            </div>
             <div><strong>{data.pilot.counts.pages}</strong><span>Pages crawled</span></div>
           </div>
           <p className="muted mt-4">

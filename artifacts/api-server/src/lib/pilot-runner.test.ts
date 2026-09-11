@@ -5,10 +5,12 @@ import {
   computeBaselineReadiness,
   crawlSite,
   executePilot,
+  paginateShopifyCatalog,
+  providerFailureCategory,
   type PilotDependencies,
 } from "./pilot-runner.js";
 
-const shopify = { ok: true as const, data: { storeVerified: true, productCount: 2, productsObserved: 2, variantCount: 3, inventoryQuantity: 4, truncated: false } };
+const shopify = { ok: true as const, data: { storeVerified: true, productCount: 2, productsObserved: 2, variantCount: 3, inventoryQuantity: 4, truncated: false, complete: true } };
 const gsc = { ok: true as const, data: { rows: [{ date: "2026-09-01", query: "q", page: "https://example.test", country: "US", device: "mobile", clicks: 1, impressions: 2, ctr: 0.5, position: 1 }], startDate: "2026-09-01", endDate: "2026-09-01" } };
 const ga4 = { ok: true as const, data: { rows: [{ date: "2026-09-01", sessions: 1, users: 1, pageViews: 1 }], startDate: "2026-09-01", endDate: "2026-09-01" } };
 const crawl = { ok: true as const, data: { pages: [], discovered: 1, fetched: 1, blockedByRobots: 0, truncated: false } };
@@ -23,7 +25,7 @@ function dependencies(overrides: Partial<PilotDependencies> = {}) {
     readGsc: async () => gsc,
     readGa4: async () => ga4,
     crawl: async () => crawl,
-    persist: async () => { calls.push("persist"); return { products: 2, gscRows: 1, ga4Rows: 1, pages: 1 }; },
+    persist: async () => { calls.push("persist"); return { products: 2, catalogProducts: 2, productsObserved: 2, shopifyComplete: true, gscRows: 1, ga4Rows: 1, pages: 1 }; },
     evaluate: async (_run, _context, readiness) => { calls.push(`evaluate:${readiness.state}`); return { findings: 1, opportunities: 1 }; },
     progress: async (_run, phase) => { calls.push(`progress:${phase}`); },
     finish: async () => { calls.push("finish"); },
@@ -69,11 +71,65 @@ test("successful provider observations persist and make baseline ready", async (
 });
 
 test("partial provider failure persists available evidence but keeps baseline partial", async () => {
-  const { deps, calls } = dependencies({ readGa4: async () => ({ ok: false, category: "provider_error", httpStatus: 403 }) });
+  const { deps, calls } = dependencies({ readGa4: async () => ({ ok: false, category: "permission_denied", httpStatus: 403 }) });
   const result = await executePilot(deps);
   assert.equal(result.readiness.state, "partial");
-  assert.deepEqual(result.readiness.blockers, ["ga4_evidence_unavailable"]);
+  assert.deepEqual(result.readiness.blockers, ["ga4_permission_denied"]);
+  assert.deepEqual(result.readiness.diagnostics.ga4, { status: "failed", category: "permission_denied", httpStatus: 403 });
   assert.deepEqual(calls, ["progress:provider_reads", "progress:persisting_observations", "persist", "progress:partial_evidence", "evaluate:partial", "finish"]);
+});
+
+test("GA4 successful-empty is distinct from provider failure", () => {
+  const result = computeBaselineReadiness({ shopify, gsc, ga4: { ok: true, data: { ...ga4.data, rows: [] } }, crawl });
+  assert.equal(result.state, "partial");
+  assert.ok(result.blockers.includes("ga4_evidence_empty"));
+  assert.deepEqual(result.diagnostics.ga4, { status: "empty", category: "no_rows", httpStatus: 200 });
+});
+
+test("provider failures are mapped to sanitized categories without response payloads", () => {
+  assert.equal(providerFailureCategory(401), "authentication_error");
+  assert.equal(providerFailureCategory(403), "permission_denied");
+  assert.equal(providerFailureCategory(404), "resource_not_found");
+  assert.equal(providerFailureCategory(429), "rate_limited");
+  assert.equal(providerFailureCategory(503), "provider_unavailable");
+});
+
+test("Shopify catalog pagination follows read-only cursors and reports completeness", async () => {
+  const requests: string[] = [];
+  const fetchImpl = async (input: URL | Request | string) => {
+    const url = String(input);
+    requests.push(url);
+    const first = !url.includes("page_info=");
+    return new Response(JSON.stringify({ products: first
+      ? [{ id: 1, variants: [{ inventory_quantity: 2 }] }, { id: 2, variants: [{ inventory_quantity: 3 }] }]
+      : [{ id: 3, variants: [{ inventory_quantity: 4 }] }] }), {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+        ...(first ? { link: '<https://store.myshopify.com/admin/api/2025-10/products.json?page_info=next&limit=250>; rel="next"' } : {}),
+      },
+    });
+  };
+  const result = await paginateShopifyCatalog({ base: "https://store.myshopify.com/admin/api/2025-10", accessToken: "test", productCount: 3, fetchImpl: fetchImpl as typeof fetch, limit: 10 });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.data.productsObserved, 3);
+  assert.equal(result.data.complete, true);
+  assert.equal(result.data.truncated, false);
+  assert.equal(result.data.variantCount, 3);
+  assert.equal(result.data.inventoryQuantity, 9);
+  assert.equal(requests.length, 2);
+  assert.match(requests[0]!, /status=any/);
+});
+
+test("Shopify completeness remains partial when the bounded catalog limit is reached", async () => {
+  const fetchImpl = async () => new Response(JSON.stringify({ products: [{ id: 1, variants: [] }, { id: 2, variants: [] }] }), { status: 200 });
+  const paged = await paginateShopifyCatalog({ base: "https://store.myshopify.com/admin/api/2025-10", accessToken: "test", productCount: 3, fetchImpl: fetchImpl as typeof fetch, limit: 2 });
+  assert.equal(paged.ok, true);
+  if (!paged.ok) return;
+  const result = computeBaselineReadiness({ shopify: { ok: true, data: { storeVerified: true, productCount: 3, ...paged.data } }, gsc, ga4, crawl });
+  assert.equal(result.state, "partial");
+  assert.ok(result.blockers.includes("shopify_catalog_incomplete"));
 });
 
 test("pilot records a sanitized failure transition and does not finish after persistence failure", async () => {
@@ -87,5 +143,5 @@ test("pilot records a sanitized failure transition and does not finish after per
 test("readiness requires real rows rather than synthetic zero metrics", () => {
   const result = computeBaselineReadiness({ shopify, gsc: { ok: true, data: { ...gsc.data, rows: [] } }, ga4, crawl });
   assert.equal(result.state, "partial");
-  assert.ok(result.blockers.includes("gsc_evidence_unavailable"));
+  assert.ok(result.blockers.includes("gsc_evidence_empty"));
 });

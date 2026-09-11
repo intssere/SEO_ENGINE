@@ -1,5 +1,5 @@
 import postgres from "postgres";
-import { PILOT_LIMITS, runProductionPilot, validateProductionPilotPreflight } from "./pilot-runner";
+import { PILOT_LIMITS, runProductionPilot, validateProductionPilotPreflight, type ProviderDiagnostic } from "./pilot-runner";
 
 export type PilotPublicStatus = "not_started" | "queued" | "running" | "completed" | "partial" | "failed";
 export type PilotRunStatus = {
@@ -9,7 +9,8 @@ export type PilotRunStatus = {
   readiness: "not_evaluated" | "ready" | "partial";
   freshness: string | null;
   blockers: string[];
-  counts: { products: number; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
+  counts: { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
+  diagnostics: { shopify: ProviderDiagnostic; gsc: ProviderDiagnostic; ga4: ProviderDiagnostic; crawl: ProviderDiagnostic };
   error: string | null;
 };
 
@@ -26,7 +27,9 @@ function requiredDatabaseUrl() {
   return value;
 }
 
-const emptyCounts = () => ({ products: 0, gscRows: 0, ga4Rows: 0, pages: 0, findings: 0, opportunities: 0 });
+const emptyCounts = () => ({ products: 0, catalogProducts: 0, productsObserved: 0, shopifyComplete: false, gscRows: 0, ga4Rows: 0, pages: 0, findings: 0, opportunities: 0 });
+const emptyDiagnostic = (): ProviderDiagnostic => ({ status: "failed", category: "not_evaluated", httpStatus: null });
+const emptyDiagnostics = () => ({ shopify: emptyDiagnostic(), gsc: emptyDiagnostic(), ga4: emptyDiagnostic(), crawl: emptyDiagnostic() });
 const numberValue = (value: unknown) => Number.isFinite(Number(value)) ? Number(value) : 0;
 
 export async function requestPilotRun(deps: PilotQueueDependencies): Promise<QueueResult> {
@@ -93,9 +96,18 @@ export async function loadPilotRunStatus(): Promise<PilotRunStatus> {
       WHERE j.job_type='pilot_ingestion_v1' AND lower(s.domain)='diamondshelf.us'
       ORDER BY j.created_at DESC LIMIT 1`;
     const row = rows[0];
-    if (!row) return { runId: null, status: "not_started", phase: "not_started", readiness: "not_evaluated", freshness: null, blockers: [], counts: emptyCounts(), error: null };
+    if (!row) return { runId: null, status: "not_started", phase: "not_started", readiness: "not_evaluated", freshness: null, blockers: [], counts: emptyCounts(), diagnostics: emptyDiagnostics(), error: null };
     const readiness = typeof row.payload.readiness === "object" && row.payload.readiness ? row.payload.readiness as Record<string, unknown> : {};
     const counts = typeof row.payload.counts === "object" && row.payload.counts ? row.payload.counts as Record<string, unknown> : {};
+    const rawDiagnostics = typeof readiness.diagnostics === "object" && readiness.diagnostics ? readiness.diagnostics as Record<string, unknown> : {};
+    const parseDiagnostic = (provider: string): ProviderDiagnostic => {
+      const value = typeof rawDiagnostics[provider] === "object" && rawDiagnostics[provider] ? rawDiagnostics[provider] as Record<string, unknown> : {};
+      return {
+        status: ["available", "empty", "failed"].includes(String(value.status)) ? value.status as ProviderDiagnostic["status"] : "failed",
+        category: typeof value.category === "string" ? value.category : null,
+        httpStatus: Number.isInteger(Number(value.httpStatus)) ? Number(value.httpStatus) : null,
+      };
+    };
     const readinessState = readiness.state === "ready" || readiness.state === "partial" ? readiness.state : "not_evaluated";
     const status: PilotPublicStatus = row.status === "pending" ? "queued" : row.status === "active" ? "running" : row.status === "failed" ? "failed" : readinessState === "partial" ? "partial" : "completed";
     return {
@@ -105,7 +117,18 @@ export async function loadPilotRunStatus(): Promise<PilotRunStatus> {
       readiness: readinessState,
       freshness: new Date(row.completed_at ?? row.updated_at ?? row.created_at).toISOString(),
       blockers: Array.isArray(readiness.blockers) ? readiness.blockers.filter((item): item is string => typeof item === "string") : [],
-      counts: { products: numberValue(counts.products), gscRows: numberValue(counts.gscRows), ga4Rows: numberValue(counts.ga4Rows), pages: numberValue(counts.pages), findings: numberValue(counts.findings), opportunities: numberValue(counts.opportunities) },
+      counts: {
+        products: numberValue(counts.products),
+        catalogProducts: numberValue(counts.catalogProducts ?? counts.products),
+        productsObserved: numberValue(counts.productsObserved ?? counts.products),
+        shopifyComplete: counts.shopifyComplete === true,
+        gscRows: numberValue(counts.gscRows),
+        ga4Rows: numberValue(counts.ga4Rows),
+        pages: numberValue(counts.pages),
+        findings: numberValue(counts.findings),
+        opportunities: numberValue(counts.opportunities),
+      },
+      diagnostics: { shopify: parseDiagnostic("shopify"), gsc: parseDiagnostic("gsc"), ga4: parseDiagnostic("ga4"), crawl: parseDiagnostic("crawl") },
       error: row.last_error && /^pilot_[a-z0-9_]+$/.test(row.last_error) ? row.last_error : null,
     };
   } finally {

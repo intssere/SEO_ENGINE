@@ -14,7 +14,7 @@ export const PILOT_LIMITS = {
   responseBytes: 750_000,
   requestTimeoutMs: 10_000,
   gscRows: 5_000,
-  shopifyProducts: 1_000,
+  shopifyProducts: 5_000,
 } as const;
 export type CrawlLimits = {
   crawlPages: number;
@@ -25,18 +25,29 @@ export type CrawlLimits = {
   shopifyProducts: number;
 };
 
-type Outcome<T> = { ok: true; data: T } | { ok: false; category: string; httpStatus: number | null };
-export type ShopifyObservation = { storeVerified: boolean; productCount: number; productsObserved: number; variantCount: number; inventoryQuantity: number | null; truncated: boolean };
+export type Outcome<T> = { ok: true; data: T } | { ok: false; category: string; httpStatus: number | null };
+export type ProviderDiagnostic = { status: "available" | "empty" | "failed"; category: string | null; httpStatus: number | null };
+export type ShopifyObservation = { storeVerified: boolean; productCount: number; productsObserved: number; variantCount: number; inventoryQuantity: number | null; truncated: boolean; complete: boolean };
 export type GscObservation = { rows: Array<{ date: string; query: string; page: string; country: string; device: string; clicks: number; impressions: number; ctr: number; position: number | null }>; startDate: string; endDate: string };
 export type Ga4Observation = { rows: Array<{ date: string; sessions: number; users: number; pageViews: number }>; startDate: string; endDate: string };
 export type CrawlPage = { url: string; path: string; statusCode: number; title: string | null; description: string | null; canonical: string | null; robots: string | null; h1: string | null; contentHash: string; contentText: string; links: string[] };
 export type CrawlObservation = { pages: CrawlPage[]; discovered: number; fetched: number; blockedByRobots: number; truncated: boolean };
-export type PilotReadiness = { state: "ready" | "partial"; blockers: string[]; coverage: { shopify: boolean; gsc: boolean; ga4: boolean; crawl: boolean } };
-export type PilotResult = { runId: string; status: "completed"; readiness: PilotReadiness; counts: { products: number; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number } };
+export type PilotReadiness = {
+  state: "ready" | "partial";
+  blockers: string[];
+  coverage: { shopify: boolean; gsc: boolean; ga4: boolean; crawl: boolean };
+  diagnostics: { shopify: ProviderDiagnostic; gsc: ProviderDiagnostic; ga4: ProviderDiagnostic; crawl: ProviderDiagnostic };
+};
+export type PilotResult = {
+  runId: string;
+  status: "completed";
+  readiness: PilotReadiness;
+  counts: { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
+};
 
 export type ConnectionRecord = { id: string; provider: "shopify" | "google"; secret_ref: string; status: string; scopes: string[]; metadata: Record<string, unknown> };
 export type PilotContext = { siteId: string; canonicalOrigin: string; connections: Record<"shopify" | "google", ConnectionRecord> };
-type PersistedCounts = { products: number; gscRows: number; ga4Rows: number; pages: number };
+type PersistedCounts = { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; ga4Rows: number; pages: number };
 
 export interface PilotDependencies {
   publicWritesEnabled: boolean;
@@ -63,21 +74,48 @@ export function assertReadOnlyProviderRequest(provider: "shopify" | "gsc" | "ga4
   if (!allowed) throw new Error("pilot_read_only_request_blocked");
 }
 
+export function providerFailureCategory(httpStatus: number): string {
+  if (httpStatus === 401) return "authentication_error";
+  if (httpStatus === 403) return "permission_denied";
+  if (httpStatus === 404) return "resource_not_found";
+  if (httpStatus === 429) return "rate_limited";
+  if (httpStatus >= 500) return "provider_unavailable";
+  return "provider_error";
+}
+
+function diagnostic<T>(outcome: Outcome<T>, rowCount: number | null = null): ProviderDiagnostic {
+  if (!outcome.ok) return { status: "failed", category: outcome.category, httpStatus: outcome.httpStatus };
+  if (rowCount === 0) return { status: "empty", category: "no_rows", httpStatus: 200 };
+  return { status: "available", category: null, httpStatus: 200 };
+}
+
 export function computeBaselineReadiness(input: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }): PilotReadiness {
   const blockers: string[] = [];
-  if (!input.shopify.ok || !input.shopify.data.storeVerified) blockers.push("shopify_identity_unavailable");
-  if (!input.gsc.ok || input.gsc.data.rows.length === 0) blockers.push("gsc_evidence_unavailable");
-  if (!input.ga4.ok || input.ga4.data.rows.length === 0) blockers.push("ga4_evidence_unavailable");
-  if (!input.crawl.ok || input.crawl.data.fetched === 0) blockers.push("crawl_evidence_unavailable");
+  if (!input.shopify.ok) blockers.push(`shopify_${input.shopify.category}`);
+  else if (!input.shopify.data.storeVerified) blockers.push("shopify_identity_unavailable");
+  else if (!input.shopify.data.complete) blockers.push("shopify_catalog_incomplete");
+  if (!input.gsc.ok) blockers.push(`gsc_${input.gsc.category}`);
+  else if (input.gsc.data.rows.length === 0) blockers.push("gsc_evidence_empty");
+  if (!input.ga4.ok) blockers.push(`ga4_${input.ga4.category}`);
+  else if (input.ga4.data.rows.length === 0) blockers.push("ga4_evidence_empty");
+  if (!input.crawl.ok) blockers.push(`crawl_${input.crawl.category}`);
+  else if (input.crawl.data.fetched === 0) blockers.push("crawl_evidence_empty");
+  const diagnostics = {
+    shopify: diagnostic(input.shopify, input.shopify.ok ? input.shopify.data.productsObserved : null),
+    gsc: diagnostic(input.gsc, input.gsc.ok ? input.gsc.data.rows.length : null),
+    ga4: diagnostic(input.ga4, input.ga4.ok ? input.ga4.data.rows.length : null),
+    crawl: diagnostic(input.crawl, input.crawl.ok ? input.crawl.data.fetched : null),
+  };
   return {
     state: blockers.length === 0 ? "ready" : "partial",
     blockers,
     coverage: {
-      shopify: input.shopify.ok && input.shopify.data.storeVerified,
+      shopify: input.shopify.ok && input.shopify.data.storeVerified && input.shopify.data.complete,
       gsc: input.gsc.ok && input.gsc.data.rows.length > 0,
       ga4: input.ga4.ok && input.ga4.data.rows.length > 0,
       crawl: input.crawl.ok && input.crawl.data.fetched > 0,
     },
+    diagnostics,
   };
 }
 
@@ -243,11 +281,74 @@ async function requestJson<T>(provider: "shopify" | "gsc" | "ga4", url: string, 
       ...(body ? { body: JSON.stringify(body) } : {}),
       signal: AbortSignal.timeout(20_000),
     });
-    if (!response.ok) return { ok: false, category: "provider_error", httpStatus: response.status };
+    if (!response.ok) return { ok: false, category: providerFailureCategory(response.status), httpStatus: response.status };
     return { ok: true, data: await response.json() as T };
   } catch {
     return { ok: false, category: "network_error", httpStatus: null };
   }
+}
+
+type ShopifyProduct = { id?: number; variants?: Array<{ inventory_quantity?: number }> };
+
+function nextShopifyLink(value: string | null): string | null {
+  if (!value) return null;
+  for (const part of value.split(",")) {
+    const match = part.match(/<([^>]+)>\s*;\s*rel="?next"?/i);
+    if (match?.[1]) return match[1];
+  }
+  return null;
+}
+
+export async function paginateShopifyCatalog(options: {
+  base: string;
+  accessToken: string;
+  productCount: number;
+  fetchImpl?: typeof fetch;
+  limit?: number;
+}): Promise<Outcome<Omit<ShopifyObservation, "storeVerified" | "productCount">>> {
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const limit = Math.max(0, Math.floor(options.limit ?? PILOT_LIMITS.shopifyProducts));
+  let url: string | null = limit > 0 && options.productCount > 0
+    ? `${options.base}/products.json?limit=${Math.min(250, limit)}&status=any&fields=id,variants`
+    : null;
+  let productsObserved = 0;
+  let variantCount = 0;
+  let inventoryQuantity = 0;
+  let inventoryAvailable = true;
+  const seen = new Set<string>();
+  while (url && productsObserved < limit && !seen.has(url)) {
+    seen.add(url);
+    assertReadOnlyProviderRequest("shopify", "GET", url);
+    try {
+      const response = await fetchImpl(url, {
+        method: "GET",
+        headers: { Accept: "application/json", "X-Shopify-Access-Token": options.accessToken },
+        signal: AbortSignal.timeout(20_000),
+      });
+      if (!response.ok) return { ok: false, category: providerFailureCategory(response.status), httpStatus: response.status };
+      const data = await response.json() as { products?: ShopifyProduct[] };
+      const remaining = limit - productsObserved;
+      const products = (data.products ?? []).slice(0, remaining);
+      productsObserved += products.length;
+      for (const product of products) {
+        for (const variant of product.variants ?? []) {
+          variantCount++;
+          if (typeof variant.inventory_quantity === "number") inventoryQuantity += variant.inventory_quantity;
+          else inventoryAvailable = false;
+        }
+      }
+      if (products.length === 0 || productsObserved >= limit) break;
+      const next = nextShopifyLink(response.headers.get("link"));
+      if (!next) break;
+      const parsed = new URL(next);
+      if (parsed.origin !== new URL(options.base).origin) return { ok: false, category: "pagination_resource_mismatch", httpStatus: null };
+      url = parsed.toString();
+    } catch {
+      return { ok: false, category: "network_error", httpStatus: null };
+    }
+  }
+  const complete = productsObserved >= options.productCount;
+  return { ok: true, data: { productsObserved, variantCount, inventoryQuantity: inventoryAvailable ? inventoryQuantity : null, truncated: !complete, complete } };
 }
 
 function isoDate(daysAgo: number) {
@@ -337,35 +438,15 @@ async function readShopify(context: PilotContext): Promise<Outcome<ShopifyObserv
   const base = `https://${shopDomain}/admin/api/2025-10`;
   const [shop, count] = await Promise.all([
     requestJson<{ shop?: { domain?: string; myshopify_domain?: string } }>("shopify", `${base}/shop.json?fields=domain,myshopify_domain`, "GET", token.accessToken),
-    requestJson<{ count?: number }>("shopify", `${base}/products/count.json`, "GET", token.accessToken),
+    requestJson<{ count?: number }>("shopify", `${base}/products/count.json?status=any`, "GET", token.accessToken),
   ]);
   if (!shop.ok) return shop;
   if (!count.ok) return count;
   const productCount = Number(count.data.count ?? 0);
-  let productsObserved = 0;
-  let lastProductId = 0;
-  let variantCount = 0;
-  let inventoryQuantity = 0;
-  let inventoryAvailable = true;
-  for (let page = 0; page < Math.ceil(Math.min(productCount, PILOT_LIMITS.shopifyProducts) / 250); page++) {
-    const sinceId = page === 0 ? "" : `&since_id=${lastProductId}`;
-    const result = await requestJson<{ products?: Array<{ id?: number; variants?: Array<{ inventory_quantity?: number }> }> }>("shopify", `${base}/products.json?limit=250&fields=id,variants${sinceId}`, "GET", token.accessToken);
-    if (!result.ok) return result;
-    const products = result.data.products ?? [];
-    if (!products.length) break;
-    productsObserved += products.length;
-    for (const product of products) {
-      if (typeof product.id === "number") lastProductId = Math.max(lastProductId, product.id);
-      for (const variant of product.variants ?? []) {
-        variantCount++;
-        if (typeof variant.inventory_quantity === "number") inventoryQuantity += variant.inventory_quantity;
-        else inventoryAvailable = false;
-      }
-    }
-    if (products.length < 250 || productsObserved >= PILOT_LIMITS.shopifyProducts) break;
-  }
+  const catalog = await paginateShopifyCatalog({ base, accessToken: token.accessToken, productCount });
+  if (!catalog.ok) return catalog;
   const verifiedDomain = [shop.data.shop?.domain, shop.data.shop?.myshopify_domain].some((value) => typeof value === "string" && (value === shopDomain || /diamondshelf\.us$/i.test(value)));
-  return { ok: true, data: { storeVerified: verifiedDomain, productCount, productsObserved, variantCount, inventoryQuantity: inventoryAvailable ? inventoryQuantity : null, truncated: productCount > productsObserved } };
+  return { ok: true, data: { storeVerified: verifiedDomain, productCount, ...catalog.data } };
 }
 
 async function readGsc(context: PilotContext): Promise<Outcome<GscObservation>> {
@@ -415,11 +496,14 @@ async function readGa4(context: PilotContext): Promise<Outcome<Ga4Observation>> 
 
 async function persist(runId: string, context: PilotContext, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }): Promise<PersistedCounts> {
   const sql = database();
-  let products = 0, gscRows = 0, ga4Rows = 0, pages = 0;
+  let products = 0, catalogProducts = 0, productsObserved = 0, shopifyComplete = false, gscRows = 0, ga4Rows = 0, pages = 0;
   try {
     await sql.begin(async (tx) => {
       if (observations.shopify.ok) {
         products = observations.shopify.data.productsObserved;
+        productsObserved = observations.shopify.data.productsObserved;
+        catalogProducts = observations.shopify.data.productCount;
+        shopifyComplete = observations.shopify.data.complete;
         await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'shopify','catalog_baseline',1,${tx.json(observations.shopify.data)},${tx.json({ runId, mode: "read_only" })})`;
       }
       if (observations.gsc.ok) {
@@ -434,6 +518,9 @@ async function persist(runId: string, context: PilotContext, observations: { sho
       if (observations.ga4.ok) {
         ga4Rows = observations.ga4.data.rows.length;
         await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'ga4','traffic_baseline',1,${tx.json({ rows: observations.ga4.data.rows, startDate: observations.ga4.data.startDate, endDate: observations.ga4.data.endDate })},${tx.json({ runId, mode: "read_only" })})`;
+      } else {
+        const propertyId = typeof context.connections.google.metadata.ga4PropertyId === "string" ? context.connections.google.metadata.ga4PropertyId : null;
+        await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'ga4','provider_diagnostic',1,${tx.json({ status: "failed", category: observations.ga4.category, httpStatus: observations.ga4.httpStatus, propertyId, startDate: isoDate(27), endDate: isoDate(1) })},${tx.json({ runId, mode: "read_only", sanitized: true })})`;
       }
       if (observations.crawl.ok) {
         const crawlRows = await tx<{ id: string }[]>`INSERT INTO crawl_runs(site_id,status,started_at,completed_at,seed_url,pages_discovered,pages_fetched,metadata) VALUES(${context.siteId}::uuid,'completed',now(),now(),${context.canonicalOrigin},${observations.crawl.data.discovered},${observations.crawl.data.fetched},${tx.json({ runId, limits: PILOT_LIMITS, blockedByRobots: observations.crawl.data.blockedByRobots, truncated: observations.crawl.data.truncated, mode: "read_only" })}) RETURNING id::text`;
@@ -445,7 +532,7 @@ async function persist(runId: string, context: PilotContext, observations: { sho
         await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'crawler','crawl_coverage',1,${tx.json({ discovered: observations.crawl.data.discovered, fetched: pages, blockedByRobots: observations.crawl.data.blockedByRobots, truncated: observations.crawl.data.truncated })},${tx.json({ runId, limits: PILOT_LIMITS, mode: "read_only" })})`;
       }
     });
-    return { products, gscRows, ga4Rows, pages };
+    return { products, catalogProducts, productsObserved, shopifyComplete, gscRows, ga4Rows, pages };
   } finally {
     await sql.end({ timeout: 2 });
   }

@@ -71,7 +71,8 @@ export interface DashboardSnapshot {
     phase: string;
     freshness: string | null;
     blockers: string[];
-    counts: { products: number; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
+    counts: { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
+    diagnostics: Record<"shopify" | "gsc" | "ga4" | "crawl", { status: "available" | "empty" | "failed"; category: string | null; httpStatus: number | null }>;
   };
 }
 export interface DashboardFilters { days: 7 | 28 | 90; country: string; device: "all" | "desktop" | "mobile" | "tablet" }
@@ -101,13 +102,28 @@ function unavailable(reason: string): DashboardSnapshot {
     aiVisibility: { citationRate: "—", brandMentionRate: "—", citationShare: "—" },
     learning: { signalCount: 0, averageConfidence: "—" },
     impact: { verifiedOptimizations: 0, completedExperiments: 0, rollbacks: 0, regressionsDetected: 0 },
-    pilot: { status: "not_started", readiness: "not_evaluated", phase: "not_started", freshness: null, blockers: [], counts: { products: 0, gscRows: 0, ga4Rows: 0, pages: 0, findings: 0, opportunities: 0 } },
+    pilot: { status: "not_started", readiness: "not_evaluated", phase: "not_started", freshness: null, blockers: [], counts: { products: 0, catalogProducts: 0, productsObserved: 0, shopifyComplete: false, gscRows: 0, ga4Rows: 0, pages: 0, findings: 0, opportunities: 0 }, diagnostics: { shopify: { status: "failed", category: "not_evaluated", httpStatus: null }, gsc: { status: "failed", category: "not_evaluated", httpStatus: null }, ga4: { status: "failed", category: "not_evaluated", httpStatus: null }, crawl: { status: "failed", category: "not_evaluated", httpStatus: null } } },
   };
 }
 
 function n(value: unknown): number {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+export function pilotCountsFromPayload(counts: Record<string, unknown>) {
+  const products = n(counts.products);
+  return {
+    products,
+    catalogProducts: n(counts.catalogProducts ?? products),
+    productsObserved: n(counts.productsObserved ?? products),
+    shopifyComplete: counts.shopifyComplete === true,
+    gscRows: n(counts.gscRows),
+    ga4Rows: n(counts.ga4Rows),
+    pages: n(counts.pages),
+    findings: n(counts.findings),
+    opportunities: n(counts.opportunities),
+  };
 }
 
 function percent(value: number): string {
@@ -140,7 +156,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
     const site = sites[0];
     if (!site) return unavailable("Diamond Shelf is not present in the production database.");
 
-    const [searchRows, topTenRows, findingsRows, engineRows, approvalsRows, verificationRows, aiRows, learningRows, impactRows, opportunityRows, freshnessRows, pilotRows] = await Promise.all([
+    const [searchRows, topTenRows, findingsRows, engineRows, approvalsRows, verificationRows, aiRows, learningRows, impactRows, opportunityRows, freshnessRows, pilotRows, shopifyCatalogRows] = await Promise.all([
       sql`
         SELECT
            COALESCE(SUM(clicks) FILTER (WHERE metric_date >= current_date - (${filters.days - 1}::int)), 0)::bigint AS current_clicks,
@@ -246,6 +262,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
         ) AS freshest
       `,
       sql`SELECT status,payload,created_at,updated_at,completed_at,last_error FROM jobs WHERE site_id=${site.id}::uuid AND job_type='pilot_ingestion_v1' ORDER BY created_at DESC LIMIT 1`,
+      sql`SELECT payload FROM evidence WHERE site_id=${site.id}::uuid AND source='shopify' AND kind='catalog_baseline' ORDER BY observed_at DESC,created_at DESC LIMIT 1`,
     ]);
 
     const search = searchRows[0] ?? {};
@@ -272,7 +289,23 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
     const pilotRow = pilotRows[0] as { status?: string; payload?: Record<string, unknown>; created_at?: unknown; updated_at?: unknown; completed_at?: unknown } | undefined;
     const pilotPayload = pilotRow?.payload ?? {};
     const pilotCounts = typeof pilotPayload.counts === "object" && pilotPayload.counts ? pilotPayload.counts as Record<string, unknown> : {};
+    const latestShopifyCatalog = typeof shopifyCatalogRows[0]?.payload === "object" && shopifyCatalogRows[0]?.payload ? shopifyCatalogRows[0].payload as Record<string, unknown> : {};
+    const effectivePilotCounts = {
+      ...pilotCounts,
+      catalogProducts: pilotCounts.catalogProducts ?? latestShopifyCatalog.productCount,
+      productsObserved: pilotCounts.productsObserved ?? latestShopifyCatalog.productsObserved,
+      shopifyComplete: pilotCounts.shopifyComplete ?? latestShopifyCatalog.complete ?? (latestShopifyCatalog.truncated === false),
+    };
     const pilotReadiness = typeof pilotPayload.readiness === "object" && pilotPayload.readiness ? pilotPayload.readiness as Record<string, unknown> : {};
+    const pilotRawDiagnostics = typeof pilotReadiness.diagnostics === "object" && pilotReadiness.diagnostics ? pilotReadiness.diagnostics as Record<string, unknown> : {};
+    const pilotDiagnostic = (provider: string) => {
+      const value = typeof pilotRawDiagnostics[provider] === "object" && pilotRawDiagnostics[provider] ? pilotRawDiagnostics[provider] as Record<string, unknown> : {};
+      return {
+        status: ["available", "empty", "failed"].includes(String(value.status)) ? value.status as "available" | "empty" | "failed" : "failed",
+        category: typeof value.category === "string" ? value.category : null,
+        httpStatus: Number.isInteger(Number(value.httpStatus)) ? Number(value.httpStatus) : null,
+      };
+    };
     const pilotReadinessState = ["ready", "partial"].includes(String(pilotReadiness.state)) ? String(pilotReadiness.state) as "ready" | "partial" : "not_evaluated";
     const pilotStatus = pilotRow?.status === "pending"
       ? "queued"
@@ -344,7 +377,8 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
         phase: typeof pilotPayload.phase === "string" ? pilotPayload.phase : "not_started",
         freshness: pilotRow ? new Date(String(pilotRow.completed_at ?? pilotRow.updated_at ?? pilotRow.created_at)).toISOString() : null,
         blockers: Array.isArray(pilotReadiness.blockers) ? pilotReadiness.blockers.filter((item): item is string => typeof item === "string") : [],
-        counts: { products: n(pilotCounts.products), gscRows: n(pilotCounts.gscRows), ga4Rows: n(pilotCounts.ga4Rows), pages: n(pilotCounts.pages), findings: n(pilotCounts.findings), opportunities: n(pilotCounts.opportunities) },
+        counts: pilotCountsFromPayload(effectivePilotCounts),
+        diagnostics: { shopify: pilotDiagnostic("shopify"), gsc: pilotDiagnostic("gsc"), ga4: pilotDiagnostic("ga4"), crawl: pilotDiagnostic("crawl") },
       },
     };
   } catch (error) {

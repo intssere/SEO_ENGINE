@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PilotCounts } from './pilotCounts';
+import type { PilotDiagnostics } from './pilotDiagnostics';
 import type { PilotRunStatusReadiness } from './pilotRunStatusReadiness';
 import type { PilotRunStatusStatus } from './pilotRunStatusStatus';
 
@@ -19,6 +20,7 @@ export interface PilotRunStatus {
   freshness: string | null;
   blockers: string[];
   counts: PilotCounts;
+  diagnostics: PilotDiagnostics;
   /** @nullable */
   error: string | null;
 }

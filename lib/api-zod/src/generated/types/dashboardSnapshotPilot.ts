@@ -8,6 +8,7 @@
 import type { DashboardSnapshotPilotReadiness } from './dashboardSnapshotPilotReadiness';
 import type { DashboardSnapshotPilotStatus } from './dashboardSnapshotPilotStatus';
 import type { PilotCounts } from './pilotCounts';
+import type { PilotDiagnostics } from './pilotDiagnostics';
 
 export type DashboardSnapshotPilot = {
   status: DashboardSnapshotPilotStatus;
@@ -17,4 +18,5 @@ export type DashboardSnapshotPilot = {
   freshness: string | null;
   blockers: string[];
   counts: PilotCounts;
+  diagnostics: PilotDiagnostics;
 };

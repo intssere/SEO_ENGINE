@@ -8,6 +8,9 @@
 
 export interface PilotCounts {
   products: number;
+  catalogProducts: number;
+  productsObserved: number;
+  shopifyComplete: boolean;
   gscRows: number;
   ga4Rows: number;
   pages: number;

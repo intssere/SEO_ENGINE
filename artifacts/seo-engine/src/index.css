@@ -271,6 +271,7 @@
 .pilotGrid div:last-child { border-right: 0; }
 .pilotGrid strong { color: #172033; font-size: 22px; }
 .pilotGrid span { color: #77839a; font-size: 11px; margin-top: 3px; }
+.pilotGrid small { color: #5e6878; font-size: 10px; line-height: 1.35; margin-top: 4px; }
 .pilotBlockers { margin-top: 10px; padding: 9px 11px; border-radius: 7px; background: #fff3dc; color: #8d5c0d; font-size: 12px; }
 .pilotActions { display: flex; align-items: center; gap: 10px; }
 .pilotRunButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 8px 13px; border: 0; border-radius: 8px; background: #172a4d; color: #fff; font-size: 12px; font-weight: 650; cursor: pointer; }
