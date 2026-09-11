@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { DryRunProposal } from "./action-planner.js";
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
+import { containsProposalBoilerplate, hasRawTemplatePrefix } from "./proposal-content.js";
 
 export const proposalQualityCheckIds = [
   "evidence_consistency",
@@ -12,6 +13,8 @@ export const proposalQualityCheckIds = [
   "keyword_stuffing",
   "generic_filler",
   "format_integrity",
+  "template_boilerplate",
+  "page_specific_content",
 ] as const;
 
 export type ProposalQualityCheckId = typeof proposalQualityCheckIds[number];
@@ -141,10 +144,38 @@ function genericFillerCheck(proposed: string) {
 
 function formatCheck(proposed: string) {
   if (!proposed) return check("format_integrity", "Format integrity", "blocked", 0, "The proposed value is empty.");
-  if (/[\uFFFD<>]|\.{3}$|…$/.test(proposed) || /\s{2,}/.test(proposed)) return check("format_integrity", "Format integrity", "blocked", 0, "The proposal contains markup, replacement characters, malformed spacing, or truncation markers.");
+  if (/[\uFFFD<>]|&(?:amp|nbsp|quot|apos|lt|gt);|\.{3}$|…$/.test(proposed) || /\s{2,}/.test(proposed)) return check("format_integrity", "Format integrity", "blocked", 0, "The proposal contains markup, HTML entities, replacement characters, malformed spacing, or truncation markers.");
   const quoteCount = (proposed.match(/[“”"]/g) ?? []).length;
   if (quoteCount % 2 !== 0) return check("format_integrity", "Format integrity", "blocked", 0, "The proposal contains unbalanced quotation marks.");
   return check("format_integrity", "Format integrity", "pass", 100, "No truncation or formatting defect was detected.");
+}
+
+function templateBoilerplateCheck(input: ProposalQualityInput, proposed: string, evidenceIds: string[]) {
+  const matches = [
+    /\bskip\s+to\s+content\b/i,
+    /\bfree\s+shipping\b/i,
+    /\bsecure\s+checkout\b/i,
+    /\bcurated\s+fragrance\b/i,
+    /\bhome\s+shop\b/i,
+    /\b(?:cookie settings|accept cookies|privacy policy|terms of service|manage preferences)\b/i,
+    /&(?:amp|nbsp|quot|apos|lt|gt|#\d+);/i,
+  ].filter((pattern) => pattern.test(proposed)).length;
+  if (matches > 0) return check("template_boilerplate", "Template/navigation boilerplate", "blocked", 0, "Known navigation, header/footer, utility, or promotional template text is not valid page metadata.", evidenceIds);
+  if (hasRawTemplatePrefix(proposed, input.page)) return check("template_boilerplate", "Template/navigation boilerplate", "blocked", 0, "The proposal contains a raw prefix from the crawled page template.", evidenceIds);
+  return check("template_boilerplate", "Template/navigation boilerplate", "pass", 100, "No known template or navigation boilerplate was detected.", evidenceIds);
+}
+
+function pageSpecificContentCheck(input: ProposalQualityInput, proposed: string, evidenceIds: string[]) {
+  if (!input.page || !proposed) return check("page_specific_content", "Page-specific content", "blocked", 0, "A persisted page is required to construct page-specific metadata.", evidenceIds);
+  const identity = comparable(input.page.title || input.page.h1);
+  const body = comparable(input.page.contentText);
+  const proposedComparable = comparable(proposed);
+  const identityTerms = meaningfulWords(input.page.title || input.page.h1);
+  const identityOverlap = identityTerms.filter((term) => proposedComparable.includes(term)).length;
+  const rawPrefix = comparable(input.page.contentText).slice(0, 80);
+  if (rawPrefix.length >= 40 && proposedComparable.includes(rawPrefix)) return check("page_specific_content", "Page-specific content", "blocked", 0, "The proposal mirrors a raw crawl prefix instead of a cleaned page-specific description.", evidenceIds);
+  if (identityOverlap < Math.min(2, identityTerms.length) || body.length < 40) return check("page_specific_content", "Page-specific content", "blocked", 0, "The proposal lacks sufficient page identity and meaningful body evidence.", evidenceIds);
+  return check("page_specific_content", "Page-specific content", "pass", 100, "The proposal contains page identity and meaningful persisted content.", evidenceIds);
 }
 
 function evidenceConsistencyCheck(input: ProposalQualityInput) {
@@ -173,6 +204,8 @@ export function evaluateProposalQuality(input: ProposalQualityInput): ProposalQu
     keywordStuffingCheck(input, proposed),
     genericFillerCheck(proposed),
     formatCheck(proposed),
+    templateBoilerplateCheck(input, proposed, proposalEvidence),
+    pageSpecificContentCheck(input, proposed, proposalEvidence),
   ];
   const blockingReasons = checks.filter((item) => item.status === "blocked").map((item) => `${item.id}:${item.summary}`);
   const warnings = checks.filter((item) => item.status === "warning").map((item) => `${item.id}:${item.summary}`);

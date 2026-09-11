@@ -1,4 +1,5 @@
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
+import { buildPageSpecificMetaDescription, cleanPageEvidence, normalizeProposalText } from "./proposal-content.js";
 
 export const proposalLifecycleStages = [
   "draft_dry_run",
@@ -43,7 +44,7 @@ export type DryRunProposal = {
   };
 };
 
-const normalize = (value: string | null | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
+const normalize = (value: string | null | undefined) => normalizeProposalText(value);
 const words = (value: string) => value.match(/[A-Za-z0-9][A-Za-z0-9'’-]*/g) ?? [];
 const sentence = (value: string, max = 155) => {
   const clean = normalize(value);
@@ -52,7 +53,7 @@ const sentence = (value: string, max = 155) => {
   const candidate = (end >= 0 ? clean.slice(0, end + 1) : clean).slice(0, max).trim();
   return candidate.length >= 36 && words(candidate).length >= 6 ? candidate : "";
 };
-const pageContext = (page: CrawlPageSignal) => sentence(page.contentText) || normalize(page.h1) || normalize(page.title);
+const pageContext = (page: CrawlPageSignal) => sentence(cleanPageEvidence(page.contentText)) || normalize(page.h1) || normalize(page.title);
 const withQuery = (query: string, context: string) => {
   const prefix = `${normalize(query)}: `;
   const value = `${prefix}${context}`.slice(0, 155).trim();
@@ -81,7 +82,7 @@ function proposalDetails(candidate: OpportunityCandidate, page: CrawlPageSignal 
   };
   if (candidate.opportunityType === "technical_remediation") {
     if (/meta description/i.test(candidate.title)) {
-      const after = sentence(context);
+      const after = buildPageSpecificMetaDescription(page);
       if (!after) return null;
       return { ...base, actionType: "update_meta_description", field: "meta_description", beforeValue: description || null, afterValue: after, rollback: `Restore the observed meta description exactly: ${description || "(empty value)"}.` };
     }
