@@ -35,7 +35,13 @@ const candidate: OpportunityCandidate = {
 
 function gated(overrides: {
   afterValue?: string;
-  activeProposalValues?: Array<{ generationKey: string; value: string }>;
+  activeProposalValues?: Array<{
+    generationKey: string;
+    value: string;
+    collectionComposition?: boolean;
+    identity?: string | null;
+    categoryTypes?: string[];
+  }>;
   evidence?: Partial<{ crawl: string; shopify: string; gsc: string; opportunity: string }>;
 } = {}) {
   const base = createDryRunProposal(candidate, page, ["crawl-1", "shopify-1", "opportunity-1"]);

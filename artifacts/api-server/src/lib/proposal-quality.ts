@@ -8,6 +8,7 @@ export const proposalQualityCheckIds = [
   "evidence_consistency",
   "page_relevance",
   "active_set_uniqueness",
+  "collection_structural_diversity",
   "snippet_length",
   "existing_metadata_duplication",
   "unsupported_claims",
@@ -46,7 +47,13 @@ export type ProposalQualityInput = {
   proposal: DryRunProposal;
   candidate: OpportunityCandidate;
   page?: CrawlPageSignal;
-  activeProposalValues: Array<{ generationKey: string; value: string }>;
+  activeProposalValues: Array<{
+    generationKey: string;
+    value: string;
+    collectionComposition?: boolean;
+    identity?: string | null;
+    categoryTypes?: string[];
+  }>;
   evidence: {
     crawl?: string | null;
     shopify?: string | null;
@@ -105,6 +112,46 @@ function uniquenessCheck(input: ProposalQualityInput, proposed: string) {
   return duplicates.length > 0
     ? check("active_set_uniqueness", "Active-set uniqueness", "blocked", 0, `The same proposed value appears in ${duplicates.length} other active proposal${duplicates.length === 1 ? "" : "s"}.`)
     : check("active_set_uniqueness", "Active-set uniqueness", "pass", 100, "The proposed value is unique across the active proposal set.");
+}
+
+function isCollectionComposition(input: ProposalQualityInput) {
+  return input.proposal.expectedOutcome.semanticProfile?.candidateSentences
+    .some((item) => item.source === "shopify_collection_composition") === true;
+}
+
+function structuralTokens(value: string, identity?: string | null, categoryTypes: string[] = []) {
+  let normalized = comparable(value);
+  const evidencePhrases = [identity, ...categoryTypes]
+    .map(comparable)
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+  for (const phrase of evidencePhrases) normalized = normalized.replaceAll(phrase, " evidence ");
+  return normalized.split(/\s+/).filter(Boolean);
+}
+
+function bigramSimilarity(left: string[], right: string[]) {
+  const bigrams = (tokens: string[]) => new Set(tokens.slice(0, -1).map((token, index) => `${token} ${tokens[index + 1]}`));
+  const a = bigrams(left);
+  const b = bigrams(right);
+  if (a.size === 0 || b.size === 0) return 0;
+  const overlap = [...a].filter((item) => b.has(item)).length;
+  return (2 * overlap) / (a.size + b.size);
+}
+
+function collectionStructuralDiversityCheck(input: ProposalQualityInput, proposed: string) {
+  const profile = input.proposal.expectedOutcome.semanticProfile;
+  if (!isCollectionComposition(input)) {
+    return check("collection_structural_diversity", "Collection structural diversity", "pass", 100, "Structural diversity is not applicable to this proposal.");
+  }
+  const currentTokens = structuralTokens(proposed, profile?.identity.selected, profile?.composition.categoryTypes);
+  const similar = input.activeProposalValues.filter((item) => {
+    if (item.generationKey === input.candidate.generationKey || !item.collectionComposition) return false;
+    const otherTokens = structuralTokens(item.value, item.identity, item.categoryTypes);
+    return currentTokens.join(" ") === otherTokens.join(" ") || bigramSimilarity(currentTokens, otherTokens) >= 0.72;
+  });
+  return similar.length > 0
+    ? check("collection_structural_diversity", "Collection structural diversity", "blocked", 0, `The proposal repeats the sentence structure of ${similar.length} other active collection proposal${similar.length === 1 ? "" : "s"}.`)
+    : check("collection_structural_diversity", "Collection structural diversity", "pass", 100, "The proposal uses a distinct sentence structure across active collection proposals.");
 }
 
 function lengthCheck(field: string, proposed: string) {
@@ -234,6 +281,7 @@ export function evaluateProposalQuality(input: ProposalQualityInput): ProposalQu
     evidenceConsistencyCheck(input),
     relevanceCheck(input, proposed, proposalEvidence),
     uniquenessCheck(input, proposed),
+    collectionStructuralDiversityCheck(input, proposed),
     lengthCheck(input.proposal.expectedOutcome.proposal.field, proposed),
     duplicationCheck(input, proposed, proposalEvidence),
     unsupportedClaimsCheck(input, proposed, proposalEvidence),

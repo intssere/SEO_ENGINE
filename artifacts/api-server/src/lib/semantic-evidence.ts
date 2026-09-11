@@ -267,6 +267,23 @@ function collectionCategories(values: string[], identity: string) {
   return [...selected.values()].slice(0, 4);
 }
 
+function collectionCompositionSentence(path: string, identity: string, list: string) {
+  const templates = [
+    `${identity} brings together ${list} in one focused selection, making related products easier to compare.`,
+    `${identity} includes ${list}, arranged in a single collection so related product types are straightforward to compare.`,
+    `${identity} groups ${list} in one collection, keeping these related product types together for comparison.`,
+    `Within ${identity}, ${list} are presented together as related product types in a single collection.`,
+    `${identity} presents ${list} together, with the related product types organized in one collection for comparison.`,
+    `The ${identity} collection combines ${list}, placing these related product types together for easier comparison.`,
+  ];
+  let hash = 2166136261;
+  for (const character of path) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return templates[(hash >>> 0) % templates.length]!;
+}
+
 function collectionComposition(resource: ShopifySemanticResource | undefined, identity: string | null) {
   if (!resource || resource.kind !== "collection" || !identity) return null;
   const membership = resource.collectionMembership;
@@ -284,7 +301,7 @@ function collectionComposition(resource: ShopifySemanticResource | undefined, id
   if (categories.length < 2) return null;
   const list = categories.length === 2 ? categories.join(" and ") : `${categories.slice(0, -1).join(", ")}, and ${categories.at(-1)}`;
   return {
-    sentence: `${identity} brings together ${list} in one focused selection, making related products easier to compare.`,
+    sentence: collectionCompositionSentence(resourcePath, identity, list),
     categoryTypes: categories,
     matchedProducts: membership.observedCount,
   };

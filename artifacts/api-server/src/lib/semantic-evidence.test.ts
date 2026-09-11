@@ -258,8 +258,8 @@ test("collection composition requires complete exact-path Shopify membership", (
     suspiciouslyBroad: false,
     evidenceId: "shopify-1",
   });
-  assert.match(value, /brings together Bath Soak, Body Lotion, and Body Scrub/i);
-  assert.match(value, /easier to compare/i);
+  assert.match(value, /Bath Soak, Body Lotion, and Body Scrub/i);
+  assert.match(value, /compar/i);
   assert.doesNotMatch(value, /collection's product categories|one page/i);
   assert.doesNotMatch(value, /Shopify|provider|API|evidence|provenance|SEO ENGINE/i);
   assert.match(value, /[.!?]$/);
@@ -320,9 +320,117 @@ test("collection composition removes identity repeats and singular-plural catego
   });
   const value = generateMetaDescriptionFromProfile(profile) ?? "";
   assert.deepEqual(profile.composition.categoryTypes, ["Body Lotion", "Gift Set"]);
-  assert.match(value, /^Bath & Body brings together Body Lotion and Gift Set/i);
+  assert.match(value, /Bath & Body/i);
+  assert.match(value, /Body Lotion and Gift Set/i);
   assert.doesNotMatch(value, /Gift Sets|Shopify|provider|API|membership|certification/i);
   assert.equal(hasSafeSnippetIntegrity(value), true);
+});
+
+test("certified collections use varied deterministic sentence structures without unsupported claims", () => {
+  const handles = ["beauty", "hair", "home-fragrance", "unisex-fragrance", "womens-fragrance"];
+  const values = handles.map((handle, index) => {
+    const identity = handle.split("-").map((part) => part[0]!.toUpperCase() + part.slice(1)).join(" ");
+    const members = [
+      { path: `/products/${handle}-one`, title: `${identity} One`, productType: `Type ${index + 1}A`, tags: [] },
+      { path: `/products/${handle}-two`, title: `${identity} Two`, productType: `Type ${index + 1}B`, tags: [] },
+    ];
+    const testPage = { ...page, pageId: `page-${index}`, url: `https://diamondshelf.us/collections/${handle}`, title: identity, h1: identity, structuredData: [], contentText: "" };
+    const profile = buildSemanticPageProfile({
+      page: testPage,
+      candidate: { ...candidate, pageId: testPage.pageId, generationKey: `candidate-${handle}` },
+      shopifyResources: [{
+        kind: "collection",
+        path: `/collections/${handle}`,
+        title: identity,
+        description: null,
+        collectionMembership: {
+          collectionPath: `/collections/${handle}`,
+          sourceEndpoint: `/admin/api/2025-10/collections/${index + 1}/products.json`,
+          expectedCount: 2,
+          observedCount: 2,
+          coverageRatio: 1,
+          cardinalityValid: true,
+          catalogProductCount: 100,
+          limit: 500,
+          complete: true,
+          truncated: false,
+          suspiciouslyBroad: false,
+          members,
+        },
+      }],
+      shopifyEvidenceId: "shopify-1",
+    });
+    const value = generateMetaDescriptionFromProfile(profile) ?? "";
+    assert.match(value, new RegExp(identity, "i"));
+    assert.equal(hasSafeSnippetIntegrity(value), true);
+    assert.doesNotMatch(value, /best|premium|guaranteed|free shipping|Shopify|provider|API|SEO ENGINE/i);
+    return value
+      .replace(new RegExp(identity, "gi"), "[identity]")
+      .replace(new RegExp(`Type ${index + 1}[AB]`, "g"), "[type]");
+  });
+  assert.ok(new Set(values).size >= 3, values.join("\n"));
+});
+
+test("final gate blocks repeated collection structure but permits evidence-term overlap in distinct structures", () => {
+  const members = [
+    { path: "/products/body-lotion", title: "Body Lotion", productType: "Body Lotion", tags: [] },
+    { path: "/products/body-scrub", title: "Body Scrub", productType: "Body Scrub", tags: [] },
+  ];
+  const membership: NonNullable<ShopifySemanticResource["collectionMembership"]> = {
+    collectionPath: "/collections/bath-body",
+    sourceEndpoint: "/admin/api/2025-10/collections/42/products.json",
+    expectedCount: 2,
+    observedCount: 2,
+    coverageRatio: 1,
+    cardinalityValid: true,
+    catalogProductCount: 100,
+    limit: 500,
+    complete: true,
+    truncated: false,
+    suspiciouslyBroad: false,
+    members,
+  };
+  const profile = buildSemanticPageProfile({
+    page: { ...page, structuredData: [], contentText: "" },
+    candidate,
+    shopifyResources: [{ ...shopifyCollection, description: null, collectionMembership: membership }],
+    shopifyEvidenceId: "shopify-1",
+  });
+  const proposal = createDryRunProposal(candidate, page, ["crawl-1", "shopify-1", "opportunity-1"], profile);
+  const repeatedStructure = proposal.expectedOutcome.proposal.afterValue!
+    .replace(/Bath & Body/g, "Beauty")
+    .replace(/Body Lotion/g, "Cosmetics")
+    .replace(/Body Scrub/g, "Skin Care");
+  const repeated = evaluateProposalQuality({
+    proposal,
+    candidate,
+    page,
+    activeProposalValues: [{
+      generationKey: "other",
+      value: repeatedStructure,
+      collectionComposition: true,
+      identity: "Beauty",
+      categoryTypes: ["Cosmetics", "Skin Care"],
+    }],
+    evidence: { crawl: "crawl-1", shopify: "shopify-1", opportunity: "opportunity-1" },
+  });
+  assert.equal(repeated.checks.find((item) => item.id === "collection_structural_diversity")?.status, "blocked");
+  assert.equal(applyProposalQualityGate(proposal, repeated, candidate.generationKey).expectedOutcome.lifecycleStage, "draft_dry_run");
+
+  const distinct = evaluateProposalQuality({
+    proposal,
+    candidate,
+    page,
+    activeProposalValues: [{
+      generationKey: "other",
+      value: "Beauty presents Body Lotion and Body Scrub together as related product types in its collection.",
+      collectionComposition: true,
+      identity: "Beauty",
+      categoryTypes: ["Body Lotion", "Body Scrub"],
+    }],
+    evidence: { crawl: "crawl-1", shopify: "shopify-1", opportunity: "opportunity-1" },
+  });
+  assert.equal(distinct.checks.find((item) => item.id === "collection_structural_diversity")?.status, "pass");
 });
 
 test("collection membership certification rejects missing or inconsistent evidence and permits explicit null expected count", () => {

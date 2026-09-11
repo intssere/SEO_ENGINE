@@ -1050,9 +1050,15 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
         FROM opportunities
         WHERE site_id=${context.siteId}::uuid AND status IN ('new','accepted','planned')
           AND (impact_estimate->>'engine'='opportunity_engine_v1' OR opportunity_type='organic_ctr')`,
-      sql<Array<{ generationKey: string; value: string }>>`
+      sql<Array<{ generationKey: string; value: string; collectionComposition: boolean; identity: string | null; categoryTypes: string[] }>>`
         SELECT o.impact_estimate->>'generationKey' AS "generationKey",
-          ap.expected_outcome->'proposal'->>'afterValue' AS value
+          ap.expected_outcome->'proposal'->>'afterValue' AS value,
+          EXISTS (
+            SELECT 1 FROM jsonb_array_elements(COALESCE(ap.expected_outcome->'semanticProfile'->'candidateSentences','[]'::jsonb)) sentence
+            WHERE sentence->>'source'='shopify_collection_composition'
+          ) AS "collectionComposition",
+          ap.expected_outcome->'semanticProfile'->'identity'->>'selected' AS identity,
+          ARRAY(SELECT jsonb_array_elements_text(COALESCE(ap.expected_outcome->'semanticProfile'->'composition'->'categoryTypes','[]'::jsonb))) AS "categoryTypes"
         FROM action_plans ap JOIN opportunities o ON o.id=ap.opportunity_id
         WHERE ap.site_id=${context.siteId}::uuid AND ap.status='pending'
           AND o.status IN ('new','accepted','planned')
@@ -1133,7 +1139,13 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
           activeProposalValues: preliminaryProposals
             .filter((item) => item.generationKey !== entry.generationKey)
             .flatMap((item) => item.proposal.expectedOutcome.proposal.afterValue
-              ? [{ generationKey: item.generationKey, value: item.proposal.expectedOutcome.proposal.afterValue }]
+              ? [{
+                  generationKey: item.generationKey,
+                  value: item.proposal.expectedOutcome.proposal.afterValue,
+                  collectionComposition: item.proposal.expectedOutcome.semanticProfile?.candidateSentences.some((sentence) => sentence.source === "shopify_collection_composition") === true,
+                  identity: item.proposal.expectedOutcome.semanticProfile?.identity.selected,
+                  categoryTypes: item.proposal.expectedOutcome.semanticProfile?.composition.categoryTypes,
+                }]
               : []),
           evidence: {
             crawl: page.evidenceId,
@@ -1146,7 +1158,13 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       }, { concurrency: 2, retries: 5 });
     }
     const currentProposalValues = preliminaryProposals
-      .map(({ generationKey, proposal }) => ({ generationKey, value: proposal.expectedOutcome.proposal.afterValue ?? "" }))
+      .map(({ generationKey, proposal }) => ({
+        generationKey,
+        value: proposal.expectedOutcome.proposal.afterValue ?? "",
+        collectionComposition: proposal.expectedOutcome.semanticProfile?.candidateSentences.some((sentence) => sentence.source === "shopify_collection_composition") === true,
+        identity: proposal.expectedOutcome.semanticProfile?.identity.selected,
+        categoryTypes: proposal.expectedOutcome.semanticProfile?.composition.categoryTypes,
+      }))
       .filter((item) => item.value.length > 0);
     const reconciliationResult = reconcileManagedOpportunities(existingRows, candidates);
 
