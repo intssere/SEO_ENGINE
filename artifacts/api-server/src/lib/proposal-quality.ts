@@ -263,7 +263,7 @@ export function evaluateProposalQuality(input: ProposalQualityInput): ProposalQu
 }
 
 export function applyProposalQualityGate(proposal: DryRunProposal, gate: ProposalQualityGate, generationKey: string): QualityGatedProposal {
-  const lifecycleStage = proposal.expectedOutcome.lifecycleStage === "approval_ready" && gate.approvalEligible ? "approval_ready" : "draft_dry_run";
+  const lifecycleStage = gate.approvalEligible ? "approval_ready" : "draft_dry_run";
   const fingerprintPayload = JSON.stringify({
     generationKey,
     page: proposal.expectedOutcome.page.id,
@@ -285,7 +285,7 @@ export function applyProposalQualityGate(proposal: DryRunProposal, gate: Proposa
         ...proposal.expectedOutcome.proposal,
         blockedReason: lifecycleStage === "approval_ready"
           ? null
-          : proposal.expectedOutcome.proposal.blockedReason ?? gate.blockingReasons[0] ?? "quality_gate_blocked",
+          : gate.blockingReasons[0] ?? proposal.expectedOutcome.proposal.blockedReason ?? "quality_gate_blocked",
       },
       qualityGate: gate,
       proposalFingerprint: createHash("sha256").update(fingerprintPayload).digest("hex"),

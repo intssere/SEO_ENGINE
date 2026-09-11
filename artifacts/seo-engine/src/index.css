@@ -1050,7 +1050,9 @@
   font-size: 17px;
 }
 .approvalEmpty p {
+  max-width: min(440px, calc(100% - 32px));
   font-size: 12px;
+  overflow-wrap: anywhere;
 }
 .approvalConfirmDialog {
   border-radius: 14px;

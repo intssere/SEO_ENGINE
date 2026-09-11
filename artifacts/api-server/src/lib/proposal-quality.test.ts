@@ -52,12 +52,24 @@ function gated(overrides: {
 
 test("evidence-grounded relevant proposal passes deterministic quality scoring", () => {
   const result = gated();
+  assert.equal(result.base.expectedOutcome.lifecycleStage, "draft_dry_run");
   assert.equal(result.gate.status, "pass");
   assert.equal(result.gate.approvalEligible, true);
   assert.ok(result.gate.score >= 70);
   assert.equal(result.proposal.expectedOutcome.lifecycleStage, "approval_ready");
   assert.equal(result.proposal.expectedOutcome.executionAuthorized, false);
   assert.equal(result.proposal.expectedOutcome.publicSiteWrites, false);
+  assert.equal(result.proposal.expectedOutcome.automaticTransition, false);
+  assert.equal(result.proposal.expectedOutcome.proposal.blockedReason, null);
+});
+
+test("final quality gate promotes a preliminary draft without creating execution authority", () => {
+  const result = gated();
+  assert.equal(result.base.expectedOutcome.lifecycleStage, "draft_dry_run");
+  assert.equal(result.proposal.expectedOutcome.lifecycleStage, "approval_ready");
+  assert.equal(result.proposal.expectedOutcome.executionAuthorized, false);
+  assert.equal(result.proposal.expectedOutcome.publicSiteWrites, false);
+  assert.equal(result.proposal.expectedOutcome.automaticTransition, false);
 });
 
 test("duplicate proposed values across the active set are blocked", () => {
@@ -212,7 +224,7 @@ test("semantic main content wins over header and footer template regions", () =>
   };
   const proposal = createDryRunProposal(candidate, collectionPage, ["crawl-1", "opportunity-1"]);
   assert.match(proposal.expectedOutcome.proposal.afterValue ?? "", /includes cleansers, lotions, and body-care products/i);
-  assert.equal(proposal.expectedOutcome.lifecycleStage, "approval_ready");
+  assert.equal(proposal.expectedOutcome.lifecycleStage, "draft_dry_run");
 });
 
 test("collection descriptions require page-specific natural sentences rather than keyword lists", () => {

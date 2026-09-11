@@ -18,7 +18,7 @@ const candidate: OpportunityCandidate = {
 
 test("metadata proposals use observed page content rather than generic filler", () => {
   const proposal = createDryRunProposal(candidate, page, ["crawl-evidence", "opportunity-signal"]);
-  assert.equal(proposal.expectedOutcome.lifecycleStage, "approval_ready");
+  assert.equal(proposal.expectedOutcome.lifecycleStage, "draft_dry_run");
   assert.equal(proposal.expectedOutcome.proposal.beforeValue, null);
   assert.match(proposal.expectedOutcome.proposal.afterValue ?? "", /solitaire diamond ring/i);
   assert.doesNotMatch(proposal.expectedOutcome.proposal.afterValue ?? "", /discover|learn more|shop now/i);
@@ -73,6 +73,7 @@ test("planner output is deterministic, reviewable, blocked, and reversible", () 
   assert.equal(first.expectedOutcome.executionAuthorized, false);
   assert.equal(first.expectedOutcome.publicSiteWrites, false);
   assert.equal(first.expectedOutcome.automaticTransition, false);
+  assert.equal(first.expectedOutcome.lifecycleStage, "draft_dry_run");
   assert.match(first.expectedOutcome.proposal.rollback, /Restore/i);
 });
 

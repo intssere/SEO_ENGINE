@@ -258,7 +258,9 @@ test("collection composition requires complete exact-path Shopify membership", (
     suspiciouslyBroad: false,
     evidenceId: "shopify-1",
   });
-  assert.match(value, /collection's product categories/i);
+  assert.match(value, /brings together Bath Soak, Body Lotion, and Body Scrub/i);
+  assert.match(value, /easier to compare/i);
+  assert.doesNotMatch(value, /collection's product categories|one page/i);
   assert.doesNotMatch(value, /Shopify|provider|API|evidence|provenance|SEO ENGINE/i);
   assert.match(value, /[.!?]$/);
   assert.doesNotMatch(value, /best|premium|guaranteed|free shipping/i);
@@ -287,6 +289,40 @@ test("collection composition requires complete exact-path Shopify membership", (
   assert.equal(corruptedGate.checks.find((item) => item.id === "collection_membership_certification")?.status, "blocked");
   assert.equal(corruptedGate.approvalEligible, false);
   assert.equal(profile.blockers.length, 0);
+});
+
+test("collection composition removes identity repeats and singular-plural category duplicates", () => {
+  const members = [
+    { path: "/products/gift-set-1", title: "Gift Set One", productType: "Gift Set", tags: [] },
+    { path: "/products/gift-set-2", title: "Gift Set Two", productType: "Gift Sets", tags: [] },
+    { path: "/products/body-care", title: "Body Care", productType: "Bath & Body", tags: [] },
+    { path: "/products/body-lotion", title: "Body Lotion", productType: "Body Lotion", tags: [] },
+  ];
+  const membership: NonNullable<ShopifySemanticResource["collectionMembership"]> = {
+    collectionPath: "/collections/bath-body",
+    sourceEndpoint: "/admin/api/2025-10/collections/42/products.json",
+    expectedCount: members.length,
+    observedCount: members.length,
+    coverageRatio: 1,
+    cardinalityValid: true,
+    catalogProductCount: 2_997,
+    limit: 500,
+    complete: true,
+    truncated: false,
+    suspiciouslyBroad: false,
+    members,
+  };
+  const profile = buildSemanticPageProfile({
+    page: { ...page, structuredData: [], contentText: "" },
+    candidate,
+    shopifyResources: [{ ...shopifyCollection, description: null, collectionMembership: membership }],
+    shopifyEvidenceId: "shopify-1",
+  });
+  const value = generateMetaDescriptionFromProfile(profile) ?? "";
+  assert.deepEqual(profile.composition.categoryTypes, ["Body Lotion", "Gift Set"]);
+  assert.match(value, /^Bath & Body brings together Body Lotion and Gift Set/i);
+  assert.doesNotMatch(value, /Gift Sets|Shopify|provider|API|membership|certification/i);
+  assert.equal(hasSafeSnippetIntegrity(value), true);
 });
 
 test("collection membership certification rejects missing or inconsistent evidence and permits explicit null expected count", () => {

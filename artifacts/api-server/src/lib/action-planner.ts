@@ -146,7 +146,7 @@ export function createDryRunProposal(
     rationale: details?.rationale ?? `${candidate.recommendation} Proposal remains blocked because source evidence is insufficient for a concrete change.`,
     expectedOutcome: {
       planner: "dry_run_action_planner_v1",
-      lifecycleStage: sufficient ? "approval_ready" : "draft_dry_run",
+      lifecycleStage: "draft_dry_run",
       dryRun: true,
       executionAuthorized: false,
       publicSiteWrites: false,

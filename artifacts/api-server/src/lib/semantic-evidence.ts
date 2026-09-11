@@ -250,6 +250,23 @@ function identityConflict(values: Array<string | null>, path: string) {
   return distinct.length > 1;
 }
 
+const collectionCategoryKey = (value: string) => comparable(value)
+  .split(" ")
+  .map((term) => term.length > 3 && term.endsWith("s") && !term.endsWith("ss") ? term.slice(0, -1) : term)
+  .join(" ");
+
+function collectionCategories(values: string[], identity: string) {
+  const identityCategory = collectionCategoryKey(identity);
+  const selected = new Map<string, string>();
+  for (const value of values.map(normalizeProposalText).filter((value) =>
+    value.length >= 3 && !containsProposalBoilerplate(value) && !absoluteClaims.test(value)).sort()) {
+    const key = collectionCategoryKey(value);
+    if (!key || key === identityCategory || selected.has(key)) continue;
+    selected.set(key, value);
+  }
+  return [...selected.values()].slice(0, 4);
+}
+
 function collectionComposition(resource: ShopifySemanticResource | undefined, identity: string | null) {
   if (!resource || resource.kind !== "collection" || !identity) return null;
   const membership = resource.collectionMembership;
@@ -260,14 +277,14 @@ function collectionComposition(resource: ShopifySemanticResource | undefined, id
     || membership.observedCount < 2
     || membership.members.length !== membership.observedCount
     || (membership.expectedCount !== null && membership.expectedCount !== membership.observedCount)) return null;
-  const categories = unique(membership.members.map((member) => normalizeProposalText(member.productType)).filter((value) =>
-    value.length >= 3 && !containsProposalBoilerplate(value) && !absoluteClaims.test(value)))
-    .sort()
-    .slice(0, 4);
+  const categories = collectionCategories(
+    membership.members.map((member) => member.productType ?? ""),
+    identity,
+  );
   if (categories.length < 2) return null;
   const list = categories.length === 2 ? categories.join(" and ") : `${categories.slice(0, -1).join(", ")}, and ${categories.at(-1)}`;
   return {
-    sentence: `${identity} includes ${list}, bringing the collection's product categories together on one page.`,
+    sentence: `${identity} brings together ${list} in one focused selection, making related products easier to compare.`,
     categoryTypes: categories,
     matchedProducts: membership.observedCount,
   };
