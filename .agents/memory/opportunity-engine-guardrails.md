@@ -20,3 +20,15 @@ Managed candidates that no longer qualify must be dismissed as superseded histor
 **Why:** Persisted candidates become misleading when the latest evidence changes, and recommendation generation must never create an implicit execution path.
 
 **How to apply:** Reconcile candidates by stable generation key on every baseline run, show only active managed rows in current counts, retain dismissed rows separately for audit history, and store plans with blocked risk.
+
+The dashboard's recent-opportunity activity is a count of active managed rows updated in the last 24 hours, not strictly newly inserted rows. “Actions prepared” counts executable action rows, not blocked dry-run action plans.
+
+**Why:** A rerun can update an existing candidate and make the activity label “candidates created” misleading, while valid persisted recommendation plans can coexist with zero executable actions.
+
+**How to apply:** Interpret the activity number as recently refreshed active candidates, and query action plans separately when confirming dry-run recommendation persistence.
+
+Crawler technical observations currently identify their page through `payload.pageId` while their direct evidence `page_id` can be null; the derived opportunity signal has the direct page association.
+
+**Why:** Production evidence remains traceable through the finding and payload, but direct evidence-table joins alone undercount page-aligned crawler observations.
+
+**How to apply:** Validate technical evidence using the finding's page, the primary evidence ID, the observation payload page ID, and run provenance together.
