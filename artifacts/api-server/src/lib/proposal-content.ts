@@ -1,5 +1,5 @@
 import type { CrawlPageSignal } from "./opportunity-engine.js";
-import { buildSemanticPageProfile, generateMetaDescriptionFromProfile, type SemanticPageProfile } from "./semantic-evidence.js";
+import { buildSemanticPageProfile, fitMetaDescriptionSafely, generateMetaDescriptionFromProfile, type SemanticPageProfile } from "./semantic-evidence.js";
 
 const entityMap: Record<string, string> = {
   "&amp;": "&",
@@ -114,13 +114,6 @@ function cleanSentences(value: string) {
       && !containsProposalBoilerplate(sentence));
 }
 
-function fitDescription(value: string) {
-  const normalized = normalizeProposalText(value).replace(/\s+/g, " ").trim();
-  if (normalized.length <= 155) return normalized;
-  const shortened = normalized.slice(0, 155).replace(/\s+\S*$/, "").replace(/[,:;—-]\s*$/, "").trim();
-  return shortened;
-}
-
 export function buildPageSpecificMetaDescription(page: CrawlPageSignal, profile?: SemanticPageProfile) {
   if (profile) return generateMetaDescriptionFromProfile(profile);
   const identity = normalizeProposalText(page.h1 || page.title);
@@ -133,9 +126,9 @@ export function buildPageSpecificMetaDescription(page: CrawlPageSignal, profile?
     return identityOverlap >= Math.min(2, identityTerms.size) && pageSpecificTerms.size >= 6;
   });
   if (!identity || !bodySentence) return null;
-  const body = bodySentence.toLowerCase().startsWith(identity.toLowerCase()) ? bodySentence : `${identity}. ${bodySentence}`;
-  const description = fitDescription(body);
-  return description.length >= 50 && description.length <= 155 ? description : null;
+  const containsIdentity = normalizeProposalText(bodySentence).toLowerCase().includes(normalizeProposalText(identity).toLowerCase());
+  const body = bodySentence.toLowerCase().startsWith(identity.toLowerCase()) || containsIdentity ? bodySentence : `${identity}. ${bodySentence}`;
+  return fitMetaDescriptionSafely(body);
 }
 
 export function hasRawTemplatePrefix(proposed: string, page: CrawlPageSignal | undefined) {

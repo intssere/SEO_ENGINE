@@ -81,6 +81,13 @@ test("snippet length and page relevance block malformed proposals", () => {
   assert.equal(irrelevant.gate.checks.find((item) => item.id === "page_relevance")?.status, "blocked");
 });
 
+test("semantic snippet integrity blocks dangling endings even when evidence is relevant", () => {
+  const result = gated({ afterValue: "Classic Solitaire Diamond Ring pairs a round brilliant center diamond with a refined platinum setting designed for the." });
+  assert.equal(result.gate.checks.find((item) => item.id === "snippet_integrity")?.status, "blocked");
+  assert.equal(result.gate.approvalEligible, false);
+  assert.equal(result.proposal.expectedOutcome.lifecycleStage, "draft_dry_run");
+});
+
 test("missing required provider evidence blocks product-page approval readiness", () => {
   const result = gated({ evidence: { shopify: undefined } });
   assert.equal(result.gate.checks.find((item) => item.id === "evidence_consistency")?.status, "blocked");

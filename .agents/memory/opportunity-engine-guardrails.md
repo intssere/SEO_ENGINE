@@ -74,3 +74,9 @@ Page identity comparison may resolve only narrow, path-specific presentation ali
 **Why:** “Brands”/“All Brands” and “Scent Profiles”/“Find Your Scent Profile” are benign display variants, while generic fuzzy matching would hide real source conflicts. Catalog composition is safer than contaminated body text only when its terms are directly observed.
 
 **How to apply:** Canonicalize approved aliases for their known paths, retain true conflicts, exclude legal and site-chrome sentences, count corroboration by independent evidence records, and keep synthesis factual, bounded, deterministic, and fully attributed to Shopify evidence.
+
+Collection composition requires a direct, exact-resource membership listing with complete bounded cardinality; global catalog term matching is never membership evidence. Meta descriptions must close at a sentence or safe clause boundary.
+
+**Why:** Broad title/tag matching made narrow collections appear to contain most of the catalog, and hard character truncation produced dangling endings that passed other quality checks.
+
+**How to apply:** Persist the collection endpoint, path, expected/observed counts, coverage, truncation, and broadness decision. Reject incomplete, mismatched, or suspicious membership and any snippet ending in a dangling article, preposition, conjunction, or malformed phrase.

@@ -14,6 +14,7 @@ import {
   organicCtrOpportunityValidity,
   parseShopifyProductCount,
   paginateShopifyCatalog,
+  paginateShopifyCollectionMembers,
   PilotExecutionError,
   providerFailureCategory,
   reconcileGscAggregate,
@@ -79,7 +80,7 @@ test("bounded crawler respects page and depth limits", async () => {
     const index = Number(url.match(/page-(\d+)/)?.[1] ?? 0);
     return new Response(`<html><head><title>Page ${index}</title><script type="application/ld+json">{"@type":"CollectionPage","description":"Page ${index} includes current catalog items organized by product type for this collection."}</script></head><body><main><h1>Page</h1><h2>Collection details</h2><a href="/page-${index + 1}">Next collection page</a><a href="/private">Private</a></main></body></html>`, { status: 200, headers: { "content-type": "text/html" } });
   };
-  const result = await crawlSite("https://diamondshelf.us", fetchImpl as typeof fetch, { crawlPages: 2, crawlDepth: 1, responseBytes: 20_000, requestTimeoutMs: 1_000, gscRows: 10, shopifyProducts: 10 });
+  const result = await crawlSite("https://diamondshelf.us", fetchImpl as typeof fetch, { crawlPages: 2, crawlDepth: 1, responseBytes: 20_000, requestTimeoutMs: 1_000, gscRows: 10, shopifyProducts: 10, shopifyCollectionMembers: 10 });
   assert.equal(result.fetched, 2);
   assert.equal(result.pages.length, 2);
   assert.equal(result.pages.some((page) => page.path === "/private"), false);
@@ -230,6 +231,72 @@ test("Shopify catalog pagination follows read-only cursors and reports completen
   });
   assert.equal(requests.length, 2);
   assert.doesNotMatch(requests[0]!, /status=any/);
+});
+
+test("Shopify collection membership is bound to the exact collection endpoint and cardinality", async () => {
+  const requests: string[] = [];
+  const fetchImpl = async (input: URL | Request | string) => {
+    const url = String(input);
+    requests.push(url);
+    const first = !url.includes("page_info=");
+    return new Response(JSON.stringify({ products: first
+      ? [{ id: 1, title: "Body Lotion", handle: "body-lotion", product_type: "Body Lotion", tags: "body care" }]
+      : [{ id: 2, title: "Body Scrub", handle: "body-scrub", product_type: "Body Scrub", tags: "body care" }] }), {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+        ...(first ? { link: '<https://store.myshopify.com/admin/api/2025-10/collections/42/products.json?page_info=next&limit=250>; rel="next"' } : {}),
+      },
+    });
+  };
+  const result = await paginateShopifyCollectionMembers({
+    base: "https://store.myshopify.com/admin/api/2025-10",
+    accessToken: "test",
+    collectionId: 42,
+    collectionPath: "/collections/bath-body",
+    expectedCount: 2,
+    catalogProductCount: 100,
+    fetchImpl: fetchImpl as typeof fetch,
+    limit: 10,
+  });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.data.collectionPath, "/collections/bath-body");
+  assert.equal(result.data.observedCount, 2);
+  assert.equal(result.data.coverageRatio, 1);
+  assert.equal(result.data.cardinalityValid, true);
+  assert.match(result.data.sourceEndpoint, /\/collections\/42\/products\.json$/);
+  assert.equal(result.data.complete, true);
+  assert.equal(result.data.truncated, false);
+  assert.equal(result.data.suspiciouslyBroad, false);
+  assert.deepEqual(result.data.members.map((member) => member.path), ["/products/body-lotion", "/products/body-scrub"]);
+  assert.equal(requests.length, 2);
+  assert.ok(requests.every((url) => new URL(url).pathname.endsWith("/collections/42/products.json")));
+});
+
+test("Shopify collection membership fails closed on truncation and suspicious breadth", async () => {
+  const products = Array.from({ length: 80 }, (_, index) => ({
+    id: index + 1,
+    title: `Product ${index + 1}`,
+    handle: `product-${index + 1}`,
+    product_type: index % 2 ? "Body Lotion" : "Body Scrub",
+    tags: "",
+  }));
+  const fetchImpl = async () => new Response(JSON.stringify({ products }), { status: 200 });
+  const result = await paginateShopifyCollectionMembers({
+    base: "https://store.myshopify.com/admin/api/2025-10",
+    accessToken: "test",
+    collectionId: 42,
+    collectionPath: "/collections/fragrance",
+    expectedCount: 80,
+    catalogProductCount: 100,
+    fetchImpl: fetchImpl as typeof fetch,
+    limit: 100,
+  });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.data.complete, true);
+  assert.equal(result.data.suspiciouslyBroad, true);
 });
 
 test("Shopify pagination does not trust a false zero count and still observes the catalog", async () => {

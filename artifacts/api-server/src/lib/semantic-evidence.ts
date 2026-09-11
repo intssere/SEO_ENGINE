@@ -3,6 +3,7 @@ import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine
 export type SemanticSourceKind =
   | "shopify_product"
   | "shopify_collection"
+  | "shopify_collection_membership"
   | "shopify_collection_composition"
   | "shopify_page"
   | "structured_data"
@@ -20,11 +21,24 @@ export type ShopifySemanticResource = {
   vendor?: string | null;
   tags?: string[];
   productCount?: number | null;
-  collectionComposition?: {
-    productTypes: string[];
-    tags: string[];
-    productsObserved: number;
+  collectionMembership?: {
+    collectionPath: string;
+    sourceEndpoint: string;
+    expectedCount: number | null;
+    observedCount: number;
+    coverageRatio: number | null;
+    cardinalityValid: boolean;
+    catalogProductCount: number;
+    limit: number;
+    complete: boolean;
     truncated: boolean;
+    suspiciouslyBroad: boolean;
+    members: Array<{
+      path: string;
+      title: string;
+      productType: string | null;
+      tags: string[];
+    }>;
   };
 };
 
@@ -62,6 +76,11 @@ export type SemanticPageProfile = {
     productCount: number | null;
     categoryTypes: string[];
     matchedProducts: number;
+    expectedMembers: number | null;
+    membershipComplete: boolean;
+    membershipTruncated: boolean;
+    membershipSuspiciouslyBroad: boolean;
+    membershipPath: string | null;
   };
   supportingQueries: string[];
   provenance: SemanticProvenance[];
@@ -146,28 +165,30 @@ function identityConflict(values: Array<string | null>, path: string) {
   return distinct.length > 1;
 }
 
-function collectionComposition(resource: ShopifySemanticResource | undefined, resources: ShopifySemanticResource[], identity: string | null) {
+function collectionComposition(resource: ShopifySemanticResource | undefined, identity: string | null) {
   if (!resource || resource.kind !== "collection" || !identity) return null;
-  const identityTerms = new Set(terms(identity));
-  const matchingProducts = resources.filter((item) => item.kind === "product" && [...identityTerms].some((term) =>
-    terms([item.title, item.productType, ...(item.tags ?? [])].filter(Boolean).join(" ")).includes(term)));
-  const composition = resource.collectionComposition ?? {
-    productTypes: matchingProducts.map((item) => item.productType ?? "").filter(Boolean),
-    tags: matchingProducts.flatMap((item) => item.tags ?? []),
-    productsObserved: matchingProducts.length,
-    truncated: false,
-  };
-  if (!composition || composition.productsObserved < 2) return null;
-  const categories = unique(composition.productTypes.map(normalizeProposalText).filter((value) =>
+  const membership = resource.collectionMembership;
+  const resourcePath = pathOf(resource.path);
+  if (!membership
+    || pathOf(membership.collectionPath) !== resourcePath
+    || membership.complete !== true
+    || !membership.cardinalityValid
+    || membership.coverageRatio !== 1
+    || membership.truncated
+    || membership.suspiciouslyBroad
+    || membership.observedCount < 2
+    || membership.members.length !== membership.observedCount
+    || (membership.expectedCount !== null && membership.expectedCount !== membership.observedCount)) return null;
+  const categories = unique(membership.members.map((member) => normalizeProposalText(member.productType)).filter((value) =>
     value.length >= 3 && !containsProposalBoilerplate(value) && !absoluteClaims.test(value)))
     .sort()
     .slice(0, 4);
   if (categories.length < 2) return null;
   const list = categories.length === 2 ? categories.join(" and ") : `${categories.slice(0, -1).join(", ")}, and ${categories.at(-1)}`;
   return {
-    sentence: `${identity} includes ${list} products represented in the observed Shopify catalog.`,
+    sentence: `${identity} includes ${list} products in this Shopify collection.`,
     categoryTypes: categories,
-    matchedProducts: composition.productsObserved,
+    matchedProducts: membership.observedCount,
   };
 }
 
@@ -200,7 +221,18 @@ export function buildSemanticPageProfile(input: {
   if (resource) {
     const source = `shopify_${resource.kind}` as "shopify_product" | "shopify_collection" | "shopify_page";
     add(source, input.shopifyEvidenceId ?? null, "description", 0.98, cleanNaturalSentences(resource.description));
-    const composition = collectionComposition(resource, input.shopifyResources ?? [], selected);
+    const membership = resource.collectionMembership;
+    if (membership) {
+      provenance.push({
+        source: "shopify_collection_membership",
+        evidenceId: input.shopifyEvidenceId ?? null,
+        path,
+        field: "exact_collection_membership",
+        confidence: membership.complete && !membership.truncated && !membership.suspiciouslyBroad ? 0.98 : 0,
+        usedForCopy: false,
+      });
+    }
+    const composition = collectionComposition(resource, selected);
     if (composition && !candidates.some((candidate) => candidate.source === source)) {
       add("shopify_collection_composition", input.shopifyEvidenceId ?? null, "collection_composition", 0.92, [composition.sentence]);
     }
@@ -222,7 +254,8 @@ export function buildSemanticPageProfile(input: {
   const independentEvidence = unique(candidates.map((candidate) => candidate.evidenceId ?? `source:${candidate.source}`));
   const corroborationBonus = Math.min(0.08, Math.max(0, independentEvidence.length - 1) * 0.04);
   const confidence = Number(Math.min(0.99, Math.max(0, sourceConfidence + corroborationBonus - conflicts.length * 0.2)).toFixed(2));
-  const resolvedComposition = collectionComposition(resource, input.shopifyResources ?? [], selected);
+  const resolvedComposition = collectionComposition(resource, selected);
+  const membership = resource?.collectionMembership;
   const profile: SemanticPageProfile = {
     version: "semantic_evidence_v1",
     pageId: input.page.pageId,
@@ -238,6 +271,11 @@ export function buildSemanticPageProfile(input: {
       productCount: typeof resource?.productCount === "number" ? resource.productCount : null,
       categoryTypes: resolvedComposition?.categoryTypes ?? [],
       matchedProducts: resolvedComposition?.matchedProducts ?? 0,
+      expectedMembers: membership?.expectedCount ?? null,
+      membershipComplete: membership?.complete ?? false,
+      membershipTruncated: membership?.truncated ?? false,
+      membershipSuspiciouslyBroad: membership?.suspiciouslyBroad ?? false,
+      membershipPath: membership?.collectionPath ?? null,
     },
     supportingQueries,
     provenance,
@@ -265,11 +303,34 @@ export function buildSemanticPageProfile(input: {
   return profile;
 }
 
-function fitDescription(value: string) {
+const danglingEnding = /\b(?:a|an|the|and|or|but|for|from|in|into|of|on|onto|to|with|by|at|as|via|through|while|than|that|which|because|when|where)\s*[.!?]$/i;
+
+export function hasSafeSnippetIntegrity(value: string | null | undefined) {
   const normalized = normalizeProposalText(value);
-  if (normalized.length <= 155) return normalized;
-  const shortened = normalized.slice(0, 154).replace(/\s+\S*$/, "").replace(/[,:;—-]\s*$/, "").trim();
-  return /[.!?]$/.test(shortened) ? shortened : `${shortened}.`;
+  return normalized.length >= 50
+    && normalized.length <= 155
+    && /[.!?]$/.test(normalized)
+    && !danglingEnding.test(normalized)
+    && !/[.!?]{2,}/.test(normalized)
+    && !/\s+[,.;:!?]/.test(normalized)
+    && !/[,:;—-]\s*$/.test(normalized)
+    && !/\b(?:observed|the)\s+Shopify[.!?]$/i.test(normalized)
+    && !/[\uFFFD<>]|&(?:amp|nbsp|quot|apos|lt|gt|#\d+);/i.test(normalized);
+}
+
+export function fitMetaDescriptionSafely(value: string): string | null {
+  const normalized = normalizeProposalText(value);
+  if (hasSafeSnippetIntegrity(normalized)) return normalized;
+  if (normalized.length <= 155) return null;
+  const candidates: string[] = [];
+  for (const match of normalized.matchAll(/[.!?](?=\s|$)|[,;:—](?=\s|$)/g)) {
+    const end = (match.index ?? -1) + 1;
+    if (end < 50 || end > 155) continue;
+    const boundary = match[0];
+    const prefix = normalized.slice(0, boundary === "." || boundary === "!" || boundary === "?" ? end : end - 1).trim();
+    candidates.push(/[.!?]$/.test(prefix) ? prefix : `${prefix}.`);
+  }
+  return candidates.reverse().find(hasSafeSnippetIntegrity) ?? null;
 }
 
 function selectProfileSentence(profile: SemanticPageProfile) {
@@ -289,8 +350,9 @@ export function generateMetaDescriptionFromProfile(profile: SemanticPageProfile)
   const identity = profile.identity.selected;
   const source = selectProfileSentence(profile);
   if (!identity || !source) return null;
-  const value = source.text.toLowerCase().startsWith(identity.toLowerCase()) ? source.text : `${identity}. ${source.text}`;
-  const description = fitDescription(value).replace(/([.!?])(?:\s*[.!?])+/g, "$1");
-  if (description.length < 50 || description.length > 155 || containsProposalBoilerplate(description) || absoluteClaims.test(description)) return null;
+  const sourceContainsIdentity = comparable(source.text).includes(comparable(identity));
+  const value = source.text.toLowerCase().startsWith(identity.toLowerCase()) || sourceContainsIdentity ? source.text : `${identity}. ${source.text}`;
+  const description = fitMetaDescriptionSafely(value);
+  if (!description || !hasSafeSnippetIntegrity(description) || containsProposalBoilerplate(description) || absoluteClaims.test(description)) return null;
   return description;
 }

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { DryRunProposal } from "./action-planner.js";
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
 import { containsProposalBoilerplate, hasRawTemplatePrefix } from "./proposal-content.js";
+import { hasSafeSnippetIntegrity } from "./semantic-evidence.js";
 
 export const proposalQualityCheckIds = [
   "evidence_consistency",
@@ -13,6 +14,7 @@ export const proposalQualityCheckIds = [
   "keyword_stuffing",
   "generic_filler",
   "format_integrity",
+  "snippet_integrity",
   "template_boilerplate",
   "page_specific_content",
 ] as const;
@@ -166,6 +168,13 @@ function formatCheck(proposed: string) {
   return check("format_integrity", "Format integrity", "pass", 100, "No truncation or formatting defect was detected.");
 }
 
+function snippetIntegrityCheck(field: string, proposed: string) {
+  if (field !== "meta_description") return check("snippet_integrity", "Semantic snippet integrity", "pass", 100, "Semantic snippet integrity is not applicable to this field.");
+  return hasSafeSnippetIntegrity(proposed)
+    ? check("snippet_integrity", "Semantic snippet integrity", "pass", 100, "The meta description is grammatically closed and free of malformed or dangling endings.")
+    : check("snippet_integrity", "Semantic snippet integrity", "blocked", 0, "The meta description has an incomplete, dangling, malformed, or syntactically unsafe ending.");
+}
+
 function templateBoilerplateCheck(input: ProposalQualityInput, proposed: string, evidenceIds: string[]) {
   if (containsProposalBoilerplate(proposed)) return check("template_boilerplate", "Template/navigation boilerplate", "blocked", 0, "Known navigation, header/footer, utility, or promotional template text is not valid page metadata.", evidenceIds);
   if (hasRawTemplatePrefix(proposed, input.page)) return check("template_boilerplate", "Template/navigation boilerplate", "blocked", 0, "The proposal contains a raw prefix from the crawled page template.", evidenceIds);
@@ -210,6 +219,7 @@ export function evaluateProposalQuality(input: ProposalQualityInput): ProposalQu
     keywordStuffingCheck(input, proposed),
     genericFillerCheck(proposed),
     formatCheck(proposed),
+    snippetIntegrityCheck(input.proposal.expectedOutcome.proposal.field, proposed),
     templateBoilerplateCheck(input, proposed, proposalEvidence),
     pageSpecificContentCheck(input, proposed, proposalEvidence),
   ];

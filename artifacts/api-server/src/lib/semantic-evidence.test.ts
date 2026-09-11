@@ -3,7 +3,7 @@ import test from "node:test";
 import { createDryRunProposal } from "./action-planner.js";
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
 import { applyProposalQualityGate, evaluateProposalQuality } from "./proposal-quality.js";
-import { buildSemanticPageProfile, generateMetaDescriptionFromProfile, type ShopifySemanticResource } from "./semantic-evidence.js";
+import { buildSemanticPageProfile, generateMetaDescriptionFromProfile, hasSafeSnippetIntegrity, type ShopifySemanticResource } from "./semantic-evidence.js";
 
 const page: CrawlPageSignal = {
   pageId: "page-1",
@@ -184,7 +184,8 @@ test("benign Scent Profiles identity alias normalizes punctuation and remains pa
   const value = generateMetaDescriptionFromProfile(profile) ?? "";
   assert.deepEqual(profile.conflicts, []);
   assert.doesNotMatch(value, /\.\./);
-  assert.match(value, /^Scent Profiles\./);
+  assert.equal(value, "Diamond Shelf groups the catalog into twelve shopper-friendly scent profiles while preserving each fragrance's detailed family on the product page.");
+  assert.equal(hasSafeSnippetIntegrity(value), true);
   assert.ok(profile.confidence >= 0.7);
 });
 
@@ -206,21 +207,42 @@ test("Contact legal and trademark copy is excluded from candidates", () => {
   assert.equal(generateMetaDescriptionFromProfile(profile), null);
 });
 
-test("collection composition creates bounded factual copy from matching first-party product metadata", () => {
-  const collection = { ...shopifyCollection, description: null };
-  const products: ShopifySemanticResource[] = [
-    { kind: "product", path: "/products/body-lotion", title: "Daily Body Lotion", description: null, productType: "Body Lotion", tags: ["body care"] },
-    { kind: "product", path: "/products/body-scrub", title: "Body Scrub", description: null, productType: "Body Scrub", tags: ["body care"] },
-    { kind: "product", path: "/products/bath-soak", title: "Mineral Bath Soak", description: null, productType: "Bath Soak", tags: ["bath"] },
+test("collection composition requires complete exact-path Shopify membership", () => {
+  const members = [
+    { path: "/products/body-lotion", title: "Daily Body Lotion", productType: "Body Lotion", tags: ["body care"] },
+    { path: "/products/body-scrub", title: "Body Scrub", productType: "Body Scrub", tags: ["body care"] },
+    { path: "/products/bath-soak", title: "Mineral Bath Soak", productType: "Bath Soak", tags: ["bath"] },
   ];
-  const profile = buildSemanticPageProfile({ page, candidate, shopifyResources: [collection, ...products], shopifyEvidenceId: "shopify-1" });
+  const collection: ShopifySemanticResource = {
+    ...shopifyCollection,
+    description: null,
+    productCount: 3,
+    collectionMembership: {
+      collectionPath: "/collections/bath-body",
+      sourceEndpoint: "/admin/api/2025-10/collections/42/products.json",
+      expectedCount: 3,
+      observedCount: 3,
+      coverageRatio: 1,
+      cardinalityValid: true,
+      catalogProductCount: 2_997,
+      limit: 500,
+      complete: true,
+      truncated: false,
+      suspiciouslyBroad: false,
+      members,
+    },
+  };
+  const profile = buildSemanticPageProfile({ page, candidate, shopifyResources: [collection], shopifyEvidenceId: "shopify-1" });
   const value = generateMetaDescriptionFromProfile(profile) ?? "";
   assert.equal(profile.candidateSentences[0]?.source, "shopify_collection_composition");
   assert.deepEqual(profile.composition.categoryTypes, ["Bath Soak", "Body Lotion", "Body Scrub"]);
   assert.equal(profile.composition.matchedProducts, 3);
-  assert.match(value, /observed Shopify catalog/i);
+  assert.equal(profile.composition.membershipComplete, true);
+  assert.match(value, /in this Shopify collection/i);
   assert.match(value, /[.!?]$/);
   assert.doesNotMatch(value, /best|premium|guaranteed|free shipping/i);
+  assert.ok(profile.provenance.some((entry) => entry.source === "shopify_collection_membership" && entry.field === "exact_collection_membership"));
+  assert.ok(profile.provenance.some((entry) => entry.source === "shopify_collection_composition" && entry.usedForCopy));
   const proposal = createDryRunProposal(candidate, page, ["crawl-1", "shopify-1", "semantic-1", "opportunity-1"], profile);
   const gate = evaluateProposalQuality({
     proposal,
@@ -232,4 +254,64 @@ test("collection composition creates bounded factual copy from matching first-pa
   assert.equal(gate.status, "pass");
   assert.equal(gate.approvalEligible, true);
   assert.equal(profile.blockers.length, 0);
+});
+
+test("Task 48 collection paths cannot synthesize from broad catalog similarity", () => {
+  const paths = ["beauty", "fragrance", "fragrance-gift-sets", "hair", "home-fragrance", "unisex-fragrance", "womens-fragrance", "bath-body"];
+  const broadProducts: ShopifySemanticResource[] = [
+    { kind: "product", path: "/products/body-lotion", title: "Fragrance Body Lotion", description: null, productType: "Body Lotion", tags: ["beauty", "hair"] },
+    { kind: "product", path: "/products/candle", title: "Home Fragrance Candle", description: null, productType: "Candles", tags: ["fragrance", "gift sets"] },
+  ];
+  for (const handle of paths) {
+    const identity = handle.split("-").map((part) => part[0]!.toUpperCase() + part.slice(1)).join(" ");
+    const testPage = { ...page, url: `https://diamondshelf.us/collections/${handle}`, title: identity, h1: identity, structuredData: [], contentText: "" };
+    const resource: ShopifySemanticResource = { kind: "collection", path: `/collections/${handle}`, title: identity, description: null };
+    const profile = buildSemanticPageProfile({ page: testPage, candidate: { ...candidate, pageId: testPage.pageId }, shopifyResources: [resource, ...broadProducts], shopifyEvidenceId: "shopify-1" });
+    assert.equal(profile.candidateSentences.some((item) => item.source === "shopify_collection_composition"), false, handle);
+    assert.equal(generateMetaDescriptionFromProfile(profile), null, handle);
+  }
+});
+
+test("incomplete, mismatched, and suspiciously broad collection membership fails closed", () => {
+  const baseMembership: NonNullable<ShopifySemanticResource["collectionMembership"]> = {
+    collectionPath: "/collections/bath-body",
+    sourceEndpoint: "/admin/api/2025-10/collections/42/products.json",
+    expectedCount: 3,
+    observedCount: 2,
+    coverageRatio: 2 / 3,
+    cardinalityValid: false,
+    catalogProductCount: 100,
+    limit: 2,
+    complete: false,
+    truncated: true,
+    suspiciouslyBroad: false,
+    members: [
+      { path: "/products/body-lotion", title: "Body Lotion", productType: "Body Lotion", tags: [] },
+      { path: "/products/body-scrub", title: "Body Scrub", productType: "Body Scrub", tags: [] },
+    ],
+  };
+  for (const membership of [
+    baseMembership,
+    { ...baseMembership, collectionPath: "/collections/other", expectedCount: 2, observedCount: 2, complete: true, truncated: false },
+    { ...baseMembership, expectedCount: 2, observedCount: 2, complete: true, truncated: false, suspiciouslyBroad: true },
+  ]) {
+    const profile = buildSemanticPageProfile({
+      page: { ...page, structuredData: [], contentText: "" },
+      candidate,
+      shopifyResources: [{ ...shopifyCollection, description: null, collectionMembership: membership }],
+      shopifyEvidenceId: "shopify-1",
+    });
+    assert.equal(generateMetaDescriptionFromProfile(profile), null);
+    assert.equal(profile.composition.categoryTypes.length, 0);
+  }
+});
+
+test("snippet integrity rejects Task 48 dangling and malformed endings", () => {
+  const malformed = [
+    "Scent Profiles. Diamond Shelf groups the catalog into twelve shopper-friendly scent profiles while preserving each fragrance's detailed family on the.",
+    "Women’s Fragrance includes Body Lotion and Body Mist products represented in the observed Shopify.",
+    "Bath & Body includes lotions and cleansers..",
+    "Beauty includes cosmetics and eye care products while.",
+  ];
+  for (const value of malformed) assert.equal(hasSafeSnippetIntegrity(value), false, value);
 });

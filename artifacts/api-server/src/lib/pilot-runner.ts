@@ -26,6 +26,7 @@ export const PILOT_LIMITS = {
   requestTimeoutMs: 10_000,
   gscRows: 5_000,
   shopifyProducts: 5_000,
+  shopifyCollectionMembers: 500,
 } as const;
 export type CrawlLimits = {
   crawlPages: number;
@@ -34,6 +35,7 @@ export type CrawlLimits = {
   requestTimeoutMs: number;
   gscRows: number;
   shopifyProducts: number;
+  shopifyCollectionMembers: number;
 };
 
 export type Outcome<T> = { ok: true; data: T } | { ok: false; category: string; httpStatus: number | null };
@@ -458,6 +460,93 @@ type ShopifyProduct = {
   variants?: Array<{ inventory_quantity?: number }>;
 };
 
+export async function paginateShopifyCollectionMembers(options: {
+  base: string;
+  accessToken: string;
+  collectionId: number;
+  collectionPath: string;
+  expectedCount: number | null;
+  catalogProductCount: number;
+  fetchImpl?: typeof fetch;
+  limit?: number;
+}): Promise<Outcome<NonNullable<ShopifySemanticResource["collectionMembership"]>>> {
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const limit = Math.max(0, Math.floor(options.limit ?? PILOT_LIMITS.shopifyCollectionMembers));
+  const endpointPath = new URL(`${options.base}/collections/${options.collectionId}/products.json`).pathname;
+  let url: string | null = limit > 0
+    ? `${options.base}/collections/${options.collectionId}/products.json?limit=${Math.min(250, limit)}&fields=id,title,handle,product_type,tags`
+    : null;
+  const members = new Map<string, NonNullable<ShopifySemanticResource["collectionMembership"]>["members"][number]>();
+  const seen = new Set<string>();
+  let exhausted = limit === 0;
+  while (url && members.size < limit && !seen.has(url)) {
+    seen.add(url);
+    assertReadOnlyProviderRequest("shopify", "GET", url);
+    try {
+      const response = await fetchImpl(url, {
+        method: "GET",
+        headers: { Accept: "application/json", "X-Shopify-Access-Token": options.accessToken },
+        signal: AbortSignal.timeout(20_000),
+      });
+      if (!response.ok) return { ok: false, category: providerFailureCategory(response.status), httpStatus: response.status };
+      const data = await response.json() as { products?: ShopifyProduct[] };
+      const remaining = limit - members.size;
+      for (const product of (data.products ?? []).slice(0, remaining)) {
+        if (!product.handle || !product.title) continue;
+        const path = `/products/${product.handle}`;
+        members.set(path, {
+          path,
+          title: product.title,
+          productType: product.product_type ?? null,
+          tags: typeof product.tags === "string" ? product.tags.split(",").map((tag) => tag.trim()).filter(Boolean).slice(0, 20) : [],
+        });
+      }
+      const next = nextShopifyLink(response.headers.get("link"));
+      if (!next) {
+        exhausted = true;
+        break;
+      }
+      const parsed = new URL(next);
+      if (parsed.origin !== new URL(options.base).origin || parsed.pathname !== endpointPath) {
+        return { ok: false, category: "pagination_resource_mismatch", httpStatus: null };
+      }
+      url = members.size < limit ? parsed.toString() : null;
+    } catch {
+      return { ok: false, category: "network_error", httpStatus: null };
+    }
+  }
+  const observedCount = members.size;
+  const cardinalityValid = options.expectedCount === null || observedCount === options.expectedCount;
+  const coverageRatio = options.expectedCount === null
+    ? (exhausted ? 1 : null)
+    : options.expectedCount === 0
+      ? (observedCount === 0 ? 1 : 0)
+      : Math.min(1, observedCount / options.expectedCount);
+  const complete = exhausted && cardinalityValid;
+  const truncated = !complete;
+  const suspiciouslyBroad = options.catalogProductCount > 0 && (
+    observedCount > options.catalogProductCount
+    || (observedCount >= 50 && observedCount / options.catalogProductCount >= 0.8)
+  );
+  return {
+    ok: true,
+    data: {
+      collectionPath: options.collectionPath,
+      sourceEndpoint: endpointPath,
+      expectedCount: options.expectedCount,
+      observedCount,
+      coverageRatio,
+      cardinalityValid,
+      catalogProductCount: options.catalogProductCount,
+      limit,
+      complete,
+      truncated,
+      suspiciouslyBroad,
+      members: [...members.values()].sort((a, b) => a.path.localeCompare(b.path)),
+    },
+  };
+}
+
 function nextShopifyLink(value: string | null): string | null {
   if (!value) return null;
   for (const part of value.split(",")) {
@@ -539,18 +628,32 @@ export async function paginateShopifyCatalog(options: {
   return { ok: true, data: { productsObserved, variantCount, inventoryQuantity: inventoryAvailable ? inventoryQuantity : null, truncated: !complete, complete, semanticResources } };
 }
 
-async function readShopifyContentResources(base: string, accessToken: string): Promise<ShopifySemanticResource[]> {
-  type Collection = { handle?: string; title?: string; body_html?: string | null; products_count?: number };
+async function readShopifyContentResources(base: string, accessToken: string, catalogProductCount: number): Promise<ShopifySemanticResource[]> {
+  type Collection = { id?: number; handle?: string; title?: string; body_html?: string | null; products_count?: number };
   type Page = { handle?: string; title?: string; body_html?: string | null };
   const [custom, smart, pages] = await Promise.all([
-    requestJson<{ custom_collections?: Collection[] }>("shopify", `${base}/custom_collections.json?limit=250&fields=handle,title,body_html,products_count`, "GET", accessToken),
-    requestJson<{ smart_collections?: Collection[] }>("shopify", `${base}/smart_collections.json?limit=250&fields=handle,title,body_html,products_count`, "GET", accessToken),
+    requestJson<{ custom_collections?: Collection[] }>("shopify", `${base}/custom_collections.json?limit=250&fields=id,handle,title,body_html,products_count`, "GET", accessToken),
+    requestJson<{ smart_collections?: Collection[] }>("shopify", `${base}/smart_collections.json?limit=250&fields=id,handle,title,body_html,products_count`, "GET", accessToken),
     requestJson<{ pages?: Page[] }>("shopify", `${base}/pages.json?limit=250&fields=handle,title,body_html`, "GET", accessToken),
   ]);
   const collections = [
     ...(custom.ok ? custom.data.custom_collections ?? [] : []),
     ...(smart.ok ? smart.data.smart_collections ?? [] : []),
   ];
+  const memberships = new Map<string, NonNullable<ShopifySemanticResource["collectionMembership"]>>();
+  for (const item of collections) {
+    if (!item.id || !item.handle) continue;
+    const collectionPath = `/collections/${item.handle}`;
+    const result = await paginateShopifyCollectionMembers({
+      base,
+      accessToken,
+      collectionId: item.id,
+      collectionPath,
+      expectedCount: typeof item.products_count === "number" ? item.products_count : null,
+      catalogProductCount,
+    });
+    if (result.ok) memberships.set(collectionPath, result.data);
+  }
   const resources: ShopifySemanticResource[] = [
     ...collections.flatMap((item) => item.handle && item.title ? [{
       kind: "collection" as const,
@@ -558,6 +661,7 @@ async function readShopifyContentResources(base: string, accessToken: string): P
       title: item.title,
       description: item.body_html ? htmlText(item.body_html).slice(0, 4_000) : null,
       productCount: typeof item.products_count === "number" ? item.products_count : null,
+      collectionMembership: memberships.get(`/collections/${item.handle}`),
     }] : []),
     ...(pages.ok ? pages.data.pages ?? [] : []).flatMap((item) => item.handle && item.title ? [{
       kind: "page" as const,
@@ -756,7 +860,7 @@ async function readShopify(context: PilotContext): Promise<Outcome<ShopifyObserv
   if (reportedCount === null) return { ok: false, category: "invalid_count_response", httpStatus: 200 };
   const [catalog, contentResources] = await Promise.all([
     paginateShopifyCatalog({ base, accessToken: token.accessToken, productCount: reportedCount }),
-    readShopifyContentResources(base, token.accessToken),
+    readShopifyContentResources(base, token.accessToken, reportedCount),
   ]);
   if (!catalog.ok) return catalog;
   const productCount = Math.max(reportedCount, catalog.data.productsObserved);
