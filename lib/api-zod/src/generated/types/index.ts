@@ -66,3 +66,7 @@ export * from './pilotRunRequestStatus';
 export * from './pilotRunStatus';
 export * from './pilotRunStatusReadiness';
 export * from './pilotRunStatusStatus';
+export * from './proposalLifecycleStage';
+export * from './proposalRecord';
+export * from './proposalResponse';
+export * from './proposalResponseReadiness';

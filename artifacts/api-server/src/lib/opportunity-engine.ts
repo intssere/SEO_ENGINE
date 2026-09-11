@@ -7,6 +7,7 @@ export type CrawlPageSignal = {
   url: string;
   indexable: boolean;
   title: string | null;
+  description: string | null;
   h1: string | null;
   contentText: string;
   links: string[];

@@ -341,7 +341,35 @@ export const ListActionsResponse = zod.object({
   "readiness": zod.object({
 
 }).passthrough(),
-  "rows": zod.array(zod.record(zod.string(), zod.unknown()))
+  "rows": zod.array(zod.object({
+  "id": zod.string(),
+  "opportunity_id": zod.string(),
+  "title": zod.string(),
+  "opportunity_type": zod.string(),
+  "url": zod.string().nullable(),
+  "query": zod.string().nullable(),
+  "score": zod.number(),
+  "confidence": zod.number(),
+  "risk_classification": zod.string(),
+  "lifecycle": zod.enum(['draft_dry_run', 'approval_ready', 'approved_proposal', 'executable_action', 'executed_change', 'verified_result', 'invalidated']),
+  "plan_status": zod.string(),
+  "dry_run": zod.boolean(),
+  "execution_authorized": zod.boolean(),
+  "public_site_writes": zod.boolean(),
+  "action_type": zod.string(),
+  "field": zod.string(),
+  "before_value": zod.string().nullable(),
+  "after_value": zod.string().nullable(),
+  "rationale": zod.string(),
+  "expected_benefit": zod.string(),
+  "rollback": zod.string(),
+  "evidence_ids": zod.array(zod.string()),
+  "evidence_count": zod.number().int(),
+  "evidence_sufficient": zod.boolean(),
+  "bounded_pilot": zod.boolean(),
+  "whole_site_coverage": zod.boolean(),
+  "updated_at": zod.string()
+}))
 })
 
 
@@ -349,7 +377,35 @@ export const ListApprovalsResponse = zod.object({
   "readiness": zod.object({
 
 }).passthrough(),
-  "rows": zod.array(zod.record(zod.string(), zod.unknown()))
+  "rows": zod.array(zod.object({
+  "id": zod.string(),
+  "opportunity_id": zod.string(),
+  "title": zod.string(),
+  "opportunity_type": zod.string(),
+  "url": zod.string().nullable(),
+  "query": zod.string().nullable(),
+  "score": zod.number(),
+  "confidence": zod.number(),
+  "risk_classification": zod.string(),
+  "lifecycle": zod.enum(['draft_dry_run', 'approval_ready', 'approved_proposal', 'executable_action', 'executed_change', 'verified_result', 'invalidated']),
+  "plan_status": zod.string(),
+  "dry_run": zod.boolean(),
+  "execution_authorized": zod.boolean(),
+  "public_site_writes": zod.boolean(),
+  "action_type": zod.string(),
+  "field": zod.string(),
+  "before_value": zod.string().nullable(),
+  "after_value": zod.string().nullable(),
+  "rationale": zod.string(),
+  "expected_benefit": zod.string(),
+  "rollback": zod.string(),
+  "evidence_ids": zod.array(zod.string()),
+  "evidence_count": zod.number().int(),
+  "evidence_sufficient": zod.boolean(),
+  "bounded_pilot": zod.boolean(),
+  "whole_site_coverage": zod.boolean(),
+  "updated_at": zod.string()
+}))
 })
 
 

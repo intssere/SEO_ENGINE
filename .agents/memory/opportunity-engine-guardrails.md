@@ -38,3 +38,9 @@ Organic-remediation eligibility is fail-closed for every opportunity class: a pa
 **Why:** Valid crawl evidence can still describe a page that should never receive organic SEO remediation, such as a customer-authentication redirect.
 
 **How to apply:** Filter the current crawl-page set before generating query, content, internal-link, or technical candidates. Let normal generation-key reconciliation dismiss previously active ineligible rows while preserving their evidence and history.
+
+Dry-run planning is evidence-bound and has a separate lifecycle: `draft_dry_run`, `approval_ready`, `approved_proposal`, `executable_action`, `executed_change`, `verified_result`, and `invalidated`. This planner may advance only to `approval_ready`.
+
+**Why:** A concrete proposed change must be reviewable without becoming an implicit approval or public-site execution path.
+
+**How to apply:** Persist current/before and proposed/after values, page identity, supporting evidence IDs, expected benefit, risk, and deterministic rollback instructions in the blocked plan. If source opportunity evidence becomes stale or ineligible, invalidate the plan while retaining its audit metadata. Require a separately designed human authorization flow before any later lifecycle advance.

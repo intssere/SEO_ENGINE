@@ -8,13 +8,13 @@ import {
   type TokenBundle,
 } from "@seo-engine/oauth-connection-manager";
 import {
-  dryRunActionPlan,
   generateOpportunityCandidates,
   reconcileManagedOpportunities,
   type CrawlPageSignal,
   type GscPageQuerySignal,
   type TechnicalFindingSignal,
 } from "./opportunity-engine.js";
+import { createDryRunProposal, invalidateDryRunProposal } from "./action-planner.js";
 
 export const PILOT_LIMITS = {
   crawlPages: 30,
@@ -759,8 +759,8 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
     const certification = buildBaselineCertification({ readiness, crawl: observations.crawl, technicalFindings, gsc: observations.gsc });
 
     const [crawlPageRows, gscSignalRows, technicalSignalRows, existingRows] = await Promise.all([
-      sql<Array<{ pageId: string; url: string; indexable: boolean; title: string | null; h1: string | null; contentText: string | null; links: unknown; evidenceId: string }>>`
-        SELECT p.id::text AS "pageId",p.url,p.indexable,ps.title,ps.h1,ps.content_text AS "contentText",ps.links,e.id::text AS "evidenceId"
+      sql<Array<{ pageId: string; url: string; indexable: boolean; title: string | null; description: string | null; h1: string | null; contentText: string | null; links: unknown; evidenceId: string }>>`
+        SELECT p.id::text AS "pageId",p.url,p.indexable,ps.title,ps.meta_description AS description,ps.h1,ps.content_text AS "contentText",ps.links,e.id::text AS "evidenceId"
         FROM evidence e
         JOIN pages p ON p.id=(e.payload->>'pageId')::uuid
         JOIN LATERAL (
@@ -796,6 +796,7 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       contentText: row.contentText ?? "",
       links: Array.isArray(row.links) ? row.links.filter((item): item is string => typeof item === "string") : [],
     }));
+    const crawlPagesById = new Map(crawlPages.map((page) => [page.pageId, page]));
     const gscSignals: GscPageQuerySignal[] = gscSignalRows.map((row) => ({
       pageId: row.pageId,
       queryId: row.queryId,
@@ -832,6 +833,12 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
             rationale='Superseded by Opportunity Engine v1 after the page or current evidence no longer met indexability and organic-remediation eligibility guardrails.',
             updated_at=now()
           WHERE id=ANY(${reconciliationResult.staleIds}::uuid[])`;
+        await tx`
+          UPDATE action_plans SET status='cancelled',
+            expected_outcome=expected_outcome || ${tx.json({ planner: "dry_run_action_planner_v1", lifecycleStage: "invalidated", executionAuthorized: false, publicSiteWrites: false, invalidatedReason: "source_opportunity_stale_or_ineligible", invalidatedAtReconciliation: true })},
+            updated_at=now()
+          WHERE opportunity_id=ANY(${reconciliationResult.staleIds}::uuid[])
+            AND (expected_outcome->>'planner'='dry_run_action_planner_v1' OR expected_outcome->>'dryRun'='true')`;
       }
 
       for (const item of candidates) {
@@ -869,14 +876,20 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
                 ${tx.json(impact)},${tx.json(effort)},${item.rationale},${sourceEvidenceIds}::uuid[])
               RETURNING id::text`;
         const opportunityId = opportunityRows[0]!.id;
-        const plan = dryRunActionPlan(item);
-        await tx`
-          INSERT INTO action_plans(site_id,opportunity_id,status,risk_level,rationale,expected_outcome)
-          SELECT ${context.siteId}::uuid,${opportunityId}::uuid,${plan.status},${plan.riskLevel},${plan.rationale},${tx.json(plan.expectedOutcome)}
-          WHERE NOT EXISTS (
-            SELECT 1 FROM action_plans
-            WHERE opportunity_id=${opportunityId}::uuid AND expected_outcome->>'dryRun'='true' AND expected_outcome->>'executionAuthorized'='false'
-          )`;
+        const plan = createDryRunProposal(item, crawlPagesById.get(item.pageId), sourceEvidenceIds);
+        const updatedPlans = await tx<{ id: string }[]>`
+          UPDATE action_plans SET status=${plan.status},risk_level=${plan.riskLevel},rationale=${plan.rationale},
+            expected_outcome=${tx.json(plan.expectedOutcome)},updated_at=now()
+          WHERE opportunity_id=${opportunityId}::uuid
+            AND risk_level='blocked'
+            AND COALESCE(expected_outcome->>'executionAuthorized','false')='false'
+            AND COALESCE(expected_outcome->>'planner','dry_run_action_planner_v1')='dry_run_action_planner_v1'
+          RETURNING id::text`;
+        if (updatedPlans.length === 0) {
+          await tx`
+            INSERT INTO action_plans(site_id,opportunity_id,status,risk_level,rationale,expected_outcome)
+            VALUES(${context.siteId}::uuid,${opportunityId}::uuid,${plan.status},${plan.riskLevel},${plan.rationale},${tx.json(plan.expectedOutcome)})`;
+        }
       }
     });
 

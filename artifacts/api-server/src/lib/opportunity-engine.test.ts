@@ -14,6 +14,7 @@ const page = {
   url: "https://diamondshelf.us/rings",
   indexable: true,
   title: "Diamond Rings",
+  description: "Explore diamond rings and wedding jewelry.",
   h1: "Diamond Rings",
   contentText: "Shop diamond rings and wedding jewelry.",
   links: [] as string[],

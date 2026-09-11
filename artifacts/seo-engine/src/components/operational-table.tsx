@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Badge } from "../components/layout";
 
-interface Column {
+export interface Column {
   header: string;
   accessorKey: string;
   cell?: (value: any, row: any) => ReactNode;

@@ -290,6 +290,10 @@
 .opportunityIdentity span, .opportunityPriority span, .opportunityEvidence span, .opportunityPlan span { color: #647087; font-size: 11px; line-height: 1.4; }
 .opportunityIdentity small, .opportunityPlan small { color: #8792a4; font-size: 10px; overflow-wrap: anywhere; }
 .opportunityPlan strong { color: #14764a; letter-spacing: .04em; }
+.proposalChange { display: flex; flex-direction: column; gap: 5px; min-width: 170px; max-width: 350px; }
+.proposalChange strong { color: #172033; font-size: 11px; line-height: 1.45; font-weight: 650; }
+.proposalChange span { color: #58657a; font-size: 11px; line-height: 1.45; }
+.proposalChange small { color: #8792a4; font-size: 10px; line-height: 1.4; overflow-wrap: anywhere; }
 .opportunityHistory { background: #fbfcfe; }
 .pilotActions { display: flex; align-items: center; gap: 10px; }
 .pilotRunButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 8px 13px; border: 0; border-radius: 8px; background: #172a4d; color: #fff; font-size: 12px; font-weight: 650; cursor: pointer; }

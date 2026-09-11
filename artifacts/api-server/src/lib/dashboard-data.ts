@@ -284,8 +284,9 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
         SELECT COUNT(*)::int AS pending
         FROM action_plans ap
         WHERE ap.site_id = ${site.id}::uuid
-          AND ap.risk_level = 'approval'
           AND ap.status = 'pending'
+          AND ap.expected_outcome->>'planner'='dry_run_action_planner_v1'
+          AND ap.expected_outcome->>'lifecycleStage'='approval_ready'
           AND NOT EXISTS (SELECT 1 FROM approvals a WHERE a.action_plan_id = ap.id)
       `,
       sql`

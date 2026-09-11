@@ -108,9 +108,9 @@ paths:
   /opportunities:
     get: { operationId: listOpportunities, responses: { "200": { description: Active and historical evidence-backed opportunities, content: { application/json: { schema: { $ref: "#/components/schemas/OpportunityResponse" } } } } } }
   /actions:
-    get: { operationId: listActions, responses: { "200": { description: Actions, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+    get: { operationId: listActions, responses: { "200": { description: Read-only dry-run action proposals, content: { application/json: { schema: { $ref: "#/components/schemas/ProposalResponse" } } } } } }
   /approvals:
-    get: { operationId: listApprovals, responses: { "200": { description: Approvals, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+    get: { operationId: listApprovals, responses: { "200": { description: Approval-ready dry-run proposals, content: { application/json: { schema: { $ref: "#/components/schemas/ProposalResponse" } } } } } }
   /deployments:
     get: { operationId: listDeployments, responses: { "200": { description: Deployments, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
   /technical-seo:
@@ -138,6 +138,46 @@ components:
         readiness: { type: object }
         rows: { type: array, items: { type: object, additionalProperties: true } }
       required: [readiness, rows]
+    ProposalLifecycleStage:
+      type: string
+      enum: [draft_dry_run, approval_ready, approved_proposal, executable_action, executed_change, verified_result, invalidated]
+    ProposalRecord:
+      type: object
+      required: [id, opportunity_id, title, opportunity_type, url, query, score, confidence, risk_classification, lifecycle, plan_status, dry_run, execution_authorized, public_site_writes, action_type, field, before_value, after_value, rationale, expected_benefit, rollback, evidence_ids, evidence_count, evidence_sufficient, bounded_pilot, whole_site_coverage, updated_at]
+      properties:
+        id: { type: string }
+        opportunity_id: { type: string }
+        title: { type: string }
+        opportunity_type: { type: string }
+        url: { type: [string, "null"] }
+        query: { type: [string, "null"] }
+        score: { type: number }
+        confidence: { type: number }
+        risk_classification: { type: string }
+        lifecycle: { $ref: "#/components/schemas/ProposalLifecycleStage" }
+        plan_status: { type: string }
+        dry_run: { type: boolean }
+        execution_authorized: { type: boolean }
+        public_site_writes: { type: boolean }
+        action_type: { type: string }
+        field: { type: string }
+        before_value: { type: [string, "null"] }
+        after_value: { type: [string, "null"] }
+        rationale: { type: string }
+        expected_benefit: { type: string }
+        rollback: { type: string }
+        evidence_ids: { type: array, items: { type: string } }
+        evidence_count: { type: integer }
+        evidence_sufficient: { type: boolean }
+        bounded_pilot: { type: boolean }
+        whole_site_coverage: { type: boolean }
+        updated_at: { type: string }
+    ProposalResponse:
+      type: object
+      required: [readiness, rows]
+      properties:
+        readiness: { type: object }
+        rows: { type: array, items: { $ref: "#/components/schemas/ProposalRecord" } }
     OpportunityRecord:
       type: object
       required: [id, title, opportunity_type, score, status, rationale, evidence_count, url, query, risk_classification, confidence, score_components, why_qualifies, recommendation, execution_authorized, lifecycle, updated_at]

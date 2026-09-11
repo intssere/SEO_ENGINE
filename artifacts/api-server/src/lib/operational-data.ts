@@ -43,8 +43,61 @@ export async function loadOperationalList(kind: "opportunities" | "actions" | "a
   try {
     const queries = {
       opportunities: sql`SELECT o.id::text,COALESCE(o.impact_estimate->>'title',o.opportunity_type) title,o.opportunity_type,o.score,o.status,o.rationale,cardinality(o.evidence_ids) evidence_count,p.url,sq.query,o.impact_estimate->>'riskClassification' risk_classification,o.impact_estimate->>'confidence' confidence,o.impact_estimate->'scoreComponents' score_components,o.impact_estimate->>'whyQualified' why_qualifies FROM opportunities o LEFT JOIN pages p ON p.id=o.page_id LEFT JOIN search_queries sq ON sq.id=o.query_id WHERE o.site_id=${readiness.siteId}::uuid AND o.status IN ('new','accepted','planned') AND o.impact_estimate->>'engine'='opportunity_engine_v1' ORDER BY o.score DESC,o.created_at DESC LIMIT 200`,
-      actions: sql`SELECT a.id::text,a.action_type title,a.status,ap.risk_level,ap.rationale,p.url FROM actions a JOIN action_plans ap ON ap.id=a.action_plan_id LEFT JOIN pages p ON p.id=a.page_id WHERE ap.site_id=${readiness.siteId}::uuid ORDER BY a.created_at DESC LIMIT 200`,
-      approvals: sql`SELECT ap.id::text,ap.risk_level,ap.status,ap.rationale,coalesce(a.decision,'pending') decision,a.decided_at FROM action_plans ap LEFT JOIN LATERAL (SELECT decision,decided_at FROM approvals WHERE action_plan_id=ap.id ORDER BY decided_at DESC LIMIT 1) a ON true WHERE ap.site_id=${readiness.siteId}::uuid AND ap.risk_level='approval' ORDER BY ap.created_at DESC LIMIT 200`,
+      actions: sql`
+        SELECT ap.id::text,o.id::text AS opportunity_id,
+          COALESCE(o.impact_estimate->>'title',o.opportunity_type) AS title,o.opportunity_type,p.url,sq.query,o.score,
+          COALESCE((o.impact_estimate->>'confidence')::float,0) AS confidence,
+          COALESCE(o.impact_estimate->>'riskClassification','unclassified') AS risk_classification,
+          COALESCE(ap.expected_outcome->>'lifecycleStage','draft_dry_run') AS lifecycle,ap.status AS plan_status,
+          COALESCE((ap.expected_outcome->>'dryRun')::boolean,true) AS dry_run,
+          COALESCE((ap.expected_outcome->>'executionAuthorized')::boolean,false) AS execution_authorized,
+          COALESCE((ap.expected_outcome->>'publicSiteWrites')::boolean,false) AS public_site_writes,
+          COALESCE(ap.expected_outcome->'proposal'->>'actionType','evidence_review_required') AS action_type,
+          COALESCE(ap.expected_outcome->'proposal'->>'field','unresolved') AS field,
+          ap.expected_outcome->'proposal'->>'beforeValue' AS before_value,
+          ap.expected_outcome->'proposal'->>'afterValue' AS after_value,
+          ap.rationale,
+          COALESCE(ap.expected_outcome->'proposal'->>'expectedBenefit','No expected benefit recorded.') AS expected_benefit,
+          COALESCE(ap.expected_outcome->'proposal'->>'rollback','No rollback metadata recorded.') AS rollback,
+          COALESCE(ap.expected_outcome->'proposal'->'supportingEvidenceIds','[]'::jsonb) AS evidence_ids,
+          COALESCE(jsonb_array_length(ap.expected_outcome->'proposal'->'supportingEvidenceIds'),0)::int AS evidence_count,
+          COALESCE((ap.expected_outcome->'proposal'->>'evidenceSufficient')::boolean,false) AS evidence_sufficient,
+          COALESCE((ap.expected_outcome->'proposal'->>'boundedPilot')::boolean,true) AS bounded_pilot,
+          COALESCE((ap.expected_outcome->'proposal'->>'wholeSiteCoverage')::boolean,false) AS whole_site_coverage,
+          ap.updated_at
+        FROM action_plans ap JOIN opportunities o ON o.id=ap.opportunity_id
+        LEFT JOIN pages p ON p.id=o.page_id LEFT JOIN search_queries sq ON sq.id=o.query_id
+        WHERE ap.site_id=${readiness.siteId}::uuid AND ap.expected_outcome->>'planner'='dry_run_action_planner_v1'
+        ORDER BY (ap.expected_outcome->>'lifecycleStage'='approval_ready') DESC,o.score DESC,ap.updated_at DESC LIMIT 200`,
+      approvals: sql`
+        SELECT ap.id::text,o.id::text AS opportunity_id,
+          COALESCE(o.impact_estimate->>'title',o.opportunity_type) AS title,o.opportunity_type,p.url,sq.query,o.score,
+          COALESCE((o.impact_estimate->>'confidence')::float,0) AS confidence,
+          COALESCE(o.impact_estimate->>'riskClassification','unclassified') AS risk_classification,
+          COALESCE(ap.expected_outcome->>'lifecycleStage','draft_dry_run') AS lifecycle,ap.status AS plan_status,
+          COALESCE((ap.expected_outcome->>'dryRun')::boolean,true) AS dry_run,
+          COALESCE((ap.expected_outcome->>'executionAuthorized')::boolean,false) AS execution_authorized,
+          COALESCE((ap.expected_outcome->>'publicSiteWrites')::boolean,false) AS public_site_writes,
+          COALESCE(ap.expected_outcome->'proposal'->>'actionType','evidence_review_required') AS action_type,
+          COALESCE(ap.expected_outcome->'proposal'->>'field','unresolved') AS field,
+          ap.expected_outcome->'proposal'->>'beforeValue' AS before_value,
+          ap.expected_outcome->'proposal'->>'afterValue' AS after_value,
+          ap.rationale,
+          COALESCE(ap.expected_outcome->'proposal'->>'expectedBenefit','No expected benefit recorded.') AS expected_benefit,
+          COALESCE(ap.expected_outcome->'proposal'->>'rollback','No rollback metadata recorded.') AS rollback,
+          COALESCE(ap.expected_outcome->'proposal'->'supportingEvidenceIds','[]'::jsonb) AS evidence_ids,
+          COALESCE(jsonb_array_length(ap.expected_outcome->'proposal'->'supportingEvidenceIds'),0)::int AS evidence_count,
+          COALESCE((ap.expected_outcome->'proposal'->>'evidenceSufficient')::boolean,false) AS evidence_sufficient,
+          COALESCE((ap.expected_outcome->'proposal'->>'boundedPilot')::boolean,true) AS bounded_pilot,
+          COALESCE((ap.expected_outcome->'proposal'->>'wholeSiteCoverage')::boolean,false) AS whole_site_coverage,
+          ap.updated_at
+        FROM action_plans ap JOIN opportunities o ON o.id=ap.opportunity_id
+        LEFT JOIN pages p ON p.id=o.page_id LEFT JOIN search_queries sq ON sq.id=o.query_id
+        WHERE ap.site_id=${readiness.siteId}::uuid AND ap.status='pending'
+          AND ap.expected_outcome->>'planner'='dry_run_action_planner_v1'
+          AND ap.expected_outcome->>'lifecycleStage'='approval_ready'
+          AND NOT EXISTS (SELECT 1 FROM approvals a WHERE a.action_plan_id=ap.id)
+        ORDER BY o.score DESC,ap.updated_at DESC LIMIT 200`,
       deployments: sql`SELECT d.id::text,d.provider,d.status,d.deployed_at,ap.risk_level,ap.rationale,v.status verification_status FROM deployments d JOIN action_plans ap ON ap.id=d.action_plan_id LEFT JOIN LATERAL (SELECT status FROM verifications WHERE deployment_id=d.id ORDER BY created_at DESC LIMIT 1) v ON true WHERE ap.site_id=${readiness.siteId}::uuid ORDER BY d.created_at DESC LIMIT 200`,
       findings: sql`SELECT f.id::text,f.title,f.category,f.severity,f.status,f.description,p.url FROM findings f LEFT JOIN pages p ON p.id=f.page_id WHERE f.site_id=${readiness.siteId}::uuid ORDER BY f.detected_at DESC LIMIT 200`,
     };

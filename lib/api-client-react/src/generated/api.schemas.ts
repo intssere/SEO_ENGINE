@@ -18,6 +18,60 @@ export interface OperationalResponse {
   rows: OperationalResponseRowsItem[];
 }
 
+export type ProposalLifecycleStage = typeof ProposalLifecycleStage[keyof typeof ProposalLifecycleStage];
+
+
+export const ProposalLifecycleStage = {
+  draft_dry_run: 'draft_dry_run',
+  approval_ready: 'approval_ready',
+  approved_proposal: 'approved_proposal',
+  executable_action: 'executable_action',
+  executed_change: 'executed_change',
+  verified_result: 'verified_result',
+  invalidated: 'invalidated',
+} as const;
+
+export interface ProposalRecord {
+  id: string;
+  opportunity_id: string;
+  title: string;
+  opportunity_type: string;
+  /** @nullable */
+  url: string | null;
+  /** @nullable */
+  query: string | null;
+  score: number;
+  confidence: number;
+  risk_classification: string;
+  lifecycle: ProposalLifecycleStage;
+  plan_status: string;
+  dry_run: boolean;
+  execution_authorized: boolean;
+  public_site_writes: boolean;
+  action_type: string;
+  field: string;
+  /** @nullable */
+  before_value: string | null;
+  /** @nullable */
+  after_value: string | null;
+  rationale: string;
+  expected_benefit: string;
+  rollback: string;
+  evidence_ids: string[];
+  evidence_count: number;
+  evidence_sufficient: boolean;
+  bounded_pilot: boolean;
+  whole_site_coverage: boolean;
+  updated_at: string;
+}
+
+export type ProposalResponseReadiness = { [key: string]: unknown };
+
+export interface ProposalResponse {
+  readiness: ProposalResponseReadiness;
+  rows: ProposalRecord[];
+}
+
 export type OpportunityRecordOpportunityType = typeof OpportunityRecordOpportunityType[keyof typeof OpportunityRecordOpportunityType];
 
 

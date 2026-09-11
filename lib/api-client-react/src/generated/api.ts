@@ -30,7 +30,8 @@ import type {
   OperationalResponse,
   OpportunityResponse,
   PilotRunRequest,
-  PilotRunStatus
+  PilotRunStatus,
+  ProposalResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -604,9 +605,9 @@ export const getListActionsUrl = () => {
   return `/api/actions`
 }
 
-export const listActions = async ( options?: Parameters<typeof customFetch>[1]): Promise<OperationalResponse> => {
+export const listActions = async ( options?: Parameters<typeof customFetch>[1]): Promise<ProposalResponse> => {
 
-  return customFetch<OperationalResponse>(getListActionsUrl(),
+  return customFetch<ProposalResponse>(getListActionsUrl(),
   {
     ...options,
     method: 'GET'
@@ -675,9 +676,9 @@ export const getListApprovalsUrl = () => {
   return `/api/approvals`
 }
 
-export const listApprovals = async ( options?: Parameters<typeof customFetch>[1]): Promise<OperationalResponse> => {
+export const listApprovals = async ( options?: Parameters<typeof customFetch>[1]): Promise<ProposalResponse> => {
 
-  return customFetch<OperationalResponse>(getListApprovalsUrl(),
+  return customFetch<ProposalResponse>(getListApprovalsUrl(),
   {
     ...options,
     method: 'GET'
