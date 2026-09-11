@@ -32,3 +32,9 @@ Crawler technical observations currently identify their page through `payload.pa
 **Why:** Production evidence remains traceable through the finding and payload, but direct evidence-table joins alone undercount page-aligned crawler observations.
 
 **How to apply:** Validate technical evidence using the finding's page, the primary evidence ID, the observation payload page ID, and run provenance together.
+
+Organic-remediation eligibility is fail-closed for every opportunity class: a page must be explicitly indexable and must not be an authentication, redirect, utility, account, cart, checkout, search-result, or other transactional path.
+
+**Why:** Valid crawl evidence can still describe a page that should never receive organic SEO remediation, such as a customer-authentication redirect.
+
+**How to apply:** Filter the current crawl-page set before generating query, content, internal-link, or technical candidates. Let normal generation-key reconciliation dismiss previously active ineligible rows while preserving their evidence and history.

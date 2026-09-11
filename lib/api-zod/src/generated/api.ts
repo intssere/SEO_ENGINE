@@ -42,6 +42,9 @@ export const GetDashboardResponse = zod.object({
 })),
   "engine": zod.object({
   "pagesAnalyzed": zod.number().int(),
+  "activeCandidatesRefreshed": zod.number().int(),
+  "dryRunPlansPrepared": zod.number().int(),
+  "executableActionsPrepared": zod.number().int(),
   "opportunities": zod.number().int(),
   "actionsPrepared": zod.number().int(),
   "executed": zod.number().int(),
@@ -50,6 +53,7 @@ export const GetDashboardResponse = zod.object({
 }),
   "opportunities": zod.array(zod.object({
   "title": zod.string(),
+  "page": zod.string(),
   "score": zod.string(),
   "evidence": zod.string(),
   "risk": zod.string(),

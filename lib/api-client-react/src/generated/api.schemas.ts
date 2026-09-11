@@ -319,6 +319,7 @@ export interface DashboardMetric {
 
 export interface DashboardOpportunity {
   title: string;
+  page: string;
   score: string;
   evidence: string;
   risk: string;
@@ -352,6 +353,9 @@ export const DashboardSnapshotState = {
 
 export type DashboardSnapshotEngine = {
   pagesAnalyzed: number;
+  activeCandidatesRefreshed: number;
+  dryRunPlansPrepared: number;
+  executableActionsPrepared: number;
   opportunities: number;
   actionsPrepared: number;
   executed: number;

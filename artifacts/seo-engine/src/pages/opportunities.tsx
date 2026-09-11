@@ -57,7 +57,7 @@ const activeColumns = [
 ];
 
 const historyColumns = [
-  { header: "Opportunity", accessorKey: "title", cell: (value: string, row: OpportunityRecord) => <div className="opportunityIdentity"><strong>{value}</strong><span>{label(row.opportunity_type)}</span></div> },
+  { header: "Opportunity", accessorKey: "title", cell: (value: string, row: OpportunityRecord) => <div className="opportunityIdentity"><strong>{value}</strong><span>{label(row.opportunity_type)}</span>{row.url && <small>{row.url}</small>}</div> },
   { header: "Lifecycle", accessorKey: "lifecycle", cell: () => <Badge tone="approval">SUPERSEDED</Badge> },
   { header: "Final score", accessorKey: "score", cell: (value: number) => value.toFixed(1) },
   { header: "Reason", accessorKey: "rationale" },

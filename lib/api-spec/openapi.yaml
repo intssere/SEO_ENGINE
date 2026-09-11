@@ -343,9 +343,10 @@ components:
         delta: { type: string }
     DashboardOpportunity:
       type: object
-      required: [title, score, evidence, risk, state]
+      required: [title, page, score, evidence, risk, state]
       properties:
         title: { type: string }
+        page: { type: string }
         score: { type: string }
         evidence: { type: string }
         risk: { type: string }
@@ -381,9 +382,12 @@ components:
             $ref: "#/components/schemas/DashboardMetric"
         engine:
           type: object
-          required: [pagesAnalyzed, opportunities, actionsPrepared, executed, verified, regressions]
+          required: [pagesAnalyzed, activeCandidatesRefreshed, dryRunPlansPrepared, executableActionsPrepared, opportunities, actionsPrepared, executed, verified, regressions]
           properties:
             pagesAnalyzed: { type: integer }
+            activeCandidatesRefreshed: { type: integer }
+            dryRunPlansPrepared: { type: integer }
+            executableActionsPrepared: { type: integer }
             opportunities: { type: integer }
             actionsPrepared: { type: integer }
             executed: { type: integer }

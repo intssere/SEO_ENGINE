@@ -319,7 +319,7 @@
 .badge.experiment { background: #eeeaff; color: #6350ad; }
 .engine { margin-bottom: 14px; background: linear-gradient(115deg, #fff 0, #f8fbff 100%); }
 h2 { font-size: 16px; margin: 0; color: #263249; font-weight: 650; }
-.engineStats { display: grid; grid-template-columns: repeat(6, 1fr); margin-top: 20px; border-top: 1px solid #edf0f5; padding-top: 17px; }
+.engineStats { display: grid; grid-template-columns: repeat(7, 1fr); margin-top: 20px; border-top: 1px solid #edf0f5; padding-top: 17px; }
 .engineStats div { display: flex; flex-direction: column; border-right: 1px solid #edf0f5; padding-left: 18px; }
 .engineStats div:first-child { padding-left: 0; }
 .engineStats div:last-child { border: 0; }

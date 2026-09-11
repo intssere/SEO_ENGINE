@@ -283,12 +283,16 @@ export default function DashboardPage() {
               <span>Pages analyzed</span>
             </div>
             <div>
-              <strong>{data.engine.opportunities}</strong>
-              <span>Opportunities</span>
+              <strong>{data.engine.activeCandidatesRefreshed}</strong>
+              <span>Candidates refreshed</span>
             </div>
             <div>
-              <strong>{data.engine.actionsPrepared}</strong>
-              <span>Actions prepared</span>
+              <strong>{data.engine.dryRunPlansPrepared}</strong>
+              <span>Blocked dry-run plans</span>
+            </div>
+            <div>
+              <strong>{data.engine.executableActionsPrepared}</strong>
+              <span>Executable actions</span>
             </div>
             <div>
               <strong>{data.engine.executed}</strong>
@@ -328,8 +332,13 @@ export default function DashboardPage() {
                 <tbody>
                   {data.opportunities.length > 0 ? (
                     data.opportunities.map((row) => (
-                      <tr key={`${row.title}-${row.score}`}>
-                        <td>{row.title}</td>
+                      <tr key={`${row.title}-${row.page}`}>
+                        <td>
+                          <div className="opportunityIdentity">
+                            <strong>{row.title}</strong>
+                            <small>{row.page}</small>
+                          </div>
+                        </td>
                         <td>{row.score}</td>
                         <td>{row.evidence}</td>
                         <td><Badge tone={riskTone(row.risk)}>{row.risk}</Badge></td>

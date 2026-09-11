@@ -8,6 +8,7 @@
 
 export interface DashboardOpportunity {
   title: string;
+  page: string;
   score: string;
   evidence: string;
   risk: string;

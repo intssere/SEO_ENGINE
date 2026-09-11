@@ -12,6 +12,7 @@ import {
 const page = {
   pageId: "page-1",
   url: "https://diamondshelf.us/rings",
+  indexable: true,
   title: "Diamond Rings",
   h1: "Diamond Rings",
   contentText: "Shop diamond rings and wedding jewelry.",
@@ -65,6 +66,49 @@ test("technical and internal-link opportunities require matching crawl evidence"
   assert.deepEqual(internal?.sourceEvidenceIds, ["evidence-page-1", "evidence-page-2"]);
   assert.deepEqual(technical?.sourceEvidenceIds, ["evidence-page-1"]);
   assert.equal(generateOpportunityCandidates(input({ technicalFindings: [{ findingId: "orphan", pageId: "missing", title: "Orphan", severity: "high", evidenceId: "e" }] })).length, 0);
+});
+
+test("non-indexable and utility pages fail closed for every opportunity class", () => {
+  const variants = [
+    { ...page, indexable: false },
+    { ...page, url: "https://diamondshelf.us/customer_authentication/redirect" },
+    { ...page, url: "https://diamondshelf.us/account/login" },
+    { ...page, url: "https://diamondshelf.us/cart" },
+    { ...page, url: "https://diamondshelf.us/checkout" },
+    { ...page, url: "https://diamondshelf.us/search?q=diamond" },
+  ];
+  for (const blockedPage of variants) {
+    const candidates = generateOpportunityCandidates(input({
+      crawlPages: [blockedPage],
+      gsc: [{ pageId: blockedPage.pageId, queryId: "q", query: "diamond rings", url: blockedPage.url, clicks: 0, impressions: 100, ctr: 0, position: 7 }],
+      technicalFindings: [{ findingId: "finding", pageId: blockedPage.pageId, title: "Page title is missing", severity: "medium", evidenceId: blockedPage.evidenceId }],
+    }));
+    assert.deepEqual(candidates, [], blockedPage.url);
+  }
+});
+
+test("utility-page candidates become stale while historical rows remain untouched", () => {
+  const result = reconcileManagedOpportunities([
+    { id: "utility-active", status: "new", generationKey: "opportunity_engine_v1:technical_remediation:utility-finding" },
+    { id: "valid-active", status: "accepted", generationKey: "opportunity_engine_v1:technical_remediation:valid-finding" },
+    { id: "utility-history", status: "dismissed", generationKey: "opportunity_engine_v1:technical_remediation:old-utility" },
+  ], [{
+    generationKey: "opportunity_engine_v1:technical_remediation:valid-finding",
+    opportunityType: "technical_remediation",
+    pageId: "page-1",
+    queryId: null,
+    query: null,
+    title: "Missing description",
+    confidence: 0.5,
+    risk: "medium",
+    score: 40,
+    scoreComponents: { demand: 10, proximity: 10, confidence: 10, evidence: 10 },
+    rationale: "Valid page evidence.",
+    recommendation: "Dry run.",
+    sourceEvidenceIds: ["evidence"],
+    metrics: {},
+  }]);
+  assert.deepEqual(result, { retainedIds: ["valid-active"], staleIds: ["utility-active"] });
 });
 
 test("managed opportunity reconciliation identifies stale candidates without rewriting history", () => {

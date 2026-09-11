@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isCurrentOpportunity, pilotCountsFromPayload, selectGscHeadlineMetrics } from "./dashboard-data.js";
+import { GetDashboardResponse } from "@workspace/api-zod";
+import { activeCandidateActivity, dashboardEngineCounts, dashboardOpportunityFromRow, isCurrentOpportunity, pilotCountsFromPayload, selectGscHeadlineMetrics } from "./dashboard-data.js";
 
 test("dashboard distinguishes Shopify catalog total from products observed", () => {
   assert.deepEqual(pilotCountsFromPayload({
@@ -67,4 +68,61 @@ test("dashboard current opportunity semantics exclude invalidated and legacy can
   assert.equal(isCurrentOpportunity({ status: "accepted", engine: "opportunity_engine_v1" }), true);
   assert.equal(isCurrentOpportunity({ status: "dismissed", engine: "opportunity_engine_v1" }), false);
   assert.equal(isCurrentOpportunity({ status: "new", engine: null }), false);
+});
+
+test("dashboard separates blocked dry-run plans from authorized executable actions", () => {
+  const counts = dashboardEngineCounts({
+    pages_analyzed: 30,
+    active_candidates_refreshed: 14,
+    dry_run_plans_prepared: 14,
+    executable_actions_prepared: 0,
+  });
+  assert.equal(counts.activeCandidatesRefreshed, 14);
+  assert.equal(counts.dryRunPlansPrepared, 14);
+  assert.equal(counts.executableActionsPrepared, 0);
+  assert.equal(counts.opportunities, 14);
+  assert.equal(counts.actionsPrepared, 0);
+});
+
+test("recent opportunity activity describes refreshed active candidates rather than creations", () => {
+  assert.deepEqual(activeCandidateActivity(2), {
+    title: "Active opportunities refreshed",
+    detail: "2 active candidates refreshed in the last 24 hours",
+    result: "Current queue ranked from persisted evidence",
+    tone: "ready",
+  });
+  assert.equal(activeCandidateActivity(0), null);
+});
+
+test("duplicate opportunity titles retain distinct affected-page identity", () => {
+  const base = { opportunity_type: "Meta description is missing", score: 46.12, evidence_count: 2, risk_level: "medium", status: "new" };
+  const first = dashboardOpportunityFromRow({ ...base, path: "/collections/fragrance", url: "https://diamondshelf.us/collections/fragrance" });
+  const second = dashboardOpportunityFromRow({ ...base, path: "/collections/beauty", url: "https://diamondshelf.us/collections/beauty" });
+  assert.equal(first.title, second.title);
+  assert.notEqual(first.page, second.page);
+});
+
+test("dashboard API contract exposes refreshed candidates, plan/action separation, and page identity", () => {
+  const engine = GetDashboardResponse.shape.engine.parse({
+    pagesAnalyzed: 30,
+    activeCandidatesRefreshed: 14,
+    dryRunPlansPrepared: 14,
+    executableActionsPrepared: 0,
+    opportunities: 14,
+    actionsPrepared: 0,
+    executed: 0,
+    verified: 0,
+    regressions: 0,
+  });
+  const opportunity = GetDashboardResponse.shape.opportunities.element.parse({
+    title: "Meta description is missing",
+    page: "/collections/fragrance",
+    score: "46.1",
+    evidence: "2 refs",
+    risk: "medium",
+    state: "new",
+  });
+  assert.equal(engine.dryRunPlansPrepared, 14);
+  assert.equal(engine.executableActionsPrepared, 0);
+  assert.equal(opportunity.page, "/collections/fragrance");
 });

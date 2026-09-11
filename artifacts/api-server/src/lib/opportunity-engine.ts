@@ -5,6 +5,7 @@ export type OpportunityRisk = "low" | "medium" | "high";
 export type CrawlPageSignal = {
   pageId: string;
   url: string;
+  indexable: boolean;
   title: string | null;
   h1: string | null;
   contentText: string;
@@ -68,6 +69,30 @@ export type OpportunityEngineInput = {
 const activeStatuses = new Set(["new", "accepted", "planned"]);
 const significantQueryTerms = (query: string) => query.toLowerCase().match(/[a-z0-9]{3,}/g)?.filter((term) => !["the", "and", "for", "with", "from"].includes(term)) ?? [];
 const round = (value: number, digits = 3) => Number(value.toFixed(digits));
+const utilityPathSegments = new Set([
+  "account", "accounts", "admin", "apps", "auth", "authentication", "callback", "cart", "carts",
+  "challenge", "checkout", "checkouts", "customer_authentication", "login", "logout", "oauth",
+  "order", "orders", "password", "recover", "redirect", "register", "reset", "search",
+  "search-results", "signin", "signup", "sign-in", "sign-up", "thank_you", "tools",
+]);
+
+export function organicRemediationEligibility(page: Pick<CrawlPageSignal, "url" | "indexable">) {
+  if (page.indexable !== true) return { eligible: false, reason: "page_not_indexable" as const };
+  try {
+    const url = new URL(page.url);
+    if (!["http:", "https:"].includes(url.protocol)) return { eligible: false, reason: "unsupported_url_protocol" as const };
+    const segments = decodeURIComponent(url.pathname).toLowerCase().split("/").filter(Boolean);
+    if (segments.some((segment) => utilityPathSegments.has(segment))) {
+      return { eligible: false, reason: "utility_or_transactional_path" as const };
+    }
+    if (segments.some((segment) => /^(?:404|customer-authentication|search_results)$/.test(segment))) {
+      return { eligible: false, reason: "utility_or_transactional_path" as const };
+    }
+    return { eligible: true, reason: null };
+  } catch {
+    return { eligible: false, reason: "invalid_url" as const };
+  }
+}
 
 export function opportunityConfidence(input: OpportunityEngineInput, evidenceStrength: number) {
   const discovered = Math.max(input.crawl.discovered, input.crawl.fetched, 1);
@@ -110,7 +135,8 @@ function expectedCtr(position: number) {
 
 export function generateOpportunityCandidates(input: OpportunityEngineInput): OpportunityCandidate[] {
   if (!input.pilotReady || !input.aggregateAvailable || ["inconsistent", "aggregate_unavailable"].includes(input.reconciliation)) return [];
-  const crawlByPage = new Map(input.crawlPages.map((page) => [page.pageId, page]));
+  const eligibleCrawlPages = input.crawlPages.filter((page) => organicRemediationEligibility(page).eligible);
+  const crawlByPage = new Map(eligibleCrawlPages.map((page) => [page.pageId, page]));
   const candidates: OpportunityCandidate[] = [];
 
   for (const row of input.gsc) {
@@ -181,7 +207,7 @@ export function generateOpportunityCandidates(input: OpportunityEngineInput): Op
     if (row.position >= 8 && row.position <= 20 && row.impressions >= 30) {
       const target = normalizedUrl(row.url);
       const terms = significantQueryTerms(row.query);
-      const sources = input.crawlPages.filter((source) =>
+       const sources = eligibleCrawlPages.filter((source) =>
         source.pageId !== row.pageId
         && terms.some((term) => source.contentText.toLowerCase().includes(term))
         && !source.links.some((link) => normalizedUrl(link) === target),

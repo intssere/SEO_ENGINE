@@ -8,6 +8,9 @@
 
 export type DashboardSnapshotEngine = {
   pagesAnalyzed: number;
+  activeCandidatesRefreshed: number;
+  dryRunPlansPrepared: number;
+  executableActionsPrepared: number;
   opportunities: number;
   actionsPrepared: number;
   executed: number;

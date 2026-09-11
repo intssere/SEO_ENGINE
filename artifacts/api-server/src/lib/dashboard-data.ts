@@ -10,6 +10,7 @@ export interface DashboardMetric {
 
 export interface DashboardOpportunity {
   title: string;
+  page: string;
   score: string;
   evidence: string;
   risk: string;
@@ -35,7 +36,12 @@ export interface DashboardSnapshot {
   metrics: DashboardMetric[];
   engine: {
     pagesAnalyzed: number;
+    activeCandidatesRefreshed: number;
+    dryRunPlansPrepared: number;
+    executableActionsPrepared: number;
+    /** Backward-compatible alias for activeCandidatesRefreshed. */
     opportunities: number;
+    /** Backward-compatible alias for executableActionsPrepared. */
     actionsPrepared: number;
     executed: number;
     verified: number;
@@ -104,7 +110,7 @@ function unavailable(reason: string): DashboardSnapshot {
       { label: "AI citation rate", value: "—", delta: "No live AI observations" },
       { label: "Open findings", value: "—", delta: "No live baseline" },
     ],
-    engine: { pagesAnalyzed: 0, opportunities: 0, actionsPrepared: 0, executed: 0, verified: 0, regressions: 0 },
+    engine: dashboardEngineCounts({}),
     opportunities: [],
     activity: [],
     verification: { verified: 0, total: 0, pending: 0, rolledBack: 0, regressions: 0 },
@@ -178,6 +184,43 @@ export function isCurrentOpportunity(input: { status: string; engine: string | n
   return ["new", "accepted", "planned"].includes(input.status) && input.engine === "opportunity_engine_v1";
 }
 
+export function dashboardEngineCounts(row: Record<string, unknown>): DashboardSnapshot["engine"] {
+  const activeCandidatesRefreshed = n(row.active_candidates_refreshed ?? row.opportunities);
+  const executableActionsPrepared = n(row.executable_actions_prepared ?? row.actions_prepared);
+  return {
+    pagesAnalyzed: n(row.pages_analyzed),
+    activeCandidatesRefreshed,
+    dryRunPlansPrepared: n(row.dry_run_plans_prepared),
+    executableActionsPrepared,
+    opportunities: activeCandidatesRefreshed,
+    actionsPrepared: executableActionsPrepared,
+    executed: n(row.executed),
+    verified: n(row.verified),
+    regressions: n(row.regressions),
+  };
+}
+
+export function dashboardOpportunityFromRow(row: Record<string, unknown>): DashboardOpportunity {
+  const url = typeof row.url === "string" ? row.url : "";
+  const path = typeof row.path === "string" && row.path ? row.path : (() => {
+    try { return new URL(url).pathname; } catch { return ""; }
+  })();
+  return {
+    title: String(row.opportunity_type).replaceAll("_", " ").replaceAll(".", " · "),
+    page: path || url || "Unknown page",
+    score: n(row.score).toFixed(1),
+    evidence: `${n(row.evidence_count)} refs`,
+    risk: String(row.risk_level),
+    state: String(row.status),
+  };
+}
+
+export function activeCandidateActivity(count: number): DashboardActivity | null {
+  return count > 0
+    ? { title: "Active opportunities refreshed", detail: `${count} active candidate${count === 1 ? "" : "s"} refreshed in the last 24 hours`, result: "Current queue ranked from persisted evidence", tone: "ready" }
+    : null;
+}
+
 export async function loadDashboardData(filters: DashboardFilters = { days: 28, country: "all", device: "all" }): Promise<DashboardSnapshot> {
   const databaseUrl = process.env.DATABASE_URL?.trim();
   if (!databaseUrl) return unavailable("DATABASE_URL is not configured. Preview fixtures are disabled.");
@@ -230,8 +273,9 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       sql`
         SELECT
           COALESCE((SELECT pages_fetched FROM crawl_runs WHERE site_id = ${site.id}::uuid AND status = 'completed' ORDER BY completed_at DESC NULLS LAST, created_at DESC LIMIT 1), 0)::int AS pages_analyzed,
-          (SELECT COUNT(*) FROM opportunities WHERE site_id = ${site.id}::uuid AND status IN ('new','accepted','planned') AND impact_estimate->>'engine'='opportunity_engine_v1' AND updated_at >= now() - interval '24 hours')::int AS opportunities,
-          (SELECT COUNT(*) FROM actions a JOIN action_plans ap ON ap.id = a.action_plan_id WHERE ap.site_id = ${site.id}::uuid AND a.created_at >= now() - interval '24 hours')::int AS actions_prepared,
+          (SELECT COUNT(*) FROM opportunities WHERE site_id = ${site.id}::uuid AND status IN ('new','accepted','planned') AND impact_estimate->>'engine'='opportunity_engine_v1' AND updated_at >= now() - interval '24 hours')::int AS active_candidates_refreshed,
+          (SELECT COUNT(DISTINCT ap.id) FROM action_plans ap JOIN opportunities o ON o.id=ap.opportunity_id WHERE ap.site_id=${site.id}::uuid AND o.status IN ('new','accepted','planned') AND o.impact_estimate->>'engine'='opportunity_engine_v1' AND ap.risk_level='blocked' AND ap.expected_outcome->>'dryRun'='true' AND ap.expected_outcome->>'executionAuthorized'='false' AND ap.expected_outcome->>'publicSiteWrites'='false')::int AS dry_run_plans_prepared,
+          (SELECT COUNT(*) FROM actions a JOIN action_plans ap ON ap.id=a.action_plan_id WHERE ap.site_id=${site.id}::uuid AND ap.risk_level<>'blocked' AND ap.expected_outcome->>'executionAuthorized'='true' AND a.created_at >= now()-interval '24 hours')::int AS executable_actions_prepared,
           (SELECT COUNT(*) FROM actions a JOIN action_plans ap ON ap.id = a.action_plan_id WHERE ap.site_id = ${site.id}::uuid AND a.status = 'completed' AND a.updated_at >= now() - interval '24 hours')::int AS executed,
           (SELECT COUNT(*) FROM verifications v JOIN deployments d ON d.id = v.deployment_id JOIN action_plans ap ON ap.id = d.action_plan_id WHERE ap.site_id = ${site.id}::uuid AND v.status = 'verified' AND v.verified_at >= now() - interval '24 hours')::int AS verified,
           (SELECT COUNT(*) FROM verifications v JOIN deployments d ON d.id = v.deployment_id JOIN action_plans ap ON ap.id = d.action_plan_id WHERE ap.site_id = ${site.id}::uuid AND v.status = 'regressed' AND v.created_at >= now() - interval '24 hours')::int AS regressions
@@ -281,8 +325,10 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
           o.score,
           cardinality(o.evidence_ids) AS evidence_count,
           o.status,
-          COALESCE(o.impact_estimate->>'riskClassification','unclassified') AS risk_level
+          COALESCE(o.impact_estimate->>'riskClassification','unclassified') AS risk_level,
+          p.url,p.path
         FROM opportunities o
+        LEFT JOIN pages p ON p.id=o.page_id
         WHERE o.site_id = ${site.id}::uuid AND o.status IN ('new','accepted','planned') AND o.impact_estimate->>'engine'='opportunity_engine_v1'
         ORDER BY o.score DESC, o.created_at DESC
         LIMIT 5
@@ -370,17 +416,13 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       : null;
     const stale = !freshest || Date.now() - freshest.getTime() > 72 * 60 * 60 * 1000;
 
-    const opportunities: DashboardOpportunity[] = opportunityRows.map((row) => ({
-      title: String(row.opportunity_type).replaceAll("_", " ").replaceAll(".", " · "),
-      score: n(row.score).toFixed(1),
-      evidence: `${n(row.evidence_count)} refs`,
-      risk: String(row.risk_level),
-      state: String(row.status),
-    }));
+    const opportunities = opportunityRows.map((row) => dashboardOpportunityFromRow(row));
+    const engineCounts = dashboardEngineCounts(engine);
 
     const activity: DashboardActivity[] = [];
     if (n(engine.verified) > 0) activity.push({ title: "Verification completed", detail: `${n(engine.verified)} changes verified in the last 24 hours`, result: "Persisted verification evidence", tone: "verified" });
-    if (n(engine.opportunities) > 0) activity.push({ title: "Opportunities discovered", detail: `${n(engine.opportunities)} candidates created in the last 24 hours`, result: "Ranked from persisted evidence", tone: "ready" });
+    const opportunityActivity = activeCandidateActivity(engineCounts.activeCandidatesRefreshed);
+    if (opportunityActivity) activity.push(opportunityActivity);
     if (n(approvalsRows[0]?.pending) > 0) activity.push({ title: "Approval required", detail: `${n(approvalsRows[0]?.pending)} plans awaiting a decision`, result: "No approval bypass", tone: "approval" });
     if (pilotRow) activity.push({
       title: "Diamond Shelf pilot",
@@ -388,7 +430,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       result: "Read-only provider observations and crawl evidence",
       tone: pilotStatus === "completed" ? "verified" : ["failed", "partial"].includes(pilotStatus) ? "approval" : "ready",
     });
-    if (activity.length === 0) activity.push({ title: "No recent operational events", detail: "No verified actions, new opportunities or pending approvals in the last 24 hours", result: "Live database checked", tone: "normal" });
+    if (activity.length === 0) activity.push({ title: "No recent operational events", detail: "No verified actions, refreshed active opportunities or pending approvals in the last 24 hours", result: "Live database checked", tone: "normal" });
 
     return {
       state: "live",
@@ -408,9 +450,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
         { label: "AI citation rate", value: responses > 0 ? percent(citationRate) : "—", delta: responses > 0 ? `${responses} observations` : "No live AI observations" },
         { label: "Open findings", value: integer(openFindings), delta: "Persisted technical findings" },
       ],
-      engine: {
-        pagesAnalyzed: n(engine.pages_analyzed), opportunities: n(engine.opportunities), actionsPrepared: n(engine.actions_prepared), executed: n(engine.executed), verified: n(engine.verified), regressions: n(engine.regressions),
-      },
+      engine: engineCounts,
       opportunities,
       activity,
       verification: { verified: n(verification.verified), total: n(verification.total), pending: n(verification.pending), rolledBack: n(verification.rolled_back), regressions: n(verification.regressions) },

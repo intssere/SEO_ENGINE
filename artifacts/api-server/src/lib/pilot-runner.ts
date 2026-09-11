@@ -759,8 +759,8 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
     const certification = buildBaselineCertification({ readiness, crawl: observations.crawl, technicalFindings, gsc: observations.gsc });
 
     const [crawlPageRows, gscSignalRows, technicalSignalRows, existingRows] = await Promise.all([
-      sql<Array<{ pageId: string; url: string; title: string | null; h1: string | null; contentText: string | null; links: unknown; evidenceId: string }>>`
-        SELECT p.id::text AS "pageId",p.url,ps.title,ps.h1,ps.content_text AS "contentText",ps.links,e.id::text AS "evidenceId"
+      sql<Array<{ pageId: string; url: string; indexable: boolean; title: string | null; h1: string | null; contentText: string | null; links: unknown; evidenceId: string }>>`
+        SELECT p.id::text AS "pageId",p.url,p.indexable,ps.title,ps.h1,ps.content_text AS "contentText",ps.links,e.id::text AS "evidenceId"
         FROM evidence e
         JOIN pages p ON p.id=(e.payload->>'pageId')::uuid
         JOIN LATERAL (
@@ -829,7 +829,7 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       if (reconciliationResult.staleIds.length > 0) {
         await tx`
           UPDATE opportunities SET status='dismissed',
-            rationale='Superseded by Opportunity Engine v1 after current evidence no longer met the eligibility guardrails.',
+            rationale='Superseded by Opportunity Engine v1 after the page or current evidence no longer met indexability and organic-remediation eligibility guardrails.',
             updated_at=now()
           WHERE id=ANY(${reconciliationResult.staleIds}::uuid[])`;
       }
