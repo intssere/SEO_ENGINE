@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createDryRunProposal } from "./action-planner.js";
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
-import { buildPageSpecificMetaDescription, cleanPageEvidence } from "./proposal-content.js";
+import { buildPageSpecificMetaDescription, cleanPageEvidence, extractSemanticPageText } from "./proposal-content.js";
 import { applyProposalQualityGate, evaluateProposalQuality } from "./proposal-quality.js";
 
 const page: CrawlPageSignal = {
@@ -94,6 +94,7 @@ test("exact production navigation and promotional patterns hard-block approval",
     "SECURE CHECKOUT",
     "Home Shop",
     "CURATED FRAGRANCE",
+    "Diamond Shelf New & trending Categories",
     "Bath &amp; Body",
   ];
   for (const pattern of patterns) {
@@ -169,6 +170,75 @@ test("HTML entities are decoded from meaningful source evidence but forbidden in
     page: encodedPage,
     activeProposalValues: [],
     evidence: { crawl: "crawl-1", shopify: "shopify-1", opportunity: "opportunity-1" },
+  });
+  assert.equal(gate.status, "pass");
+});
+
+test("current production residual menu pattern becomes an insufficient-clean-evidence draft", () => {
+  const residualPage: CrawlPageSignal = {
+    ...page,
+    url: "https://diamondshelf.us/collections/trending-now",
+    title: "Trending Now – Diamond Shelf",
+    h1: "Trending Now",
+    contentText: "Trending Now – Diamond Shelf · · Diamond Shelf New & trending Categories Fragrance Beauty Bath & Body Fragrance Hair Discover All brands Scent profiles the latest.",
+  };
+  const proposal = createDryRunProposal(candidate, residualPage, ["crawl-1", "opportunity-1"]);
+  assert.equal(buildPageSpecificMetaDescription(residualPage), null);
+  assert.equal(proposal.expectedOutcome.proposal.afterValue, null);
+  assert.equal(proposal.expectedOutcome.proposal.blockedReason, "insufficient_clean_evidence");
+  assert.equal(proposal.expectedOutcome.lifecycleStage, "draft_dry_run");
+});
+
+test("semantic main content wins over header and footer template regions", () => {
+  const html = `<header>Diamond Shelf New & trending Categories Fragrance Beauty Bath & Body</header>
+    <main><h1>Bath & Body Collection</h1><p>The Bath &amp; Body collection includes cleansers, lotions, and body-care products organized by product type.</p></main>
+    <footer>Discover All brands Scent profiles Secure checkout</footer>`;
+  const contentText = extractSemanticPageText(html);
+  assert.doesNotMatch(contentText, /new & trending|categories|secure checkout|all brands/i);
+  assert.match(contentText, /Bath & Body collection includes cleansers/i);
+  const collectionPage: CrawlPageSignal = {
+    ...page,
+    url: "https://diamondshelf.us/collections/bath-body",
+    title: "Bath & Body – Diamond Shelf",
+    h1: "Bath & Body Collection",
+    contentText,
+  };
+  const proposal = createDryRunProposal(candidate, collectionPage, ["crawl-1", "opportunity-1"]);
+  assert.match(proposal.expectedOutcome.proposal.afterValue ?? "", /includes cleansers, lotions, and body-care products/i);
+  assert.equal(proposal.expectedOutcome.lifecycleStage, "approval_ready");
+});
+
+test("collection descriptions require page-specific natural sentences rather than keyword lists", () => {
+  const collectionPage: CrawlPageSignal = {
+    ...page,
+    url: "https://diamondshelf.us/collections/home-fragrance",
+    title: "Home Fragrance – Diamond Shelf",
+    h1: "Home Fragrance",
+    contentText: "Home Fragrance. Fragrance candles diffusers room sprays beauty bath body brands scents profiles.",
+  };
+  const proposal = createDryRunProposal(candidate, collectionPage, ["crawl-1", "opportunity-1"]);
+  assert.equal(proposal.expectedOutcome.proposal.afterValue, null);
+  assert.equal(proposal.expectedOutcome.proposal.blockedReason, "insufficient_clean_evidence");
+});
+
+test("GSC query evidence never supplies invented meta-description copy", () => {
+  const ctrCandidate: OpportunityCandidate = {
+    ...candidate,
+    generationKey: "opportunity_engine_v1:organic_ctr:page-1:query-1",
+    opportunityType: "organic_ctr",
+    queryId: "query-1",
+    query: "lowest price guaranteed diamond ring",
+    title: "Low CTR for an already-ranking query",
+  };
+  const proposal = createDryRunProposal(ctrCandidate, page, ["crawl-1", "gsc-1", "shopify-1", "opportunity-1"]);
+  assert.ok(proposal.expectedOutcome.proposal.afterValue);
+  assert.doesNotMatch(proposal.expectedOutcome.proposal.afterValue ?? "", /lowest price|guaranteed/i);
+  const gate = evaluateProposalQuality({
+    proposal,
+    candidate: ctrCandidate,
+    page,
+    activeProposalValues: [],
+    evidence: { crawl: "crawl-1", gsc: "gsc-1", shopify: "shopify-1", opportunity: "opportunity-1" },
   });
   assert.equal(gate.status, "pass");
 });

@@ -81,7 +81,7 @@ test("insufficient persisted page evidence stays a blocked draft and never inven
   assert.equal(proposal.expectedOutcome.lifecycleStage, "draft_dry_run");
   assert.equal(proposal.expectedOutcome.proposal.evidenceSufficient, false);
   assert.equal(proposal.expectedOutcome.proposal.afterValue, null);
-  assert.equal(proposal.expectedOutcome.proposal.blockedReason, "insufficient_persisted_evidence");
+  assert.equal(proposal.expectedOutcome.proposal.blockedReason, "insufficient_clean_evidence");
 });
 
 test("reconciliation invalidates a proposal without authorizing it or discarding its review metadata", () => {

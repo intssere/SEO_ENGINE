@@ -54,11 +54,6 @@ const sentence = (value: string, max = 155) => {
   return candidate.length >= 36 && words(candidate).length >= 6 ? candidate : "";
 };
 const pageContext = (page: CrawlPageSignal) => sentence(cleanPageEvidence(page.contentText)) || normalize(page.h1) || normalize(page.title);
-const withQuery = (query: string, context: string) => {
-  const prefix = `${normalize(query)}: `;
-  const value = `${prefix}${context}`.slice(0, 155).trim();
-  return words(value).length >= 6 ? value : "";
-};
 
 function proposalDetails(candidate: OpportunityCandidate, page: CrawlPageSignal | undefined) {
   if (!page) return null;
@@ -99,7 +94,7 @@ function proposalDetails(candidate: OpportunityCandidate, page: CrawlPageSignal 
     return null;
   }
   if (candidate.opportunityType === "organic_ctr" && query) {
-    const after = withQuery(query, context);
+    const after = buildPageSpecificMetaDescription(page);
     if (!after) return null;
     return { ...base, actionType: "update_meta_description", field: "meta_description", beforeValue: description || null, afterValue: after, rollback: `Restore the observed meta description exactly: ${description || "(empty value)"}.` };
   }
@@ -122,6 +117,13 @@ export function createDryRunProposal(candidate: OpportunityCandidate, page: Craw
   const details = proposalDetails(candidate, page);
   const evidenceIds = [...new Set(supportingEvidenceIds.filter(Boolean))].sort();
   const sufficient = Boolean(details && page && evidenceIds.length >= 2);
+  const requiresCleanMetaEvidence = Boolean(page
+    && (/meta description/i.test(candidate.title) || candidate.opportunityType === "organic_ctr"));
+  const blockedReason = sufficient
+    ? null
+    : requiresCleanMetaEvidence && !details
+      ? "insufficient_clean_evidence"
+      : "insufficient_persisted_evidence";
   const pageIdentity = page ? { id: page.pageId, url: page.url } : { id: candidate.pageId, url: "" };
   return {
     status: "pending",
@@ -148,7 +150,7 @@ export function createDryRunProposal(candidate: OpportunityCandidate, page: Craw
         rollback: details?.rollback ?? "No public-site change exists; no rollback is required.",
         supportingEvidenceIds: evidenceIds,
         evidenceSufficient: sufficient,
-        blockedReason: sufficient ? null : "insufficient_persisted_evidence",
+        blockedReason,
         boundedPilot: true,
         wholeSiteCoverage: false,
       },

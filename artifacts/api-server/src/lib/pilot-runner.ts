@@ -16,6 +16,7 @@ import {
 } from "./opportunity-engine.js";
 import { createDryRunProposal, invalidateDryRunProposal } from "./action-planner.js";
 import { applyProposalQualityGate, evaluateProposalQuality } from "./proposal-quality.js";
+import { extractSemanticPageText } from "./proposal-content.js";
 
 export const PILOT_LIMITS = {
   crawlPages: 30,
@@ -338,7 +339,7 @@ export async function crawlSite(seedOrigin: string, fetchImpl: typeof fetch = fe
         .map((match) => normalizeCrawlUrl(match[1]!, actualUrl))
         .filter((value): value is string => Boolean(value));
       const uniqueLinks = [...new Set(links)].slice(0, 200);
-      const contentText = html.replace(/<script\b[\s\S]*?<\/script>/gi, " ").replace(/<style\b[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 100_000);
+      const contentText = extractSemanticPageText(html);
       pages.push({
         url: actualUrl,
         path: new URL(actualUrl).pathname,

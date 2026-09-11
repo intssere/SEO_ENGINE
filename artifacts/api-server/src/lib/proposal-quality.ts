@@ -69,7 +69,7 @@ const check = (id: ProposalQualityCheckId, label: string, status: ProposalQualit
 
 function relevanceCheck(input: ProposalQualityInput, proposed: string, evidenceIds: string[]) {
   if (!input.page || !proposed) return check("page_relevance", "Page relevance", "blocked", 0, "Persisted page content is unavailable.", evidenceIds);
-  const source = [input.page.title, input.page.h1, input.page.description, input.page.contentText, input.candidate.query].filter(Boolean).join(" ");
+  const source = [input.page.title, input.page.h1, input.page.description, input.page.contentText].filter(Boolean).join(" ");
   const sourceTerms = new Set(meaningfulWords(source));
   const proposedTerms = [...new Set(meaningfulWords(proposed))];
   const overlap = proposedTerms.filter((term) => sourceTerms.has(term));
@@ -151,16 +151,7 @@ function formatCheck(proposed: string) {
 }
 
 function templateBoilerplateCheck(input: ProposalQualityInput, proposed: string, evidenceIds: string[]) {
-  const matches = [
-    /\bskip\s+to\s+content\b/i,
-    /\bfree\s+shipping\b/i,
-    /\bsecure\s+checkout\b/i,
-    /\bcurated\s+fragrance\b/i,
-    /\bhome\s+shop\b/i,
-    /\b(?:cookie settings|accept cookies|privacy policy|terms of service|manage preferences)\b/i,
-    /&(?:amp|nbsp|quot|apos|lt|gt|#\d+);/i,
-  ].filter((pattern) => pattern.test(proposed)).length;
-  if (matches > 0) return check("template_boilerplate", "Template/navigation boilerplate", "blocked", 0, "Known navigation, header/footer, utility, or promotional template text is not valid page metadata.", evidenceIds);
+  if (containsProposalBoilerplate(proposed)) return check("template_boilerplate", "Template/navigation boilerplate", "blocked", 0, "Known navigation, header/footer, utility, or promotional template text is not valid page metadata.", evidenceIds);
   if (hasRawTemplatePrefix(proposed, input.page)) return check("template_boilerplate", "Template/navigation boilerplate", "blocked", 0, "The proposal contains a raw prefix from the crawled page template.", evidenceIds);
   return check("template_boilerplate", "Template/navigation boilerplate", "pass", 100, "No known template or navigation boilerplate was detected.", evidenceIds);
 }
@@ -244,7 +235,7 @@ export function applyProposalQualityGate(proposal: DryRunProposal, gate: Proposa
         ...proposal.expectedOutcome.proposal,
         blockedReason: lifecycleStage === "approval_ready"
           ? null
-          : gate.blockingReasons[0] ?? proposal.expectedOutcome.proposal.blockedReason ?? "quality_gate_blocked",
+          : proposal.expectedOutcome.proposal.blockedReason ?? gate.blockingReasons[0] ?? "quality_gate_blocked",
       },
       qualityGate: gate,
       proposalFingerprint: createHash("sha256").update(fingerprintPayload).digest("hex"),

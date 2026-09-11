@@ -56,3 +56,9 @@ Meta-description quality must reject raw crawl prefixes and template text even w
 **Why:** A production run produced distinct 154–155 character values that scored 100 while containing navigation and promotional chrome such as “Skip to content,” shipping banners, checkout labels, and HTML entities.
 
 **How to apply:** Decode entities in source evidence, strip known header/footer/navigation/utility patterns, and hard-block any output that still contains those patterns, truncation artifacts, raw contaminated prefixes, generic filler, or unsupported claims. If meaningful body evidence is absent after cleaning, persist a blocked draft rather than inventing text.
+
+Meta-description generation must prioritize semantic page regions and page identity; GSC query text is supporting evidence only and must never supply proposal copy.
+
+**Why:** Removing a few known banner strings still left a repeated site-menu fragment that looked unique only because each value began with a different page title.
+
+**How to apply:** Extract `<main>` or `<article>` after excluding header, nav, footer, aside, forms, scripts, and styles. Require a complete natural sentence with page-identity overlap and enough non-chrome terms. Otherwise store `afterValue=null` with `insufficient_clean_evidence`.
