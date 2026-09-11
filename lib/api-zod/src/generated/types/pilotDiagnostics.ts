@@ -10,6 +10,7 @@ import type { PilotProviderDiagnostic } from './pilotProviderDiagnostic';
 export interface PilotDiagnostics {
   shopify: PilotProviderDiagnostic;
   gsc: PilotProviderDiagnostic;
+  gscAggregate: PilotProviderDiagnostic;
   ga4: PilotProviderDiagnostic;
   crawl: PilotProviderDiagnostic;
 }

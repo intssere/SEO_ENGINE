@@ -28,26 +28,49 @@ export type CrawlLimits = {
 export type Outcome<T> = { ok: true; data: T } | { ok: false; category: string; httpStatus: number | null };
 export type ProviderDiagnostic = { status: "available" | "empty" | "failed"; category: string | null; httpStatus: number | null };
 export type ShopifyObservation = { storeVerified: boolean; productCount: number; productsObserved: number; variantCount: number; inventoryQuantity: number | null; truncated: boolean; complete: boolean };
-export type GscObservation = { rows: Array<{ date: string; query: string; page: string; country: string; device: string; clicks: number; impressions: number; ctr: number; position: number | null }>; startDate: string; endDate: string };
+export type GscAggregateMetrics = { clicks: number; impressions: number; ctr: number; position: number | null };
+export type GscReconciliation = {
+  status: "consistent" | "partial_dimensional" | "inconsistent" | "aggregate_unavailable";
+  detailedClicks: number;
+  detailedImpressions: number;
+  clickCoverage: number | null;
+  impressionCoverage: number | null;
+};
+export type GscObservation = {
+  rows: Array<{ date: string; query: string; page: string; country: string; device: string; clicks: number; impressions: number; ctr: number; position: number | null }>;
+  aggregate: Outcome<GscAggregateMetrics>;
+  reconciliation: GscReconciliation;
+  startDate: string;
+  endDate: string;
+};
 export type Ga4Observation = { rows: Array<{ date: string; sessions: number; users: number; pageViews: number }>; startDate: string; endDate: string };
 export type CrawlPage = { url: string; path: string; statusCode: number; title: string | null; description: string | null; canonical: string | null; robots: string | null; h1: string | null; contentHash: string; contentText: string; links: string[] };
 export type CrawlObservation = { pages: CrawlPage[]; discovered: number; fetched: number; blockedByRobots: number; truncated: boolean };
+export type BaselineCertification = {
+  status: "pilot_ready" | "partial";
+  wholeSiteCertified: false;
+  wholeSiteReason: "bounded_crawl";
+  crawlCoverage: { fetched: number; discovered: number; percent: number; boundedLimit: number; truncated: boolean };
+  technicalFindings: { total: number; withValidEvidence: number; valid: boolean };
+  gscAggregate: { status: "available" | "failed"; metrics: GscAggregateMetrics | null; reconciliation: GscReconciliation };
+};
 export type PilotReadiness = {
   state: "ready" | "partial";
   blockers: string[];
   coverage: { shopify: boolean; gsc: boolean; ga4: boolean; crawl: boolean };
-  diagnostics: { shopify: ProviderDiagnostic; gsc: ProviderDiagnostic; ga4: ProviderDiagnostic; crawl: ProviderDiagnostic };
+  diagnostics: { shopify: ProviderDiagnostic; gsc: ProviderDiagnostic; gscAggregate: ProviderDiagnostic; ga4: ProviderDiagnostic; crawl: ProviderDiagnostic };
 };
 export type PilotResult = {
   runId: string;
   status: "completed";
   readiness: PilotReadiness;
-  counts: { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
+  counts: { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; gscDetailedRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
+  certification: BaselineCertification;
 };
 
 export type ConnectionRecord = { id: string; provider: "shopify" | "google"; secret_ref: string; status: string; scopes: string[]; metadata: Record<string, unknown> };
 export type PilotContext = { siteId: string; canonicalOrigin: string; connections: Record<"shopify" | "google", ConnectionRecord> };
-type PersistedCounts = { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; ga4Rows: number; pages: number };
+type PersistedCounts = { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; gscDetailedRows: number; ga4Rows: number; pages: number };
 
 export interface PilotDependencies {
   publicWritesEnabled: boolean;
@@ -58,7 +81,7 @@ export interface PilotDependencies {
   readGa4(context: PilotContext): Promise<Outcome<Ga4Observation>>;
   crawl(origin: string): Promise<Outcome<CrawlObservation>>;
   persist(runId: string, context: PilotContext, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }): Promise<PersistedCounts>;
-  evaluate(runId: string, context: PilotContext, readiness: PilotReadiness): Promise<{ findings: number; opportunities: number }>;
+  evaluate(runId: string, context: PilotContext, readiness: PilotReadiness, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }): Promise<{ findings: number; opportunities: number; certification: BaselineCertification }>;
   progress(runId: string, phase: string): Promise<void>;
   finish(runId: string, result: Omit<PilotResult, "runId" | "status">): Promise<void>;
   fail(runId: string, category: string): Promise<void>;
@@ -100,6 +123,8 @@ export function computeBaselineReadiness(input: { shopify: Outcome<ShopifyObserv
   else if (!input.shopify.data.complete) blockers.push("shopify_catalog_incomplete");
   if (!input.gsc.ok) blockers.push(`gsc_${input.gsc.category}`);
   else if (input.gsc.data.rows.length === 0) blockers.push("gsc_evidence_empty");
+  else if (!input.gsc.data.aggregate.ok) blockers.push(`gsc_aggregate_${input.gsc.data.aggregate.category}`);
+  else if (input.gsc.data.reconciliation.status === "inconsistent") blockers.push("gsc_reconciliation_inconsistent");
   if (!input.ga4.ok) blockers.push(`ga4_${input.ga4.category}`);
   else if (input.ga4.data.rows.length === 0) blockers.push("ga4_evidence_empty");
   if (!input.crawl.ok) blockers.push(`crawl_${input.crawl.category}`);
@@ -107,6 +132,7 @@ export function computeBaselineReadiness(input: { shopify: Outcome<ShopifyObserv
   const diagnostics = {
     shopify: diagnostic(input.shopify, input.shopify.ok ? input.shopify.data.productsObserved : null),
     gsc: diagnostic(input.gsc, input.gsc.ok ? input.gsc.data.rows.length : null),
+    gscAggregate: input.gsc.ok ? diagnostic(input.gsc.data.aggregate, input.gsc.data.aggregate.ok ? 1 : null) : diagnostic(input.gsc),
     ga4: diagnostic(input.ga4, input.ga4.ok ? input.ga4.data.rows.length : null),
     crawl: diagnostic(input.crawl, input.crawl.ok ? input.crawl.data.fetched : null),
   };
@@ -115,7 +141,7 @@ export function computeBaselineReadiness(input: { shopify: Outcome<ShopifyObserv
     blockers,
     coverage: {
       shopify: input.shopify.ok && input.shopify.data.storeVerified && input.shopify.data.productsObserved > 0 && input.shopify.data.complete,
-      gsc: input.gsc.ok && input.gsc.data.rows.length > 0,
+      gsc: input.gsc.ok && input.gsc.data.rows.length > 0 && input.gsc.data.aggregate.ok && input.gsc.data.reconciliation.status !== "inconsistent",
       ga4: input.ga4.ok && input.ga4.data.rows.length > 0,
       crawl: input.crawl.ok && input.crawl.data.fetched > 0,
     },
@@ -144,8 +170,8 @@ export async function executePilot(deps: PilotDependencies, existingRunId?: stri
     const persisted = await deps.persist(runId, context, { shopify, gsc, ga4, crawl });
     const readiness = computeBaselineReadiness({ shopify, gsc, ga4, crawl });
     await deps.progress(runId, readiness.state === "ready" ? "evaluating_baseline" : "partial_evidence");
-    const evaluated = await deps.evaluate(runId, context, readiness);
-    const result = { readiness, counts: { ...persisted, ...evaluated } };
+    const evaluated = await deps.evaluate(runId, context, readiness, { shopify, gsc, ga4, crawl });
+    const result = { readiness, counts: { ...persisted, findings: evaluated.findings, opportunities: evaluated.opportunities }, certification: evaluated.certification };
     await deps.finish(runId, result);
     return { runId, status: "completed", ...result };
   } catch (error) {
@@ -405,6 +431,75 @@ export function ga4ReportBody(startDate: string, endDate: string) {
   };
 }
 
+export function gscAggregateRequestBody(startDate: string, endDate: string) {
+  return { startDate, endDate, rowLimit: 1, dataState: "final" };
+}
+
+export function gscDetailedRequestBody(startDate: string, endDate: string, rowLimit = PILOT_LIMITS.gscRows) {
+  return { startDate, endDate, dimensions: ["date", "query", "page", "country", "device"], rowLimit, dataState: "final" };
+}
+
+export function parseGscAggregate(row: { clicks?: unknown; impressions?: unknown; ctr?: unknown; position?: unknown } | undefined): GscAggregateMetrics | null {
+  const clicks = Number(row?.clicks ?? 0);
+  const impressions = Number(row?.impressions ?? 0);
+  const ctr = Number(row?.ctr ?? 0);
+  const position = row?.position == null ? null : Number(row.position);
+  if (![clicks, impressions, ctr].every((value) => Number.isFinite(value) && value >= 0)) return null;
+  if (position !== null && (!Number.isFinite(position) || position < 0)) return null;
+  return { clicks, impressions, ctr, position };
+}
+
+export function reconcileGscAggregate(rows: GscObservation["rows"], aggregate: Outcome<GscAggregateMetrics>): GscReconciliation {
+  const detailedClicks = rows.reduce((sum, row) => sum + row.clicks, 0);
+  const detailedImpressions = rows.reduce((sum, row) => sum + row.impressions, 0);
+  if (!aggregate.ok) return { status: "aggregate_unavailable", detailedClicks, detailedImpressions, clickCoverage: null, impressionCoverage: null };
+  const clickCoverage = aggregate.data.clicks > 0 ? detailedClicks / aggregate.data.clicks : detailedClicks === 0 ? 1 : null;
+  const impressionCoverage = aggregate.data.impressions > 0 ? detailedImpressions / aggregate.data.impressions : detailedImpressions === 0 ? 1 : null;
+  const clickTolerance = Math.max(1, aggregate.data.clicks * 0.02);
+  const impressionTolerance = Math.max(1, aggregate.data.impressions * 0.02);
+  if (detailedClicks > aggregate.data.clicks + clickTolerance || detailedImpressions > aggregate.data.impressions + impressionTolerance) {
+    return { status: "inconsistent", detailedClicks, detailedImpressions, clickCoverage, impressionCoverage };
+  }
+  const partial = (clickCoverage !== null && clickCoverage < 0.98) || (impressionCoverage !== null && impressionCoverage < 0.98);
+  return { status: partial ? "partial_dimensional" : "consistent", detailedClicks, detailedImpressions, clickCoverage, impressionCoverage };
+}
+
+export function organicCtrOpportunityValidity(aggregate: Outcome<GscAggregateMetrics>): { valid: boolean; reason: string } {
+  if (!aggregate.ok) return { valid: false, reason: "gsc_aggregate_unavailable" };
+  if (aggregate.data.impressions < 10) return { valid: false, reason: "insufficient_aggregate_impressions" };
+  if (aggregate.data.ctr >= 0.03) return { valid: false, reason: "aggregate_ctr_not_low" };
+  if (aggregate.data.position === null || aggregate.data.position < 4 || aggregate.data.position > 20) return { valid: false, reason: "aggregate_position_outside_ctr_opportunity_range" };
+  return { valid: true, reason: "aggregate_ctr_opportunity_supported" };
+}
+
+export function assessTechnicalFindingEvidence(rows: Array<{ pageId: string | null; evidencePageId: string | null; source: string | null; kind: string | null }>) {
+  const withValidEvidence = rows.filter((row) => Boolean(row.pageId) && row.pageId === row.evidencePageId && row.source === "crawler" && row.kind === "technical_page_observation").length;
+  return { total: rows.length, withValidEvidence, valid: withValidEvidence === rows.length };
+}
+
+export function buildBaselineCertification(input: {
+  readiness: PilotReadiness;
+  crawl: Outcome<CrawlObservation>;
+  technicalFindings: { total: number; withValidEvidence: number; valid: boolean };
+  gsc: Outcome<GscObservation>;
+}): BaselineCertification {
+  const crawl = input.crawl.ok ? input.crawl.data : { fetched: 0, discovered: 0, truncated: true };
+  const discovered = Math.max(crawl.discovered, crawl.fetched);
+  const percent = discovered > 0 ? Math.min(100, (crawl.fetched / discovered) * 100) : 0;
+  const aggregate = input.gsc.ok ? input.gsc.data.aggregate : { ok: false as const, category: input.gsc.category, httpStatus: input.gsc.httpStatus };
+  const reconciliation = input.gsc.ok
+    ? input.gsc.data.reconciliation
+    : { status: "aggregate_unavailable" as const, detailedClicks: 0, detailedImpressions: 0, clickCoverage: null, impressionCoverage: null };
+  return {
+    status: input.readiness.state === "ready" && input.technicalFindings.valid ? "pilot_ready" : "partial",
+    wholeSiteCertified: false,
+    wholeSiteReason: "bounded_crawl",
+    crawlCoverage: { fetched: crawl.fetched, discovered, percent, boundedLimit: PILOT_LIMITS.crawlPages, truncated: crawl.truncated },
+    technicalFindings: input.technicalFindings,
+    gscAggregate: { status: aggregate.ok ? "available" : "failed", metrics: aggregate.ok ? aggregate.data : null, reconciliation },
+  };
+}
+
 export function parseShopifyProductCount(value: unknown): number | null {
   return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
 }
@@ -516,20 +611,25 @@ async function readGsc(context: PilotContext): Promise<Outcome<GscObservation>> 
   if (!siteUrl) return { ok: false, category: "property_missing", httpStatus: null };
   const startDate = isoDate(27);
   const endDate = isoDate(1);
-  const result = await requestJson<{ rows?: Array<{ keys?: string[]; clicks?: number; impressions?: number; ctr?: number; position?: number }> }>(
-    "gsc",
-    `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,
-    "POST",
-    bundle.accessToken,
-    { startDate, endDate, dimensions: ["date", "query", "page", "country", "device"], rowLimit: PILOT_LIMITS.gscRows, dataState: "final" },
-  );
-  if (!result.ok) return result;
-  const rows = (result.data.rows ?? []).flatMap((row) => {
+  const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`;
+  type GscResponse = { rows?: Array<{ keys?: string[]; clicks?: number; impressions?: number; ctr?: number; position?: number }> };
+  const [aggregateResult, detailedResult] = await Promise.all([
+    requestJson<GscResponse>("gsc", url, "POST", bundle.accessToken, gscAggregateRequestBody(startDate, endDate)),
+    requestJson<GscResponse>("gsc", url, "POST", bundle.accessToken, gscDetailedRequestBody(startDate, endDate)),
+  ]);
+  if (!detailedResult.ok) return detailedResult;
+  const rows = (detailedResult.data.rows ?? []).flatMap((row) => {
     const [date, query, page, country, device] = row.keys ?? [];
     if (!date || !query || !page || !country || !device) return [];
     return [{ date, query, page, country: country.toUpperCase(), device: device.toLowerCase(), clicks: Number(row.clicks ?? 0), impressions: Number(row.impressions ?? 0), ctr: Number(row.ctr ?? 0), position: Number.isFinite(row.position) ? Number(row.position) : null }];
   });
-  return { ok: true, data: { rows, startDate, endDate } };
+  const aggregate: Outcome<GscAggregateMetrics> = aggregateResult.ok
+    ? (() => {
+      const metrics = parseGscAggregate(aggregateResult.data.rows?.[0]);
+      return metrics ? { ok: true as const, data: metrics } : { ok: false as const, category: "invalid_aggregate_response", httpStatus: 200 };
+    })()
+    : aggregateResult;
+  return { ok: true, data: { rows, aggregate, reconciliation: reconcileGscAggregate(rows, aggregate), startDate, endDate } };
 }
 
 async function readGa4(context: PilotContext): Promise<Outcome<Ga4Observation>> {
@@ -566,7 +666,7 @@ async function readGa4(context: PilotContext): Promise<Outcome<Ga4Observation>> 
 
 async function persist(runId: string, context: PilotContext, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }): Promise<PersistedCounts> {
   const sql = database();
-  let products = 0, catalogProducts = 0, productsObserved = 0, shopifyComplete = false, gscRows = 0, ga4Rows = 0, pages = 0;
+  let products = 0, catalogProducts = 0, productsObserved = 0, shopifyComplete = false, gscRows = 0, gscDetailedRows = 0, ga4Rows = 0, pages = 0;
   try {
     await sql.begin(async (tx) => {
       if (observations.shopify.ok) {
@@ -582,8 +682,14 @@ async function persist(runId: string, context: PilotContext, observations: { sho
           const queryRows = await tx<{ id: string }[]>`INSERT INTO search_queries(site_id,query,country,device,last_seen_at) VALUES(${context.siteId}::uuid,${row.query},${row.country},${row.device},now()) ON CONFLICT(site_id,query,country,device) DO UPDATE SET last_seen_at=now() RETURNING id::text`;
           await tx`INSERT INTO search_metrics(query_id,page_id,metric_date,source,impressions,clicks,ctr,average_position) VALUES(${queryRows[0]!.id}::uuid,${pageRows[0]!.id}::uuid,${row.date}::date,'gsc',${row.impressions},${row.clicks},${row.ctr},${row.position}) ON CONFLICT(query_id,page_id,metric_date,source) DO UPDATE SET impressions=EXCLUDED.impressions,clicks=EXCLUDED.clicks,ctr=EXCLUDED.ctr,average_position=EXCLUDED.average_position`;
           gscRows++;
+          gscDetailedRows++;
         }
-        await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'gsc','performance_ingestion',1,${tx.json({ rowCount: gscRows, startDate: observations.gsc.data.startDate, endDate: observations.gsc.data.endDate })},${tx.json({ runId, mode: "read_only" })})`;
+        await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'gsc','performance_ingestion',1,${tx.json({ detailedRowCount: gscDetailedRows, startDate: observations.gsc.data.startDate, endDate: observations.gsc.data.endDate, reconciliation: observations.gsc.data.reconciliation })},${tx.json({ runId, mode: "read_only", dataset: "dimensional" })})`;
+        if (observations.gsc.data.aggregate.ok) {
+          await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'gsc','performance_aggregate',1,${tx.json({ status: "available", metrics: observations.gsc.data.aggregate.data, startDate: observations.gsc.data.startDate, endDate: observations.gsc.data.endDate, reconciliation: observations.gsc.data.reconciliation })},${tx.json({ runId, mode: "read_only", dataset: "property_aggregate" })})`;
+        } else {
+          await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'gsc','performance_aggregate',1,${tx.json({ status: "failed", category: observations.gsc.data.aggregate.category, httpStatus: observations.gsc.data.aggregate.httpStatus, startDate: observations.gsc.data.startDate, endDate: observations.gsc.data.endDate, reconciliation: observations.gsc.data.reconciliation })},${tx.json({ runId, mode: "read_only", dataset: "property_aggregate", sanitized: true })})`;
+        }
       }
       if (observations.ga4.ok) {
         ga4Rows = observations.ga4.data.rows.length;
@@ -597,50 +703,80 @@ async function persist(runId: string, context: PilotContext, observations: { sho
         for (const page of observations.crawl.data.pages) {
           const pageRows = await tx<{ id: string }[]>`INSERT INTO pages(site_id,url,normalized_url,path,indexable,last_seen_at) VALUES(${context.siteId}::uuid,${page.url},${page.url.replace(/\/$/, "").toLowerCase()},${page.path},${page.statusCode >= 200 && page.statusCode < 400 && !/noindex/i.test(page.robots ?? "")},now()) ON CONFLICT(site_id,normalized_url) DO UPDATE SET url=EXCLUDED.url,path=EXCLUDED.path,indexable=EXCLUDED.indexable,last_seen_at=now() RETURNING id::text`;
           await tx`INSERT INTO page_snapshots(page_id,crawl_run_id,status_code,title,meta_description,canonical_url,robots,h1,content_hash,content_text,links,raw_signals) VALUES(${pageRows[0]!.id}::uuid,${crawlRows[0]!.id}::uuid,${page.statusCode},${page.title},${page.description},${page.canonical},${page.robots},${page.h1},${page.contentHash},${page.contentText},${tx.json(page.links)},${tx.json({ runId, readOnly: true })})`;
+          await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'crawler','technical_page_observation',1,${tx.json({ pageId: pageRows[0]!.id, url: page.url, statusCode: page.statusCode, titlePresent: page.title !== null, descriptionPresent: page.description !== null, h1Present: page.h1 !== null, contentHash: page.contentHash })},${tx.json({ runId, mode: "read_only", crawlRunId: crawlRows[0]!.id })})`;
           pages++;
         }
         await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'crawler','crawl_coverage',1,${tx.json({ discovered: observations.crawl.data.discovered, fetched: pages, blockedByRobots: observations.crawl.data.blockedByRobots, truncated: observations.crawl.data.truncated })},${tx.json({ runId, limits: PILOT_LIMITS, mode: "read_only" })})`;
       }
     });
-    return { products, catalogProducts, productsObserved, shopifyComplete, gscRows, ga4Rows, pages };
+    return { products, catalogProducts, productsObserved, shopifyComplete, gscRows, gscDetailedRows, ga4Rows, pages };
   } finally {
     await sql.end({ timeout: 2 });
   }
 }
 
-async function evaluate(runId: string, context: PilotContext, readiness: PilotReadiness) {
-  if (readiness.state !== "ready") return { findings: 0, opportunities: 0 };
+async function evaluate(runId: string, context: PilotContext, readiness: PilotReadiness, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }) {
   const sql = database();
   try {
-    const summaryEvidence = await sql<{ id: string }[]>`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'seo_engine','baseline_readiness',1,${sql.json(readiness)},${sql.json({ runId, evaluator: "baseline_v1" })}) RETURNING id::text`;
+    const summaryEvidence = await sql<{ id: string }[]>`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'seo_engine','baseline_readiness',1,${sql.json(readiness)},${sql.json({ runId, evaluator: "baseline_v2" })}) RETURNING id::text`;
     const evidenceId = summaryEvidence[0]!.id;
-    const findingRows = await sql<{ id: string }[]>`
+    const findingRows = readiness.state === "ready" ? await sql<{ id: string }[]>`
       INSERT INTO findings(site_id,page_id,primary_evidence_id,rule_id,category,severity,title,description)
-      SELECT ${context.siteId}::uuid,p.id,${evidenceId}::uuid,
+      SELECT ${context.siteId}::uuid,p.id,pe.id,
         CASE WHEN ps.title IS NULL THEN 'baseline.missing_title' WHEN ps.meta_description IS NULL THEN 'baseline.missing_description' ELSE 'baseline.missing_h1' END,
         'technical_seo','medium',
         CASE WHEN ps.title IS NULL THEN 'Page title is missing' WHEN ps.meta_description IS NULL THEN 'Meta description is missing' ELSE 'Primary heading is missing' END,
-        'Observed in the bounded read-only pilot crawl.'
+        'Observed in the bounded read-only pilot crawl with page-level source evidence.'
       FROM pages p
       JOIN LATERAL (SELECT title,meta_description,h1 FROM page_snapshots WHERE page_id=p.id ORDER BY observed_at DESC LIMIT 1) ps ON true
+      JOIN LATERAL (SELECT id FROM evidence WHERE site_id=p.site_id AND source='crawler' AND kind='technical_page_observation' AND payload->>'pageId'=p.id::text AND provenance->>'runId'=${runId} ORDER BY observed_at DESC LIMIT 1) pe ON true
       WHERE p.site_id=${context.siteId}::uuid AND (ps.title IS NULL OR ps.meta_description IS NULL OR ps.h1 IS NULL)
         AND NOT EXISTS (SELECT 1 FROM findings f WHERE f.site_id=${context.siteId}::uuid AND f.page_id=p.id AND f.status='open' AND f.rule_id IN ('baseline.missing_title','baseline.missing_description','baseline.missing_h1'))
-      RETURNING id::text`;
-    const opportunityRows = await sql<{ id: string }[]>`
-      INSERT INTO opportunities(site_id,page_id,opportunity_type,status,score,impact_estimate,effort_estimate,rationale,evidence_ids)
-      SELECT ${context.siteId}::uuid,sm.page_id,'organic_ctr','new',
-        LEAST(100,20 + ln(1 + SUM(sm.impressions)) * 10),
-        ${sql.json({ basis: "persisted_gsc_impressions_and_ctr" })},
-        ${sql.json({ level: "review" })},
-        'Persisted GSC evidence shows measurable impressions with low click-through rate in the pilot window.',
-        ARRAY[${evidenceId}::uuid]
-      FROM search_metrics sm JOIN search_queries sq ON sq.id=sm.query_id
-      WHERE sq.site_id=${context.siteId}::uuid AND sm.source='gsc' AND sm.metric_date>=current_date-27 AND sm.page_id IS NOT NULL
-      GROUP BY sm.page_id
-      HAVING SUM(sm.impressions)>=10 AND SUM(sm.clicks)::float/NULLIF(SUM(sm.impressions),0)<0.03 AND AVG(sm.average_position) BETWEEN 4 AND 20
-        AND NOT EXISTS (SELECT 1 FROM opportunities o WHERE o.site_id=${context.siteId}::uuid AND o.page_id=sm.page_id AND o.opportunity_type='organic_ctr' AND o.status IN ('new','accepted','planned'))
-      RETURNING id::text`;
-    return { findings: findingRows.length, opportunities: opportunityRows.length };
+      RETURNING id::text`
+      : [];
+    await sql`
+      UPDATE findings f SET primary_evidence_id=latest.id
+      FROM (
+        SELECT DISTINCT ON (payload->>'pageId') id,payload->>'pageId' AS page_id
+        FROM evidence
+        WHERE site_id=${context.siteId}::uuid AND source='crawler' AND kind='technical_page_observation' AND provenance->>'runId'=${runId}
+        ORDER BY payload->>'pageId',observed_at DESC
+      ) latest
+      WHERE f.site_id=${context.siteId}::uuid AND f.status='open' AND f.category='technical_seo' AND f.page_id::text=latest.page_id`;
+    const technicalEvidenceRows = await sql<{ pageId: string | null; evidencePageId: string | null; source: string | null; kind: string | null }[]>`
+      SELECT f.page_id::text AS "pageId",e.payload->>'pageId' AS "evidencePageId",e.source,e.kind
+      FROM findings f LEFT JOIN evidence e ON e.id=f.primary_evidence_id
+      WHERE f.site_id=${context.siteId}::uuid AND f.status='open' AND f.category='technical_seo'`;
+    const technicalFindings = assessTechnicalFindingEvidence(technicalEvidenceRows);
+    const aggregate = observations.gsc.ok
+      ? observations.gsc.data.aggregate
+      : { ok: false as const, category: observations.gsc.category, httpStatus: observations.gsc.httpStatus };
+    const ctrValidity = organicCtrOpportunityValidity(aggregate);
+    const aggregateEvidenceRows = await sql<{ id: string }[]>`SELECT id::text FROM evidence WHERE site_id=${context.siteId}::uuid AND source='gsc' AND kind='performance_aggregate' AND provenance->>'runId'=${runId} ORDER BY observed_at DESC LIMIT 1`;
+    const aggregateEvidenceId = aggregateEvidenceRows[0]?.id ?? evidenceId;
+    let opportunityRows: { id: string }[] = [];
+    if (readiness.state !== "ready" || !ctrValidity.valid) {
+      await sql`UPDATE opportunities SET status='dismissed',rationale=${`Re-evaluated against property-level GSC aggregate: ${ctrValidity.reason}.`},updated_at=now() WHERE site_id=${context.siteId}::uuid AND opportunity_type='organic_ctr' AND status IN ('new','accepted','planned')`;
+    } else {
+      await sql`UPDATE opportunities SET rationale='Property-level GSC aggregate confirms CTR opportunity eligibility; dimensional rows identify candidate pages.',evidence_ids=ARRAY(SELECT DISTINCT unnest(evidence_ids || ARRAY[${aggregateEvidenceId}::uuid])),updated_at=now() WHERE site_id=${context.siteId}::uuid AND opportunity_type='organic_ctr' AND status IN ('new','accepted','planned')`;
+      opportunityRows = await sql<{ id: string }[]>`
+        INSERT INTO opportunities(site_id,page_id,opportunity_type,status,score,impact_estimate,effort_estimate,rationale,evidence_ids)
+        SELECT ${context.siteId}::uuid,sm.page_id,'organic_ctr','new',
+          LEAST(100,20 + ln(1 + SUM(sm.impressions)) * 10),
+          ${sql.json({ basis: "property_aggregate_validated_dimensional_gsc" })},
+          ${sql.json({ level: "review" })},
+          'Property-level GSC aggregate confirms CTR opportunity eligibility; dimensional rows identify this candidate page.',
+          ARRAY[${aggregateEvidenceId}::uuid,${evidenceId}::uuid]
+        FROM search_metrics sm JOIN search_queries sq ON sq.id=sm.query_id
+        WHERE sq.site_id=${context.siteId}::uuid AND sm.source='gsc' AND sm.metric_date>=current_date-27 AND sm.page_id IS NOT NULL
+        GROUP BY sm.page_id
+        HAVING SUM(sm.impressions)>=10 AND SUM(sm.clicks)::float/NULLIF(SUM(sm.impressions),0)<0.03 AND AVG(sm.average_position) BETWEEN 4 AND 20
+          AND NOT EXISTS (SELECT 1 FROM opportunities o WHERE o.site_id=${context.siteId}::uuid AND o.page_id=sm.page_id AND o.opportunity_type='organic_ctr' AND o.status IN ('new','accepted','planned'))
+        RETURNING id::text`;
+    }
+    const certification = buildBaselineCertification({ readiness, crawl: observations.crawl, technicalFindings, gsc: observations.gsc });
+    await sql`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'seo_engine','production_baseline_certification',1,${sql.json(certification)},${sql.json({ runId, evaluator: "certification_v1", publicSiteWrites: false })})`;
+    return { findings: findingRows.length, opportunities: opportunityRows.length, certification };
   } finally {
     await sql.end({ timeout: 2 });
   }

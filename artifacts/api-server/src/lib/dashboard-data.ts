@@ -71,8 +71,16 @@ export interface DashboardSnapshot {
     phase: string;
     freshness: string | null;
     blockers: string[];
-    counts: { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
-    diagnostics: Record<"shopify" | "gsc" | "ga4" | "crawl", { status: "available" | "empty" | "failed"; category: string | null; httpStatus: number | null }>;
+    counts: { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; gscDetailedRows: number; ga4Rows: number; pages: number; findings: number; opportunities: number };
+    diagnostics: Record<"shopify" | "gsc" | "gscAggregate" | "ga4" | "crawl", { status: "available" | "empty" | "failed"; category: string | null; httpStatus: number | null }>;
+    certification: {
+      status: "not_evaluated" | "pilot_ready" | "partial";
+      wholeSiteCertified: boolean;
+      wholeSiteReason: string | null;
+      crawlCoverage: { fetched: number; discovered: number; percent: number; boundedLimit: number; truncated: boolean };
+      technicalFindings: { total: number; withValidEvidence: number; valid: boolean };
+      gscAggregate: { status: "available" | "failed" | "not_evaluated"; metrics: { clicks: number; impressions: number; ctr: number; position: number | null } | null; reconciliation: { status: string; detailedClicks: number; detailedImpressions: number; clickCoverage: number | null; impressionCoverage: number | null } };
+    };
   };
 }
 export interface DashboardFilters { days: 7 | 28 | 90; country: string; device: "all" | "desktop" | "mobile" | "tablet" }
@@ -90,6 +98,7 @@ function unavailable(reason: string): DashboardSnapshot {
     metrics: [
       { label: "Organic clicks", value: "—", delta: "No live GSC data" },
       { label: "Impressions", value: "—", delta: "No live GSC data" },
+      { label: "Organic CTR", value: "—", delta: "No live GSC aggregate" },
       { label: "Top-10 keywords", value: "—", delta: "No live GSC data" },
       { label: "Average position", value: "—", delta: "No live GSC data" },
       { label: "AI citation rate", value: "—", delta: "No live AI observations" },
@@ -102,7 +111,12 @@ function unavailable(reason: string): DashboardSnapshot {
     aiVisibility: { citationRate: "—", brandMentionRate: "—", citationShare: "—" },
     learning: { signalCount: 0, averageConfidence: "—" },
     impact: { verifiedOptimizations: 0, completedExperiments: 0, rollbacks: 0, regressionsDetected: 0 },
-    pilot: { status: "not_started", readiness: "not_evaluated", phase: "not_started", freshness: null, blockers: [], counts: { products: 0, catalogProducts: 0, productsObserved: 0, shopifyComplete: false, gscRows: 0, ga4Rows: 0, pages: 0, findings: 0, opportunities: 0 }, diagnostics: { shopify: { status: "failed", category: "not_evaluated", httpStatus: null }, gsc: { status: "failed", category: "not_evaluated", httpStatus: null }, ga4: { status: "failed", category: "not_evaluated", httpStatus: null }, crawl: { status: "failed", category: "not_evaluated", httpStatus: null } } },
+    pilot: {
+      status: "not_started", readiness: "not_evaluated", phase: "not_started", freshness: null, blockers: [],
+      counts: { products: 0, catalogProducts: 0, productsObserved: 0, shopifyComplete: false, gscRows: 0, gscDetailedRows: 0, ga4Rows: 0, pages: 0, findings: 0, opportunities: 0 },
+      diagnostics: { shopify: { status: "failed", category: "not_evaluated", httpStatus: null }, gsc: { status: "failed", category: "not_evaluated", httpStatus: null }, gscAggregate: { status: "failed", category: "not_evaluated", httpStatus: null }, ga4: { status: "failed", category: "not_evaluated", httpStatus: null }, crawl: { status: "failed", category: "not_evaluated", httpStatus: null } },
+      certification: { status: "not_evaluated", wholeSiteCertified: false, wholeSiteReason: null, crawlCoverage: { fetched: 0, discovered: 0, percent: 0, boundedLimit: 30, truncated: false }, technicalFindings: { total: 0, withValidEvidence: 0, valid: false }, gscAggregate: { status: "not_evaluated", metrics: null, reconciliation: { status: "aggregate_unavailable", detailedClicks: 0, detailedImpressions: 0, clickCoverage: null, impressionCoverage: null } } },
+    },
   };
 }
 
@@ -123,6 +137,7 @@ export function pilotCountsFromPayload(counts: Record<string, unknown>, historic
     productsObserved,
     shopifyComplete: counts.shopifyComplete === true && (catalogProducts === 0 || productsObserved >= catalogProducts),
     gscRows: n(counts.gscRows),
+    gscDetailedRows: n(counts.gscDetailedRows ?? counts.gscRows),
     ga4Rows: n(counts.ga4Rows),
     pages: n(counts.pages),
     findings: n(counts.findings),
@@ -144,6 +159,21 @@ function delta(current: number, previous: number, suffix = "%"): string {
   return `${change >= 0 ? "+" : ""}${change.toFixed(1)}${suffix}`;
 }
 
+export function selectGscHeadlineMetrics(
+  dimensional: { clicks: number; impressions: number; position: number },
+  aggregate: { clicks: number; impressions: number; ctr: number; position: number | null } | null,
+  unfiltered: boolean,
+) {
+  if (aggregate && unfiltered) return { ...aggregate, source: "property_aggregate" as const };
+  return {
+    clicks: dimensional.clicks,
+    impressions: dimensional.impressions,
+    ctr: dimensional.impressions > 0 ? dimensional.clicks / dimensional.impressions : 0,
+    position: dimensional.position > 0 ? dimensional.position : null,
+    source: "dimensional" as const,
+  };
+}
+
 export async function loadDashboardData(filters: DashboardFilters = { days: 28, country: "all", device: "all" }): Promise<DashboardSnapshot> {
   const databaseUrl = process.env.DATABASE_URL?.trim();
   if (!databaseUrl) return unavailable("DATABASE_URL is not configured. Preview fixtures are disabled.");
@@ -160,7 +190,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
     const site = sites[0];
     if (!site) return unavailable("Diamond Shelf is not present in the production database.");
 
-    const [searchRows, topTenRows, findingsRows, engineRows, approvalsRows, verificationRows, aiRows, learningRows, impactRows, opportunityRows, freshnessRows, pilotRows, shopifyCatalogRows] = await Promise.all([
+    const [searchRows, topTenRows, findingsRows, engineRows, approvalsRows, verificationRows, aiRows, learningRows, impactRows, opportunityRows, freshnessRows, pilotRows, shopifyCatalogRows, gscAggregateRows] = await Promise.all([
       sql`
         SELECT
            COALESCE(SUM(clicks) FILTER (WHERE metric_date >= current_date - (${filters.days - 1}::int)), 0)::bigint AS current_clicks,
@@ -267,16 +297,26 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       `,
       sql`SELECT status,payload,created_at,updated_at,completed_at,last_error FROM jobs WHERE site_id=${site.id}::uuid AND job_type='pilot_ingestion_v1' ORDER BY created_at DESC LIMIT 1`,
       sql`SELECT payload FROM evidence WHERE site_id=${site.id}::uuid AND source='shopify' AND kind='catalog_baseline' AND COALESCE(payload->>'productCount','') ~ '^[1-9][0-9]*$' ORDER BY observed_at DESC,created_at DESC LIMIT 1`,
+      sql`SELECT payload FROM evidence WHERE site_id=${site.id}::uuid AND source='gsc' AND kind='performance_aggregate' AND payload->>'status'='available' AND payload->>'startDate'=(current_date-${filters.days - 1}::int)::text AND payload->>'endDate'=(current_date-1)::text ORDER BY observed_at DESC,created_at DESC LIMIT 1`,
     ]);
 
     const search = searchRows[0] ?? {};
     const topTen = n(topTenRows[0]?.top_ten);
     const openFindings = n(findingsRows[0]?.open_findings);
-    const currentClicks = n(search.current_clicks);
+    const aggregatePayload = typeof gscAggregateRows[0]?.payload === "object" && gscAggregateRows[0]?.payload ? gscAggregateRows[0].payload as Record<string, unknown> : {};
+    const aggregateMetrics = typeof aggregatePayload.metrics === "object" && aggregatePayload.metrics ? aggregatePayload.metrics as Record<string, unknown> : null;
+    const headline = selectGscHeadlineMetrics(
+      { clicks: n(search.current_clicks), impressions: n(search.current_impressions), position: n(search.current_position) },
+      aggregateMetrics ? { clicks: n(aggregateMetrics.clicks), impressions: n(aggregateMetrics.impressions), ctr: n(aggregateMetrics.ctr), position: aggregateMetrics.position == null ? null : n(aggregateMetrics.position) } : null,
+      filters.country === "all" && filters.device === "all",
+    );
+    const canUsePropertyAggregate = headline.source === "property_aggregate";
+    const currentClicks = headline.clicks;
     const previousClicks = n(search.previous_clicks);
-    const currentImpressions = n(search.current_impressions);
+    const currentImpressions = headline.impressions;
     const previousImpressions = n(search.previous_impressions);
-    const currentPosition = n(search.current_position);
+    const currentPosition = headline.position ?? 0;
+    const currentCtr = headline.ctr;
     const previousPosition = n(search.previous_position);
     const ai = aiRows[0] ?? {};
     const responses = n(ai.responses);
@@ -295,6 +335,12 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
     const pilotCounts = typeof pilotPayload.counts === "object" && pilotPayload.counts ? pilotPayload.counts as Record<string, unknown> : {};
     const latestShopifyCatalog = typeof shopifyCatalogRows[0]?.payload === "object" && shopifyCatalogRows[0]?.payload ? shopifyCatalogRows[0].payload as Record<string, unknown> : {};
     const pilotReadiness = typeof pilotPayload.readiness === "object" && pilotPayload.readiness ? pilotPayload.readiness as Record<string, unknown> : {};
+    const rawCertification = typeof pilotPayload.certification === "object" && pilotPayload.certification ? pilotPayload.certification as Record<string, unknown> : {};
+    const rawCertificationCoverage = typeof rawCertification.crawlCoverage === "object" && rawCertification.crawlCoverage ? rawCertification.crawlCoverage as Record<string, unknown> : {};
+    const rawTechnicalFindings = typeof rawCertification.technicalFindings === "object" && rawCertification.technicalFindings ? rawCertification.technicalFindings as Record<string, unknown> : {};
+    const rawCertificationGsc = typeof rawCertification.gscAggregate === "object" && rawCertification.gscAggregate ? rawCertification.gscAggregate as Record<string, unknown> : {};
+    const rawCertificationMetrics = typeof rawCertificationGsc.metrics === "object" && rawCertificationGsc.metrics ? rawCertificationGsc.metrics as Record<string, unknown> : null;
+    const rawReconciliation = typeof rawCertificationGsc.reconciliation === "object" && rawCertificationGsc.reconciliation ? rawCertificationGsc.reconciliation as Record<string, unknown> : {};
     const pilotRawDiagnostics = typeof pilotReadiness.diagnostics === "object" && pilotReadiness.diagnostics ? pilotReadiness.diagnostics as Record<string, unknown> : {};
     const pilotDiagnostic = (provider: string) => {
       const value = typeof pilotRawDiagnostics[provider] === "object" && pilotRawDiagnostics[provider] ? pilotRawDiagnostics[provider] as Record<string, unknown> : {};
@@ -353,10 +399,11 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       stale,
       approvalsPending: n(approvalsRows[0]?.pending),
       metrics: [
-        { label: "Organic clicks", value: integer(currentClicks), delta: delta(currentClicks, previousClicks) },
-        { label: "Impressions", value: integer(currentImpressions), delta: delta(currentImpressions, previousImpressions) },
+        { label: "Organic clicks", value: integer(currentClicks), delta: canUsePropertyAggregate ? "Property-level GSC aggregate" : delta(currentClicks, previousClicks) },
+        { label: "Impressions", value: integer(currentImpressions), delta: canUsePropertyAggregate ? "Property-level GSC aggregate" : delta(currentImpressions, previousImpressions) },
+        { label: "Organic CTR", value: currentImpressions > 0 ? percent(currentCtr) : "—", delta: canUsePropertyAggregate ? "Property-level GSC aggregate" : filters.country !== "all" || filters.device !== "all" ? "Filtered dimensional rows" : "Property aggregate unavailable · dimensional fallback" },
          { label: "Top-10 keywords", value: integer(topTen), delta: `Live GSC · ${filters.days} days` },
-        { label: "Average position", value: currentPosition > 0 ? currentPosition.toFixed(1) : "—", delta: previousPosition > 0 && currentPosition > 0 ? `${(previousPosition - currentPosition) >= 0 ? "+" : ""}${(previousPosition - currentPosition).toFixed(1)} positions` : "No prior comparison" },
+        { label: "Average position", value: currentPosition > 0 ? currentPosition.toFixed(1) : "—", delta: canUsePropertyAggregate ? "Property-level GSC aggregate" : previousPosition > 0 && currentPosition > 0 ? `${(previousPosition - currentPosition) >= 0 ? "+" : ""}${(previousPosition - currentPosition).toFixed(1)} positions` : "No prior comparison" },
         { label: "AI citation rate", value: responses > 0 ? percent(citationRate) : "—", delta: responses > 0 ? `${responses} observations` : "No live AI observations" },
         { label: "Open findings", value: integer(openFindings), delta: "Persisted technical findings" },
       ],
@@ -376,7 +423,19 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
         freshness: pilotRow ? new Date(String(pilotRow.completed_at ?? pilotRow.updated_at ?? pilotRow.created_at)).toISOString() : null,
         blockers: Array.isArray(pilotReadiness.blockers) ? pilotReadiness.blockers.filter((item): item is string => typeof item === "string") : [],
         counts: pilotCountsFromPayload(pilotCounts, latestShopifyCatalog),
-        diagnostics: { shopify: pilotDiagnostic("shopify"), gsc: pilotDiagnostic("gsc"), ga4: pilotDiagnostic("ga4"), crawl: pilotDiagnostic("crawl") },
+        diagnostics: { shopify: pilotDiagnostic("shopify"), gsc: pilotDiagnostic("gsc"), gscAggregate: pilotDiagnostic("gscAggregate"), ga4: pilotDiagnostic("ga4"), crawl: pilotDiagnostic("crawl") },
+        certification: {
+          status: ["pilot_ready", "partial"].includes(String(rawCertification.status)) ? rawCertification.status as "pilot_ready" | "partial" : "not_evaluated",
+          wholeSiteCertified: rawCertification.wholeSiteCertified === true,
+          wholeSiteReason: typeof rawCertification.wholeSiteReason === "string" ? rawCertification.wholeSiteReason : null,
+          crawlCoverage: { fetched: n(rawCertificationCoverage.fetched), discovered: n(rawCertificationCoverage.discovered), percent: n(rawCertificationCoverage.percent), boundedLimit: n(rawCertificationCoverage.boundedLimit) || 30, truncated: rawCertificationCoverage.truncated === true },
+          technicalFindings: { total: n(rawTechnicalFindings.total), withValidEvidence: n(rawTechnicalFindings.withValidEvidence), valid: rawTechnicalFindings.valid === true },
+          gscAggregate: {
+            status: ["available", "failed"].includes(String(rawCertificationGsc.status)) ? rawCertificationGsc.status as "available" | "failed" : "not_evaluated",
+            metrics: rawCertificationMetrics ? { clicks: n(rawCertificationMetrics.clicks), impressions: n(rawCertificationMetrics.impressions), ctr: n(rawCertificationMetrics.ctr), position: rawCertificationMetrics.position == null ? null : n(rawCertificationMetrics.position) } : null,
+            reconciliation: { status: typeof rawReconciliation.status === "string" ? rawReconciliation.status : "aggregate_unavailable", detailedClicks: n(rawReconciliation.detailedClicks), detailedImpressions: n(rawReconciliation.detailedImpressions), clickCoverage: rawReconciliation.clickCoverage == null ? null : n(rawReconciliation.clickCoverage), impressionCoverage: rawReconciliation.impressionCoverage == null ? null : n(rawReconciliation.impressionCoverage) },
+          },
+        },
       },
     };
   } catch (error) {

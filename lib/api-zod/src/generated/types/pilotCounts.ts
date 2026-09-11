@@ -12,6 +12,7 @@ export interface PilotCounts {
   productsObserved: number;
   shopifyComplete: boolean;
   gscRows: number;
+  gscDetailedRows: number;
   ga4Rows: number;
   pages: number;
   findings: number;

@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { BaselineCertification } from './baselineCertification';
 import type { PilotCounts } from './pilotCounts';
 import type { PilotDiagnostics } from './pilotDiagnostics';
 import type { PilotRunStatusReadiness } from './pilotRunStatusReadiness';
@@ -21,6 +22,7 @@ export interface PilotRunStatus {
   blockers: string[];
   counts: PilotCounts;
   diagnostics: PilotDiagnostics;
+  certification: BaselineCertification | null;
   /** @nullable */
   error: string | null;
 }

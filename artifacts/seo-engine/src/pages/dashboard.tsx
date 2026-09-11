@@ -185,7 +185,15 @@ export default function DashboardPage() {
               <span>Shopify catalog total</span>
               <small>{data.pilot.counts.productsObserved} observed{data.pilot.counts.shopifyComplete ? " · complete" : " · bounded/incomplete"}</small>
             </div>
-            <div><strong>{data.pilot.counts.gscRows}</strong><span>GSC rows</span></div>
+            <div>
+              <strong>{data.pilot.counts.gscDetailedRows}</strong>
+              <span>Detailed GSC rows</span>
+              <small>
+                {data.pilot.diagnostics.gscAggregate.status === "available"
+                  ? `Aggregate available · ${data.pilot.certification.gscAggregate.reconciliation.status.replaceAll("_", " ")}`
+                  : `Aggregate failed · ${(data.pilot.diagnostics.gscAggregate.category ?? "not evaluated").replaceAll("_", " ")}`}
+              </small>
+            </div>
             <div>
               <strong>{data.pilot.counts.ga4Rows}</strong>
               <span>GA4 rows</span>
@@ -206,6 +214,35 @@ export default function DashboardPage() {
           {data.pilot.blockers.length > 0 && (
             <p className="pilotBlockers">Blocked: {data.pilot.blockers.map((item) => item.replaceAll("_", " ")).join(", ")}</p>
           )}
+          <div className="certificationPanel">
+            <div className="certificationHead">
+              <div>
+                <p className="eyebrow">PRODUCTION BASELINE CERTIFICATION</p>
+                <h3>{data.pilot.certification.status === "pilot_ready" ? "PILOT_READY" : data.pilot.certification.status.replaceAll("_", " ").toUpperCase()}</h3>
+              </div>
+              <Badge tone={data.pilot.certification.status === "pilot_ready" ? "verified" : "approval"}>
+                {data.pilot.certification.wholeSiteCertified ? "WHOLE SITE CERTIFIED" : "BOUNDED PILOT ONLY"}
+              </Badge>
+            </div>
+            <div className="certificationGrid">
+              <div>
+                <strong>{data.pilot.certification.crawlCoverage.percent.toFixed(1)}%</strong>
+                <span>Crawl coverage</span>
+                <small>{data.pilot.certification.crawlCoverage.fetched} fetched of {data.pilot.certification.crawlCoverage.discovered} discovered · cap {data.pilot.certification.crawlCoverage.boundedLimit}</small>
+              </div>
+              <div>
+                <strong>{data.pilot.certification.technicalFindings.withValidEvidence}/{data.pilot.certification.technicalFindings.total}</strong>
+                <span>Findings with valid source evidence</span>
+                <small>{data.pilot.certification.technicalFindings.valid ? "Evidence integrity passed" : "Evidence integrity incomplete"}</small>
+              </div>
+              <div>
+                <strong>{data.pilot.certification.gscAggregate.metrics ? `${(data.pilot.certification.gscAggregate.metrics.ctr * 100).toFixed(1)}%` : "—"}</strong>
+                <span>Property-level GSC CTR</span>
+                <small>{data.pilot.certification.gscAggregate.status === "available" ? "Not derived from detailed rows" : "Aggregate unavailable"}</small>
+              </div>
+            </div>
+            <p className="certificationNote">Whole-site certification is withheld because this validation crawl is intentionally bounded to 30 pages.</p>
+          </div>
           {pilotActionError && <p className="pilotBlockers" role="alert">{pilotActionError}</p>}
         </section>
 

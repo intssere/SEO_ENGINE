@@ -95,6 +95,7 @@ export const GetDashboardResponse = zod.object({
   "productsObserved": zod.number().int(),
   "shopifyComplete": zod.boolean(),
   "gscRows": zod.number().int(),
+  "gscDetailedRows": zod.number().int(),
   "ga4Rows": zod.number().int(),
   "pages": zod.number().int(),
   "findings": zod.number().int(),
@@ -111,6 +112,11 @@ export const GetDashboardResponse = zod.object({
   "category": zod.string().nullable(),
   "httpStatus": zod.number().int().nullable()
 }),
+  "gscAggregate": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+}),
   "ga4": zod.object({
   "status": zod.enum(['available', 'empty', 'failed']),
   "category": zod.string().nullable(),
@@ -120,6 +126,39 @@ export const GetDashboardResponse = zod.object({
   "status": zod.enum(['available', 'empty', 'failed']),
   "category": zod.string().nullable(),
   "httpStatus": zod.number().int().nullable()
+})
+}),
+  "certification": zod.object({
+  "status": zod.enum(['not_evaluated', 'pilot_ready', 'partial']),
+  "wholeSiteCertified": zod.boolean(),
+  "wholeSiteReason": zod.string().nullable(),
+  "crawlCoverage": zod.object({
+  "fetched": zod.number().int(),
+  "discovered": zod.number().int(),
+  "percent": zod.number(),
+  "boundedLimit": zod.number().int(),
+  "truncated": zod.boolean()
+}),
+  "technicalFindings": zod.object({
+  "total": zod.number().int(),
+  "withValidEvidence": zod.number().int(),
+  "valid": zod.boolean()
+}),
+  "gscAggregate": zod.object({
+  "status": zod.enum(['not_evaluated', 'available', 'failed']),
+  "metrics": zod.union([zod.object({
+  "clicks": zod.number(),
+  "impressions": zod.number(),
+  "ctr": zod.number(),
+  "position": zod.number().nullable()
+}),zod.null()]),
+  "reconciliation": zod.object({
+  "status": zod.enum(['consistent', 'partial_dimensional', 'inconsistent', 'aggregate_unavailable']),
+  "detailedClicks": zod.number(),
+  "detailedImpressions": zod.number(),
+  "clickCoverage": zod.number().nullable(),
+  "impressionCoverage": zod.number().nullable()
+})
 })
 })
 })
@@ -150,6 +189,7 @@ export const GetPilotStatusResponse = zod.object({
   "productsObserved": zod.number().int(),
   "shopifyComplete": zod.boolean(),
   "gscRows": zod.number().int(),
+  "gscDetailedRows": zod.number().int(),
   "ga4Rows": zod.number().int(),
   "pages": zod.number().int(),
   "findings": zod.number().int(),
@@ -166,6 +206,11 @@ export const GetPilotStatusResponse = zod.object({
   "category": zod.string().nullable(),
   "httpStatus": zod.number().int().nullable()
 }),
+  "gscAggregate": zod.object({
+  "status": zod.enum(['available', 'empty', 'failed']),
+  "category": zod.string().nullable(),
+  "httpStatus": zod.number().int().nullable()
+}),
   "ga4": zod.object({
   "status": zod.enum(['available', 'empty', 'failed']),
   "category": zod.string().nullable(),
@@ -177,6 +222,39 @@ export const GetPilotStatusResponse = zod.object({
   "httpStatus": zod.number().int().nullable()
 })
 }),
+  "certification": zod.union([zod.object({
+  "status": zod.enum(['pilot_ready', 'partial']),
+  "wholeSiteCertified": zod.boolean(),
+  "wholeSiteReason": zod.enum(['bounded_crawl']),
+  "crawlCoverage": zod.object({
+  "fetched": zod.number().int(),
+  "discovered": zod.number().int(),
+  "percent": zod.number(),
+  "boundedLimit": zod.number().int(),
+  "truncated": zod.boolean()
+}),
+  "technicalFindings": zod.object({
+  "total": zod.number().int(),
+  "withValidEvidence": zod.number().int(),
+  "valid": zod.boolean()
+}),
+  "gscAggregate": zod.object({
+  "status": zod.enum(['available', 'failed']),
+  "metrics": zod.union([zod.object({
+  "clicks": zod.number(),
+  "impressions": zod.number(),
+  "ctr": zod.number(),
+  "position": zod.number().nullable()
+}),zod.null()]),
+  "reconciliation": zod.object({
+  "status": zod.enum(['consistent', 'partial_dimensional', 'inconsistent', 'aggregate_unavailable']),
+  "detailedClicks": zod.number(),
+  "detailedImpressions": zod.number(),
+  "clickCoverage": zod.number().nullable(),
+  "impressionCoverage": zod.number().nullable()
+})
+})
+}),zod.null()]),
   "error": zod.string().nullable()
 })
 

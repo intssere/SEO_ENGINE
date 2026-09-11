@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DashboardCertification } from './dashboardCertification';
 import type { DashboardSnapshotPilotReadiness } from './dashboardSnapshotPilotReadiness';
 import type { DashboardSnapshotPilotStatus } from './dashboardSnapshotPilotStatus';
 import type { PilotCounts } from './pilotCounts';
@@ -19,4 +20,5 @@ export type DashboardSnapshotPilot = {
   blockers: string[];
   counts: PilotCounts;
   diagnostics: PilotDiagnostics;
+  certification: DashboardCertification;
 };

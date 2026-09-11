@@ -273,6 +273,15 @@
 .pilotGrid span { color: #77839a; font-size: 11px; margin-top: 3px; }
 .pilotGrid small { color: #5e6878; font-size: 10px; line-height: 1.35; margin-top: 4px; }
 .pilotBlockers { margin-top: 10px; padding: 9px 11px; border-radius: 7px; background: #fff3dc; color: #8d5c0d; font-size: 12px; }
+.certificationPanel { margin-top: 16px; padding: 14px; border: 1px solid #e4e9f1; border-radius: 9px; background: #f8fafc; }
+.certificationHead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.certificationHead h3 { margin-top: 3px; font-size: 15px; color: #172033; }
+.certificationGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 13px; }
+.certificationGrid div { display: flex; flex-direction: column; }
+.certificationGrid strong { font-size: 18px; color: #172033; }
+.certificationGrid span { margin-top: 2px; font-size: 11px; color: #647087; }
+.certificationGrid small { margin-top: 3px; font-size: 10px; color: #7b8799; }
+.certificationNote { margin-top: 12px; font-size: 11px; color: #6b7586; }
 .pilotActions { display: flex; align-items: center; gap: 10px; }
 .pilotRunButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 8px 13px; border: 0; border-radius: 8px; background: #172a4d; color: #fff; font-size: 12px; font-weight: 650; cursor: pointer; }
 .pilotRunButton:hover:not(:disabled) { background: #23406f; }
@@ -350,6 +359,7 @@ td:first-child { font-weight: 650; color: #263249; }
 @media(max-width: 1180px) {
   .metricGrid { grid-template-columns: repeat(3, 1fr); }
   .pilotGrid { grid-template-columns: repeat(2, 1fr); }
+  .certificationGrid { grid-template-columns: 1fr; }
   .threeCol { grid-template-columns: 1fr 1fr; }
   .impact { align-items: flex-start; gap: 25px; flex-direction: column; }
   .impactStats { width: 100%; }

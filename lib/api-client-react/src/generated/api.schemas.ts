@@ -24,6 +24,7 @@ export interface PilotCounts {
   productsObserved: number;
   shopifyComplete: boolean;
   gscRows: number;
+  gscDetailedRows: number;
   ga4Rows: number;
   pages: number;
   findings: number;
@@ -50,8 +51,137 @@ export interface PilotProviderDiagnostic {
 export interface PilotDiagnostics {
   shopify: PilotProviderDiagnostic;
   gsc: PilotProviderDiagnostic;
+  gscAggregate: PilotProviderDiagnostic;
   ga4: PilotProviderDiagnostic;
   crawl: PilotProviderDiagnostic;
+}
+
+export interface GscAggregateMetrics {
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  /** @nullable */
+  position: number | null;
+}
+
+export type GscReconciliationStatus = typeof GscReconciliationStatus[keyof typeof GscReconciliationStatus];
+
+
+export const GscReconciliationStatus = {
+  consistent: 'consistent',
+  partial_dimensional: 'partial_dimensional',
+  inconsistent: 'inconsistent',
+  aggregate_unavailable: 'aggregate_unavailable',
+} as const;
+
+export interface GscReconciliation {
+  status: GscReconciliationStatus;
+  detailedClicks: number;
+  detailedImpressions: number;
+  /** @nullable */
+  clickCoverage: number | null;
+  /** @nullable */
+  impressionCoverage: number | null;
+}
+
+export type BaselineCertificationStatus = typeof BaselineCertificationStatus[keyof typeof BaselineCertificationStatus];
+
+
+export const BaselineCertificationStatus = {
+  pilot_ready: 'pilot_ready',
+  partial: 'partial',
+} as const;
+
+export type BaselineCertificationWholeSiteReason = typeof BaselineCertificationWholeSiteReason[keyof typeof BaselineCertificationWholeSiteReason];
+
+
+export const BaselineCertificationWholeSiteReason = {
+  bounded_crawl: 'bounded_crawl',
+} as const;
+
+export type BaselineCertificationCrawlCoverage = {
+  fetched: number;
+  discovered: number;
+  percent: number;
+  boundedLimit: number;
+  truncated: boolean;
+};
+
+export type BaselineCertificationTechnicalFindings = {
+  total: number;
+  withValidEvidence: number;
+  valid: boolean;
+};
+
+export type BaselineCertificationGscAggregateStatus = typeof BaselineCertificationGscAggregateStatus[keyof typeof BaselineCertificationGscAggregateStatus];
+
+
+export const BaselineCertificationGscAggregateStatus = {
+  available: 'available',
+  failed: 'failed',
+} as const;
+
+export type BaselineCertificationGscAggregate = {
+  status: BaselineCertificationGscAggregateStatus;
+  metrics: GscAggregateMetrics | null;
+  reconciliation: GscReconciliation;
+};
+
+export interface BaselineCertification {
+  status: BaselineCertificationStatus;
+  wholeSiteCertified: boolean;
+  wholeSiteReason: BaselineCertificationWholeSiteReason;
+  crawlCoverage: BaselineCertificationCrawlCoverage;
+  technicalFindings: BaselineCertificationTechnicalFindings;
+  gscAggregate: BaselineCertificationGscAggregate;
+}
+
+export type DashboardCertificationStatus = typeof DashboardCertificationStatus[keyof typeof DashboardCertificationStatus];
+
+
+export const DashboardCertificationStatus = {
+  not_evaluated: 'not_evaluated',
+  pilot_ready: 'pilot_ready',
+  partial: 'partial',
+} as const;
+
+export type DashboardCertificationCrawlCoverage = {
+  fetched: number;
+  discovered: number;
+  percent: number;
+  boundedLimit: number;
+  truncated: boolean;
+};
+
+export type DashboardCertificationTechnicalFindings = {
+  total: number;
+  withValidEvidence: number;
+  valid: boolean;
+};
+
+export type DashboardCertificationGscAggregateStatus = typeof DashboardCertificationGscAggregateStatus[keyof typeof DashboardCertificationGscAggregateStatus];
+
+
+export const DashboardCertificationGscAggregateStatus = {
+  not_evaluated: 'not_evaluated',
+  available: 'available',
+  failed: 'failed',
+} as const;
+
+export type DashboardCertificationGscAggregate = {
+  status: DashboardCertificationGscAggregateStatus;
+  metrics: GscAggregateMetrics | null;
+  reconciliation: GscReconciliation;
+};
+
+export interface DashboardCertification {
+  status: DashboardCertificationStatus;
+  wholeSiteCertified: boolean;
+  /** @nullable */
+  wholeSiteReason: string | null;
+  crawlCoverage: DashboardCertificationCrawlCoverage;
+  technicalFindings: DashboardCertificationTechnicalFindings;
+  gscAggregate: DashboardCertificationGscAggregate;
 }
 
 export type PilotRunStatusStatus = typeof PilotRunStatusStatus[keyof typeof PilotRunStatusStatus];
@@ -86,6 +216,7 @@ export interface PilotRunStatus {
   blockers: string[];
   counts: PilotCounts;
   diagnostics: PilotDiagnostics;
+  certification: BaselineCertification | null;
   /** @nullable */
   error: string | null;
 }
@@ -212,6 +343,7 @@ export type DashboardSnapshotPilot = {
   blockers: string[];
   counts: PilotCounts;
   diagnostics: PilotDiagnostics;
+  certification: DashboardCertification;
 };
 
 export interface DashboardSnapshot {

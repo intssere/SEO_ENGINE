@@ -2,20 +2,28 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   assertReadOnlyProviderRequest,
+  assessTechnicalFindingEvidence,
+  buildBaselineCertification,
   computeBaselineReadiness,
   crawlSite,
   executePilot,
   ga4ReportBody,
+  gscAggregateRequestBody,
+  gscDetailedRequestBody,
   isSelectedGa4PropertyDiscovered,
+  organicCtrOpportunityValidity,
   parseShopifyProductCount,
   paginateShopifyCatalog,
   providerFailureCategory,
+  reconcileGscAggregate,
   sanitizedGoogleFailureCategory,
   type PilotDependencies,
 } from "./pilot-runner.js";
 
 const shopify = { ok: true as const, data: { storeVerified: true, productCount: 2, productsObserved: 2, variantCount: 3, inventoryQuantity: 4, truncated: false, complete: true } };
-const gsc = { ok: true as const, data: { rows: [{ date: "2026-09-01", query: "q", page: "https://example.test", country: "US", device: "mobile", clicks: 1, impressions: 2, ctr: 0.5, position: 1 }], startDate: "2026-09-01", endDate: "2026-09-01" } };
+const gscRows = [{ date: "2026-09-01", query: "q", page: "https://example.test", country: "US", device: "mobile", clicks: 1, impressions: 20, ctr: 0.05, position: 12 }];
+const gscAggregate = { ok: true as const, data: { clicks: 1, impressions: 20, ctr: 0.05, position: 12 } };
+const gsc = { ok: true as const, data: { rows: gscRows, aggregate: gscAggregate, reconciliation: reconcileGscAggregate(gscRows, gscAggregate), startDate: "2026-09-01", endDate: "2026-09-01" } };
 const ga4 = { ok: true as const, data: { rows: [{ date: "2026-09-01", sessions: 1, users: 1, pageViews: 1 }], startDate: "2026-09-01", endDate: "2026-09-01" } };
 const crawl = { ok: true as const, data: { pages: [], discovered: 1, fetched: 1, blockedByRobots: 0, truncated: false } };
 
@@ -29,8 +37,15 @@ function dependencies(overrides: Partial<PilotDependencies> = {}) {
     readGsc: async () => gsc,
     readGa4: async () => ga4,
     crawl: async () => crawl,
-    persist: async () => { calls.push("persist"); return { products: 2, catalogProducts: 2, productsObserved: 2, shopifyComplete: true, gscRows: 1, ga4Rows: 1, pages: 1 }; },
-    evaluate: async (_run, _context, readiness) => { calls.push(`evaluate:${readiness.state}`); return { findings: 1, opportunities: 1 }; },
+    persist: async () => { calls.push("persist"); return { products: 2, catalogProducts: 2, productsObserved: 2, shopifyComplete: true, gscRows: 1, gscDetailedRows: 1, ga4Rows: 1, pages: 1 }; },
+    evaluate: async (_run, _context, readiness) => {
+      calls.push(`evaluate:${readiness.state}`);
+      return {
+        findings: 1,
+        opportunities: 1,
+        certification: buildBaselineCertification({ readiness, crawl, technicalFindings: { total: 1, withValidEvidence: 1, valid: true }, gsc }),
+      };
+    },
     progress: async (_run, phase) => { calls.push(`progress:${phase}`); },
     finish: async () => { calls.push("finish"); },
     fail: async () => { calls.push("fail"); },
@@ -114,6 +129,65 @@ test("GA4 requires the selected property to belong to authenticated discovery", 
     returnPropertyQuota: false,
     limit: 100,
   });
+});
+
+test("GSC uses separate property aggregate and dimensional request contracts", () => {
+  assert.deepEqual(gscAggregateRequestBody("2026-08-14", "2026-09-10"), {
+    startDate: "2026-08-14",
+    endDate: "2026-09-10",
+    rowLimit: 1,
+    dataState: "final",
+  });
+  assert.deepEqual(gscDetailedRequestBody("2026-08-14", "2026-09-10", 5000), {
+    startDate: "2026-08-14",
+    endDate: "2026-09-10",
+    dimensions: ["date", "query", "page", "country", "device"],
+    rowLimit: 5000,
+    dataState: "final",
+  });
+});
+
+test("GSC aggregate reconciliation permits incomplete dimensional rows without replacing headline KPIs", () => {
+  const partialRows = [{ ...gscRows[0]!, clicks: 0, impressions: 12 }];
+  const aggregate = { ok: true as const, data: { clicks: 5, impressions: 3160, ctr: 0.002, position: 53.5 } };
+  const result = reconcileGscAggregate(partialRows, aggregate);
+  assert.equal(result.status, "partial_dimensional");
+  assert.equal(result.detailedImpressions, 12);
+  assert.equal(result.impressionCoverage, 12 / 3160);
+  assert.equal(aggregate.data.impressions, 3160);
+});
+
+test("GSC aggregate failure is explicit and blocks readiness", () => {
+  const failedAggregate = { ok: false as const, category: "provider_unavailable", httpStatus: 503 };
+  const failedGsc = { ok: true as const, data: { ...gsc.data, aggregate: failedAggregate, reconciliation: reconcileGscAggregate(gscRows, failedAggregate) } };
+  const result = computeBaselineReadiness({ shopify, gsc: failedGsc, ga4, crawl });
+  assert.equal(result.state, "partial");
+  assert.ok(result.blockers.includes("gsc_aggregate_provider_unavailable"));
+  assert.deepEqual(result.diagnostics.gscAggregate, { status: "failed", category: "provider_unavailable", httpStatus: 503 });
+});
+
+test("organic CTR opportunity requires supporting property aggregate evidence", () => {
+  assert.deepEqual(organicCtrOpportunityValidity({ ok: false, category: "provider_unavailable", httpStatus: 503 }), { valid: false, reason: "gsc_aggregate_unavailable" });
+  assert.deepEqual(organicCtrOpportunityValidity({ ok: true, data: { clicks: 5, impressions: 3160, ctr: 0.002, position: 53.5 } }), { valid: false, reason: "aggregate_position_outside_ctr_opportunity_range" });
+  assert.deepEqual(organicCtrOpportunityValidity({ ok: true, data: { clicks: 5, impressions: 3160, ctr: 0.002, position: 12 } }), { valid: true, reason: "aggregate_ctr_opportunity_supported" });
+});
+
+test("pilot-ready certification never claims whole-site coverage from the bounded crawler", () => {
+  const readiness = computeBaselineReadiness({ shopify, gsc, ga4, crawl });
+  const certification = buildBaselineCertification({ readiness, crawl: { ok: true, data: { ...crawl.data, fetched: 30, discovered: 120, truncated: true } }, technicalFindings: { total: 15, withValidEvidence: 15, valid: true }, gsc });
+  assert.equal(certification.status, "pilot_ready");
+  assert.equal(certification.wholeSiteCertified, false);
+  assert.equal(certification.wholeSiteReason, "bounded_crawl");
+  assert.equal(certification.crawlCoverage.percent, 25);
+  assert.equal(certification.technicalFindings.total, 15);
+});
+
+test("technical finding integrity requires matching page-level crawler evidence", () => {
+  const result = assessTechnicalFindingEvidence([
+    { pageId: "page-1", evidencePageId: "page-1", source: "crawler", kind: "technical_page_observation" },
+    { pageId: "page-2", evidencePageId: "page-1", source: "crawler", kind: "technical_page_observation" },
+  ]);
+  assert.deepEqual(result, { total: 2, withValidEvidence: 1, valid: false });
 });
 
 test("Shopify catalog pagination follows read-only cursors and reports completeness", async () => {

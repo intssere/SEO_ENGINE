@@ -140,13 +140,14 @@ components:
       required: [readiness, rows]
     PilotCounts:
       type: object
-      required: [products, catalogProducts, productsObserved, shopifyComplete, gscRows, ga4Rows, pages, findings, opportunities]
+      required: [products, catalogProducts, productsObserved, shopifyComplete, gscRows, gscDetailedRows, ga4Rows, pages, findings, opportunities]
       properties:
         products: { type: integer }
         catalogProducts: { type: integer }
         productsObserved: { type: integer }
         shopifyComplete: { type: boolean }
         gscRows: { type: integer }
+        gscDetailedRows: { type: integer }
         ga4Rows: { type: integer }
         pages: { type: integer }
         findings: { type: integer }
@@ -162,15 +163,113 @@ components:
         httpStatus: { type: [integer, "null"] }
     PilotDiagnostics:
       type: object
-      required: [shopify, gsc, ga4, crawl]
+      required: [shopify, gsc, gscAggregate, ga4, crawl]
       properties:
         shopify: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
         gsc: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+        gscAggregate: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
         ga4: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
         crawl: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+    GscAggregateMetrics:
+      type: object
+      required: [clicks, impressions, ctr, position]
+      properties:
+        clicks: { type: number }
+        impressions: { type: number }
+        ctr: { type: number }
+        position: { type: [number, "null"] }
+    GscReconciliation:
+      type: object
+      required: [status, detailedClicks, detailedImpressions, clickCoverage, impressionCoverage]
+      properties:
+        status:
+          type: string
+          enum: [consistent, partial_dimensional, inconsistent, aggregate_unavailable]
+        detailedClicks: { type: number }
+        detailedImpressions: { type: number }
+        clickCoverage: { type: [number, "null"] }
+        impressionCoverage: { type: [number, "null"] }
+    BaselineCertification:
+      type: object
+      required: [status, wholeSiteCertified, wholeSiteReason, crawlCoverage, technicalFindings, gscAggregate]
+      properties:
+        status:
+          type: string
+          enum: [pilot_ready, partial]
+        wholeSiteCertified: { type: boolean }
+        wholeSiteReason:
+          type: string
+          enum: [bounded_crawl]
+        crawlCoverage:
+          type: object
+          required: [fetched, discovered, percent, boundedLimit, truncated]
+          properties:
+            fetched: { type: integer }
+            discovered: { type: integer }
+            percent: { type: number }
+            boundedLimit: { type: integer }
+            truncated: { type: boolean }
+        technicalFindings:
+          type: object
+          required: [total, withValidEvidence, valid]
+          properties:
+            total: { type: integer }
+            withValidEvidence: { type: integer }
+            valid: { type: boolean }
+        gscAggregate:
+          type: object
+          required: [status, metrics, reconciliation]
+          properties:
+            status:
+              type: string
+              enum: [available, failed]
+            metrics:
+              oneOf:
+                - $ref: "#/components/schemas/GscAggregateMetrics"
+                - type: "null"
+            reconciliation:
+              $ref: "#/components/schemas/GscReconciliation"
+    DashboardCertification:
+      type: object
+      required: [status, wholeSiteCertified, wholeSiteReason, crawlCoverage, technicalFindings, gscAggregate]
+      properties:
+        status:
+          type: string
+          enum: [not_evaluated, pilot_ready, partial]
+        wholeSiteCertified: { type: boolean }
+        wholeSiteReason: { type: [string, "null"] }
+        crawlCoverage:
+          type: object
+          required: [fetched, discovered, percent, boundedLimit, truncated]
+          properties:
+            fetched: { type: integer }
+            discovered: { type: integer }
+            percent: { type: number }
+            boundedLimit: { type: integer }
+            truncated: { type: boolean }
+        technicalFindings:
+          type: object
+          required: [total, withValidEvidence, valid]
+          properties:
+            total: { type: integer }
+            withValidEvidence: { type: integer }
+            valid: { type: boolean }
+        gscAggregate:
+          type: object
+          required: [status, metrics, reconciliation]
+          properties:
+            status:
+              type: string
+              enum: [not_evaluated, available, failed]
+            metrics:
+              oneOf:
+                - $ref: "#/components/schemas/GscAggregateMetrics"
+                - type: "null"
+            reconciliation:
+              $ref: "#/components/schemas/GscReconciliation"
     PilotRunStatus:
       type: object
-      required: [runId, status, phase, readiness, freshness, blockers, counts, diagnostics, error]
+      required: [runId, status, phase, readiness, freshness, blockers, counts, diagnostics, certification, error]
       properties:
         runId: { type: [string, "null"] }
         status:
@@ -188,6 +287,10 @@ components:
           $ref: "#/components/schemas/PilotCounts"
         diagnostics:
           $ref: "#/components/schemas/PilotDiagnostics"
+        certification:
+          oneOf:
+            - $ref: "#/components/schemas/BaselineCertification"
+            - type: "null"
         error: { type: [string, "null"] }
     PilotRunRequest:
       type: object
@@ -294,7 +397,7 @@ components:
             regressionsDetected: { type: integer }
         pilot:
           type: object
-          required: [status, readiness, phase, freshness, blockers, counts, diagnostics]
+          required: [status, readiness, phase, freshness, blockers, counts, diagnostics, certification]
           properties:
             status:
               type: string
@@ -312,4 +415,6 @@ components:
               $ref: "#/components/schemas/PilotCounts"
             diagnostics:
               $ref: "#/components/schemas/PilotDiagnostics"
+            certification:
+              $ref: "#/components/schemas/DashboardCertification"
 
