@@ -267,7 +267,7 @@ function collectionComposition(resource: ShopifySemanticResource | undefined, id
   if (categories.length < 2) return null;
   const list = categories.length === 2 ? categories.join(" and ") : `${categories.slice(0, -1).join(", ")}, and ${categories.at(-1)}`;
   return {
-    sentence: `${identity} includes ${list} products in this Shopify collection.`,
+    sentence: `${identity} includes ${list}, bringing the collection's product categories together on one page.`,
     categoryTypes: categories,
     matchedProducts: membership.observedCount,
   };
@@ -399,7 +399,7 @@ export function hasSafeSnippetIntegrity(value: string | null | undefined) {
     && !/[.!?]{2,}/.test(normalized)
     && !/\s+[,.;:!?]/.test(normalized)
     && !/[,:;—-]\s*$/.test(normalized)
-    && !/\b(?:observed|the)\s+Shopify[.!?]$/i.test(normalized)
+    && !/\b(?:Shopify|SEO ENGINE|provider APIs?|evidence machinery|source endpoint|direct membership|bounded crawl|catalog count)\b/i.test(normalized)
     && !/[\uFFFD<>]|&(?:amp|nbsp|quot|apos|lt|gt|#\d+);/i.test(normalized);
 }
 

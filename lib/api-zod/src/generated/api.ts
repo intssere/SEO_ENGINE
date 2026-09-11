@@ -369,6 +369,16 @@ export const ListActionsResponse = zod.object({
   "field": zod.string(),
   "before_value": zod.string().nullable(),
   "after_value": zod.string().nullable(),
+  "generated_value": zod.string().nullish(),
+  "human_edited": zod.boolean().optional(),
+  "revision_count": zod.number().int().optional(),
+  "revisions": zod.array(zod.record(zod.string(), zod.unknown())).optional(),
+  "draft_revision_token": zod.string().nullish(),
+  "proposal_fingerprint": zod.string().nullish(),
+  "proposal_generation_method": zod.enum(['deterministic', 'ai_generated', 'ai_refined']).optional(),
+  "ai_assisted": zod.boolean().optional(),
+  "ai_generation_audit": zod.record(zod.string(), zod.unknown()).nullish(),
+  "semantic_provenance": zod.array(zod.record(zod.string(), zod.unknown())).optional(),
   "rationale": zod.string(),
   "expected_benefit": zod.string(),
   "rollback": zod.string(),
@@ -433,6 +443,16 @@ export const ListApprovalsResponse = zod.object({
   "field": zod.string(),
   "before_value": zod.string().nullable(),
   "after_value": zod.string().nullable(),
+  "generated_value": zod.string().nullish(),
+  "human_edited": zod.boolean().optional(),
+  "revision_count": zod.number().int().optional(),
+  "revisions": zod.array(zod.record(zod.string(), zod.unknown())).optional(),
+  "draft_revision_token": zod.string().nullish(),
+  "proposal_fingerprint": zod.string().nullish(),
+  "proposal_generation_method": zod.enum(['deterministic', 'ai_generated', 'ai_refined']).optional(),
+  "ai_assisted": zod.boolean().optional(),
+  "ai_generation_audit": zod.record(zod.string(), zod.unknown()).nullish(),
+  "semantic_provenance": zod.array(zod.record(zod.string(), zod.unknown())).optional(),
   "rationale": zod.string(),
   "expected_benefit": zod.string(),
   "rollback": zod.string(),
@@ -491,6 +511,47 @@ export const DecideApprovalResponse = zod.object({
   "revision_requested": zod.boolean(),
   "execution_authorized": zod.literal(false),
   "public_site_writes": zod.literal(false)
+})
+
+
+/**
+ * @summary Save or reset a non-executable proposal draft
+ */
+export const EditApprovalDraftParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const editApprovalDraftBodyValueMax = 1000;
+
+export const editApprovalDraftBodyRevisionTokenMax = 128;
+
+export const editApprovalDraftBodyFingerprintMax = 128;
+
+export const editApprovalDraftBodyConfirmationMax = 300;
+
+
+
+export const EditApprovalDraftBody = zod.object({
+  "mode": zod.enum(['save', 'reset']),
+  "value": zod.string().max(editApprovalDraftBodyValueMax).nullish(),
+  "revisionToken": zod.string().min(1).max(editApprovalDraftBodyRevisionTokenMax),
+  "fingerprint": zod.string().min(1).max(editApprovalDraftBodyFingerprintMax),
+  "confirmation": zod.string().min(1).max(editApprovalDraftBodyConfirmationMax)
+})
+
+export const EditApprovalDraftResponse = zod.object({
+  "id": zod.string(),
+  "mode": zod.enum(['save', 'reset']),
+  "value": zod.string(),
+  "originalValue": zod.string(),
+  "revisionToken": zod.string(),
+  "fingerprint": zod.string(),
+  "humanEdited": zod.boolean(),
+  "revisions": zod.array(zod.record(zod.string(), zod.unknown())),
+  "qualityGate": zod.record(zod.string(), zod.unknown()),
+  "executionAuthorized": zod.literal(false),
+  "publicSiteWrites": zod.literal(false),
+  "automaticTransition": zod.literal(false)
 })
 
 

@@ -5,6 +5,10 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface CommandRequest {
+  question: string;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -30,6 +34,24 @@ export const ProposalLifecycleStage = {
   verified_result: 'verified_result',
   invalidated: 'invalidated',
 } as const;
+
+export type ProposalRecordRevisionsItem = { [key: string]: unknown };
+
+export type ProposalRecordProposalGenerationMethod = typeof ProposalRecordProposalGenerationMethod[keyof typeof ProposalRecordProposalGenerationMethod];
+
+
+export const ProposalRecordProposalGenerationMethod = {
+  deterministic: 'deterministic',
+  ai_generated: 'ai_generated',
+  ai_refined: 'ai_refined',
+} as const;
+
+/**
+ * @nullable
+ */
+export type ProposalRecordAiGenerationAudit = { [key: string]: unknown } | null;
+
+export type ProposalRecordSemanticProvenanceItem = { [key: string]: unknown };
 
 export type ProposalRecordQualityStatus = typeof ProposalRecordQualityStatus[keyof typeof ProposalRecordQualityStatus];
 
@@ -98,6 +120,20 @@ export interface ProposalRecord {
   before_value: string | null;
   /** @nullable */
   after_value: string | null;
+  /** @nullable */
+  generated_value?: string | null;
+  human_edited?: boolean;
+  revision_count?: number;
+  revisions?: ProposalRecordRevisionsItem[];
+  /** @nullable */
+  draft_revision_token?: string | null;
+  /** @nullable */
+  proposal_fingerprint?: string | null;
+  proposal_generation_method?: ProposalRecordProposalGenerationMethod;
+  ai_assisted?: boolean;
+  /** @nullable */
+  ai_generation_audit?: ProposalRecordAiGenerationAudit;
+  semantic_provenance?: ProposalRecordSemanticProvenanceItem[];
   rationale: string;
   expected_benefit: string;
   rollback: string;
@@ -176,6 +212,65 @@ export interface ApprovalDecisionResponse {
   revision_requested: boolean;
   execution_authorized: false;
   public_site_writes: false;
+}
+
+export type ApprovalDraftUpdateMode = typeof ApprovalDraftUpdateMode[keyof typeof ApprovalDraftUpdateMode];
+
+
+export const ApprovalDraftUpdateMode = {
+  save: 'save',
+  reset: 'reset',
+} as const;
+
+export interface ApprovalDraftUpdate {
+  mode: ApprovalDraftUpdateMode;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  value?: string | null;
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
+  revisionToken: string;
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
+  fingerprint: string;
+  /**
+     * @minLength 1
+     * @maxLength 300
+     */
+  confirmation: string;
+}
+
+export type ApprovalDraftResponseMode = typeof ApprovalDraftResponseMode[keyof typeof ApprovalDraftResponseMode];
+
+
+export const ApprovalDraftResponseMode = {
+  save: 'save',
+  reset: 'reset',
+} as const;
+
+export type ApprovalDraftResponseRevisionsItem = { [key: string]: unknown };
+
+export type ApprovalDraftResponseQualityGate = { [key: string]: unknown };
+
+export interface ApprovalDraftResponse {
+  id: string;
+  mode: ApprovalDraftResponseMode;
+  value: string;
+  originalValue: string;
+  revisionToken: string;
+  fingerprint: string;
+  humanEdited: boolean;
+  revisions: ApprovalDraftResponseRevisionsItem[];
+  qualityGate: ApprovalDraftResponseQualityGate;
+  executionAuthorized: false;
+  publicSiteWrites: false;
+  automaticTransition: false;
 }
 
 export type ProposalResponseReadiness = { [key: string]: unknown };
@@ -674,10 +769,6 @@ export type DecideApproval403 = {
 
 export type DecideApproval409 = {
   error?: string;
-};
-
-export type AskSeoEngineBody = {
-  question: string;
 };
 
 export type AskSeoEngine200 = {

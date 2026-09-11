@@ -7,8 +7,12 @@
  */
 import type { ProposalLifecycleStage } from './proposalLifecycleStage';
 import type { ProposalQualityCheck } from './proposalQualityCheck';
+import type { ProposalRecordAiGenerationAudit } from './proposalRecordAiGenerationAudit';
 import type { ProposalRecordDecision } from './proposalRecordDecision';
+import type { ProposalRecordProposalGenerationMethod } from './proposalRecordProposalGenerationMethod';
 import type { ProposalRecordQualityStatus } from './proposalRecordQualityStatus';
+import type { ProposalRecordRevisionsItem } from './proposalRecordRevisionsItem';
+import type { ProposalRecordSemanticProvenanceItem } from './proposalRecordSemanticProvenanceItem';
 
 export interface ProposalRecord {
   id: string;
@@ -35,6 +39,20 @@ export interface ProposalRecord {
   before_value: string | null;
   /** @nullable */
   after_value: string | null;
+  /** @nullable */
+  generated_value?: string | null;
+  human_edited?: boolean;
+  revision_count?: number;
+  revisions?: ProposalRecordRevisionsItem[];
+  /** @nullable */
+  draft_revision_token?: string | null;
+  /** @nullable */
+  proposal_fingerprint?: string | null;
+  proposal_generation_method?: ProposalRecordProposalGenerationMethod;
+  ai_assisted?: boolean;
+  /** @nullable */
+  ai_generation_audit?: ProposalRecordAiGenerationAudit;
+  semantic_provenance?: ProposalRecordSemanticProvenanceItem[];
   rationale: string;
   expected_benefit: string;
   rollback: string;

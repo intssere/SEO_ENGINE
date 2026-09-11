@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type AskSeoEngineBody = {
-  question: string;
-};
+/**
+ * @nullable
+ */
+export type ProposalRecordAiGenerationAudit = { [key: string]: unknown } | null;

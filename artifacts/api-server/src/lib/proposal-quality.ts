@@ -15,6 +15,7 @@ export const proposalQualityCheckIds = [
   "generic_filler",
   "format_integrity",
   "snippet_integrity",
+  "source_language_integrity",
   "collection_membership_certification",
   "template_boilerplate",
   "page_specific_content",
@@ -176,6 +177,13 @@ function snippetIntegrityCheck(field: string, proposed: string) {
     : check("snippet_integrity", "Semantic snippet integrity", "blocked", 0, "The meta description has an incomplete, dangling, malformed, or syntactically unsafe ending.");
 }
 
+function sourceLanguageIntegrityCheck(proposed: string) {
+  const leaked = /\b(?:Shopify|SEO ENGINE|provider APIs?|evidence machinery|provenance|source endpoint|direct membership|membership certification|bounded crawl|catalog count|observed product records?|semantic evidence packet)\b/i;
+  return leaked.test(proposed)
+    ? check("source_language_integrity", "Shopper-facing language", "blocked", 0, "The proposed copy exposes implementation, provider, or evidence terminology.")
+    : check("source_language_integrity", "Shopper-facing language", "pass", 100, "The proposed copy is written for shoppers and searchers without implementation terminology.");
+}
+
 function collectionMembershipCertificationCheck(input: ProposalQualityInput) {
   const profile = input.proposal.expectedOutcome.semanticProfile;
   const compositionUsed = profile?.candidateSentences.some((item) => item.source === "shopify_collection_composition") === true;
@@ -233,6 +241,7 @@ export function evaluateProposalQuality(input: ProposalQualityInput): ProposalQu
     genericFillerCheck(proposed),
     formatCheck(proposed),
     snippetIntegrityCheck(input.proposal.expectedOutcome.proposal.field, proposed),
+    sourceLanguageIntegrityCheck(proposed),
     collectionMembershipCertificationCheck(input),
     templateBoilerplateCheck(input, proposed, proposalEvidence),
     pageSpecificContentCheck(input, proposed, proposalEvidence),

@@ -1,8 +1,14 @@
 import postgres from "postgres";
+import { createHash } from "node:crypto";
+import { evaluateProposalQuality } from "./proposal-quality.js";
+import { applyProposalQualityGate } from "./proposal-quality.js";
+import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
+import type { DryRunProposal } from "./action-planner.js";
 
 export type PerformanceFilters = { days: 7 | 28 | 90; country: string; device: "all" | "desktop" | "mobile" | "tablet" };
 export type RuntimeReadiness = { state: "live" | "setup_required" | "unavailable"; message: string; siteId: string | null };
 export type ProposalDecisionInput = { decision: "approved" | "rejected"; reason?: string | null; confirmation: string; requestRevision?: boolean };
+export type ProposalDraftInput = { mode: "save" | "reset"; value?: string | null; revisionToken: string; fingerprint: string; confirmation: string };
 
 export class ProposalDecisionError extends Error {
   constructor(readonly category: string, readonly status: number) {
@@ -10,6 +16,8 @@ export class ProposalDecisionError extends Error {
     this.name = "ProposalDecisionError";
   }
 }
+const draftFingerprint = (value: string) => createHash("sha256").update(value).digest("hex");
+const safeActor = (value: string) => value.replace(/[^A-Za-z0-9_.:@-]/g, "").slice(0, 120) || "same_origin_reviewer";
 
 function database() {
   const url = process.env.DATABASE_URL?.trim();
@@ -64,6 +72,16 @@ export async function loadOperationalList(kind: "opportunities" | "actions" | "a
           COALESCE(ap.expected_outcome->'proposal'->>'field','unresolved') AS field,
           ap.expected_outcome->'proposal'->>'beforeValue' AS before_value,
           ap.expected_outcome->'proposal'->>'afterValue' AS after_value,
+          COALESCE(ap.expected_outcome->'draftEditing'->>'originalValue',ap.expected_outcome->'generation'->>'generatedValue',ap.expected_outcome->'proposal'->>'afterValue') AS generated_value,
+          COALESCE((ap.expected_outcome->'draftEditing'->>'humanEdited')::boolean,false) AS human_edited,
+          COALESCE(jsonb_array_length(ap.expected_outcome->'draftEditing'->'revisions'),0)::int AS revision_count,
+          COALESCE(ap.expected_outcome->'draftEditing'->'revisions','[]'::jsonb) AS revisions,
+          COALESCE(ap.expected_outcome->'draftEditing'->'fingerprints'->>'current',ap.expected_outcome->>'proposalFingerprint') AS draft_revision_token,
+          COALESCE(ap.expected_outcome->'generation'->>'method','deterministic') AS proposal_generation_method,
+          COALESCE((ap.expected_outcome->'generation'->>'aiAssisted')::boolean,false) AS ai_assisted,
+          ap.expected_outcome->'generation'->'aiAudit' AS ai_generation_audit,
+          COALESCE(ap.expected_outcome->'semanticProfile'->'provenance','[]'::jsonb) AS semantic_provenance,
+          ap.expected_outcome->>'proposalFingerprint' AS proposal_fingerprint,
           ap.rationale,
           COALESCE(ap.expected_outcome->'proposal'->>'expectedBenefit','No expected benefit recorded.') AS expected_benefit,
           COALESCE(ap.expected_outcome->'proposal'->>'rollback','No rollback metadata recorded.') AS rollback,
@@ -101,6 +119,16 @@ export async function loadOperationalList(kind: "opportunities" | "actions" | "a
           COALESCE(ap.expected_outcome->'proposal'->>'field','unresolved') AS field,
           ap.expected_outcome->'proposal'->>'beforeValue' AS before_value,
           ap.expected_outcome->'proposal'->>'afterValue' AS after_value,
+          COALESCE(ap.expected_outcome->'draftEditing'->>'originalValue',ap.expected_outcome->'generation'->>'generatedValue',ap.expected_outcome->'proposal'->>'afterValue') AS generated_value,
+          COALESCE((ap.expected_outcome->'draftEditing'->>'humanEdited')::boolean,false) AS human_edited,
+          COALESCE(jsonb_array_length(ap.expected_outcome->'draftEditing'->'revisions'),0)::int AS revision_count,
+          COALESCE(ap.expected_outcome->'draftEditing'->'revisions','[]'::jsonb) AS revisions,
+          COALESCE(ap.expected_outcome->'draftEditing'->'fingerprints'->>'current',ap.expected_outcome->>'proposalFingerprint') AS draft_revision_token,
+          COALESCE(ap.expected_outcome->'generation'->>'method','deterministic') AS proposal_generation_method,
+          COALESCE((ap.expected_outcome->'generation'->>'aiAssisted')::boolean,false) AS ai_assisted,
+          ap.expected_outcome->'generation'->'aiAudit' AS ai_generation_audit,
+          COALESCE(ap.expected_outcome->'semanticProfile'->'provenance','[]'::jsonb) AS semantic_provenance,
+          ap.expected_outcome->>'proposalFingerprint' AS proposal_fingerprint,
           ap.rationale,
           COALESCE(ap.expected_outcome->'proposal'->>'expectedBenefit','No expected benefit recorded.') AS expected_benefit,
           COALESCE(ap.expected_outcome->'proposal'->>'rollback','No rollback metadata recorded.') AS rollback,
@@ -230,6 +258,85 @@ export async function decideProposalReview(planId: string, input: ProposalDecisi
   } finally {
     await sql.end({ timeout: 2 }).catch(() => undefined);
   }
+}
+
+export function validateProposalDraftState(state: { status: string; opportunityStatus: string; expectedOutcome: Record<string, unknown>; priorDecisionCount: number }, input: ProposalDraftInput) {
+  const expected = state.expectedOutcome;
+  const proposal = expected.proposal && typeof expected.proposal === "object" ? expected.proposal as Record<string, unknown> : null;
+  const lifecycle = String(expected.lifecycleStage ?? "draft_dry_run");
+  if (!proposal || expected.planner !== "dry_run_action_planner_v1") throw new ProposalDecisionError("proposal_not_editable", 409);
+  if (proposal.field !== "meta_description") throw new ProposalDecisionError("proposal_field_not_editable", 409);
+  if (expected.executionAuthorized !== false || expected.publicSiteWrites !== false || expected.automaticTransition !== false || expected.dryRun !== true) throw new ProposalDecisionError("proposal_safety_invariant_failed", 409);
+  if (lifecycle === "invalidated" || !["new", "accepted", "planned"].includes(state.opportunityStatus)) throw new ProposalDecisionError("proposal_stale_or_ineligible", 409);
+  if (state.priorDecisionCount > 0 || state.status !== "pending") throw new ProposalDecisionError("proposal_already_decided", 409);
+  if (typeof input.revisionToken !== "string" || typeof input.fingerprint !== "string") throw new ProposalDecisionError("draft_fingerprint_required", 400);
+  return { expected, proposal, lifecycle };
+}
+
+export function buildDraftRevision(input: ProposalDraftInput, actorId: string, previous: string, next: string, timestamp: string) {
+  return { mode: input.mode, actor: safeActor(actorId), timestamp, fromFingerprint: draftFingerprint(previous), toFingerprint: draftFingerprint(next), value: next };
+}
+
+export async function editProposalDraft(planId: string, input: ProposalDraftInput, actorId: string) {
+  if (!uuidPattern.test(planId)) throw new ProposalDecisionError("proposal_not_found", 404);
+  if (input.mode === "save" && (typeof input.value !== "string" || !input.value.trim())) throw new ProposalDecisionError("invalid_draft_value", 400);
+  if (input.mode === "reset" && input.value != null) throw new ProposalDecisionError("invalid_reset_value", 400);
+  if (input.confirmation !== `${input.mode.toUpperCase()}:${planId}:${input.fingerprint}`) throw new ProposalDecisionError("explicit_confirmation_required", 400);
+  const readiness = await getRuntimeReadiness();
+  if (readiness.state !== "live" || !readiness.siteId) throw new ProposalDecisionError("approval_runtime_unavailable", 503);
+  const sql = database()!;
+  try {
+    return await sql.begin(async (tx) => {
+      const rows = await tx<Array<{ id: string; status: string; opportunityStatus: string; expectedOutcome: Record<string, unknown>; generationKey: string; query: string | null; queryId: string | null; opportunityType: string; score: number; confidence: number; risk: string; rationale: string; pageId: string; pageUrl: string; title: string | null; description: string | null; h1: string | null; contentText: string | null; pageEvidenceId: string | null; opportunityEvidenceId: string | null; gscEvidenceId: string | null; shopifyEvidenceId: string | null }>>`
+        SELECT ap.id::text, ap.status, o.status AS "opportunityStatus", ap.expected_outcome AS "expectedOutcome",
+          o.impact_estimate->>'generationKey' AS "generationKey",sq.query, sq.id::text AS "queryId", o.opportunity_type AS "opportunityType", o.score, COALESCE((o.impact_estimate->>'confidence')::float,0) confidence,
+          COALESCE(o.impact_estimate->>'riskClassification','low') risk, o.rationale,
+          p.id::text AS "pageId", p.url AS "pageUrl", ps.title, ps.meta_description AS description, ps.h1, ps.content_text AS "contentText",
+          (SELECT id::text FROM evidence WHERE id = ANY(o.evidence_ids) AND source='crawler' ORDER BY created_at DESC LIMIT 1) AS "pageEvidenceId",
+          (SELECT id::text FROM evidence WHERE id = ANY(o.evidence_ids) AND source='seo_engine' ORDER BY created_at DESC LIMIT 1) AS "opportunityEvidenceId",
+          (SELECT id::text FROM evidence WHERE id = ANY(o.evidence_ids) AND source='gsc' ORDER BY created_at DESC LIMIT 1) AS "gscEvidenceId",
+          (SELECT id::text FROM evidence WHERE id = ANY(o.evidence_ids) AND source='shopify' ORDER BY created_at DESC LIMIT 1) AS "shopifyEvidenceId"
+        FROM action_plans ap JOIN opportunities o ON o.id=ap.opportunity_id
+        LEFT JOIN pages p ON p.id=o.page_id LEFT JOIN search_queries sq ON sq.id=o.query_id
+        LEFT JOIN LATERAL (SELECT * FROM page_snapshots WHERE page_id=p.id ORDER BY observed_at DESC LIMIT 1) ps ON true
+        WHERE ap.id=${planId}::uuid AND ap.site_id=${readiness.siteId}::uuid FOR UPDATE OF ap`;
+      const row = rows[0];
+      if (!row) throw new ProposalDecisionError("proposal_not_found", 404);
+      const priorApprovals = await tx<{ count: number }[]>`SELECT COUNT(*)::int count FROM approvals WHERE action_plan_id=${planId}::uuid`;
+      const { expected, proposal } = validateProposalDraftState({ ...row, priorDecisionCount: Number(priorApprovals[0]?.count ?? 0) }, input);
+      const editing = expected.draftEditing && typeof expected.draftEditing === "object" ? expected.draftEditing as Record<string, unknown> : {};
+      const generation = expected.generation && typeof expected.generation === "object" ? expected.generation as Record<string, unknown> : {};
+      const original = typeof editing.originalValue === "string"
+        ? editing.originalValue
+        : typeof generation.generatedValue === "string"
+          ? generation.generatedValue
+          : String(proposal.afterValue ?? "");
+      const originalProposal = editing.originalProposal && typeof editing.originalProposal === "object" ? editing.originalProposal : { ...proposal };
+      const current = typeof editing.currentValue === "string" ? editing.currentValue : original;
+      const currentRevisionToken = typeof (editing.fingerprints as Record<string, unknown> | undefined)?.current === "string"
+        ? String((editing.fingerprints as Record<string, unknown>).current)
+        : String(expected.proposalFingerprint ?? "");
+      if (input.revisionToken !== currentRevisionToken || input.fingerprint !== expected.proposalFingerprint) throw new ProposalDecisionError("stale_draft", 409);
+      const next = input.mode === "reset" ? original : input.value!.trim().replace(/\s+/g, " ");
+      if (input.mode === "save" && next === current) throw new ProposalDecisionError("draft_unchanged", 409);
+      const page: CrawlPageSignal = { pageId: row.pageId, url: row.pageUrl, indexable: true, title: row.title, description: row.description, h1: row.h1, contentText: row.contentText ?? "", links: [], evidenceId: row.pageEvidenceId ?? "" };
+      const candidate: OpportunityCandidate = { generationKey: row.generationKey, opportunityType: row.opportunityType as OpportunityCandidate["opportunityType"], pageId: row.pageId, queryId: row.queryId, query: row.query, title: row.opportunityType, confidence: Number(row.confidence ?? 0), risk: row.risk as OpportunityCandidate["risk"], score: Number(row.score ?? 0), scoreComponents: { demand: 0, proximity: 0, confidence: Number(row.confidence ?? 0), evidence: 0 }, rationale: row.rationale, recommendation: row.rationale, sourceEvidenceIds: Array.isArray(proposal.supportingEvidenceIds) ? proposal.supportingEvidenceIds as string[] : [], metrics: {} };
+      const editedProposal = { status: "pending", riskLevel: "blocked", rationale: row.rationale, expectedOutcome: { ...expected, proposal: { ...proposal, afterValue: next } } } as DryRunProposal;
+      const activeRows = await tx<Array<{ generationKey: string; value: string }>>`
+        SELECT o2.impact_estimate->>'generationKey' AS "generationKey",ap2.expected_outcome->'proposal'->>'afterValue' AS value
+        FROM action_plans ap2 JOIN opportunities o2 ON o2.id=ap2.opportunity_id
+        WHERE ap2.site_id=${readiness.siteId}::uuid AND ap2.id<>${planId}::uuid AND ap2.status='pending'
+          AND ap2.expected_outcome->'proposal'->>'afterValue' IS NOT NULL`;
+      const quality = evaluateProposalQuality({ proposal: editedProposal, candidate, page, activeProposalValues: activeRows, evidence: { crawl: row.pageEvidenceId, opportunity: row.opportunityEvidenceId, gsc: row.gscEvidenceId, shopify: row.shopifyEvidenceId } });
+      const gated = applyProposalQualityGate(editedProposal, quality, row.generationKey);
+      const timestamp = new Date().toISOString();
+      const revisions = Array.isArray(editing.revisions) ? editing.revisions : [];
+      const nextEditing = { originalProposal, originalValue: original, currentValue: next, revisions: [...revisions, buildDraftRevision(input, actorId, current, next, timestamp)], humanEdited: next !== original, actor: safeActor(actorId), timestamp, qualityResult: quality, fingerprints: { original: draftFingerprint(original), current: draftFingerprint(next) } };
+      const nextExpected = { ...gated.expectedOutcome, draftEditing: nextEditing, executionAuthorized: false, publicSiteWrites: false, automaticTransition: false };
+      await tx`UPDATE action_plans SET expected_outcome=${tx.json(nextExpected as never)}, updated_at=now() WHERE id=${planId}::uuid`;
+      return { id: planId, mode: input.mode, value: next, originalValue: original, revisionToken: draftFingerprint(next), fingerprint: gated.expectedOutcome.proposalFingerprint, humanEdited: next !== original, revisions: nextEditing.revisions, qualityGate: quality, executionAuthorized: false, publicSiteWrites: false, automaticTransition: false };
+    });
+  } finally { await sql.end({ timeout: 2 }).catch(() => undefined); }
 }
 
 export async function loadOpportunities() {

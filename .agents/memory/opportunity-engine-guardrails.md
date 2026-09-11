@@ -80,3 +80,9 @@ Collection composition requires a direct, exact-resource membership certificatio
 **Why:** Broad title/tag matching made narrow collections appear to contain most of the catalog, and hard character truncation produced dangling endings that passed other quality checks.
 
 **How to apply:** Persist the collection endpoint, path, explicit expected/observed counts, coverage, cardinality validity, completeness, truncation, broadness decision, and evidence ID as one provenance-bound certification. Recompute its internal consistency independently in both generation and the final quality gate. An explicit null expected count is allowed when unavailable; a missing field is not. Reject incomplete, mismatched, suspicious, or path-unbound membership and any snippet ending in a dangling article, preposition, conjunction, or malformed phrase.
+
+AI can refine metadata only from a certified semantic profile, and deterministic gates remain authoritative. Manual edits are review drafts with immutable originals and revisions, never execution instructions.
+
+**Why:** Generated language and reviewer edits can introduce unsupported claims or implementation wording even when the underlying evidence is valid; draft editing must not weaken stale-state or zero-write controls.
+
+**How to apply:** Keep AI opt-in, bound its evidence packet, audit every attempt, and fail closed without replacing a valid deterministic candidate on AI failure. Save/reset drafts only with same-origin confirmation plus current plan and draft fingerprints, rerun full quality checks, and preserve `executionAuthorized=false`, `publicSiteWrites=false`, and `automaticTransition=false`.

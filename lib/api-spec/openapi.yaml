@@ -126,6 +126,26 @@ paths:
         "400": { description: Explicit confirmation or reason required, content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } } }
         "403": { description: Same-origin review required, content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } } }
         "409": { description: "Quality blocked, stale, unsafe, or already decided proposal", content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } } }
+  /approvals/{id}/draft:
+    patch:
+      operationId: editApprovalDraft
+      summary: "Save or reset a non-executable proposal draft"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApprovalDraftUpdate" }
+      responses:
+        "200":
+          description: Updated proposal draft and deterministic quality result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApprovalDraftResponse" }
+        "400": { description: Invalid draft request }
+        "403": { description: Same-origin review request required }
+        "409": { description: "Stale, decided, invalidated, unsafe, or quality-invalid proposal" }
   /deployments:
     get: { operationId: listDeployments, responses: { "200": { description: Deployments, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
   /technical-seo:
@@ -135,11 +155,16 @@ paths:
       operationId: askSeoEngine
       requestBody:
         required: true
-        content: { application/json: { schema: { type: object, required: [question], properties: { question: { type: string } } } } }
+        content: { application/json: { schema: { $ref: "#/components/schemas/CommandRequest" } } }
       responses:
         "200": { description: Read-only answer, content: { application/json: { schema: { type: object, properties: { answer: { type: string } } } } } }
 components:
   schemas:
+    CommandRequest:
+      type: object
+      required: [question]
+      properties:
+        question: { type: string }
     HealthStatus:
       type: object
       properties:
@@ -179,6 +204,16 @@ components:
         field: { type: string }
         before_value: { type: [string, "null"] }
         after_value: { type: [string, "null"] }
+        generated_value: { type: [string, "null"] }
+        human_edited: { type: boolean }
+        revision_count: { type: integer }
+        revisions: { type: array, items: { type: object, additionalProperties: true } }
+        draft_revision_token: { type: [string, "null"] }
+        proposal_fingerprint: { type: [string, "null"] }
+        proposal_generation_method: { type: string, enum: [deterministic, ai_generated, ai_refined] }
+        ai_assisted: { type: boolean }
+        ai_generation_audit: { type: [object, "null"], additionalProperties: true }
+        semantic_provenance: { type: array, items: { type: object, additionalProperties: true } }
         rationale: { type: string }
         expected_benefit: { type: string }
         rollback: { type: string }
@@ -234,6 +269,31 @@ components:
         revision_requested: { type: boolean }
         execution_authorized: { type: boolean, enum: [false] }
         public_site_writes: { type: boolean, enum: [false] }
+    ApprovalDraftUpdate:
+      type: object
+      required: [mode, revisionToken, fingerprint, confirmation]
+      properties:
+        mode: { type: string, enum: [save, reset] }
+        value: { type: [string, "null"], maxLength: 1000 }
+        revisionToken: { type: string, minLength: 1, maxLength: 128 }
+        fingerprint: { type: string, minLength: 1, maxLength: 128 }
+        confirmation: { type: string, minLength: 1, maxLength: 300 }
+    ApprovalDraftResponse:
+      type: object
+      required: [id, mode, value, originalValue, revisionToken, fingerprint, humanEdited, revisions, qualityGate, executionAuthorized, publicSiteWrites, automaticTransition]
+      properties:
+        id: { type: string }
+        mode: { type: string, enum: [save, reset] }
+        value: { type: string }
+        originalValue: { type: string }
+        revisionToken: { type: string }
+        fingerprint: { type: string }
+        humanEdited: { type: boolean }
+        revisions: { type: array, items: { type: object, additionalProperties: true } }
+        qualityGate: { type: object, additionalProperties: true }
+        executionAuthorized: { type: boolean, enum: [false] }
+        publicSiteWrites: { type: boolean, enum: [false] }
+        automaticTransition: { type: boolean, enum: [false] }
     ProposalResponse:
       type: object
       required: [readiness, rows]

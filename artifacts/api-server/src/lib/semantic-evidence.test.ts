@@ -258,7 +258,8 @@ test("collection composition requires complete exact-path Shopify membership", (
     suspiciouslyBroad: false,
     evidenceId: "shopify-1",
   });
-  assert.match(value, /in this Shopify collection/i);
+  assert.match(value, /collection's product categories/i);
+  assert.doesNotMatch(value, /Shopify|provider|API|evidence|provenance|SEO ENGINE/i);
   assert.match(value, /[.!?]$/);
   assert.doesNotMatch(value, /best|premium|guaranteed|free shipping/i);
   assert.ok(profile.provenance.some((entry) => entry.source === "shopify_collection_membership" && entry.field === "exact_collection_membership"));
@@ -390,4 +391,13 @@ test("snippet integrity rejects Task 48 dangling and malformed endings", () => {
     "Beauty includes cosmetics and eye care products while.",
   ];
   for (const value of malformed) assert.equal(hasSafeSnippetIntegrity(value), false, value);
+});
+
+test("snippet integrity rejects implementation and source wording", () => {
+  const leaked = [
+    "This Shopify collection contains fragrance products.",
+    "SEO ENGINE observed these products through provider APIs.",
+    "The semantic evidence packet certifies direct membership.",
+  ];
+  for (const value of leaked) assert.equal(hasSafeSnippetIntegrity(value), false, value);
 });

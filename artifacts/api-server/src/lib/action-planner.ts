@@ -1,6 +1,7 @@
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
 import { buildPageSpecificMetaDescription, cleanPageEvidence, normalizeProposalText } from "./proposal-content.js";
 import { buildSemanticPageProfile, type SemanticPageProfile } from "./semantic-evidence.js";
+import type { AiProposalAudit } from "./ai-proposal.js";
 
 export const proposalLifecycleStages = [
   "draft_dry_run",
@@ -29,6 +30,12 @@ export type DryRunProposal = {
     confidence: number;
     page: { id: string; url: string };
     semanticProfile: SemanticPageProfile | null;
+    generation: {
+      method: "deterministic" | "ai_generated" | "ai_refined";
+      aiAssisted: boolean;
+      generatedValue: string | null;
+      aiAudit: AiProposalAudit | null;
+    };
     proposal: {
       actionType: string;
       field: string;
@@ -149,6 +156,12 @@ export function createDryRunProposal(
       confidence: candidate.confidence,
       page: pageIdentity,
       semanticProfile,
+      generation: {
+        method: "deterministic",
+        aiAssisted: false,
+        generatedValue: details?.afterValue ?? null,
+        aiAudit: null,
+      },
       proposal: {
         actionType: details?.actionType ?? "evidence_review_required",
         field: details?.field ?? "unresolved",

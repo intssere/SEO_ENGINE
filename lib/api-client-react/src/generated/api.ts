@@ -22,8 +22,10 @@ import type {
 import type {
   ApprovalDecisionRequest,
   ApprovalDecisionResponse,
+  ApprovalDraftResponse,
+  ApprovalDraftUpdate,
   AskSeoEngine200,
-  AskSeoEngineBody,
+  CommandRequest,
   DashboardSnapshot,
   DecideApproval400,
   DecideApproval403,
@@ -810,6 +812,78 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getDecideApprovalMutationOptions(options));
     }
 
+export const getEditApprovalDraftUrl = (id: string,) => {
+
+
+
+
+  return `/api/approvals/${id}/draft`
+}
+
+/**
+ * @summary Save or reset a non-executable proposal draft
+ */
+export const editApprovalDraft = async (id: string,
+    approvalDraftUpdate: ApprovalDraftUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ApprovalDraftResponse> => {
+
+  return customFetch<ApprovalDraftResponse>(getEditApprovalDraftUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(approvalDraftUpdate)
+  }
+);}
+
+
+
+
+
+export const getEditApprovalDraftMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof editApprovalDraft>>, TError,{id: string;data: BodyType<ApprovalDraftUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof editApprovalDraft>>, TError,{id: string;data: BodyType<ApprovalDraftUpdate>}, TContext> => {
+
+const mutationKey = ['editApprovalDraft'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof editApprovalDraft>>, {id: string;data: BodyType<ApprovalDraftUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  editApprovalDraft(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EditApprovalDraftMutationResult = NonNullable<Awaited<ReturnType<typeof editApprovalDraft>>>
+    export type EditApprovalDraftMutationBody = BodyType<ApprovalDraftUpdate>
+    export type EditApprovalDraftMutationError = ErrorType<void>
+
+    /**
+ * @summary Save or reset a non-executable proposal draft
+ */
+export const useEditApprovalDraft = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof editApprovalDraft>>, TError,{id: string;data: BodyType<ApprovalDraftUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof editApprovalDraft>>,
+        TError,
+        {id: string;data: BodyType<ApprovalDraftUpdate>},
+        TContext
+      > => {
+      return useMutation(getEditApprovalDraftMutationOptions(options));
+    }
+
 export const getListDeploymentsUrl = () => {
 
 
@@ -960,14 +1034,14 @@ export const getAskSeoEngineUrl = () => {
   return `/api/command`
 }
 
-export const askSeoEngine = async (askSeoEngineBody: AskSeoEngineBody, options?: Parameters<typeof customFetch>[1]): Promise<AskSeoEngine200> => {
+export const askSeoEngine = async (commandRequest: CommandRequest, options?: Parameters<typeof customFetch>[1]): Promise<AskSeoEngine200> => {
 
   return customFetch<AskSeoEngine200>(getAskSeoEngineUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(askSeoEngineBody)
+    body: JSON.stringify(commandRequest)
   }
 );}
 
@@ -976,8 +1050,8 @@ export const askSeoEngine = async (askSeoEngineBody: AskSeoEngineBody, options?:
 
 
 export const getAskSeoEngineMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askSeoEngine>>, TError,{data: BodyType<AskSeoEngineBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof askSeoEngine>>, TError,{data: BodyType<AskSeoEngineBody>}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askSeoEngine>>, TError,{data: BodyType<CommandRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof askSeoEngine>>, TError,{data: BodyType<CommandRequest>}, TContext> => {
 
 const mutationKey = ['askSeoEngine'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -989,7 +1063,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof askSeoEngine>>, {data: BodyType<AskSeoEngineBody>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof askSeoEngine>>, {data: BodyType<CommandRequest>}> = (props) => {
           const {data} = props ?? {};
 
           return  askSeoEngine(data,requestOptions)
@@ -1003,15 +1077,15 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type AskSeoEngineMutationResult = NonNullable<Awaited<ReturnType<typeof askSeoEngine>>>
-    export type AskSeoEngineMutationBody = BodyType<AskSeoEngineBody>
+    export type AskSeoEngineMutationBody = BodyType<CommandRequest>
     export type AskSeoEngineMutationError = ErrorType<unknown>
 
     export const useAskSeoEngine = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askSeoEngine>>, TError,{data: BodyType<AskSeoEngineBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askSeoEngine>>, TError,{data: BodyType<CommandRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof askSeoEngine>>,
         TError,
-        {data: BodyType<AskSeoEngineBody>},
+        {data: BodyType<CommandRequest>},
         TContext
       > => {
       return useMutation(getAskSeoEngineMutationOptions(options));

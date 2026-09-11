@@ -18,6 +18,8 @@ import { createDryRunProposal, invalidateDryRunProposal } from "./action-planner
 import { applyProposalQualityGate, evaluateProposalQuality } from "./proposal-quality.js";
 import { extractSemanticPageText } from "./proposal-content.js";
 import { buildSemanticPageProfile, type ShopifySemanticResource } from "./semantic-evidence.js";
+import { batchProcess } from "@workspace/integrations-openai-ai-server/batch";
+import { aiProposalGenerationEnabled, refineProposalWithAi } from "./ai-proposal-runtime.js";
 
 export const PILOT_LIMITS = {
   crawlPages: 30,
@@ -1113,10 +1115,36 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
         gscEvidenceId: candidate.queryId ? providerEvidence.get("gsc") : null,
       })] as const];
     }));
-    const preliminaryProposals = candidates.map((candidate) => ({
+    let preliminaryProposals = candidates.map((candidate) => ({
       generationKey: candidate.generationKey,
       proposal: createDryRunProposal(candidate, crawlPagesById.get(candidate.pageId), candidate.sourceEvidenceIds, semanticProfiles.get(candidate.generationKey)),
     }));
+    if (aiProposalGenerationEnabled()) {
+      preliminaryProposals = await batchProcess(preliminaryProposals, async (entry) => {
+        const candidate = candidates.find((item) => item.generationKey === entry.generationKey);
+        const page = candidate ? crawlPagesById.get(candidate.pageId) : undefined;
+        const profile = semanticProfiles.get(entry.generationKey);
+        if (!candidate || !page || !profile || entry.proposal.expectedOutcome.proposal.field !== "meta_description") return entry;
+        const refined = await refineProposalWithAi({
+          proposal: entry.proposal,
+          profile,
+          candidate,
+          page,
+          activeProposalValues: preliminaryProposals
+            .filter((item) => item.generationKey !== entry.generationKey)
+            .flatMap((item) => item.proposal.expectedOutcome.proposal.afterValue
+              ? [{ generationKey: item.generationKey, value: item.proposal.expectedOutcome.proposal.afterValue }]
+              : []),
+          evidence: {
+            crawl: page.evidenceId,
+            shopify: providerEvidence.get("shopify"),
+            gsc: candidate.queryId ? providerEvidence.get("gsc") : null,
+            opportunity: `ai-preflight:${candidate.generationKey}`,
+          },
+        });
+        return { ...entry, proposal: refined.proposal };
+      }, { concurrency: 2, retries: 5 });
+    }
     const currentProposalValues = preliminaryProposals
       .map(({ generationKey, proposal }) => ({ generationKey, value: proposal.expectedOutcome.proposal.afterValue ?? "" }))
       .filter((item) => item.value.length > 0);
@@ -1195,7 +1223,18 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
                 ${tx.json(impact)},${tx.json(effort)},${item.rationale},${sourceEvidenceIds}::uuid[])
               RETURNING id::text`;
         const opportunityId = opportunityRows[0]!.id;
-        const basePlan = createDryRunProposal(item, page, sourceEvidenceIds, semanticProfile);
+        const basePlan = {
+          ...(preliminaryProposals.find((entry) => entry.generationKey === item.generationKey)?.proposal
+            ?? createDryRunProposal(item, page, sourceEvidenceIds, semanticProfile)),
+        };
+        basePlan.expectedOutcome = {
+          ...basePlan.expectedOutcome,
+          proposal: {
+            ...basePlan.expectedOutcome.proposal,
+            supportingEvidenceIds: [...new Set(sourceEvidenceIds)].sort(),
+            evidenceSufficient: Boolean(basePlan.expectedOutcome.proposal.afterValue && page && sourceEvidenceIds.length >= 2),
+          },
+        };
         const qualityGate = evaluateProposalQuality({
           proposal: basePlan,
           candidate: item,
