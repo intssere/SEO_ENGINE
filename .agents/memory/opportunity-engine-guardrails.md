@@ -68,3 +68,9 @@ Meta-description planning uses a deterministic semantic page profile: exact-path
 **Why:** Clean crawl text can still be mostly product-card composition or keyword lists, while exact first-party metadata and structured page descriptions provide stronger supportable copy sources.
 
 **How to apply:** Persist profile provenance and confidence per run, mark only the selected copy source, reduce confidence for conflicts, and keep unsupported or insufficient profiles as null `insufficient_clean_evidence` drafts.
+
+Page identity comparison may resolve only narrow, path-specific presentation aliases; broad fuzzy matching is not allowed. Collection prose may be synthesized only from matching first-party catalog composition.
+
+**Why:** “Brands”/“All Brands” and “Scent Profiles”/“Find Your Scent Profile” are benign display variants, while generic fuzzy matching would hide real source conflicts. Catalog composition is safer than contaminated body text only when its terms are directly observed.
+
+**How to apply:** Canonicalize approved aliases for their known paths, retain true conflicts, exclude legal and site-chrome sentences, count corroboration by independent evidence records, and keep synthesis factual, bounded, deterministic, and fully attributed to Shopify evidence.

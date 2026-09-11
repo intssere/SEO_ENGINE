@@ -76,6 +76,7 @@ const semanticSource = (input: ProposalQualityInput) => {
     profile?.composition.productType,
     profile?.composition.vendor,
     ...(profile?.composition.tags ?? []),
+    ...(profile?.composition.categoryTypes ?? []),
   ].filter(Boolean).join(" ");
 };
 const check = (id: ProposalQualityCheckId, label: string, status: ProposalQualityCheckStatus, score: number, summary: string, evidenceIds: string[] = []): ProposalQualityCheck => ({

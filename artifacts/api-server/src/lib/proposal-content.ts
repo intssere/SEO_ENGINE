@@ -22,6 +22,7 @@ export const proposalBoilerplatePatterns = [
   /\bcategories\s+fragrance\s+beauty\s+bath\s*&\s*body\s+fragrance\s+hair\b/i,
   /\bdiscover\s+all\s+brands\s+scent\s+profiles\b/i,
   /\b(?:cookie settings|accept cookies|privacy policy|terms of service|manage preferences)\b/i,
+  /\b(?:all rights reserved|copyright|brand names and trademarks|trademarks? (?:are|is) the property|respective owners|refund policy|shipping policy|return policy|subscribe to (?:our )?newsletter)\b/i,
   /&(?:amp|nbsp|quot|apos|lt|gt|#\d+);/i,
 ] as const;
 
@@ -35,6 +36,8 @@ const chromeTerms = new Set([
 export const normalizeProposalText = (value: string | null | undefined) => (value ?? "")
   .replace(/&(?:amp|nbsp|quot|apos|lt|gt);|&#\d+;/gi, (entity) => entityMap[entity.toLowerCase()] ?? " ")
   .replace(/<[^>]*>/g, " ")
+  .replace(/\s+([,.;:!?])/g, "$1")
+  .replace(/([.!?])(?:\s*[.!?])+/g, "$1")
   .replace(/\s+/g, " ")
   .trim();
 
@@ -55,6 +58,7 @@ const stripTemplateText = (value: string) => value
   .replace(/\bcategories\s+fragrance\s+beauty\s+bath\s*&\s*body\s+fragrance\s+hair\b/gi, " ")
   .replace(/\bdiscover\s+all\s+brands\s+scent\s+profiles\b/gi, " ")
   .replace(/\b(?:cookie settings|accept cookies|privacy policy|terms of service|manage preferences)\b/gi, " ")
+  .replace(/\b(?:all rights reserved|copyright|brand names and trademarks|trademarks? (?:are|is) the property|respective owners|refund policy|shipping policy|return policy|subscribe to (?:our )?newsletter)\b/gi, " ")
   .replace(utilityLabels, " ");
 
 const dedupeAdjacentWords = (value: string) => value.replace(/\b([A-Za-z][A-Za-z'’-]*)\s+\1\b/gi, "$1");

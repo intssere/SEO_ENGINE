@@ -155,3 +155,81 @@ test("quality gate still blocks duplicates and preserves zero-write invariants",
   assert.equal(gated.expectedOutcome.publicSiteWrites, false);
   assert.equal(gated.expectedOutcome.automaticTransition, false);
 });
+
+test("benign Brands and All Brands identity aliases do not create a conflict", () => {
+  const brandsPage = { ...page, url: "https://diamondshelf.us/pages/brands", title: "Brands", h1: "All Brands", contentText: "" };
+  const profile = buildSemanticPageProfile({
+    page: brandsPage,
+    candidate: { ...candidate, pageId: brandsPage.pageId },
+    shopifyResources: [{ kind: "page", path: "/pages/brands", title: "Brands", description: null }],
+  });
+  assert.deepEqual(profile.conflicts, []);
+  assert.equal(profile.identity.selected, "Brands");
+});
+
+test("benign Scent Profiles identity alias normalizes punctuation and remains page-specific", () => {
+  const scentsPage = {
+    ...page,
+    url: "https://diamondshelf.us/pages/scents",
+    title: "Scent Profiles",
+    h1: "Find Your Scent Profile",
+    structuredData: [],
+    contentText: "Diamond Shelf groups the catalog into twelve shopper-friendly scent profiles while preserving each fragrance's detailed family on the product page..",
+  };
+  const profile = buildSemanticPageProfile({
+    page: scentsPage,
+    candidate: { ...candidate, pageId: scentsPage.pageId },
+    shopifyResources: [{ kind: "page", path: "/pages/scents", title: "Scent Profiles", description: null }],
+  });
+  const value = generateMetaDescriptionFromProfile(profile) ?? "";
+  assert.deepEqual(profile.conflicts, []);
+  assert.doesNotMatch(value, /\.\./);
+  assert.match(value, /^Scent Profiles\./);
+  assert.ok(profile.confidence >= 0.7);
+});
+
+test("Contact legal and trademark copy is excluded from candidates", () => {
+  const contactPage = {
+    ...page,
+    url: "https://diamondshelf.us/pages/contact",
+    title: "Contact",
+    h1: "Contact",
+    structuredData: [],
+    contentText: "Brand names and trademarks are the property of their respective owners. All rights reserved.",
+  };
+  const profile = buildSemanticPageProfile({
+    page: contactPage,
+    candidate: { ...candidate, pageId: contactPage.pageId },
+    shopifyResources: [{ kind: "page", path: "/pages/contact", title: "Contact", description: null }],
+  });
+  assert.deepEqual(profile.candidateSentences, []);
+  assert.equal(generateMetaDescriptionFromProfile(profile), null);
+});
+
+test("collection composition creates bounded factual copy from matching first-party product metadata", () => {
+  const collection = { ...shopifyCollection, description: null };
+  const products: ShopifySemanticResource[] = [
+    { kind: "product", path: "/products/body-lotion", title: "Daily Body Lotion", description: null, productType: "Body Lotion", tags: ["body care"] },
+    { kind: "product", path: "/products/body-scrub", title: "Body Scrub", description: null, productType: "Body Scrub", tags: ["body care"] },
+    { kind: "product", path: "/products/bath-soak", title: "Mineral Bath Soak", description: null, productType: "Bath Soak", tags: ["bath"] },
+  ];
+  const profile = buildSemanticPageProfile({ page, candidate, shopifyResources: [collection, ...products], shopifyEvidenceId: "shopify-1" });
+  const value = generateMetaDescriptionFromProfile(profile) ?? "";
+  assert.equal(profile.candidateSentences[0]?.source, "shopify_collection_composition");
+  assert.deepEqual(profile.composition.categoryTypes, ["Bath Soak", "Body Lotion", "Body Scrub"]);
+  assert.equal(profile.composition.matchedProducts, 3);
+  assert.match(value, /observed Shopify catalog/i);
+  assert.match(value, /[.!?]$/);
+  assert.doesNotMatch(value, /best|premium|guaranteed|free shipping/i);
+  const proposal = createDryRunProposal(candidate, page, ["crawl-1", "shopify-1", "semantic-1", "opportunity-1"], profile);
+  const gate = evaluateProposalQuality({
+    proposal,
+    candidate,
+    page,
+    activeProposalValues: [],
+    evidence: { crawl: "crawl-1", shopify: "shopify-1", opportunity: "opportunity-1" },
+  });
+  assert.equal(gate.status, "pass");
+  assert.equal(gate.approvalEligible, true);
+  assert.equal(profile.blockers.length, 0);
+});
