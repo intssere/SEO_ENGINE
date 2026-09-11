@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ProposalLifecycleStage } from './proposalLifecycleStage';
+import type { ProposalQualityCheck } from './proposalQualityCheck';
+import type { ProposalRecordDecision } from './proposalRecordDecision';
+import type { ProposalRecordQualityStatus } from './proposalRecordQualityStatus';
 
 export interface ProposalRecord {
   id: string;
@@ -14,6 +17,8 @@ export interface ProposalRecord {
   opportunity_type: string;
   /** @nullable */
   url: string | null;
+  /** @nullable */
+  path: string | null;
   /** @nullable */
   query: string | null;
   score: number;
@@ -38,5 +43,25 @@ export interface ProposalRecord {
   evidence_sufficient: boolean;
   bounded_pilot: boolean;
   whole_site_coverage: boolean;
+  quality_status: ProposalRecordQualityStatus;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  quality_score: number;
+  quality_approval_eligible: boolean;
+  quality_checks: ProposalQualityCheck[];
+  quality_blocking_reasons: string[];
+  quality_warnings: string[];
+  quality_evidence_ids: string[];
+  /** @nullable */
+  decision: ProposalRecordDecision;
+  /** @nullable */
+  decision_reason: string | null;
+  /** @nullable */
+  decided_by: string | null;
+  /** @nullable */
+  decided_at: string | null;
+  revision_requested: boolean;
   updated_at: string;
 }

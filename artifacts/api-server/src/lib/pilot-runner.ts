@@ -15,6 +15,7 @@ import {
   type TechnicalFindingSignal,
 } from "./opportunity-engine.js";
 import { createDryRunProposal, invalidateDryRunProposal } from "./action-planner.js";
+import { applyProposalQualityGate, evaluateProposalQuality } from "./proposal-quality.js";
 
 export const PILOT_LIMITS = {
   crawlPages: 30,
@@ -825,7 +826,7 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
     const technicalFindings = assessTechnicalFindingEvidence(technicalEvidenceRows);
     const certification = buildBaselineCertification({ readiness, crawl: observations.crawl, technicalFindings, gsc: observations.gsc });
 
-    const [crawlPageRows, gscSignalRows, technicalSignalRows, existingRows] = await Promise.all([
+    const [crawlPageRows, gscSignalRows, technicalSignalRows, existingRows, activeProposalRows, providerEvidenceRows] = await Promise.all([
       sql<Array<{ pageId: string; url: string; indexable: boolean; title: string | null; description: string | null; h1: string | null; contentText: string | null; links: unknown; evidenceId: string }>>`
         SELECT p.id::text AS "pageId",p.url,p.indexable,ps.title,ps.meta_description AS description,ps.h1,ps.content_text AS "contentText",ps.links,e.id::text AS "evidenceId"
         FROM evidence e
@@ -856,6 +857,21 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
         FROM opportunities
         WHERE site_id=${context.siteId}::uuid AND status IN ('new','accepted','planned')
           AND (impact_estimate->>'engine'='opportunity_engine_v1' OR opportunity_type='organic_ctr')`,
+      sql<Array<{ generationKey: string; value: string }>>`
+        SELECT o.impact_estimate->>'generationKey' AS "generationKey",
+          ap.expected_outcome->'proposal'->>'afterValue' AS value
+        FROM action_plans ap JOIN opportunities o ON o.id=ap.opportunity_id
+        WHERE ap.site_id=${context.siteId}::uuid AND ap.status='pending'
+          AND o.status IN ('new','accepted','planned')
+          AND o.impact_estimate->>'engine'='opportunity_engine_v1'
+          AND ap.expected_outcome->>'planner'='dry_run_action_planner_v1'
+          AND COALESCE(ap.expected_outcome->'proposal'->>'afterValue','')<>''`,
+      sql<Array<{ source: "shopify" | "gsc"; id: string }>>`
+        SELECT DISTINCT ON (source) source,id::text
+        FROM evidence
+        WHERE site_id=${context.siteId}::uuid
+          AND ((source='shopify' AND kind='catalog_baseline') OR (source='gsc' AND kind='performance_aggregate'))
+        ORDER BY source,observed_at DESC,created_at DESC`,
     ]);
 
     const crawlPages: CrawlPageSignal[] = crawlPageRows.map((row) => ({
@@ -886,6 +902,14 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       crawlPages,
       technicalFindings: technicalSignalRows,
     });
+    const preliminaryProposals = candidates.map((candidate) => ({
+      generationKey: candidate.generationKey,
+      proposal: createDryRunProposal(candidate, crawlPagesById.get(candidate.pageId), candidate.sourceEvidenceIds),
+    }));
+    const currentProposalValues = preliminaryProposals
+      .map(({ generationKey, proposal }) => ({ generationKey, value: proposal.expectedOutcome.proposal.afterValue ?? "" }))
+      .filter((item) => item.value.length > 0);
+    const providerEvidence = new Map(providerEvidenceRows.map((row) => [row.source, row.id]));
     const reconciliationResult = reconcileManagedOpportunities(existingRows, candidates);
 
     setStage("evaluate_persist_opportunity");
@@ -921,7 +945,12 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
             ${tx.json({ generationKey: item.generationKey, opportunityType: item.opportunityType, queryId: item.queryId, query: item.query, metrics: item.metrics, score: item.score, scoreComponents: item.scoreComponents, riskClassification: item.risk, whyQualified: item.rationale })},
             ${tx.json({ runId, evaluator: "opportunity_engine_v1", dimensionalGsc: item.queryId !== null, boundedCrawl: true, reconciliation })})
           RETURNING id::text`;
-        const sourceEvidenceIds = [...new Set([signalRows[0]!.id, ...item.sourceEvidenceIds])];
+        const page = crawlPagesById.get(item.pageId);
+        const relevantProviderEvidenceIds = [
+          item.queryId ? providerEvidence.get("gsc") : null,
+          /\/products?\//i.test(page?.url ?? "") ? providerEvidence.get("shopify") : null,
+        ].filter((value): value is string => Boolean(value));
+        const sourceEvidenceIds = [...new Set([signalRows[0]!.id, ...item.sourceEvidenceIds, ...relevantProviderEvidenceIds])];
         const impact = {
           engine: "opportunity_engine_v1",
           generationKey: item.generationKey,
@@ -949,12 +978,40 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
                 ${tx.json(impact)},${tx.json(effort)},${item.rationale},${sourceEvidenceIds}::uuid[])
               RETURNING id::text`;
         const opportunityId = opportunityRows[0]!.id;
-        const plan = createDryRunProposal(item, crawlPagesById.get(item.pageId), sourceEvidenceIds);
+        const basePlan = createDryRunProposal(item, page, sourceEvidenceIds);
+        const qualityGate = evaluateProposalQuality({
+          proposal: basePlan,
+          candidate: item,
+          page,
+          activeProposalValues: [
+            ...activeProposalRows.filter((proposal) => proposal.generationKey !== item.generationKey),
+            ...currentProposalValues,
+          ],
+          evidence: {
+            crawl: page?.evidenceId,
+            shopify: providerEvidence.get("shopify"),
+            gsc: providerEvidence.get("gsc"),
+            opportunity: signalRows[0]!.id,
+          },
+        });
+        const plan = applyProposalQualityGate(basePlan, qualityGate, item.generationKey);
+        const latestPlanRows = await tx<Array<{ id: string; status: string; expectedOutcome: Record<string, unknown> }>>`
+          SELECT id::text,status,expected_outcome AS "expectedOutcome"
+          FROM action_plans WHERE opportunity_id=${opportunityId}::uuid
+          ORDER BY created_at DESC LIMIT 1`;
+        const latestPlan = latestPlanRows[0];
+        const latestFingerprint = typeof latestPlan?.expectedOutcome?.proposalFingerprint === "string" ? latestPlan.expectedOutcome.proposalFingerprint : null;
+        const latestDecision = latestPlan?.expectedOutcome?.reviewDecision && typeof latestPlan.expectedOutcome.reviewDecision === "object"
+          ? latestPlan.expectedOutcome.reviewDecision as Record<string, unknown>
+          : null;
+        const explicitlyRequestedRevision = latestDecision?.decision === "rejected" && latestDecision.revisionRequested === true;
+        if (latestPlan && latestPlan.status !== "pending" && latestFingerprint === plan.expectedOutcome.proposalFingerprint && !explicitlyRequestedRevision) continue;
         setStage("evaluate_persist_action_plan");
         const updatedPlans = await tx<{ id: string }[]>`
           UPDATE action_plans SET status=${plan.status},risk_level=${plan.riskLevel},rationale=${plan.rationale},
             expected_outcome=${tx.json(plan.expectedOutcome)},updated_at=now()
           WHERE opportunity_id=${opportunityId}::uuid
+            AND status='pending'
             AND risk_level='blocked'
             AND COALESCE(expected_outcome->>'executionAuthorized','false')='false'
             AND COALESCE(expected_outcome->>'planner','dry_run_action_planner_v1')='dry_run_action_planner_v1'

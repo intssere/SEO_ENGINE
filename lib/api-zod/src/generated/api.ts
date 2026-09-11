@@ -337,6 +337,14 @@ export const ListOpportunitiesResponse = zod.object({
 })
 
 
+export const listActionsResponseRowsItemQualityScoreMin = 0;
+export const listActionsResponseRowsItemQualityScoreMax = 100;
+
+export const listActionsResponseRowsItemQualityChecksItemScoreMin = 0;
+export const listActionsResponseRowsItemQualityChecksItemScoreMax = 100;
+
+
+
 export const ListActionsResponse = zod.object({
   "readiness": zod.object({
 
@@ -347,6 +355,7 @@ export const ListActionsResponse = zod.object({
   "title": zod.string(),
   "opportunity_type": zod.string(),
   "url": zod.string().nullable(),
+  "path": zod.string().nullable(),
   "query": zod.string().nullable(),
   "score": zod.number(),
   "confidence": zod.number(),
@@ -368,9 +377,36 @@ export const ListActionsResponse = zod.object({
   "evidence_sufficient": zod.boolean(),
   "bounded_pilot": zod.boolean(),
   "whole_site_coverage": zod.boolean(),
+  "quality_status": zod.enum(['pass', 'warning', 'blocked']),
+  "quality_score": zod.number().int().min(listActionsResponseRowsItemQualityScoreMin).max(listActionsResponseRowsItemQualityScoreMax),
+  "quality_approval_eligible": zod.boolean(),
+  "quality_checks": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "status": zod.enum(['pass', 'warning', 'blocked']),
+  "score": zod.number().int().min(listActionsResponseRowsItemQualityChecksItemScoreMin).max(listActionsResponseRowsItemQualityChecksItemScoreMax),
+  "summary": zod.string(),
+  "evidenceIds": zod.array(zod.string())
+})),
+  "quality_blocking_reasons": zod.array(zod.string()),
+  "quality_warnings": zod.array(zod.string()),
+  "quality_evidence_ids": zod.array(zod.string()),
+  "decision": zod.union([zod.literal('approved'),zod.literal('rejected'),zod.literal(null)]).nullable(),
+  "decision_reason": zod.string().nullable(),
+  "decided_by": zod.string().nullable(),
+  "decided_at": zod.string().nullable(),
+  "revision_requested": zod.boolean(),
   "updated_at": zod.string()
 }))
 })
+
+
+export const listApprovalsResponseRowsItemQualityScoreMin = 0;
+export const listApprovalsResponseRowsItemQualityScoreMax = 100;
+
+export const listApprovalsResponseRowsItemQualityChecksItemScoreMin = 0;
+export const listApprovalsResponseRowsItemQualityChecksItemScoreMax = 100;
+
 
 
 export const ListApprovalsResponse = zod.object({
@@ -383,6 +419,7 @@ export const ListApprovalsResponse = zod.object({
   "title": zod.string(),
   "opportunity_type": zod.string(),
   "url": zod.string().nullable(),
+  "path": zod.string().nullable(),
   "query": zod.string().nullable(),
   "score": zod.number(),
   "confidence": zod.number(),
@@ -404,8 +441,56 @@ export const ListApprovalsResponse = zod.object({
   "evidence_sufficient": zod.boolean(),
   "bounded_pilot": zod.boolean(),
   "whole_site_coverage": zod.boolean(),
+  "quality_status": zod.enum(['pass', 'warning', 'blocked']),
+  "quality_score": zod.number().int().min(listApprovalsResponseRowsItemQualityScoreMin).max(listApprovalsResponseRowsItemQualityScoreMax),
+  "quality_approval_eligible": zod.boolean(),
+  "quality_checks": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "status": zod.enum(['pass', 'warning', 'blocked']),
+  "score": zod.number().int().min(listApprovalsResponseRowsItemQualityChecksItemScoreMin).max(listApprovalsResponseRowsItemQualityChecksItemScoreMax),
+  "summary": zod.string(),
+  "evidenceIds": zod.array(zod.string())
+})),
+  "quality_blocking_reasons": zod.array(zod.string()),
+  "quality_warnings": zod.array(zod.string()),
+  "quality_evidence_ids": zod.array(zod.string()),
+  "decision": zod.union([zod.literal('approved'),zod.literal('rejected'),zod.literal(null)]).nullable(),
+  "decision_reason": zod.string().nullable(),
+  "decided_by": zod.string().nullable(),
+  "decided_at": zod.string().nullable(),
+  "revision_requested": zod.boolean(),
   "updated_at": zod.string()
 }))
+})
+
+
+export const DecideApprovalParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const decideApprovalBodyReasonMax = 500;
+
+export const decideApprovalBodyRequestRevisionDefault = false;
+
+export const DecideApprovalBody = zod.object({
+  "decision": zod.enum(['approved', 'rejected']),
+  "confirmation": zod.string(),
+  "reason": zod.string().max(decideApprovalBodyReasonMax).nullish(),
+  "requestRevision": zod.boolean().default(decideApprovalBodyRequestRevisionDefault)
+})
+
+export const DecideApprovalResponse = zod.object({
+  "id": zod.string(),
+  "action_plan_id": zod.string(),
+  "decision": zod.enum(['approved', 'rejected']),
+  "lifecycle": zod.enum(['approved_proposal', 'draft_dry_run']),
+  "actor_id": zod.string(),
+  "reason": zod.string().nullable(),
+  "decided_at": zod.string(),
+  "revision_requested": zod.boolean(),
+  "execution_authorized": zod.literal(false),
+  "public_site_writes": zod.literal(false)
 })
 
 

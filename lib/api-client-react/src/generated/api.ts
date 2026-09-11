@@ -20,9 +20,14 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ApprovalDecisionRequest,
+  ApprovalDecisionResponse,
   AskSeoEngine200,
   AskSeoEngineBody,
   DashboardSnapshot,
+  DecideApproval400,
+  DecideApproval403,
+  DecideApproval409,
   GetDashboardParams,
   GetPerformanceParams,
   GetPilotAuthorization200,
@@ -738,6 +743,72 @@ export function useListApprovals<TData = Awaited<ReturnType<typeof listApprovals
 
 
 
+
+export const getDecideApprovalUrl = (id: string,) => {
+
+
+
+
+  return `/api/approvals/${id}/decision`
+}
+
+export const decideApproval = async (id: string,
+    approvalDecisionRequest: ApprovalDecisionRequest, options?: Parameters<typeof customFetch>[1]): Promise<ApprovalDecisionResponse> => {
+
+  return customFetch<ApprovalDecisionResponse>(getDecideApprovalUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(approvalDecisionRequest)
+  }
+);}
+
+
+
+
+
+export const getDecideApprovalMutationOptions = <TError = ErrorType<DecideApproval400 | DecideApproval403 | DecideApproval409>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof decideApproval>>, TError,{id: string;data: BodyType<ApprovalDecisionRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof decideApproval>>, TError,{id: string;data: BodyType<ApprovalDecisionRequest>}, TContext> => {
+
+const mutationKey = ['decideApproval'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof decideApproval>>, {id: string;data: BodyType<ApprovalDecisionRequest>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  decideApproval(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DecideApprovalMutationResult = NonNullable<Awaited<ReturnType<typeof decideApproval>>>
+    export type DecideApprovalMutationBody = BodyType<ApprovalDecisionRequest>
+    export type DecideApprovalMutationError = ErrorType<DecideApproval400 | DecideApproval403 | DecideApproval409>
+
+    export const useDecideApproval = <TError = ErrorType<DecideApproval400 | DecideApproval403 | DecideApproval409>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof decideApproval>>, TError,{id: string;data: BodyType<ApprovalDecisionRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof decideApproval>>,
+        TError,
+        {id: string;data: BodyType<ApprovalDecisionRequest>},
+        TContext
+      > => {
+      return useMutation(getDecideApprovalMutationOptions(options));
+    }
 
 export const getListDeploymentsUrl = () => {
 

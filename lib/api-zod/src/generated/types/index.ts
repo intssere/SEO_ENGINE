@@ -6,6 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './approvalDecisionRequest';
+export * from './approvalDecisionRequestDecision';
+export * from './approvalDecisionResponse';
+export * from './approvalDecisionResponseDecision';
+export * from './approvalDecisionResponseLifecycle';
 export * from './askSeoEngine200';
 export * from './askSeoEngineBody';
 export * from './baselineCertification';
@@ -35,6 +40,9 @@ export * from './dashboardSnapshotPilotReadiness';
 export * from './dashboardSnapshotPilotStatus';
 export * from './dashboardSnapshotState';
 export * from './dashboardSnapshotVerification';
+export * from './decideApproval400';
+export * from './decideApproval403';
+export * from './decideApproval409';
 export * from './getDashboardDays';
 export * from './getDashboardDevice';
 export * from './getDashboardParams';
@@ -67,6 +75,10 @@ export * from './pilotRunStatus';
 export * from './pilotRunStatusReadiness';
 export * from './pilotRunStatusStatus';
 export * from './proposalLifecycleStage';
+export * from './proposalQualityCheck';
+export * from './proposalQualityCheckStatus';
 export * from './proposalRecord';
+export * from './proposalRecordDecision';
+export * from './proposalRecordQualityStatus';
 export * from './proposalResponse';
 export * from './proposalResponseReadiness';

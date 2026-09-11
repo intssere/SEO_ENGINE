@@ -43,4 +43,10 @@ Dry-run planning is evidence-bound and has a separate lifecycle: `draft_dry_run`
 
 **Why:** A concrete proposed change must be reviewable without becoming an implicit approval or public-site execution path.
 
-**How to apply:** Persist current/before and proposed/after values, page identity, supporting evidence IDs, expected benefit, risk, and deterministic rollback instructions in the blocked plan. If source opportunity evidence becomes stale or ineligible, invalidate the plan while retaining its audit metadata. Require a separately designed human authorization flow before any later lifecycle advance.
+**How to apply:** Persist current/before and proposed/after values, page identity, supporting evidence IDs, expected benefit, risk, and deterministic rollback instructions in the blocked plan. If source opportunity evidence becomes stale or ineligible, invalidate the plan while retaining its audit metadata.
+
+Human approval is a per-proposal audit decision, not execution authorization. A deterministic quality gate must pass before `approval_ready`; approval and rejection both preserve `executionAuthorized=false` and `publicSiteWrites=false`.
+
+**Why:** Human review must not create an action row or silently authorize public-site changes, and rejected proposals must remain auditable rather than being overwritten by an unchanged rerun.
+
+**How to apply:** Require exact same-origin confirmation for one proposal at a time. Preserve actor, reason, timestamp, quality result, and evidence fingerprint. Regenerate a decided proposal only when evidence changes or rejection explicitly requests revision.

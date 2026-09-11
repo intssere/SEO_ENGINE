@@ -1,5 +1,7 @@
 import { Router, type IRouter } from "express";
-import { answerOperationalQuestion, getRuntimeReadiness, loadOperationalList, loadOpportunities, loadPerformance, parsePerformanceFilters } from "../lib/operational-data";
+import { DecideApprovalBody, DecideApprovalResponse } from "@workspace/api-zod";
+import { isSameOriginRequest } from "../lib/pilot-authorization";
+import { answerOperationalQuestion, decideProposalReview, getRuntimeReadiness, loadOperationalList, loadOpportunities, loadPerformance, parsePerformanceFilters, ProposalDecisionError } from "../lib/operational-data";
 
 const router: IRouter = Router();
 for (const section of ["ai-visibility", "learning", "impact", "verification", "policies"]) {
@@ -18,6 +20,18 @@ for (const kind of listKinds) {
     return res.json({ readiness: data.readiness, row });
   });
 }
+router.post("/approvals/:id/decision", async (req, res) => {
+  if (!isSameOriginRequest(req.get("origin"), req.get("host"))) return res.status(403).json({ error: "same_origin_review_required" });
+  const body = DecideApprovalBody.safeParse(req.body);
+  if (!body.success) return res.status(400).json({ error: "invalid_approval_decision" });
+  const actorId = req.get("x-replit-user-id") ?? req.get("x-replit-user-name") ?? "same_origin_reviewer";
+  try {
+    return res.json(DecideApprovalResponse.parse(await decideProposalReview(req.params.id, body.data, actorId)));
+  } catch (error) {
+    if (error instanceof ProposalDecisionError) return res.status(error.status).json({ error: error.category });
+    return res.status(500).json({ error: "approval_decision_failed" });
+  }
+});
 router.get("/performance", async (req, res) => res.json(await loadPerformance(parsePerformanceFilters(req.query))));
 router.post("/command", async (req, res) => {
   if (typeof req.body?.question !== "string" || req.body.question.trim().length < 2 || req.body.question.length > 500) return res.status(400).json({ answer: "Enter a short operational SEO question." });

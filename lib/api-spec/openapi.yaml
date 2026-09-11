@@ -111,6 +111,21 @@ paths:
     get: { operationId: listActions, responses: { "200": { description: Read-only dry-run action proposals, content: { application/json: { schema: { $ref: "#/components/schemas/ProposalResponse" } } } } } }
   /approvals:
     get: { operationId: listApprovals, responses: { "200": { description: Approval-ready dry-run proposals, content: { application/json: { schema: { $ref: "#/components/schemas/ProposalResponse" } } } } } }
+  /approvals/{id}/decision:
+    post:
+      operationId: decideApproval
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApprovalDecisionRequest" }
+      responses:
+        "200": { description: Audited non-executable proposal decision, content: { application/json: { schema: { $ref: "#/components/schemas/ApprovalDecisionResponse" } } } }
+        "400": { description: Explicit confirmation or reason required, content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } } }
+        "403": { description: Same-origin review required, content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } } }
+        "409": { description: "Quality blocked, stale, unsafe, or already decided proposal", content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } } }
   /deployments:
     get: { operationId: listDeployments, responses: { "200": { description: Deployments, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
   /technical-seo:
@@ -143,13 +158,14 @@ components:
       enum: [draft_dry_run, approval_ready, approved_proposal, executable_action, executed_change, verified_result, invalidated]
     ProposalRecord:
       type: object
-      required: [id, opportunity_id, title, opportunity_type, url, query, score, confidence, risk_classification, lifecycle, plan_status, dry_run, execution_authorized, public_site_writes, action_type, field, before_value, after_value, rationale, expected_benefit, rollback, evidence_ids, evidence_count, evidence_sufficient, bounded_pilot, whole_site_coverage, updated_at]
+      required: [id, opportunity_id, title, opportunity_type, url, path, query, score, confidence, risk_classification, lifecycle, plan_status, dry_run, execution_authorized, public_site_writes, action_type, field, before_value, after_value, rationale, expected_benefit, rollback, evidence_ids, evidence_count, evidence_sufficient, bounded_pilot, whole_site_coverage, quality_status, quality_score, quality_approval_eligible, quality_checks, quality_blocking_reasons, quality_warnings, quality_evidence_ids, decision, decision_reason, decided_by, decided_at, revision_requested, updated_at]
       properties:
         id: { type: string }
         opportunity_id: { type: string }
         title: { type: string }
         opportunity_type: { type: string }
         url: { type: [string, "null"] }
+        path: { type: [string, "null"] }
         query: { type: [string, "null"] }
         score: { type: number }
         confidence: { type: number }
@@ -171,7 +187,53 @@ components:
         evidence_sufficient: { type: boolean }
         bounded_pilot: { type: boolean }
         whole_site_coverage: { type: boolean }
+        quality_status: { type: string, enum: [pass, warning, blocked] }
+        quality_score: { type: integer, minimum: 0, maximum: 100 }
+        quality_approval_eligible: { type: boolean }
+        quality_checks:
+          type: array
+          items: { $ref: "#/components/schemas/ProposalQualityCheck" }
+        quality_blocking_reasons: { type: array, items: { type: string } }
+        quality_warnings: { type: array, items: { type: string } }
+        quality_evidence_ids: { type: array, items: { type: string } }
+        decision: { type: [string, "null"], enum: [approved, rejected, null] }
+        decision_reason: { type: [string, "null"] }
+        decided_by: { type: [string, "null"] }
+        decided_at: { type: [string, "null"] }
+        revision_requested: { type: boolean }
         updated_at: { type: string }
+    ProposalQualityCheck:
+      type: object
+      required: [id, label, status, score, summary, evidenceIds]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        status: { type: string, enum: [pass, warning, blocked] }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        summary: { type: string }
+        evidenceIds: { type: array, items: { type: string } }
+    ApprovalDecisionRequest:
+      type: object
+      required: [decision, confirmation]
+      properties:
+        decision: { type: string, enum: [approved, rejected] }
+        confirmation: { type: string }
+        reason: { type: [string, "null"], maxLength: 500 }
+        requestRevision: { type: boolean, default: false }
+    ApprovalDecisionResponse:
+      type: object
+      required: [id, action_plan_id, decision, lifecycle, actor_id, reason, decided_at, revision_requested, execution_authorized, public_site_writes]
+      properties:
+        id: { type: string }
+        action_plan_id: { type: string }
+        decision: { type: string, enum: [approved, rejected] }
+        lifecycle: { type: string, enum: [approved_proposal, draft_dry_run] }
+        actor_id: { type: string }
+        reason: { type: [string, "null"] }
+        decided_at: { type: string }
+        revision_requested: { type: boolean }
+        execution_authorized: { type: boolean, enum: [false] }
+        public_site_writes: { type: boolean, enum: [false] }
     ProposalResponse:
       type: object
       required: [readiness, rows]

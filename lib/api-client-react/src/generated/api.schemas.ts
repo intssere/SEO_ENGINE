@@ -31,6 +31,48 @@ export const ProposalLifecycleStage = {
   invalidated: 'invalidated',
 } as const;
 
+export type ProposalRecordQualityStatus = typeof ProposalRecordQualityStatus[keyof typeof ProposalRecordQualityStatus];
+
+
+export const ProposalRecordQualityStatus = {
+  pass: 'pass',
+  warning: 'warning',
+  blocked: 'blocked',
+} as const;
+
+/**
+ * @nullable
+ */
+export type ProposalRecordDecision = typeof ProposalRecordDecision[keyof typeof ProposalRecordDecision] | null;
+
+
+export const ProposalRecordDecision = {
+  approved: 'approved',
+  rejected: 'rejected',
+} as const;
+
+export type ProposalQualityCheckStatus = typeof ProposalQualityCheckStatus[keyof typeof ProposalQualityCheckStatus];
+
+
+export const ProposalQualityCheckStatus = {
+  pass: 'pass',
+  warning: 'warning',
+  blocked: 'blocked',
+} as const;
+
+export interface ProposalQualityCheck {
+  id: string;
+  label: string;
+  status: ProposalQualityCheckStatus;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  score: number;
+  summary: string;
+  evidenceIds: string[];
+}
+
 export interface ProposalRecord {
   id: string;
   opportunity_id: string;
@@ -38,6 +80,8 @@ export interface ProposalRecord {
   opportunity_type: string;
   /** @nullable */
   url: string | null;
+  /** @nullable */
+  path: string | null;
   /** @nullable */
   query: string | null;
   score: number;
@@ -62,7 +106,76 @@ export interface ProposalRecord {
   evidence_sufficient: boolean;
   bounded_pilot: boolean;
   whole_site_coverage: boolean;
+  quality_status: ProposalRecordQualityStatus;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  quality_score: number;
+  quality_approval_eligible: boolean;
+  quality_checks: ProposalQualityCheck[];
+  quality_blocking_reasons: string[];
+  quality_warnings: string[];
+  quality_evidence_ids: string[];
+  /** @nullable */
+  decision: ProposalRecordDecision;
+  /** @nullable */
+  decision_reason: string | null;
+  /** @nullable */
+  decided_by: string | null;
+  /** @nullable */
+  decided_at: string | null;
+  revision_requested: boolean;
   updated_at: string;
+}
+
+export type ApprovalDecisionRequestDecision = typeof ApprovalDecisionRequestDecision[keyof typeof ApprovalDecisionRequestDecision];
+
+
+export const ApprovalDecisionRequestDecision = {
+  approved: 'approved',
+  rejected: 'rejected',
+} as const;
+
+export interface ApprovalDecisionRequest {
+  decision: ApprovalDecisionRequestDecision;
+  confirmation: string;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  reason?: string | null;
+  requestRevision?: boolean;
+}
+
+export type ApprovalDecisionResponseDecision = typeof ApprovalDecisionResponseDecision[keyof typeof ApprovalDecisionResponseDecision];
+
+
+export const ApprovalDecisionResponseDecision = {
+  approved: 'approved',
+  rejected: 'rejected',
+} as const;
+
+export type ApprovalDecisionResponseLifecycle = typeof ApprovalDecisionResponseLifecycle[keyof typeof ApprovalDecisionResponseLifecycle];
+
+
+export const ApprovalDecisionResponseLifecycle = {
+  approved_proposal: 'approved_proposal',
+  draft_dry_run: 'draft_dry_run',
+} as const;
+
+export interface ApprovalDecisionResponse {
+  id: string;
+  action_plan_id: string;
+  decision: ApprovalDecisionResponseDecision;
+  lifecycle: ApprovalDecisionResponseLifecycle;
+  actor_id: string;
+  /** @nullable */
+  reason: string | null;
+  decided_at: string;
+  revision_requested: boolean;
+  execution_authorized: false;
+  public_site_writes: false;
 }
 
 export type ProposalResponseReadiness = { [key: string]: unknown };
@@ -550,6 +663,18 @@ export const GetPerformanceDevice = {
   mobile: 'mobile',
   tablet: 'tablet',
 } as const;
+
+export type DecideApproval400 = {
+  error?: string;
+};
+
+export type DecideApproval403 = {
+  error?: string;
+};
+
+export type DecideApproval409 = {
+  error?: string;
+};
 
 export type AskSeoEngineBody = {
   question: string;
