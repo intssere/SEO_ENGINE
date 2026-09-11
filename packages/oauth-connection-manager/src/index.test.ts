@@ -64,6 +64,25 @@ test("token exchanges normalize Shopify and Google credentials without logging s
   assert.doesNotMatch(JSON.stringify(sanitizedConnectionMetadata("google", google)), /google-secret|refresh-secret/);
 });
 
+test("Google token exchange accepts a successful response without a new refresh token", async () => {
+  const state = createOAuthState("google", { now });
+  const googleFetch = async () => new Response(JSON.stringify({
+    access_token: "short-lived-access",
+    expires_in: 3600,
+    scope: GOOGLE_READ_SCOPES.join(" "),
+    token_type: "Bearer",
+  }), { status: 200 });
+  const google = await exchangeGoogleCode(
+    { clientId: "id", clientSecret: "secret", redirectUri: "https://x/cb" },
+    "code",
+    state,
+    googleFetch as typeof fetch,
+    now,
+  );
+  assert.equal(google.refreshToken, null);
+  assert.equal(sanitizedConnectionMetadata("google", google).hasRefreshToken, false);
+});
+
 test("Google refresh preserves refresh token", async () => {
   const fetchImpl = async () => new Response(JSON.stringify({ access_token: "new-access", expires_in: 1800, token_type: "Bearer" }), { status: 200 });
   const refreshed = await refreshGoogleAccessToken({ clientId: "id", clientSecret: "secret", redirectUri: "https://x/cb" }, "refresh-secret", fetchImpl as typeof fetch, now);
@@ -72,7 +91,7 @@ test("Google refresh preserves refresh token", async () => {
 });
 
 test("Google property discovery and Diamond Shelf auto-match are deterministic", async () => {
-  const fetchImpl = async (input: URL | RequestInfo) => {
+  const fetchImpl = async (input: URL | Request | string) => {
     const url = String(input);
     if (url.includes("webmasters")) return new Response(JSON.stringify({ siteEntry: [{ siteUrl: "https://diamondshelf.us/", permissionLevel: "siteOwner" }] }), { status: 200 });
     return new Response(JSON.stringify({ accountSummaries: [{ account: "accounts/1", propertySummaries: [{ property: "properties/123456", displayName: "Diamond Shelf" }] }] }), { status: 200 });
@@ -82,6 +101,21 @@ test("Google property discovery and Diamond Shelf auto-match are deterministic",
   assert.equal(matched.gscSiteUrl, "https://diamondshelf.us/");
   assert.equal(matched.ga4PropertyId, "123456");
   assert.equal(matched.needsConfirmation, false);
+  assert.equal(resources.searchConsoleStatus.ok, true);
+  assert.equal(resources.ga4Status.ok, true);
+});
+
+test("Google discovery returns sanitized partial-failure status without discarding successful resources", async () => {
+  const fetchImpl = async (input: URL | Request | string) => {
+    const url = String(input);
+    if (url.includes("webmasters")) return new Response(JSON.stringify({ siteEntry: [{ siteUrl: "https://diamondshelf.us/" }] }), { status: 200 });
+    return new Response(JSON.stringify({ error: { message: "sensitive provider detail" } }), { status: 403 });
+  };
+  const resources = await discoverGoogleResources("access-token", fetchImpl as typeof fetch);
+  assert.equal(resources.searchConsoleProperties.length, 1);
+  assert.equal(resources.ga4Properties.length, 0);
+  assert.deepEqual(resources.ga4Status, { ok: false, httpStatus: 403, category: "provider_error" });
+  assert.doesNotMatch(JSON.stringify(resources), /sensitive provider detail/);
 });
 
 test("AES-GCM credential envelope round-trips and keeps raw tokens out of metadata", () => {
@@ -91,4 +125,17 @@ test("AES-GCM credential envelope round-trips and keeps raw tokens out of metada
   assert.doesNotMatch(JSON.stringify(encrypted), /access-secret|refresh-secret/);
   assert.deepEqual(decryptTokenBundle(encrypted, key), bundle);
   assert.throws(() => decryptTokenBundle(encrypted, Buffer.alloc(32, 8).toString("base64")));
+});
+
+test("AES-GCM accepts a strong non-Base64 passphrase", () => {
+  const secret = "a-strong-oauth-credential-secret-with-32-plus-characters";
+  const bundle = {
+    accessToken: "access",
+    refreshToken: "refresh",
+    expiresAt: null,
+    scopes: ["read_products"],
+    tokenType: "Bearer",
+  };
+  const encrypted = encryptTokenBundle(bundle, secret);
+  assert.deepEqual(decryptTokenBundle(encrypted, secret), bundle);
 });

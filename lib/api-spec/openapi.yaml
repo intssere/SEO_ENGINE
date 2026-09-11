@@ -1,0 +1,618 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Load the SEO operations dashboard
+      parameters:
+        - { name: days, in: query, schema: { type: integer, enum: [7, 28, 90] } }
+        - { name: country, in: query, schema: { type: string } }
+        - { name: device, in: query, schema: { type: string, enum: [all, desktop, mobile, tablet] } }
+      responses:
+        "200":
+          description: Current dashboard snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSnapshot"
+  /pilot/authorization:
+    get:
+      operationId: getPilotAuthorization
+      tags: [dashboard]
+      summary: Issue a short-lived same-origin pilot action capability
+      responses:
+        "200":
+          description: Short-lived authorization capability
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [authorization]
+                properties:
+                  authorization: { type: string }
+  /pilot/status:
+    get:
+      operationId: getPilotStatus
+      tags: [dashboard]
+      summary: Load sanitized pilot run status
+      responses:
+        "200":
+          description: Current pilot run status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PilotRunStatus"
+  /pilot/run:
+    post:
+      operationId: startPilotRun
+      tags: [dashboard]
+      summary: Queue a guarded read-only Diamond Shelf pilot run
+      parameters:
+        - name: x-pilot-authorization
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        "202":
+          description: Pilot run queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PilotRunRequest"
+        "409":
+          description: A pilot run is already queued or running
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PilotRunRequest"
+        "412":
+          description: Pilot preflight failed closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PilotRunRequest"
+  /performance:
+    get:
+      operationId: getPerformance
+      parameters:
+        - { name: days, in: query, schema: { type: integer, enum: [7, 28, 90] } }
+        - { name: country, in: query, schema: { type: string } }
+        - { name: device, in: query, schema: { type: string, enum: [all, desktop, mobile, tablet] } }
+      responses:
+        "200": { description: Performance data, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } }
+  /opportunities:
+    get: { operationId: listOpportunities, responses: { "200": { description: Active and historical evidence-backed opportunities, content: { application/json: { schema: { $ref: "#/components/schemas/OpportunityResponse" } } } } } }
+  /actions:
+    get: { operationId: listActions, responses: { "200": { description: Read-only dry-run action proposals, content: { application/json: { schema: { $ref: "#/components/schemas/ProposalResponse" } } } } } }
+  /approvals:
+    get: { operationId: listApprovals, responses: { "200": { description: Approval-ready dry-run proposals, content: { application/json: { schema: { $ref: "#/components/schemas/ProposalResponse" } } } } } }
+  /approvals/{id}/decision:
+    post:
+      operationId: decideApproval
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApprovalDecisionRequest" }
+      responses:
+        "200": { description: Audited non-executable proposal decision, content: { application/json: { schema: { $ref: "#/components/schemas/ApprovalDecisionResponse" } } } }
+        "400": { description: Explicit confirmation or reason required, content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } } }
+        "403": { description: Same-origin review required, content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } } }
+        "409": { description: "Quality blocked, stale, unsafe, or already decided proposal", content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } } }
+  /approvals/{id}/draft:
+    patch:
+      operationId: editApprovalDraft
+      summary: "Save or reset a non-executable proposal draft"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApprovalDraftUpdate" }
+      responses:
+        "200":
+          description: Updated proposal draft and deterministic quality result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApprovalDraftResponse" }
+        "400": { description: Invalid draft request }
+        "403": { description: Same-origin review request required }
+        "409": { description: "Stale, decided, invalidated, unsafe, or quality-invalid proposal" }
+  /deployments:
+    get: { operationId: listDeployments, responses: { "200": { description: Deployments, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+  /technical-seo:
+    get: { operationId: listTechnicalFindings, responses: { "200": { description: Findings, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+  /command:
+    post:
+      operationId: askSeoEngine
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/CommandRequest" } } }
+      responses:
+        "200": { description: Read-only answer, content: { application/json: { schema: { type: object, properties: { answer: { type: string } } } } } }
+components:
+  schemas:
+    CommandRequest:
+      type: object
+      required: [question]
+      properties:
+        question: { type: string }
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    OperationalResponse:
+      type: object
+      properties:
+        readiness: { type: object }
+        rows: { type: array, items: { type: object, additionalProperties: true } }
+      required: [readiness, rows]
+    ProposalLifecycleStage:
+      type: string
+      enum: [draft_dry_run, approval_ready, approved_proposal, executable_action, executed_change, verified_result, invalidated]
+    ProposalRecord:
+      type: object
+      required: [id, opportunity_id, title, opportunity_type, url, path, query, score, confidence, risk_classification, lifecycle, plan_status, dry_run, execution_authorized, public_site_writes, action_type, field, before_value, after_value, rationale, expected_benefit, rollback, evidence_ids, evidence_count, evidence_sufficient, bounded_pilot, whole_site_coverage, quality_status, quality_score, quality_approval_eligible, quality_checks, quality_blocking_reasons, quality_warnings, quality_evidence_ids, decision, decision_reason, decided_by, decided_at, revision_requested, updated_at]
+      properties:
+        id: { type: string }
+        opportunity_id: { type: string }
+        title: { type: string }
+        opportunity_type: { type: string }
+        url: { type: [string, "null"] }
+        path: { type: [string, "null"] }
+        query: { type: [string, "null"] }
+        score: { type: number }
+        confidence: { type: number }
+        risk_classification: { type: string }
+        lifecycle: { $ref: "#/components/schemas/ProposalLifecycleStage" }
+        plan_status: { type: string }
+        dry_run: { type: boolean }
+        execution_authorized: { type: boolean }
+        public_site_writes: { type: boolean }
+        action_type: { type: string }
+        field: { type: string }
+        before_value: { type: [string, "null"] }
+        after_value: { type: [string, "null"] }
+        generated_value: { type: [string, "null"] }
+        human_edited: { type: boolean }
+        revision_count: { type: integer }
+        revisions: { type: array, items: { type: object, additionalProperties: true } }
+        draft_revision_token: { type: [string, "null"] }
+        proposal_fingerprint: { type: [string, "null"] }
+        proposal_generation_method: { type: string, enum: [deterministic, ai_generated, ai_refined] }
+        ai_assisted: { type: boolean }
+        ai_generation_audit: { type: [object, "null"], additionalProperties: true }
+        semantic_provenance: { type: array, items: { type: object, additionalProperties: true } }
+        rationale: { type: string }
+        expected_benefit: { type: string }
+        rollback: { type: string }
+        evidence_ids: { type: array, items: { type: string } }
+        evidence_count: { type: integer }
+        evidence_sufficient: { type: boolean }
+        bounded_pilot: { type: boolean }
+        whole_site_coverage: { type: boolean }
+        quality_status: { type: string, enum: [pass, warning, blocked] }
+        quality_score: { type: integer, minimum: 0, maximum: 100 }
+        quality_approval_eligible: { type: boolean }
+        quality_checks:
+          type: array
+          items: { $ref: "#/components/schemas/ProposalQualityCheck" }
+        quality_blocking_reasons: { type: array, items: { type: string } }
+        quality_warnings: { type: array, items: { type: string } }
+        quality_evidence_ids: { type: array, items: { type: string } }
+        decision: { type: [string, "null"], enum: [approved, rejected, null] }
+        decision_reason: { type: [string, "null"] }
+        decided_by: { type: [string, "null"] }
+        decided_at: { type: [string, "null"] }
+        revision_requested: { type: boolean }
+        updated_at: { type: string }
+    ProposalQualityCheck:
+      type: object
+      required: [id, label, status, score, summary, evidenceIds]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        status: { type: string, enum: [pass, warning, blocked] }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        summary: { type: string }
+        evidenceIds: { type: array, items: { type: string } }
+    ApprovalDecisionRequest:
+      type: object
+      required: [decision, confirmation]
+      properties:
+        decision: { type: string, enum: [approved, rejected] }
+        confirmation: { type: string }
+        reason: { type: [string, "null"], maxLength: 500 }
+        requestRevision: { type: boolean, default: false }
+    ApprovalDecisionResponse:
+      type: object
+      required: [id, action_plan_id, decision, lifecycle, actor_id, reason, decided_at, revision_requested, execution_authorized, public_site_writes]
+      properties:
+        id: { type: string }
+        action_plan_id: { type: string }
+        decision: { type: string, enum: [approved, rejected] }
+        lifecycle: { type: string, enum: [approved_proposal, draft_dry_run] }
+        actor_id: { type: string }
+        reason: { type: [string, "null"] }
+        decided_at: { type: string }
+        revision_requested: { type: boolean }
+        execution_authorized: { type: boolean, enum: [false] }
+        public_site_writes: { type: boolean, enum: [false] }
+    ApprovalDraftUpdate:
+      type: object
+      required: [mode, revisionToken, fingerprint, confirmation]
+      properties:
+        mode: { type: string, enum: [save, reset] }
+        value: { type: [string, "null"], maxLength: 1000 }
+        revisionToken: { type: string, minLength: 1, maxLength: 128 }
+        fingerprint: { type: string, minLength: 1, maxLength: 128 }
+        confirmation: { type: string, minLength: 1, maxLength: 300 }
+    ApprovalDraftResponse:
+      type: object
+      required: [id, mode, value, originalValue, revisionToken, fingerprint, humanEdited, revisions, qualityGate, executionAuthorized, publicSiteWrites, automaticTransition]
+      properties:
+        id: { type: string }
+        mode: { type: string, enum: [save, reset] }
+        value: { type: string }
+        originalValue: { type: string }
+        revisionToken: { type: string }
+        fingerprint: { type: string }
+        humanEdited: { type: boolean }
+        revisions: { type: array, items: { type: object, additionalProperties: true } }
+        qualityGate: { type: object, additionalProperties: true }
+        executionAuthorized: { type: boolean, enum: [false] }
+        publicSiteWrites: { type: boolean, enum: [false] }
+        automaticTransition: { type: boolean, enum: [false] }
+    ProposalResponse:
+      type: object
+      required: [readiness, rows]
+      properties:
+        readiness: { type: object }
+        rows: { type: array, items: { $ref: "#/components/schemas/ProposalRecord" } }
+    OpportunityRecord:
+      type: object
+      required: [id, title, opportunity_type, score, status, rationale, evidence_count, url, query, risk_classification, confidence, score_components, why_qualifies, recommendation, execution_authorized, lifecycle, updated_at]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        opportunity_type: { type: string, enum: [organic_ctr, striking_distance, technical_remediation, internal_link, content_alignment] }
+        score: { type: number }
+        status: { type: string, enum: [new, accepted, dismissed, planned, completed] }
+        rationale: { type: string }
+        evidence_count: { type: integer }
+        url: { type: [string, "null"] }
+        query: { type: [string, "null"] }
+        risk_classification: { type: string, enum: [low, medium, high, unclassified] }
+        confidence: { type: number }
+        score_components: { type: object, additionalProperties: true }
+        why_qualifies: { type: string }
+        recommendation: { type: string }
+        execution_authorized: { type: boolean }
+        lifecycle: { type: string, enum: [active, invalidated_or_superseded] }
+        updated_at: { type: string }
+    OpportunityResponse:
+      type: object
+      required: [readiness, rows, history]
+      properties:
+        readiness: { type: object }
+        rows:
+          type: array
+          items: { $ref: "#/components/schemas/OpportunityRecord" }
+        history:
+          type: array
+          items: { $ref: "#/components/schemas/OpportunityRecord" }
+    PilotCounts:
+      type: object
+      required: [products, catalogProducts, productsObserved, shopifyComplete, gscRows, gscDetailedRows, ga4Rows, pages, findings, opportunities]
+      properties:
+        products: { type: integer }
+        catalogProducts: { type: integer }
+        productsObserved: { type: integer }
+        shopifyComplete: { type: boolean }
+        gscRows: { type: integer }
+        gscDetailedRows: { type: integer }
+        ga4Rows: { type: integer }
+        pages: { type: integer }
+        findings: { type: integer }
+        opportunities: { type: integer }
+    PilotProviderDiagnostic:
+      type: object
+      required: [status, category, httpStatus]
+      properties:
+        status:
+          type: string
+          enum: [available, empty, failed]
+        category: { type: [string, "null"] }
+        httpStatus: { type: [integer, "null"] }
+    PilotDiagnostics:
+      type: object
+      required: [shopify, gsc, gscAggregate, ga4, crawl]
+      properties:
+        shopify: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+        gsc: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+        gscAggregate: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+        ga4: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+        crawl: { $ref: "#/components/schemas/PilotProviderDiagnostic" }
+    GscAggregateMetrics:
+      type: object
+      required: [clicks, impressions, ctr, position]
+      properties:
+        clicks: { type: number }
+        impressions: { type: number }
+        ctr: { type: number }
+        position: { type: [number, "null"] }
+    GscReconciliation:
+      type: object
+      required: [status, detailedClicks, detailedImpressions, clickCoverage, impressionCoverage]
+      properties:
+        status:
+          type: string
+          enum: [consistent, partial_dimensional, inconsistent, aggregate_unavailable]
+        detailedClicks: { type: number }
+        detailedImpressions: { type: number }
+        clickCoverage: { type: [number, "null"] }
+        impressionCoverage: { type: [number, "null"] }
+    BaselineCertification:
+      type: object
+      required: [status, wholeSiteCertified, wholeSiteReason, crawlCoverage, technicalFindings, gscAggregate]
+      properties:
+        status:
+          type: string
+          enum: [pilot_ready, partial]
+        wholeSiteCertified: { type: boolean }
+        wholeSiteReason:
+          type: string
+          enum: [bounded_crawl]
+        crawlCoverage:
+          type: object
+          required: [fetched, discovered, percent, boundedLimit, truncated]
+          properties:
+            fetched: { type: integer }
+            discovered: { type: integer }
+            percent: { type: number }
+            boundedLimit: { type: integer }
+            truncated: { type: boolean }
+        technicalFindings:
+          type: object
+          required: [total, withValidEvidence, valid]
+          properties:
+            total: { type: integer }
+            withValidEvidence: { type: integer }
+            valid: { type: boolean }
+        gscAggregate:
+          type: object
+          required: [status, metrics, reconciliation]
+          properties:
+            status:
+              type: string
+              enum: [available, failed]
+            metrics:
+              oneOf:
+                - $ref: "#/components/schemas/GscAggregateMetrics"
+                - type: "null"
+            reconciliation:
+              $ref: "#/components/schemas/GscReconciliation"
+    DashboardCertification:
+      type: object
+      required: [status, wholeSiteCertified, wholeSiteReason, crawlCoverage, technicalFindings, gscAggregate]
+      properties:
+        status:
+          type: string
+          enum: [not_evaluated, pilot_ready, partial]
+        wholeSiteCertified: { type: boolean }
+        wholeSiteReason: { type: [string, "null"] }
+        crawlCoverage:
+          type: object
+          required: [fetched, discovered, percent, boundedLimit, truncated]
+          properties:
+            fetched: { type: integer }
+            discovered: { type: integer }
+            percent: { type: number }
+            boundedLimit: { type: integer }
+            truncated: { type: boolean }
+        technicalFindings:
+          type: object
+          required: [total, withValidEvidence, valid]
+          properties:
+            total: { type: integer }
+            withValidEvidence: { type: integer }
+            valid: { type: boolean }
+        gscAggregate:
+          type: object
+          required: [status, metrics, reconciliation]
+          properties:
+            status:
+              type: string
+              enum: [not_evaluated, available, failed]
+            metrics:
+              oneOf:
+                - $ref: "#/components/schemas/GscAggregateMetrics"
+                - type: "null"
+            reconciliation:
+              $ref: "#/components/schemas/GscReconciliation"
+    PilotRunStatus:
+      type: object
+      required: [runId, status, phase, readiness, freshness, blockers, counts, diagnostics, certification, error]
+      properties:
+        runId: { type: [string, "null"] }
+        status:
+          type: string
+          enum: [not_started, queued, running, completed, partial, failed]
+        phase: { type: string }
+        readiness:
+          type: string
+          enum: [not_evaluated, ready, partial]
+        freshness: { type: [string, "null"] }
+        blockers:
+          type: array
+          items: { type: string }
+        counts:
+          $ref: "#/components/schemas/PilotCounts"
+        diagnostics:
+          $ref: "#/components/schemas/PilotDiagnostics"
+        certification:
+          oneOf:
+            - $ref: "#/components/schemas/BaselineCertification"
+            - type: "null"
+        error: { type: [string, "null"] }
+    PilotRunRequest:
+      type: object
+      required: [accepted, runId, status, error]
+      properties:
+        accepted: { type: boolean }
+        runId: { type: [string, "null"] }
+        status:
+          type: string
+          enum: [queued, running, failed]
+        error: { type: [string, "null"] }
+    DashboardMetric:
+      type: object
+      required: [label, value, delta]
+      properties:
+        label: { type: string }
+        value: { type: string }
+        delta: { type: string }
+    DashboardOpportunity:
+      type: object
+      required: [title, page, score, evidence, risk, state]
+      properties:
+        title: { type: string }
+        page: { type: string }
+        score: { type: string }
+        evidence: { type: string }
+        risk: { type: string }
+        state: { type: string }
+    DashboardActivity:
+      type: object
+      required: [title, detail, result, tone]
+      properties:
+        title: { type: string }
+        detail: { type: string }
+        result: { type: string }
+        tone:
+          type: string
+          enum: [verified, ready, approval, normal]
+    DashboardSnapshot:
+      type: object
+      required: [state, reason, siteName, domain, generatedAt, dataFreshness, stale, approvalsPending, metrics, engine, opportunities, activity, verification, aiVisibility, learning, impact, pilot]
+      properties:
+        state:
+          type: string
+          enum: [live, unavailable]
+        reason:
+          type: [string, "null"]
+        siteName: { type: string }
+        domain: { type: string }
+        generatedAt: { type: string }
+        dataFreshness: { type: string }
+        stale: { type: boolean }
+        approvalsPending: { type: integer }
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardMetric"
+        engine:
+          type: object
+          required: [pagesAnalyzed, activeCandidatesRefreshed, dryRunPlansPrepared, executableActionsPrepared, opportunities, actionsPrepared, executed, verified, regressions]
+          properties:
+            pagesAnalyzed: { type: integer }
+            activeCandidatesRefreshed: { type: integer }
+            dryRunPlansPrepared: { type: integer }
+            executableActionsPrepared: { type: integer }
+            opportunities: { type: integer }
+            actionsPrepared: { type: integer }
+            executed: { type: integer }
+            verified: { type: integer }
+            regressions: { type: integer }
+        opportunities:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardOpportunity"
+        activity:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardActivity"
+        verification:
+          type: object
+          required: [verified, total, pending, rolledBack, regressions]
+          properties:
+            verified: { type: integer }
+            total: { type: integer }
+            pending: { type: integer }
+            rolledBack: { type: integer }
+            regressions: { type: integer }
+        aiVisibility:
+          type: object
+          required: [citationRate, brandMentionRate, citationShare]
+          properties:
+            citationRate: { type: string }
+            brandMentionRate: { type: string }
+            citationShare: { type: string }
+        learning:
+          type: object
+          required: [signalCount, averageConfidence]
+          properties:
+            signalCount: { type: integer }
+            averageConfidence: { type: string }
+        impact:
+          type: object
+          required: [verifiedOptimizations, completedExperiments, rollbacks, regressionsDetected]
+          properties:
+            verifiedOptimizations: { type: integer }
+            completedExperiments: { type: integer }
+            rollbacks: { type: integer }
+            regressionsDetected: { type: integer }
+        pilot:
+          type: object
+          required: [status, readiness, phase, freshness, blockers, counts, diagnostics, certification]
+          properties:
+            status:
+              type: string
+              enum: [not_started, queued, running, completed, partial, failed]
+            readiness:
+              type: string
+              enum: [not_evaluated, ready, partial]
+            phase: { type: string }
+            freshness:
+              type: [string, "null"]
+            blockers:
+              type: array
+              items: { type: string }
+            counts:
+              $ref: "#/components/schemas/PilotCounts"
+            diagnostics:
+              $ref: "#/components/schemas/PilotDiagnostics"
+            certification:
+              $ref: "#/components/schemas/DashboardCertification"
+

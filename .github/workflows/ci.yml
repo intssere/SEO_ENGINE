@@ -12,7 +12,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:17-alpine
@@ -29,6 +29,7 @@ jobs:
           --health-retries 10
     env:
       PGPASSWORD: postgres
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,100 +54,19 @@ jobs:
 
       - name: Validate PostgreSQL schema
         run: |
-          psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f packages/db/migrations/0001_core.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'" | grep -q '^29$'
 
       - name: Test runtime database bootstrap
         env:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
         run: |
-          pnpm --filter @seo-engine/db test
+          pnpm --filter @workspace/db test:bootstrap
           pnpm db:bootstrap
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT domain FROM sites WHERE domain='diamondshelf.us' AND is_active=true" | grep -q '^diamondshelf.us$'
 
-      - name: Test Shopify read-only safety contract
-        run: pnpm --filter @seo-engine/shopify test
-
-      - name: Test crawler extraction and URL normalization
-        run: pnpm --filter @seo-engine/crawler test
-
-      - name: Test Google read-only ingestion normalization
-        run: pnpm --filter @seo-engine/google-ingestion test
-
-      - name: Test provider-neutral OpenSEO adapter
-        run: pnpm --filter @seo-engine/seo-data test
-
-      - name: Test canonical evidence normalization
-        run: pnpm --filter @seo-engine/evidence-normalizer test
-
-      - name: Test deterministic technical SEO findings
-        run: pnpm --filter @seo-engine/technical-seo test
-
-      - name: Test ranking accelerator opportunities
-        run: pnpm --filter @seo-engine/ranking-accelerator test
-
-      - name: Test unified opportunity engine
-        run: pnpm --filter @seo-engine/opportunity-engine test
-
-      - name: Test internal-link intelligence
-        run: pnpm --filter @seo-engine/internal-link-intelligence test
-
-      - name: Test GEO and AI visibility normalization
-        run: pnpm --filter @seo-engine/ai-visibility test
-
-      - name: Test search intelligence policy normalization
-        run: pnpm --filter @seo-engine/search-intelligence test
-
-      - name: Test action planner and safety engine
-        run: pnpm --filter @seo-engine/action-planner test
-
-      - name: Test Shopify write connector safety gates
-        run: pnpm --filter @seo-engine/shopify-write test
-
-      - name: Test verification and rollback safety contract
-        run: pnpm --filter @seo-engine/verification-rollback test
-
-      - name: Test deterministic experiment engine
-        run: pnpm --filter @seo-engine/experiment-engine test
-
-      - name: Test bounded learning engine
-        run: pnpm --filter @seo-engine/learning-engine test
-
-      - name: Test Diamond Shelf read-only connection gates
-        run: pnpm --filter @seo-engine/pilot-connections test
-
-      - name: Test Diamond Shelf full baseline gate
-        run: pnpm --filter @seo-engine/pilot-baseline test
-
-      - name: Test first real opportunity run gate
-        run: pnpm --filter @seo-engine/pilot-opportunity-run test
-
-      - name: Test dry-run autonomous SEO gate
-        run: pnpm --filter @seo-engine/pilot-dry-run test
-
-      - name: Test first controlled production optimization gate
-        run: pnpm --filter @seo-engine/pilot-controlled-optimization test
-
-      - name: Test controlled experiment measurement gate
-        run: pnpm --filter @seo-engine/pilot-measurement test
-
-      - name: Test guarded autonomy pilot gate
-        run: pnpm --filter @seo-engine/pilot-guarded-autonomy test
-
-      - name: Test V1 production certification gate
-        run: pnpm --filter @seo-engine/pilot-production-certification test
-
-      - name: Test secure runtime read-only activation probes
-        run: pnpm --filter @seo-engine/pilot-live-activation test
-
-      - name: Test live baseline run orchestrator
-        run: pnpm --filter @seo-engine/pilot-live-baseline test
-
-      - name: Test OAuth connection manager
-        run: pnpm --filter @seo-engine/oauth-connection-manager test
-
-      - name: Test OAuth live activation readiness
-        run: pnpm --filter @seo-engine/pilot-oauth-activation test
+      - name: Test all current workspace packages
+        run: pnpm -r --if-present test
 
       - name: Typecheck
         run: pnpm typecheck

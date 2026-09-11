@@ -1,0 +1,88 @@
+---
+name: Opportunity engine guardrails
+description: Durable eligibility, confidence, lifecycle, and action-planning rules for evidence-backed SEO opportunities.
+---
+
+Property-level GSC aggregates establish that the reporting context is valid, but detailed query/page rows drive opportunity discovery. CTR and ranking opportunities must use non-overlapping position ranges so weak rankings are never mislabeled as snippet problems.
+
+**Why:** Property aggregates cannot identify an affected query or page, and low CTR at weak average rank is normally a ranking issue rather than a defensible snippet-optimization opportunity.
+
+**How to apply:** Require a pilot-ready aggregate context and non-inconsistent reconciliation, then classify query/page signals by guarded position, impression, and evidence thresholds. Attach page-level crawl evidence and a derived opportunity-signal record to every accepted candidate.
+
+Opportunity confidence must remain below whole-site confidence when the crawl is bounded, and partial dimensional reconciliation must reduce confidence further.
+
+**Why:** A 30-page crawl and incomplete dimensional GSC export cannot establish whole-site coverage even when the sampled evidence is internally valid.
+
+**How to apply:** Persist the crawl coverage and reconciliation state with every score, and apply deterministic confidence penalties before prioritization.
+
+Managed candidates that no longer qualify must be dismissed as superseded history, not left in the active queue. Recommendations are blocked dry-run plans with execution authorization and public-site writes explicitly false.
+
+**Why:** Persisted candidates become misleading when the latest evidence changes, and recommendation generation must never create an implicit execution path.
+
+**How to apply:** Reconcile candidates by stable generation key on every baseline run, show only active managed rows in current counts, retain dismissed rows separately for audit history, and store plans with blocked risk.
+
+The dashboard's recent-opportunity activity is a count of active managed rows updated in the last 24 hours, not strictly newly inserted rows. “Actions prepared” counts executable action rows, not blocked dry-run action plans.
+
+**Why:** A rerun can update an existing candidate and make the activity label “candidates created” misleading, while valid persisted recommendation plans can coexist with zero executable actions.
+
+**How to apply:** Interpret the activity number as recently refreshed active candidates, and query action plans separately when confirming dry-run recommendation persistence.
+
+Crawler technical observations currently identify their page through `payload.pageId` while their direct evidence `page_id` can be null; the derived opportunity signal has the direct page association.
+
+**Why:** Production evidence remains traceable through the finding and payload, but direct evidence-table joins alone undercount page-aligned crawler observations.
+
+**How to apply:** Validate technical evidence using the finding's page, the primary evidence ID, the observation payload page ID, and run provenance together.
+
+Organic-remediation eligibility is fail-closed for every opportunity class: a page must be explicitly indexable and must not be an authentication, redirect, utility, account, cart, checkout, search-result, or other transactional path.
+
+**Why:** Valid crawl evidence can still describe a page that should never receive organic SEO remediation, such as a customer-authentication redirect.
+
+**How to apply:** Filter the current crawl-page set before generating query, content, internal-link, or technical candidates. Let normal generation-key reconciliation dismiss previously active ineligible rows while preserving their evidence and history.
+
+Dry-run planning is evidence-bound and has a separate lifecycle: `draft_dry_run`, `approval_ready`, `approved_proposal`, `executable_action`, `executed_change`, `verified_result`, and `invalidated`. This planner may advance only to `approval_ready`.
+
+**Why:** A concrete proposed change must be reviewable without becoming an implicit approval or public-site execution path.
+
+**How to apply:** Persist current/before and proposed/after values, page identity, supporting evidence IDs, expected benefit, risk, and deterministic rollback instructions in the blocked plan. If source opportunity evidence becomes stale or ineligible, invalidate the plan while retaining its audit metadata.
+
+Human approval is a per-proposal audit decision, not execution authorization. A deterministic quality gate must pass before `approval_ready`; approval and rejection both preserve `executionAuthorized=false` and `publicSiteWrites=false`.
+
+**Why:** Human review must not create an action row or silently authorize public-site changes, and rejected proposals must remain auditable rather than being overwritten by an unchanged rerun.
+
+**How to apply:** Require exact same-origin confirmation for one proposal at a time. Preserve actor, reason, timestamp, quality result, and evidence fingerprint. Regenerate a decided proposal only when evidence changes or rejection explicitly requests revision.
+
+Meta-description quality must reject raw crawl prefixes and template text even when length, uniqueness, and keyword overlap appear valid. Clean source evidence before generation, and require a complete page-specific body sentence beyond title/H1 identity.
+
+**Why:** A production run produced distinct 154–155 character values that scored 100 while containing navigation and promotional chrome such as “Skip to content,” shipping banners, checkout labels, and HTML entities.
+
+**How to apply:** Decode entities in source evidence, strip known header/footer/navigation/utility patterns, and hard-block any output that still contains those patterns, truncation artifacts, raw contaminated prefixes, generic filler, or unsupported claims. If meaningful body evidence is absent after cleaning, persist a blocked draft rather than inventing text.
+
+Meta-description generation must prioritize semantic page regions and page identity; GSC query text is supporting evidence only and must never supply proposal copy.
+
+**Why:** Removing a few known banner strings still left a repeated site-menu fragment that looked unique only because each value began with a different page title.
+
+**How to apply:** Extract `<main>` or `<article>` after excluding header, nav, footer, aside, forms, scripts, and styles. Require a complete natural sentence with page-identity overlap and enough non-chrome terms. Otherwise store `afterValue=null` with `insufficient_clean_evidence`.
+
+Meta-description planning uses a deterministic semantic page profile: exact-path first-party Shopify metadata, structured data, semantic body content, headings/anchors, then GSC as non-copy context. Identity conflicts must fail closed.
+
+**Why:** Clean crawl text can still be mostly product-card composition or keyword lists, while exact first-party metadata and structured page descriptions provide stronger supportable copy sources.
+
+**How to apply:** Persist profile provenance and confidence per run, mark only the selected copy source, reduce confidence for conflicts, and keep unsupported or insufficient profiles as null `insufficient_clean_evidence` drafts.
+
+Page identity comparison may resolve only narrow, path-specific presentation aliases; broad fuzzy matching is not allowed. Collection prose may be synthesized only from matching first-party catalog composition.
+
+**Why:** “Brands”/“All Brands” and “Scent Profiles”/“Find Your Scent Profile” are benign display variants, while generic fuzzy matching would hide real source conflicts. Catalog composition is safer than contaminated body text only when its terms are directly observed.
+
+**How to apply:** Canonicalize approved aliases for their known paths, retain true conflicts, exclude legal and site-chrome sentences, count corroboration by independent evidence records, and keep synthesis factual, bounded, deterministic, and fully attributed to Shopify evidence.
+
+Collection composition requires a direct, exact-resource membership certification with complete bounded cardinality; global catalog term matching and an unproven matched-product count are never membership evidence. Meta descriptions must close at a sentence or safe clause boundary.
+
+**Why:** Broad title/tag matching made narrow collections appear to contain most of the catalog, and hard character truncation produced dangling endings that passed other quality checks.
+
+**How to apply:** Persist the collection endpoint, path, explicit expected/observed counts, coverage, cardinality validity, completeness, truncation, broadness decision, and evidence ID as one provenance-bound certification. Recompute its internal consistency independently in both generation and the final quality gate. An explicit null expected count is allowed when unavailable; a missing field is not. Reject incomplete, mismatched, suspicious, or path-unbound membership and any snippet ending in a dangling article, preposition, conjunction, or malformed phrase.
+
+AI can refine metadata only from a certified semantic profile, and deterministic gates remain authoritative. Manual edits are review drafts with immutable originals and revisions, never execution instructions.
+
+**Why:** Generated language and reviewer edits can introduce unsupported claims or implementation wording even when the underlying evidence is valid; draft editing must not weaken stale-state or zero-write controls.
+
+**How to apply:** Keep AI opt-in, bound its evidence packet, audit every attempt, and fail closed without replacing a valid deterministic candidate on AI failure. Save/reset drafts only with same-origin confirmation plus current plan and draft fingerprints, rerun full quality checks, and preserve `executionAuthorized=false`, `publicSiteWrites=false`, and `automaticTransition=false`.

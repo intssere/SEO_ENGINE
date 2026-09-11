@@ -1,0 +1,7 @@
+- [OAuth secret validation](oauth-secret-validation.md) — readiness checks and encryption key derivation must accept the same secret formats.
+- [OAuth resource selection](oauth-resource-selection.md) — confirm provider resources against persisted discovery results, not assumed identifier formats.
+- [Internal pilot execution](internal-pilot-execution.md) — in-app runs require signed same-origin authorization and a database-backed single-run lock.
+- [Provider completeness checks](provider-completeness-checks.md) — discovery/count success alone cannot establish GA4 access or Shopify catalog completeness.
+- [GSC baseline certification](gsc-baseline-certification.md) — headline KPIs require property aggregates; bounded crawl can certify a pilot, never the whole site.
+- [Opportunity engine guardrails](opportunity-engine-guardrails.md) — query/page evidence drives candidates; stale rows become history and plans remain blocked dry runs.
+- [Collection copy diversity](collection-copy-diversity.md) — vary certified composition copy deterministically and gate structural similarity separately from lexical overlap.
