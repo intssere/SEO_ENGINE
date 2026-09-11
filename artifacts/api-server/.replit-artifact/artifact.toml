@@ -15,7 +15,9 @@ run = "pnpm --filter @workspace/api-server run dev"
 [services.production]
 
 [services.production.build]
-args = ["pnpm", "--filter", "@workspace/api-server", "run", "build"]
+# build:production rebuilds dist from source and fails closed if the Task #51
+# execution foundation is missing from the generated production bundle.
+args = ["pnpm", "--filter", "@workspace/api-server", "run", "build:production"]
 
 [services.production.build.env]
 NODE_ENV = "production"
