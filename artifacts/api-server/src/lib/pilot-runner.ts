@@ -17,6 +17,7 @@ import {
 import { createDryRunProposal, invalidateDryRunProposal } from "./action-planner.js";
 import { applyProposalQualityGate, evaluateProposalQuality } from "./proposal-quality.js";
 import { extractSemanticPageText } from "./proposal-content.js";
+import { buildSemanticPageProfile, type ShopifySemanticResource } from "./semantic-evidence.js";
 
 export const PILOT_LIMITS = {
   crawlPages: 30,
@@ -37,7 +38,7 @@ export type CrawlLimits = {
 
 export type Outcome<T> = { ok: true; data: T } | { ok: false; category: string; httpStatus: number | null };
 export type ProviderDiagnostic = { status: "available" | "empty" | "failed"; category: string | null; httpStatus: number | null };
-export type ShopifyObservation = { storeVerified: boolean; productCount: number; productsObserved: number; variantCount: number; inventoryQuantity: number | null; truncated: boolean; complete: boolean };
+export type ShopifyObservation = { storeVerified: boolean; productCount: number; productsObserved: number; variantCount: number; inventoryQuantity: number | null; truncated: boolean; complete: boolean; semanticResources?: ShopifySemanticResource[] };
 export type GscAggregateMetrics = { clicks: number; impressions: number; ctr: number; position: number | null };
 export type GscReconciliation = {
   status: "consistent" | "partial_dimensional" | "inconsistent" | "aggregate_unavailable";
@@ -54,7 +55,7 @@ export type GscObservation = {
   endDate: string;
 };
 export type Ga4Observation = { rows: Array<{ date: string; sessions: number; users: number; pageViews: number }>; startDate: string; endDate: string };
-export type CrawlPage = { url: string; path: string; statusCode: number; title: string | null; description: string | null; canonical: string | null; robots: string | null; h1: string | null; contentHash: string; contentText: string; links: string[] };
+export type CrawlPage = { url: string; path: string; statusCode: number; title: string | null; description: string | null; canonical: string | null; robots: string | null; h1: string | null; contentHash: string; contentText: string; links: string[]; headings: string[]; structuredData: unknown[]; internalAnchors: Array<{ text: string; href: string }> };
 export type CrawlObservation = { pages: CrawlPage[]; discovered: number; fetched: number; blockedByRobots: number; truncated: boolean };
 export type BaselineCertification = {
   status: "pilot_ready" | "partial";
@@ -278,6 +279,22 @@ function htmlValue(html: string, pattern: RegExp): string | null {
   return value || null;
 }
 
+function htmlText(value: string) {
+  return value.replace(/<[^>]+>/g, " ").replace(/&amp;/gi, "&").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
+}
+
+function extractStructuredData(html: string): unknown[] {
+  return [...html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)]
+    .slice(0, 20)
+    .flatMap((match) => {
+      try {
+        return [JSON.parse(match[1]!.trim()) as unknown];
+      } catch {
+        return [];
+      }
+    });
+}
+
 async function boundedText(response: Response, maxBytes: number): Promise<string> {
   if (!response.body) return "";
   const reader = response.body.getReader();
@@ -335,10 +352,21 @@ export async function crawlSite(seedOrigin: string, fetchImpl: typeof fetch = fe
       if (!contentType.includes("text/html")) continue;
       const html = await boundedText(response, limits.responseBytes);
       const actualUrl = normalizeCrawlUrl(response.url || next.url, next.url) ?? next.url;
-      const links = [...html.matchAll(/<a\b[^>]*\bhref=["']([^"'#]+)["']/gi)]
+      const anchorMatches = [...html.matchAll(/<a\b[^>]*\bhref=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)];
+      const links = anchorMatches
         .map((match) => normalizeCrawlUrl(match[1]!, actualUrl))
         .filter((value): value is string => Boolean(value));
       const uniqueLinks = [...new Set(links)].slice(0, 200);
+      const internalAnchors = anchorMatches.flatMap((match) => {
+        const href = normalizeCrawlUrl(match[1]!, actualUrl);
+        const text = htmlText(match[2] ?? "");
+        return href && text ? [{ text, href }] : [];
+      }).slice(0, 200);
+      const headings = [...html.matchAll(/<h[2-6]\b[^>]*>([\s\S]*?)<\/h[2-6]>/gi)]
+        .map((match) => htmlText(match[1] ?? ""))
+        .filter(Boolean)
+        .slice(0, 100);
+      const structuredData = extractStructuredData(html);
       const contentText = extractSemanticPageText(html);
       pages.push({
         url: actualUrl,
@@ -352,6 +380,9 @@ export async function crawlSite(seedOrigin: string, fetchImpl: typeof fetch = fe
         contentHash: createHash("sha256").update(html).digest("hex"),
         contentText,
         links: uniqueLinks,
+        headings,
+        structuredData,
+        internalAnchors,
       });
       if (next.depth < limits.crawlDepth) for (const link of uniqueLinks) if (!seen.has(link)) queue.push({ url: link, depth: next.depth + 1 });
     } catch {}
@@ -417,7 +448,15 @@ async function requestJson<T>(provider: Exclude<ReadOnlyProvider, "google_token"
   }
 }
 
-type ShopifyProduct = { id?: number; variants?: Array<{ inventory_quantity?: number }> };
+type ShopifyProduct = {
+  id?: number;
+  title?: string;
+  handle?: string;
+  product_type?: string | null;
+  vendor?: string | null;
+  tags?: string;
+  variants?: Array<{ inventory_quantity?: number }>;
+};
 
 function nextShopifyLink(value: string | null): string | null {
   if (!value) return null;
@@ -438,12 +477,13 @@ export async function paginateShopifyCatalog(options: {
   const fetchImpl = options.fetchImpl ?? fetch;
   const limit = Math.max(0, Math.floor(options.limit ?? PILOT_LIMITS.shopifyProducts));
   let url: string | null = limit > 0
-    ? `${options.base}/products.json?limit=${Math.min(250, limit)}&fields=id,variants`
+    ? `${options.base}/products.json?limit=${Math.min(250, limit)}&fields=id,title,handle,product_type,vendor,tags,variants`
     : null;
   let productsObserved = 0;
   let variantCount = 0;
   let inventoryQuantity = 0;
   let inventoryAvailable = true;
+  const semanticResources: ShopifySemanticResource[] = [];
   let exhausted = limit === 0;
   const seen = new Set<string>();
   while (url && productsObserved < limit && !seen.has(url)) {
@@ -461,6 +501,17 @@ export async function paginateShopifyCatalog(options: {
       const products = (data.products ?? []).slice(0, remaining);
       productsObserved += products.length;
       for (const product of products) {
+        if (product.handle && product.title) {
+          semanticResources.push({
+            kind: "product",
+            path: `/products/${product.handle}`,
+            title: product.title,
+            description: null,
+            productType: product.product_type ?? null,
+            vendor: product.vendor ?? null,
+            tags: typeof product.tags === "string" ? product.tags.split(",").map((tag) => tag.trim()).filter(Boolean).slice(0, 20) : [],
+          });
+        }
         for (const variant of product.variants ?? []) {
           variantCount++;
           if (typeof variant.inventory_quantity === "number") inventoryQuantity += variant.inventory_quantity;
@@ -485,7 +536,37 @@ export async function paginateShopifyCatalog(options: {
     }
   }
   const complete = exhausted && productsObserved >= options.productCount;
-  return { ok: true, data: { productsObserved, variantCount, inventoryQuantity: inventoryAvailable ? inventoryQuantity : null, truncated: !complete, complete } };
+  return { ok: true, data: { productsObserved, variantCount, inventoryQuantity: inventoryAvailable ? inventoryQuantity : null, truncated: !complete, complete, semanticResources } };
+}
+
+async function readShopifyContentResources(base: string, accessToken: string): Promise<ShopifySemanticResource[]> {
+  type Collection = { handle?: string; title?: string; body_html?: string | null; products_count?: number };
+  type Page = { handle?: string; title?: string; body_html?: string | null };
+  const [custom, smart, pages] = await Promise.all([
+    requestJson<{ custom_collections?: Collection[] }>("shopify", `${base}/custom_collections.json?limit=250&fields=handle,title,body_html,products_count`, "GET", accessToken),
+    requestJson<{ smart_collections?: Collection[] }>("shopify", `${base}/smart_collections.json?limit=250&fields=handle,title,body_html,products_count`, "GET", accessToken),
+    requestJson<{ pages?: Page[] }>("shopify", `${base}/pages.json?limit=250&fields=handle,title,body_html`, "GET", accessToken),
+  ]);
+  const collections = [
+    ...(custom.ok ? custom.data.custom_collections ?? [] : []),
+    ...(smart.ok ? smart.data.smart_collections ?? [] : []),
+  ];
+  const resources: ShopifySemanticResource[] = [
+    ...collections.flatMap((item) => item.handle && item.title ? [{
+      kind: "collection" as const,
+      path: `/collections/${item.handle}`,
+      title: item.title,
+      description: item.body_html ? htmlText(item.body_html).slice(0, 4_000) : null,
+      productCount: typeof item.products_count === "number" ? item.products_count : null,
+    }] : []),
+    ...(pages.ok ? pages.data.pages ?? [] : []).flatMap((item) => item.handle && item.title ? [{
+      kind: "page" as const,
+      path: `/pages/${item.handle}`,
+      title: item.title,
+      description: item.body_html ? htmlText(item.body_html).slice(0, 4_000) : null,
+    }] : []),
+  ];
+  return resources.sort((a, b) => a.path.localeCompare(b.path) || a.kind.localeCompare(b.kind));
 }
 
 export function isSelectedGa4PropertyDiscovered(metadata: Record<string, unknown>, propertyId: string): boolean {
@@ -673,12 +754,17 @@ async function readShopify(context: PilotContext): Promise<Outcome<ShopifyObserv
   if (!count.ok) return count;
   const reportedCount = parseShopifyProductCount(count.data.count);
   if (reportedCount === null) return { ok: false, category: "invalid_count_response", httpStatus: 200 };
-  const catalog = await paginateShopifyCatalog({ base, accessToken: token.accessToken, productCount: reportedCount });
+  const [catalog, contentResources] = await Promise.all([
+    paginateShopifyCatalog({ base, accessToken: token.accessToken, productCount: reportedCount }),
+    readShopifyContentResources(base, token.accessToken),
+  ]);
   if (!catalog.ok) return catalog;
   const productCount = Math.max(reportedCount, catalog.data.productsObserved);
   const complete = catalog.data.complete && catalog.data.productsObserved >= productCount;
   const verifiedDomain = [shop.data.shop?.domain, shop.data.shop?.myshopify_domain].some((value) => typeof value === "string" && (value === shopDomain || /diamondshelf\.us$/i.test(value)));
-  return { ok: true, data: { storeVerified: verifiedDomain, productCount, ...catalog.data, complete, truncated: !complete } };
+  const semanticResources = [...(catalog.data.semanticResources ?? []), ...contentResources]
+    .sort((a, b) => a.path.localeCompare(b.path) || a.kind.localeCompare(b.kind));
+  return { ok: true, data: { storeVerified: verifiedDomain, productCount, ...catalog.data, semanticResources, complete, truncated: !complete } };
 }
 
 async function readGsc(context: PilotContext): Promise<Outcome<GscObservation>> {
@@ -778,7 +864,7 @@ async function persist(runId: string, context: PilotContext, observations: { sho
         const crawlRows = await tx<{ id: string }[]>`INSERT INTO crawl_runs(site_id,status,started_at,completed_at,seed_url,pages_discovered,pages_fetched,metadata) VALUES(${context.siteId}::uuid,'completed',now(),now(),${context.canonicalOrigin},${observations.crawl.data.discovered},${observations.crawl.data.fetched},${tx.json({ runId, limits: PILOT_LIMITS, blockedByRobots: observations.crawl.data.blockedByRobots, truncated: observations.crawl.data.truncated, mode: "read_only" })}) RETURNING id::text`;
         for (const page of observations.crawl.data.pages) {
           const pageRows = await tx<{ id: string }[]>`INSERT INTO pages(site_id,url,normalized_url,path,indexable,last_seen_at) VALUES(${context.siteId}::uuid,${page.url},${page.url.replace(/\/$/, "").toLowerCase()},${page.path},${page.statusCode >= 200 && page.statusCode < 400 && !/noindex/i.test(page.robots ?? "")},now()) ON CONFLICT(site_id,normalized_url) DO UPDATE SET url=EXCLUDED.url,path=EXCLUDED.path,indexable=EXCLUDED.indexable,last_seen_at=now() RETURNING id::text`;
-          await tx`INSERT INTO page_snapshots(page_id,crawl_run_id,status_code,title,meta_description,canonical_url,robots,h1,content_hash,content_text,links,raw_signals) VALUES(${pageRows[0]!.id}::uuid,${crawlRows[0]!.id}::uuid,${page.statusCode},${page.title},${page.description},${page.canonical},${page.robots},${page.h1},${page.contentHash},${page.contentText},${tx.json(page.links)},${tx.json({ runId, readOnly: true })})`;
+          await tx`INSERT INTO page_snapshots(page_id,crawl_run_id,status_code,title,meta_description,canonical_url,robots,h1,content_hash,content_text,structured_data,headings,links,raw_signals) VALUES(${pageRows[0]!.id}::uuid,${crawlRows[0]!.id}::uuid,${page.statusCode},${page.title},${page.description},${page.canonical},${page.robots},${page.h1},${page.contentHash},${page.contentText},${tx.json(page.structuredData as never)},${tx.json(page.headings)},${tx.json(page.links)},${tx.json({ runId, readOnly: true, internalAnchors: page.internalAnchors })})`;
           await tx`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'crawler','technical_page_observation',1,${tx.json({ pageId: pageRows[0]!.id, url: page.url, statusCode: page.statusCode, titlePresent: page.title !== null, descriptionPresent: page.description !== null, h1Present: page.h1 !== null, contentHash: page.contentHash })},${tx.json({ runId, mode: "read_only", crawlRunId: crawlRows[0]!.id })})`;
           pages++;
         }
@@ -828,12 +914,12 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
     const certification = buildBaselineCertification({ readiness, crawl: observations.crawl, technicalFindings, gsc: observations.gsc });
 
     const [crawlPageRows, gscSignalRows, technicalSignalRows, existingRows, activeProposalRows, providerEvidenceRows] = await Promise.all([
-      sql<Array<{ pageId: string; url: string; indexable: boolean; title: string | null; description: string | null; h1: string | null; contentText: string | null; links: unknown; evidenceId: string }>>`
-        SELECT p.id::text AS "pageId",p.url,p.indexable,ps.title,ps.meta_description AS description,ps.h1,ps.content_text AS "contentText",ps.links,e.id::text AS "evidenceId"
+      sql<Array<{ pageId: string; url: string; indexable: boolean; title: string | null; description: string | null; h1: string | null; contentText: string | null; links: unknown; headings: unknown; structuredData: unknown; rawSignals: unknown; evidenceId: string }>>`
+        SELECT p.id::text AS "pageId",p.url,p.indexable,ps.title,ps.meta_description AS description,ps.h1,ps.content_text AS "contentText",ps.links,ps.headings,ps.structured_data AS "structuredData",ps.raw_signals AS "rawSignals",e.id::text AS "evidenceId"
         FROM evidence e
         JOIN pages p ON p.id=(e.payload->>'pageId')::uuid
         JOIN LATERAL (
-          SELECT title,meta_description,h1,content_text,links FROM page_snapshots
+          SELECT title,meta_description,h1,content_text,links,headings,structured_data,raw_signals FROM page_snapshots
           WHERE page_id=p.id AND raw_signals->>'runId'=${runId}
           ORDER BY observed_at DESC LIMIT 1
         ) ps ON true
@@ -879,6 +965,14 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       ...row,
       contentText: row.contentText ?? "",
       links: Array.isArray(row.links) ? row.links.filter((item): item is string => typeof item === "string") : [],
+      headings: Array.isArray(row.headings) ? row.headings.filter((item): item is string => typeof item === "string") : [],
+      structuredData: row.structuredData,
+      internalAnchors: Array.isArray((row.rawSignals as { internalAnchors?: unknown } | null)?.internalAnchors)
+        ? (row.rawSignals as { internalAnchors: unknown[] }).internalAnchors.flatMap((item) =>
+          item && typeof item === "object" && typeof (item as { text?: unknown }).text === "string" && typeof (item as { href?: unknown }).href === "string"
+            ? [{ text: (item as { text: string }).text, href: (item as { href: string }).href }]
+            : [])
+        : [],
     }));
     const crawlPagesById = new Map(crawlPages.map((page) => [page.pageId, page]));
     const gscSignals: GscPageQuerySignal[] = gscSignalRows.map((row) => ({
@@ -903,14 +997,25 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       crawlPages,
       technicalFindings: technicalSignalRows,
     });
+    const providerEvidence = new Map(providerEvidenceRows.map((row) => [row.source, row.id]));
+    const semanticProfiles = new Map(candidates.flatMap((candidate) => {
+      const page = crawlPagesById.get(candidate.pageId);
+      if (!page) return [];
+      return [[candidate.generationKey, buildSemanticPageProfile({
+        page,
+        candidate,
+        shopifyResources: observations.shopify.ok ? observations.shopify.data.semanticResources ?? [] : [],
+        shopifyEvidenceId: providerEvidence.get("shopify"),
+        gscEvidenceId: candidate.queryId ? providerEvidence.get("gsc") : null,
+      })] as const];
+    }));
     const preliminaryProposals = candidates.map((candidate) => ({
       generationKey: candidate.generationKey,
-      proposal: createDryRunProposal(candidate, crawlPagesById.get(candidate.pageId), candidate.sourceEvidenceIds),
+      proposal: createDryRunProposal(candidate, crawlPagesById.get(candidate.pageId), candidate.sourceEvidenceIds, semanticProfiles.get(candidate.generationKey)),
     }));
     const currentProposalValues = preliminaryProposals
       .map(({ generationKey, proposal }) => ({ generationKey, value: proposal.expectedOutcome.proposal.afterValue ?? "" }))
       .filter((item) => item.value.length > 0);
-    const providerEvidence = new Map(providerEvidenceRows.map((row) => [row.source, row.id]));
     const reconciliationResult = reconcileManagedOpportunities(existingRows, candidates);
 
     setStage("evaluate_persist_opportunity");
@@ -940,6 +1045,12 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
 
       for (const item of candidates) {
         setStage("evaluate_persist_opportunity");
+        const semanticProfile = semanticProfiles.get(item.generationKey);
+        const semanticEvidenceRows = semanticProfile ? await tx<{ id: string }[]>`
+          INSERT INTO evidence(site_id,page_id,source,kind,confidence,payload,provenance)
+          VALUES(${context.siteId}::uuid,${item.pageId}::uuid,'seo_engine','semantic_page_profile',${semanticProfile.confidence},
+            ${tx.json(semanticProfile)},${tx.json({ runId, evaluator: "semantic_evidence_v1", readOnlySources: true, publicSiteWrites: false })})
+          RETURNING id::text` : [];
         const signalRows = await tx<{ id: string }[]>`
           INSERT INTO evidence(site_id,page_id,source,kind,confidence,payload,provenance)
           VALUES(${context.siteId}::uuid,${item.pageId}::uuid,'seo_engine','opportunity_signal',${item.confidence},
@@ -947,11 +1058,12 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
             ${tx.json({ runId, evaluator: "opportunity_engine_v1", dimensionalGsc: item.queryId !== null, boundedCrawl: true, reconciliation })})
           RETURNING id::text`;
         const page = crawlPagesById.get(item.pageId);
+        const hasShopifyProfileSource = semanticProfile?.provenance.some((entry) => entry.source.startsWith("shopify_")) === true;
         const relevantProviderEvidenceIds = [
           item.queryId ? providerEvidence.get("gsc") : null,
-          /\/products?\//i.test(page?.url ?? "") ? providerEvidence.get("shopify") : null,
+          hasShopifyProfileSource ? providerEvidence.get("shopify") : null,
         ].filter((value): value is string => Boolean(value));
-        const sourceEvidenceIds = [...new Set([signalRows[0]!.id, ...item.sourceEvidenceIds, ...relevantProviderEvidenceIds])];
+        const sourceEvidenceIds = [...new Set([signalRows[0]!.id, semanticEvidenceRows[0]?.id, ...item.sourceEvidenceIds, ...relevantProviderEvidenceIds].filter((value): value is string => Boolean(value)))];
         const impact = {
           engine: "opportunity_engine_v1",
           generationKey: item.generationKey,
@@ -979,7 +1091,7 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
                 ${tx.json(impact)},${tx.json(effort)},${item.rationale},${sourceEvidenceIds}::uuid[])
               RETURNING id::text`;
         const opportunityId = opportunityRows[0]!.id;
-        const basePlan = createDryRunProposal(item, page, sourceEvidenceIds);
+        const basePlan = createDryRunProposal(item, page, sourceEvidenceIds, semanticProfile);
         const qualityGate = evaluateProposalQuality({
           proposal: basePlan,
           candidate: item,

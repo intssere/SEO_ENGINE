@@ -1,4 +1,5 @@
 import type { CrawlPageSignal } from "./opportunity-engine.js";
+import { buildSemanticPageProfile, generateMetaDescriptionFromProfile, type SemanticPageProfile } from "./semantic-evidence.js";
 
 const entityMap: Record<string, string> = {
   "&amp;": "&",
@@ -116,7 +117,8 @@ function fitDescription(value: string) {
   return shortened;
 }
 
-export function buildPageSpecificMetaDescription(page: CrawlPageSignal) {
+export function buildPageSpecificMetaDescription(page: CrawlPageSignal, profile?: SemanticPageProfile) {
+  if (profile) return generateMetaDescriptionFromProfile(profile);
   const identity = normalizeProposalText(page.h1 || page.title);
   const sentences = cleanSentences(page.contentText);
   const identityTerms = new Set(terms(identity));

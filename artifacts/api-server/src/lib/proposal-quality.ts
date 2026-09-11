@@ -63,13 +63,28 @@ const comparable = (value: string | null | undefined) => normalize(value).toLowe
 const words = (value: string) => comparable(value).split(/\s+/).filter(Boolean);
 const stopWords = new Set(["a", "an", "and", "as", "at", "by", "for", "from", "in", "is", "of", "on", "or", "the", "to", "with", "your"]);
 const meaningfulWords = (value: string) => words(value).filter((word) => word.length > 2 && !stopWords.has(word));
+const semanticSource = (input: ProposalQualityInput) => {
+  const profile = input.proposal.expectedOutcome.semanticProfile;
+  return [
+    input.page?.title,
+    input.page?.h1,
+    input.page?.description,
+    input.page?.contentText,
+    profile?.identity.selected,
+    ...(profile?.candidateSentences.map((item) => item.text) ?? []),
+    ...(profile?.headings ?? []),
+    profile?.composition.productType,
+    profile?.composition.vendor,
+    ...(profile?.composition.tags ?? []),
+  ].filter(Boolean).join(" ");
+};
 const check = (id: ProposalQualityCheckId, label: string, status: ProposalQualityCheckStatus, score: number, summary: string, evidenceIds: string[] = []): ProposalQualityCheck => ({
   id, label, status, score, summary, evidenceIds: [...new Set(evidenceIds.filter(Boolean))].sort(),
 });
 
 function relevanceCheck(input: ProposalQualityInput, proposed: string, evidenceIds: string[]) {
   if (!input.page || !proposed) return check("page_relevance", "Page relevance", "blocked", 0, "Persisted page content is unavailable.", evidenceIds);
-  const source = [input.page.title, input.page.h1, input.page.description, input.page.contentText].filter(Boolean).join(" ");
+  const source = semanticSource(input);
   const sourceTerms = new Set(meaningfulWords(source));
   const proposedTerms = [...new Set(meaningfulWords(proposed))];
   const overlap = proposedTerms.filter((term) => sourceTerms.has(term));
@@ -116,7 +131,7 @@ function unsupportedClaimsCheck(input: ProposalQualityInput, proposed: string, e
     /\b(best|#1|number one|guaranteed|certified|lowest price|free shipping|lifetime warranty|conflict[- ]free|ethically sourced)\b/gi,
     /\b(always|never)\b/gi,
   ];
-  const source = comparable([input.page?.title, input.page?.h1, input.page?.description, input.page?.contentText].filter(Boolean).join(" "));
+  const source = comparable(semanticSource(input));
   const claims = claimPatterns.flatMap((pattern) => proposed.match(pattern) ?? []).map((claim) => comparable(claim));
   const unsupported = [...new Set(claims.filter((claim) => claim && !source.includes(claim)))];
   return unsupported.length > 0
@@ -158,12 +173,13 @@ function templateBoilerplateCheck(input: ProposalQualityInput, proposed: string,
 
 function pageSpecificContentCheck(input: ProposalQualityInput, proposed: string, evidenceIds: string[]) {
   if (!input.page || !proposed) return check("page_specific_content", "Page-specific content", "blocked", 0, "A persisted page is required to construct page-specific metadata.", evidenceIds);
-  const identity = comparable(input.page.title || input.page.h1);
-  const body = comparable(input.page.contentText);
+  const profile = input.proposal.expectedOutcome.semanticProfile;
+  const identity = comparable(profile?.identity.selected || input.page.title || input.page.h1);
+  const body = comparable(semanticSource(input));
   const proposedComparable = comparable(proposed);
-  const identityTerms = meaningfulWords(input.page.title || input.page.h1 || "");
+  const identityTerms = meaningfulWords(profile?.identity.selected || input.page.title || input.page.h1 || "");
   const identityOverlap = identityTerms.filter((term) => proposedComparable.includes(term)).length;
-  if (identityOverlap < Math.min(2, identityTerms.length) || body.length < 40) return check("page_specific_content", "Page-specific content", "blocked", 0, "The proposal lacks sufficient page identity and meaningful body evidence.", evidenceIds);
+  if (identityOverlap < Math.min(2, identityTerms.length) || body.length < 40 || (profile && profile.confidence < 0.7)) return check("page_specific_content", "Page-specific content", "blocked", 0, "The proposal lacks sufficient page identity and meaningful body evidence.", evidenceIds);
   return check("page_specific_content", "Page-specific content", "pass", 100, "The proposal contains page identity and meaningful persisted content.", evidenceIds);
 }
 

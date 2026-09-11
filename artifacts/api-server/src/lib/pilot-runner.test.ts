@@ -77,12 +77,15 @@ test("bounded crawler respects page and depth limits", async () => {
     const url = String(input);
     if (url.endsWith("/robots.txt")) return new Response("User-agent: *\nDisallow: /private", { status: 200 });
     const index = Number(url.match(/page-(\d+)/)?.[1] ?? 0);
-    return new Response(`<html><head><title>Page ${index}</title></head><body><h1>Page</h1><a href="/page-${index + 1}">Next</a><a href="/private">Private</a></body></html>`, { status: 200, headers: { "content-type": "text/html" } });
+    return new Response(`<html><head><title>Page ${index}</title><script type="application/ld+json">{"@type":"CollectionPage","description":"Page ${index} includes current catalog items organized by product type for this collection."}</script></head><body><main><h1>Page</h1><h2>Collection details</h2><a href="/page-${index + 1}">Next collection page</a><a href="/private">Private</a></main></body></html>`, { status: 200, headers: { "content-type": "text/html" } });
   };
   const result = await crawlSite("https://diamondshelf.us", fetchImpl as typeof fetch, { crawlPages: 2, crawlDepth: 1, responseBytes: 20_000, requestTimeoutMs: 1_000, gscRows: 10, shopifyProducts: 10 });
   assert.equal(result.fetched, 2);
   assert.equal(result.pages.length, 2);
   assert.equal(result.pages.some((page) => page.path === "/private"), false);
+  assert.deepEqual(result.pages[0]?.headings, ["Collection details"]);
+  assert.equal(result.pages[0]?.structuredData.length, 1);
+  assert.deepEqual(result.pages[0]?.internalAnchors[0], { text: "Next collection page", href: "https://diamondshelf.us/page-1" });
 });
 
 test("successful provider observations persist and make baseline ready", async () => {
@@ -199,7 +202,7 @@ test("Shopify catalog pagination follows read-only cursors and reports completen
     requests.push(url);
     const first = !url.includes("page_info=");
     return new Response(JSON.stringify({ products: first
-      ? [{ id: 1, variants: [{ inventory_quantity: 2 }] }, { id: 2, variants: [{ inventory_quantity: 3 }] }]
+      ? [{ id: 1, title: "Daily Body Lotion", handle: "daily-body-lotion", product_type: "Body Lotion", vendor: "Example Vendor", tags: "body care,lotion", variants: [{ inventory_quantity: 2 }] }, { id: 2, variants: [{ inventory_quantity: 3 }] }]
       : [{ id: 3, variants: [{ inventory_quantity: 4 }] }] }), {
       status: 200,
       headers: {
@@ -216,6 +219,15 @@ test("Shopify catalog pagination follows read-only cursors and reports completen
   assert.equal(result.data.truncated, false);
   assert.equal(result.data.variantCount, 3);
   assert.equal(result.data.inventoryQuantity, 9);
+  assert.deepEqual((result.data.semanticResources ?? [])[0], {
+    kind: "product",
+    path: "/products/daily-body-lotion",
+    title: "Daily Body Lotion",
+    description: null,
+    productType: "Body Lotion",
+    vendor: "Example Vendor",
+    tags: ["body care", "lotion"],
+  });
   assert.equal(requests.length, 2);
   assert.doesNotMatch(requests[0]!, /status=any/);
 });

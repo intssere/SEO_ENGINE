@@ -1,5 +1,6 @@
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
 import { buildPageSpecificMetaDescription, cleanPageEvidence, normalizeProposalText } from "./proposal-content.js";
+import { buildSemanticPageProfile, type SemanticPageProfile } from "./semantic-evidence.js";
 
 export const proposalLifecycleStages = [
   "draft_dry_run",
@@ -27,6 +28,7 @@ export type DryRunProposal = {
     riskClassification: OpportunityCandidate["risk"];
     confidence: number;
     page: { id: string; url: string };
+    semanticProfile: SemanticPageProfile | null;
     proposal: {
       actionType: string;
       field: string;
@@ -55,7 +57,7 @@ const sentence = (value: string, max = 155) => {
 };
 const pageContext = (page: CrawlPageSignal) => sentence(cleanPageEvidence(page.contentText)) || normalize(page.h1) || normalize(page.title);
 
-function proposalDetails(candidate: OpportunityCandidate, page: CrawlPageSignal | undefined) {
+function proposalDetails(candidate: OpportunityCandidate, page: CrawlPageSignal | undefined, semanticProfile: SemanticPageProfile | null) {
   if (!page) return null;
   const context = pageContext(page);
   if (!context) return null;
@@ -77,7 +79,7 @@ function proposalDetails(candidate: OpportunityCandidate, page: CrawlPageSignal 
   };
   if (candidate.opportunityType === "technical_remediation") {
     if (/meta description/i.test(candidate.title)) {
-      const after = buildPageSpecificMetaDescription(page);
+      const after = buildPageSpecificMetaDescription(page, semanticProfile ?? undefined);
       if (!after) return null;
       return { ...base, actionType: "update_meta_description", field: "meta_description", beforeValue: description || null, afterValue: after, rollback: `Restore the observed meta description exactly: ${description || "(empty value)"}.` };
     }
@@ -94,7 +96,7 @@ function proposalDetails(candidate: OpportunityCandidate, page: CrawlPageSignal 
     return null;
   }
   if (candidate.opportunityType === "organic_ctr" && query) {
-    const after = buildPageSpecificMetaDescription(page);
+    const after = buildPageSpecificMetaDescription(page, semanticProfile ?? undefined);
     if (!after) return null;
     return { ...base, actionType: "update_meta_description", field: "meta_description", beforeValue: description || null, afterValue: after, rollback: `Restore the observed meta description exactly: ${description || "(empty value)"}.` };
   }
@@ -113,8 +115,14 @@ function proposalDetails(candidate: OpportunityCandidate, page: CrawlPageSignal 
   return null;
 }
 
-export function createDryRunProposal(candidate: OpportunityCandidate, page: CrawlPageSignal | undefined, supportingEvidenceIds: string[]): DryRunProposal {
-  const details = proposalDetails(candidate, page);
+export function createDryRunProposal(
+  candidate: OpportunityCandidate,
+  page: CrawlPageSignal | undefined,
+  supportingEvidenceIds: string[],
+  profile?: SemanticPageProfile,
+): DryRunProposal {
+  const semanticProfile = profile ?? (page ? buildSemanticPageProfile({ page, candidate }) : null);
+  const details = proposalDetails(candidate, page, semanticProfile);
   const evidenceIds = [...new Set(supportingEvidenceIds.filter(Boolean))].sort();
   const sufficient = Boolean(details && page && evidenceIds.length >= 2);
   const requiresCleanMetaEvidence = Boolean(page
@@ -140,6 +148,7 @@ export function createDryRunProposal(candidate: OpportunityCandidate, page: Craw
       riskClassification: candidate.risk,
       confidence: candidate.confidence,
       page: pageIdentity,
+      semanticProfile,
       proposal: {
         actionType: details?.actionType ?? "evidence_review_required",
         field: details?.field ?? "unresolved",

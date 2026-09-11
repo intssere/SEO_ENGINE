@@ -62,3 +62,9 @@ Meta-description generation must prioritize semantic page regions and page ident
 **Why:** Removing a few known banner strings still left a repeated site-menu fragment that looked unique only because each value began with a different page title.
 
 **How to apply:** Extract `<main>` or `<article>` after excluding header, nav, footer, aside, forms, scripts, and styles. Require a complete natural sentence with page-identity overlap and enough non-chrome terms. Otherwise store `afterValue=null` with `insufficient_clean_evidence`.
+
+Meta-description planning uses a deterministic semantic page profile: exact-path first-party Shopify metadata, structured data, semantic body content, headings/anchors, then GSC as non-copy context. Identity conflicts must fail closed.
+
+**Why:** Clean crawl text can still be mostly product-card composition or keyword lists, while exact first-party metadata and structured page descriptions provide stronger supportable copy sources.
+
+**How to apply:** Persist profile provenance and confidence per run, mark only the selected copy source, reduce confidence for conflicts, and keep unsupported or insufficient profiles as null `insufficient_clean_evidence` drafts.

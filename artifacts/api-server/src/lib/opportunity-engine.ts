@@ -12,6 +12,9 @@ export type CrawlPageSignal = {
   contentText: string;
   links: string[];
   evidenceId: string;
+  headings?: string[];
+  structuredData?: unknown;
+  internalAnchors?: Array<{ text: string; href: string }>;
 };
 
 export type GscPageQuerySignal = {
