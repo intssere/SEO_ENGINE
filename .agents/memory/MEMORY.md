@@ -3,3 +3,4 @@
 - [Internal pilot execution](internal-pilot-execution.md) — in-app runs require signed same-origin authorization and a database-backed single-run lock.
 - [Provider completeness checks](provider-completeness-checks.md) — discovery/count success alone cannot establish GA4 access or Shopify catalog completeness.
 - [GSC baseline certification](gsc-baseline-certification.md) — headline KPIs require property aggregates; bounded crawl can certify a pilot, never the whole site.
+- [Opportunity engine guardrails](opportunity-engine-guardrails.md) — query/page evidence drives candidates; stale rows become history and plans remain blocked dry runs.

@@ -28,6 +28,7 @@ import type {
   GetPilotAuthorization200,
   HealthStatus,
   OperationalResponse,
+  OpportunityResponse,
   PilotRunRequest,
   PilotRunStatus
 } from './api.schemas';
@@ -532,9 +533,9 @@ export const getListOpportunitiesUrl = () => {
   return `/api/opportunities`
 }
 
-export const listOpportunities = async ( options?: Parameters<typeof customFetch>[1]): Promise<OperationalResponse> => {
+export const listOpportunities = async ( options?: Parameters<typeof customFetch>[1]): Promise<OpportunityResponse> => {
 
-  return customFetch<OperationalResponse>(getListOpportunitiesUrl(),
+  return customFetch<OpportunityResponse>(getListOpportunitiesUrl(),
   {
     ...options,
     method: 'GET'

@@ -174,6 +174,10 @@ export function selectGscHeadlineMetrics(
   };
 }
 
+export function isCurrentOpportunity(input: { status: string; engine: string | null }) {
+  return ["new", "accepted", "planned"].includes(input.status) && input.engine === "opportunity_engine_v1";
+}
+
 export async function loadDashboardData(filters: DashboardFilters = { days: 28, country: "all", device: "all" }): Promise<DashboardSnapshot> {
   const databaseUrl = process.env.DATABASE_URL?.trim();
   if (!databaseUrl) return unavailable("DATABASE_URL is not configured. Preview fixtures are disabled.");
@@ -226,7 +230,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       sql`
         SELECT
           COALESCE((SELECT pages_fetched FROM crawl_runs WHERE site_id = ${site.id}::uuid AND status = 'completed' ORDER BY completed_at DESC NULLS LAST, created_at DESC LIMIT 1), 0)::int AS pages_analyzed,
-          (SELECT COUNT(*) FROM opportunities WHERE site_id = ${site.id}::uuid AND created_at >= now() - interval '24 hours')::int AS opportunities,
+          (SELECT COUNT(*) FROM opportunities WHERE site_id = ${site.id}::uuid AND status IN ('new','accepted','planned') AND impact_estimate->>'engine'='opportunity_engine_v1' AND updated_at >= now() - interval '24 hours')::int AS opportunities,
           (SELECT COUNT(*) FROM actions a JOIN action_plans ap ON ap.id = a.action_plan_id WHERE ap.site_id = ${site.id}::uuid AND a.created_at >= now() - interval '24 hours')::int AS actions_prepared,
           (SELECT COUNT(*) FROM actions a JOIN action_plans ap ON ap.id = a.action_plan_id WHERE ap.site_id = ${site.id}::uuid AND a.status = 'completed' AND a.updated_at >= now() - interval '24 hours')::int AS executed,
           (SELECT COUNT(*) FROM verifications v JOIN deployments d ON d.id = v.deployment_id JOIN action_plans ap ON ap.id = d.action_plan_id WHERE ap.site_id = ${site.id}::uuid AND v.status = 'verified' AND v.verified_at >= now() - interval '24 hours')::int AS verified,
@@ -273,16 +277,13 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
       `,
       sql`
         SELECT
-          o.opportunity_type,
+          COALESCE(o.impact_estimate->>'title',o.opportunity_type) AS opportunity_type,
           o.score,
           cardinality(o.evidence_ids) AS evidence_count,
           o.status,
-          COALESCE(ap.risk_level, 'unplanned') AS risk_level
+          COALESCE(o.impact_estimate->>'riskClassification','unclassified') AS risk_level
         FROM opportunities o
-        LEFT JOIN LATERAL (
-          SELECT risk_level FROM action_plans WHERE opportunity_id = o.id ORDER BY created_at DESC LIMIT 1
-        ) ap ON true
-        WHERE o.site_id = ${site.id}::uuid AND o.status IN ('new','accepted','planned')
+        WHERE o.site_id = ${site.id}::uuid AND o.status IN ('new','accepted','planned') AND o.impact_estimate->>'engine'='opportunity_engine_v1'
         ORDER BY o.score DESC, o.created_at DESC
         LIMIT 5
       `,

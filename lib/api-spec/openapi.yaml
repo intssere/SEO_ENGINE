@@ -106,7 +106,7 @@ paths:
       responses:
         "200": { description: Performance data, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } }
   /opportunities:
-    get: { operationId: listOpportunities, responses: { "200": { description: Opportunities, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
+    get: { operationId: listOpportunities, responses: { "200": { description: Active and historical evidence-backed opportunities, content: { application/json: { schema: { $ref: "#/components/schemas/OpportunityResponse" } } } } } }
   /actions:
     get: { operationId: listActions, responses: { "200": { description: Actions, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } } } }
   /approvals:
@@ -138,6 +138,38 @@ components:
         readiness: { type: object }
         rows: { type: array, items: { type: object, additionalProperties: true } }
       required: [readiness, rows]
+    OpportunityRecord:
+      type: object
+      required: [id, title, opportunity_type, score, status, rationale, evidence_count, url, query, risk_classification, confidence, score_components, why_qualifies, recommendation, execution_authorized, lifecycle, updated_at]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        opportunity_type: { type: string, enum: [organic_ctr, striking_distance, technical_remediation, internal_link, content_alignment] }
+        score: { type: number }
+        status: { type: string, enum: [new, accepted, dismissed, planned, completed] }
+        rationale: { type: string }
+        evidence_count: { type: integer }
+        url: { type: [string, "null"] }
+        query: { type: [string, "null"] }
+        risk_classification: { type: string, enum: [low, medium, high, unclassified] }
+        confidence: { type: number }
+        score_components: { type: object, additionalProperties: true }
+        why_qualifies: { type: string }
+        recommendation: { type: string }
+        execution_authorized: { type: boolean }
+        lifecycle: { type: string, enum: [active, invalidated_or_superseded] }
+        updated_at: { type: string }
+    OpportunityResponse:
+      type: object
+      required: [readiness, rows, history]
+      properties:
+        readiness: { type: object }
+        rows:
+          type: array
+          items: { $ref: "#/components/schemas/OpportunityRecord" }
+        history:
+          type: array
+          items: { $ref: "#/components/schemas/OpportunityRecord" }
     PilotCounts:
       type: object
       required: [products, catalogProducts, productsObserved, shopifyComplete, gscRows, gscDetailedRows, ga4Rows, pages, findings, opportunities]

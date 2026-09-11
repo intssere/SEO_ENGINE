@@ -282,6 +282,15 @@
 .certificationGrid span { margin-top: 2px; font-size: 11px; color: #647087; }
 .certificationGrid small { margin-top: 3px; font-size: 10px; color: #7b8799; }
 .certificationNote { margin-top: 12px; font-size: 11px; color: #6b7586; }
+.opportunityQueue, .opportunityHistory { margin-bottom: 16px; }
+.opportunityQueue .sectionHead, .opportunityHistory .sectionHead { margin-bottom: 16px; }
+.opportunityQueue h2, .opportunityHistory h2 { margin: 0 0 4px; font-size: 18px; color: #172033; }
+.opportunityIdentity, .opportunityPriority, .opportunityEvidence, .opportunityPlan { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+.opportunityIdentity strong, .opportunityPriority strong, .opportunityEvidence strong, .opportunityPlan strong { color: #172033; font-size: 12px; }
+.opportunityIdentity span, .opportunityPriority span, .opportunityEvidence span, .opportunityPlan span { color: #647087; font-size: 11px; line-height: 1.4; }
+.opportunityIdentity small, .opportunityPlan small { color: #8792a4; font-size: 10px; overflow-wrap: anywhere; }
+.opportunityPlan strong { color: #14764a; letter-spacing: .04em; }
+.opportunityHistory { background: #fbfcfe; }
 .pilotActions { display: flex; align-items: center; gap: 10px; }
 .pilotRunButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 8px 13px; border: 0; border-radius: 8px; background: #172a4d; color: #fff; font-size: 12px; font-weight: 650; cursor: pointer; }
 .pilotRunButton:hover:not(:disabled) { background: #23406f; }

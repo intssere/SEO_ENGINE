@@ -292,7 +292,44 @@ export const ListOpportunitiesResponse = zod.object({
   "readiness": zod.object({
 
 }).passthrough(),
-  "rows": zod.array(zod.record(zod.string(), zod.unknown()))
+  "rows": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "opportunity_type": zod.enum(['organic_ctr', 'striking_distance', 'technical_remediation', 'internal_link', 'content_alignment']),
+  "score": zod.number(),
+  "status": zod.enum(['new', 'accepted', 'dismissed', 'planned', 'completed']),
+  "rationale": zod.string(),
+  "evidence_count": zod.number().int(),
+  "url": zod.string().nullable(),
+  "query": zod.string().nullable(),
+  "risk_classification": zod.enum(['low', 'medium', 'high', 'unclassified']),
+  "confidence": zod.number(),
+  "score_components": zod.record(zod.string(), zod.unknown()),
+  "why_qualifies": zod.string(),
+  "recommendation": zod.string(),
+  "execution_authorized": zod.boolean(),
+  "lifecycle": zod.enum(['active', 'invalidated_or_superseded']),
+  "updated_at": zod.string()
+})),
+  "history": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "opportunity_type": zod.enum(['organic_ctr', 'striking_distance', 'technical_remediation', 'internal_link', 'content_alignment']),
+  "score": zod.number(),
+  "status": zod.enum(['new', 'accepted', 'dismissed', 'planned', 'completed']),
+  "rationale": zod.string(),
+  "evidence_count": zod.number().int(),
+  "url": zod.string().nullable(),
+  "query": zod.string().nullable(),
+  "risk_classification": zod.enum(['low', 'medium', 'high', 'unclassified']),
+  "confidence": zod.number(),
+  "score_components": zod.record(zod.string(), zod.unknown()),
+  "why_qualifies": zod.string(),
+  "recommendation": zod.string(),
+  "execution_authorized": zod.boolean(),
+  "lifecycle": zod.enum(['active', 'invalidated_or_superseded']),
+  "updated_at": zod.string()
+}))
 })
 
 

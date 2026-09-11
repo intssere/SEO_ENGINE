@@ -18,6 +18,78 @@ export interface OperationalResponse {
   rows: OperationalResponseRowsItem[];
 }
 
+export type OpportunityRecordOpportunityType = typeof OpportunityRecordOpportunityType[keyof typeof OpportunityRecordOpportunityType];
+
+
+export const OpportunityRecordOpportunityType = {
+  organic_ctr: 'organic_ctr',
+  striking_distance: 'striking_distance',
+  technical_remediation: 'technical_remediation',
+  internal_link: 'internal_link',
+  content_alignment: 'content_alignment',
+} as const;
+
+export type OpportunityRecordStatus = typeof OpportunityRecordStatus[keyof typeof OpportunityRecordStatus];
+
+
+export const OpportunityRecordStatus = {
+  new: 'new',
+  accepted: 'accepted',
+  dismissed: 'dismissed',
+  planned: 'planned',
+  completed: 'completed',
+} as const;
+
+export type OpportunityRecordRiskClassification = typeof OpportunityRecordRiskClassification[keyof typeof OpportunityRecordRiskClassification];
+
+
+export const OpportunityRecordRiskClassification = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  unclassified: 'unclassified',
+} as const;
+
+export type OpportunityRecordScoreComponents = { [key: string]: unknown };
+
+export type OpportunityRecordLifecycle = typeof OpportunityRecordLifecycle[keyof typeof OpportunityRecordLifecycle];
+
+
+export const OpportunityRecordLifecycle = {
+  active: 'active',
+  invalidated_or_superseded: 'invalidated_or_superseded',
+} as const;
+
+export interface OpportunityRecord {
+  id: string;
+  title: string;
+  opportunity_type: OpportunityRecordOpportunityType;
+  score: number;
+  status: OpportunityRecordStatus;
+  rationale: string;
+  evidence_count: number;
+  /** @nullable */
+  url: string | null;
+  /** @nullable */
+  query: string | null;
+  risk_classification: OpportunityRecordRiskClassification;
+  confidence: number;
+  score_components: OpportunityRecordScoreComponents;
+  why_qualifies: string;
+  recommendation: string;
+  execution_authorized: boolean;
+  lifecycle: OpportunityRecordLifecycle;
+  updated_at: string;
+}
+
+export type OpportunityResponseReadiness = { [key: string]: unknown };
+
+export interface OpportunityResponse {
+  readiness: OpportunityResponseReadiness;
+  rows: OpportunityRecord[];
+  history: OpportunityRecord[];
+}
+
 export interface PilotCounts {
   products: number;
   catalogProducts: number;

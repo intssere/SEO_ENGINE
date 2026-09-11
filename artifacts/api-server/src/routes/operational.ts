@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { answerOperationalQuestion, getRuntimeReadiness, loadOperationalList, loadPerformance, parsePerformanceFilters } from "../lib/operational-data";
+import { answerOperationalQuestion, getRuntimeReadiness, loadOperationalList, loadOpportunities, loadPerformance, parsePerformanceFilters } from "../lib/operational-data";
 
 const router: IRouter = Router();
 for (const section of ["ai-visibility", "learning", "impact", "verification", "policies"]) {
@@ -7,7 +7,8 @@ for (const section of ["ai-visibility", "learning", "impact", "verification", "p
 }
 router.get("/technical-seo", async (_req, res) => res.json(await loadOperationalList("findings")));
 router.get("/technical-seo/findings", async (_req, res) => res.json(await loadOperationalList("findings")));
-const listKinds = ["opportunities", "actions", "approvals", "deployments", "findings"] as const;
+router.get("/opportunities", async (_req, res) => res.json(await loadOpportunities()));
+const listKinds = ["actions", "approvals", "deployments", "findings"] as const;
 for (const kind of listKinds) {
   router.get(`/${kind}`, async (_req, res) => res.json(await loadOperationalList(kind)));
   router.get(`/${kind}/:id`, async (req, res) => {

@@ -7,6 +7,14 @@ import {
   type EncryptedSecretEnvelope,
   type TokenBundle,
 } from "@seo-engine/oauth-connection-manager";
+import {
+  dryRunActionPlan,
+  generateOpportunityCandidates,
+  reconcileManagedOpportunities,
+  type CrawlPageSignal,
+  type GscPageQuerySignal,
+  type TechnicalFindingSignal,
+} from "./opportunity-engine.js";
 
 export const PILOT_LIMITS = {
   crawlPages: 30,
@@ -748,35 +756,136 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       FROM findings f LEFT JOIN evidence e ON e.id=f.primary_evidence_id
       WHERE f.site_id=${context.siteId}::uuid AND f.status='open' AND f.category='technical_seo'`;
     const technicalFindings = assessTechnicalFindingEvidence(technicalEvidenceRows);
-    const aggregate = observations.gsc.ok
-      ? observations.gsc.data.aggregate
-      : { ok: false as const, category: observations.gsc.category, httpStatus: observations.gsc.httpStatus };
-    const ctrValidity = organicCtrOpportunityValidity(aggregate);
-    const aggregateEvidenceRows = await sql<{ id: string }[]>`SELECT id::text FROM evidence WHERE site_id=${context.siteId}::uuid AND source='gsc' AND kind='performance_aggregate' AND provenance->>'runId'=${runId} ORDER BY observed_at DESC LIMIT 1`;
-    const aggregateEvidenceId = aggregateEvidenceRows[0]?.id ?? evidenceId;
-    let opportunityRows: { id: string }[] = [];
-    if (readiness.state !== "ready" || !ctrValidity.valid) {
-      await sql`UPDATE opportunities SET status='dismissed',rationale=${`Re-evaluated against property-level GSC aggregate: ${ctrValidity.reason}.`},updated_at=now() WHERE site_id=${context.siteId}::uuid AND opportunity_type='organic_ctr' AND status IN ('new','accepted','planned')`;
-    } else {
-      await sql`UPDATE opportunities SET rationale='Property-level GSC aggregate confirms CTR opportunity eligibility; dimensional rows identify candidate pages.',evidence_ids=ARRAY(SELECT DISTINCT unnest(evidence_ids || ARRAY[${aggregateEvidenceId}::uuid])),updated_at=now() WHERE site_id=${context.siteId}::uuid AND opportunity_type='organic_ctr' AND status IN ('new','accepted','planned')`;
-      opportunityRows = await sql<{ id: string }[]>`
-        INSERT INTO opportunities(site_id,page_id,opportunity_type,status,score,impact_estimate,effort_estimate,rationale,evidence_ids)
-        SELECT ${context.siteId}::uuid,sm.page_id,'organic_ctr','new',
-          LEAST(100,20 + ln(1 + SUM(sm.impressions)) * 10),
-          ${sql.json({ basis: "property_aggregate_validated_dimensional_gsc" })},
-          ${sql.json({ level: "review" })},
-          'Property-level GSC aggregate confirms CTR opportunity eligibility; dimensional rows identify this candidate page.',
-          ARRAY[${aggregateEvidenceId}::uuid,${evidenceId}::uuid]
-        FROM search_metrics sm JOIN search_queries sq ON sq.id=sm.query_id
-        WHERE sq.site_id=${context.siteId}::uuid AND sm.source='gsc' AND sm.metric_date>=current_date-27 AND sm.page_id IS NOT NULL
-        GROUP BY sm.page_id
-        HAVING SUM(sm.impressions)>=10 AND SUM(sm.clicks)::float/NULLIF(SUM(sm.impressions),0)<0.03 AND AVG(sm.average_position) BETWEEN 4 AND 20
-          AND NOT EXISTS (SELECT 1 FROM opportunities o WHERE o.site_id=${context.siteId}::uuid AND o.page_id=sm.page_id AND o.opportunity_type='organic_ctr' AND o.status IN ('new','accepted','planned'))
-        RETURNING id::text`;
-    }
     const certification = buildBaselineCertification({ readiness, crawl: observations.crawl, technicalFindings, gsc: observations.gsc });
+
+    const [crawlPageRows, gscSignalRows, technicalSignalRows, existingRows] = await Promise.all([
+      sql<Array<{ pageId: string; url: string; title: string | null; h1: string | null; contentText: string | null; links: unknown; evidenceId: string }>>`
+        SELECT p.id::text AS "pageId",p.url,ps.title,ps.h1,ps.content_text AS "contentText",ps.links,e.id::text AS "evidenceId"
+        FROM evidence e
+        JOIN pages p ON p.id=(e.payload->>'pageId')::uuid
+        JOIN LATERAL (
+          SELECT title,h1,content_text,links FROM page_snapshots
+          WHERE page_id=p.id AND raw_signals->>'runId'=${runId}
+          ORDER BY observed_at DESC LIMIT 1
+        ) ps ON true
+        WHERE e.site_id=${context.siteId}::uuid AND e.source='crawler' AND e.kind='technical_page_observation' AND e.provenance->>'runId'=${runId}`,
+      sql<Array<{ pageId: string; queryId: string; query: string; url: string; clicks: unknown; impressions: unknown; ctr: unknown; position: unknown }>>`
+        SELECT sm.page_id::text AS "pageId",sm.query_id::text AS "queryId",sq.query,p.url,
+          SUM(sm.clicks)::float AS clicks,SUM(sm.impressions)::float AS impressions,
+          SUM(sm.clicks)::float/NULLIF(SUM(sm.impressions),0) AS ctr,
+          SUM(sm.average_position*sm.impressions)::float/NULLIF(SUM(sm.impressions) FILTER (WHERE sm.average_position IS NOT NULL),0) AS position
+        FROM search_metrics sm
+        JOIN search_queries sq ON sq.id=sm.query_id
+        JOIN pages p ON p.id=sm.page_id
+        WHERE sq.site_id=${context.siteId}::uuid AND sm.source='gsc' AND sm.metric_date>=current_date-27 AND sm.page_id IS NOT NULL
+        GROUP BY sm.page_id,sm.query_id,sq.query,p.url`,
+      sql<TechnicalFindingSignal[]>`
+        SELECT f.id::text AS "findingId",f.page_id::text AS "pageId",f.title,f.severity,e.id::text AS "evidenceId"
+        FROM findings f JOIN evidence e ON e.id=f.primary_evidence_id
+        WHERE f.site_id=${context.siteId}::uuid AND f.status='open' AND f.category='technical_seo'
+          AND e.source='crawler' AND e.kind='technical_page_observation' AND e.provenance->>'runId'=${runId}`,
+      sql<Array<{ id: string; status: string; generationKey: string | null }>>`
+        SELECT id::text,status,impact_estimate->>'generationKey' AS "generationKey"
+        FROM opportunities
+        WHERE site_id=${context.siteId}::uuid AND status IN ('new','accepted','planned')
+          AND (impact_estimate->>'engine'='opportunity_engine_v1' OR opportunity_type='organic_ctr')`,
+    ]);
+
+    const crawlPages: CrawlPageSignal[] = crawlPageRows.map((row) => ({
+      ...row,
+      contentText: row.contentText ?? "",
+      links: Array.isArray(row.links) ? row.links.filter((item): item is string => typeof item === "string") : [],
+    }));
+    const gscSignals: GscPageQuerySignal[] = gscSignalRows.map((row) => ({
+      pageId: row.pageId,
+      queryId: row.queryId,
+      query: row.query,
+      url: row.url,
+      clicks: Number(row.clicks ?? 0),
+      impressions: Number(row.impressions ?? 0),
+      ctr: Number(row.ctr ?? 0),
+      position: row.position == null ? null : Number(row.position),
+    }));
+    const aggregateAvailable = observations.gsc.ok && observations.gsc.data.aggregate.ok;
+    const reconciliation = observations.gsc.ok ? observations.gsc.data.reconciliation.status : "aggregate_unavailable";
+    const candidates = generateOpportunityCandidates({
+      pilotReady: certification.status === "pilot_ready",
+      aggregateAvailable,
+      reconciliation,
+      crawl: certification.crawlCoverage,
+      gsc: gscSignals,
+      crawlPages,
+      technicalFindings: technicalSignalRows,
+    });
+    const reconciliationResult = reconcileManagedOpportunities(existingRows, candidates);
+
+    await sql.begin(async (tx) => {
+      await tx`
+        UPDATE opportunities SET status='dismissed',
+          rationale='Superseded by Opportunity Engine v1 because the legacy page-level CTR candidate lacks current query-level eligibility evidence.',
+          updated_at=now()
+        WHERE site_id=${context.siteId}::uuid AND opportunity_type='organic_ctr' AND status IN ('new','accepted','planned')
+          AND COALESCE(impact_estimate->>'engine','')<>'opportunity_engine_v1'`;
+      if (reconciliationResult.staleIds.length > 0) {
+        await tx`
+          UPDATE opportunities SET status='dismissed',
+            rationale='Superseded by Opportunity Engine v1 after current evidence no longer met the eligibility guardrails.',
+            updated_at=now()
+          WHERE id=ANY(${reconciliationResult.staleIds}::uuid[])`;
+      }
+
+      for (const item of candidates) {
+        const signalRows = await tx<{ id: string }[]>`
+          INSERT INTO evidence(site_id,page_id,source,kind,confidence,payload,provenance)
+          VALUES(${context.siteId}::uuid,${item.pageId}::uuid,'seo_engine','opportunity_signal',${item.confidence},
+            ${tx.json({ generationKey: item.generationKey, opportunityType: item.opportunityType, queryId: item.queryId, query: item.query, metrics: item.metrics, score: item.score, scoreComponents: item.scoreComponents, riskClassification: item.risk, whyQualified: item.rationale })},
+            ${tx.json({ runId, evaluator: "opportunity_engine_v1", dimensionalGsc: item.queryId !== null, boundedCrawl: true, reconciliation })})
+          RETURNING id::text`;
+        const sourceEvidenceIds = [...new Set([signalRows[0]!.id, ...item.sourceEvidenceIds])];
+        const impact = {
+          engine: "opportunity_engine_v1",
+          generationKey: item.generationKey,
+          title: item.title,
+          confidence: item.confidence,
+          scoreComponents: item.scoreComponents,
+          riskClassification: item.risk,
+          whyQualified: item.rationale,
+          metrics: item.metrics,
+          coverage: certification.crawlCoverage,
+          reconciliation,
+          wholeSiteCoverage: false,
+        };
+        const effort = { dryRun: true, executionAuthorized: false, publicSiteWrites: false, recommendation: item.recommendation };
+        const existing = existingRows.find((row) => row.generationKey === item.generationKey);
+        const opportunityRows = existing
+          ? await tx<{ id: string }[]>`
+              UPDATE opportunities SET page_id=${item.pageId}::uuid,query_id=${item.queryId}::uuid,opportunity_type=${item.opportunityType},
+                score=${item.score},impact_estimate=${tx.json(impact)},effort_estimate=${tx.json(effort)},rationale=${item.rationale},
+                evidence_ids=${sourceEvidenceIds}::uuid[],updated_at=now()
+              WHERE id=${existing.id}::uuid RETURNING id::text`
+          : await tx<{ id: string }[]>`
+              INSERT INTO opportunities(site_id,page_id,query_id,opportunity_type,status,score,impact_estimate,effort_estimate,rationale,evidence_ids)
+              VALUES(${context.siteId}::uuid,${item.pageId}::uuid,${item.queryId}::uuid,${item.opportunityType},'new',${item.score},
+                ${tx.json(impact)},${tx.json(effort)},${item.rationale},${sourceEvidenceIds}::uuid[])
+              RETURNING id::text`;
+        const opportunityId = opportunityRows[0]!.id;
+        const plan = dryRunActionPlan(item);
+        await tx`
+          INSERT INTO action_plans(site_id,opportunity_id,status,risk_level,rationale,expected_outcome)
+          SELECT ${context.siteId}::uuid,${opportunityId}::uuid,${plan.status},${plan.riskLevel},${plan.rationale},${tx.json(plan.expectedOutcome)}
+          WHERE NOT EXISTS (
+            SELECT 1 FROM action_plans
+            WHERE opportunity_id=${opportunityId}::uuid AND expected_outcome->>'dryRun'='true' AND expected_outcome->>'executionAuthorized'='false'
+          )`;
+      }
+    });
+
+    const activeOpportunityRows = await sql<{ count: number }[]>`
+      SELECT COUNT(*)::int AS count FROM opportunities
+      WHERE site_id=${context.siteId}::uuid AND status IN ('new','accepted','planned')
+        AND impact_estimate->>'engine'='opportunity_engine_v1'`;
     await sql`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'seo_engine','production_baseline_certification',1,${sql.json(certification)},${sql.json({ runId, evaluator: "certification_v1", publicSiteWrites: false })})`;
-    return { findings: findingRows.length, opportunities: opportunityRows.length, certification };
+    return { findings: findingRows.length, opportunities: Number(activeOpportunityRows[0]?.count ?? 0), certification };
   } finally {
     await sql.end({ timeout: 2 });
   }
