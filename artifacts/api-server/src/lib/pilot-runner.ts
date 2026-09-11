@@ -76,6 +76,33 @@ export type PilotResult = {
   certification: BaselineCertification;
 };
 
+export const pilotFailureStages = [
+  "preflight",
+  "provider_reads",
+  "persisting_observations",
+  "evaluate_load_signals",
+  "evaluate_reconcile",
+  "evaluate_persist_opportunity",
+  "evaluate_persist_action_plan",
+  "certification",
+  "finish",
+] as const;
+export type PilotFailureStage = typeof pilotFailureStages[number];
+
+export class PilotExecutionError extends Error {
+  readonly category: string;
+  readonly stage: PilotFailureStage;
+  readonly detail: string;
+
+  constructor(category: string, stage: PilotFailureStage, detail: string) {
+    super(category);
+    this.name = "PilotExecutionError";
+    this.category = category;
+    this.stage = stage;
+    this.detail = detail;
+  }
+}
+
 export type ConnectionRecord = { id: string; provider: "shopify" | "google"; secret_ref: string; status: string; scopes: string[]; metadata: Record<string, unknown> };
 export type PilotContext = { siteId: string; canonicalOrigin: string; connections: Record<"shopify" | "google", ConnectionRecord> };
 type PersistedCounts = { products: number; catalogProducts: number; productsObserved: number; shopifyComplete: boolean; gscRows: number; gscDetailedRows: number; ga4Rows: number; pages: number };
@@ -92,10 +119,42 @@ export interface PilotDependencies {
   evaluate(runId: string, context: PilotContext, readiness: PilotReadiness, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }): Promise<{ findings: number; opportunities: number; certification: BaselineCertification }>;
   progress(runId: string, phase: string): Promise<void>;
   finish(runId: string, result: Omit<PilotResult, "runId" | "status">): Promise<void>;
-  fail(runId: string, category: string): Promise<void>;
+  fail(runId: string, category: string, stage: PilotFailureStage, detail: string): Promise<void>;
 }
 
 type ReadOnlyProvider = "shopify" | "gsc" | "ga4" | "ga4_admin" | "google_token";
+
+const safeFailureDetail = (value: string) => value
+  .replace(/[\u0000-\u001f\u007f]/g, " ")
+  .replace(/\s+/g, " ")
+  .trim()
+  .slice(0, 160);
+
+export function sanitizePilotFailureDetail(error: unknown): string {
+  if (error && typeof error === "object") {
+    const record = error as { code?: unknown; name?: unknown; message?: unknown };
+    if (typeof record.code === "string" && /^[0-9A-Z]{5}$/.test(record.code)) return `sqlstate_${record.code}`;
+    if (record.name === "AbortError") return "abort_error";
+    if (typeof record.message === "string") {
+      const message = record.message.toLowerCase();
+      const known = [
+        ["duplicate key", "duplicate_key"],
+        ["violates foreign key", "foreign_key_violation"],
+        ["violates not-null", "not_null_violation"],
+        ["violates check", "check_violation"],
+        ["invalid input syntax", "invalid_input"],
+        ["operator does not exist", "operator_mismatch"],
+        ["connection", "database_connection"],
+        ["timeout", "timeout"],
+        ["json", "json_error"],
+      ] as const;
+      const match = known.find(([needle]) => message.includes(needle));
+      if (match) return match[1];
+      return safeFailureDetail(String(record.name ?? "runtime_error"));
+    }
+  }
+  return "unknown_error";
+}
 
 export function assertReadOnlyProviderRequest(provider: ReadOnlyProvider, method: string, url: string) {
   const parsed = new URL(url);
@@ -159,6 +218,7 @@ export function computeBaselineReadiness(input: { shopify: Outcome<ShopifyObserv
 
 export async function executePilot(deps: PilotDependencies, existingRunId?: string): Promise<PilotResult> {
   let runId = existingRunId;
+  let stage: PilotFailureStage = "preflight";
   const safe = async <T>(category: string, operation: () => Promise<Outcome<T>>): Promise<Outcome<T>> => {
     try { return await operation(); }
     catch { return { ok: false, category, httpStatus: null }; }
@@ -167,6 +227,7 @@ export async function executePilot(deps: PilotDependencies, existingRunId?: stri
     if (deps.publicWritesEnabled) throw new Error("pilot_blocked_public_site_writes_enabled");
     const context = await deps.loadContext();
     runId ??= await deps.createRun(context.siteId);
+    stage = "provider_reads";
     await deps.progress(runId, "provider_reads");
     const [shopify, gsc, ga4, crawl] = await Promise.all([
       safe("shopify_ingestion_failed", () => deps.readShopify(context)),
@@ -174,18 +235,23 @@ export async function executePilot(deps: PilotDependencies, existingRunId?: stri
       safe("ga4_ingestion_failed", () => deps.readGa4(context)),
       safe("crawl_failed", () => deps.crawl(context.canonicalOrigin)),
     ]);
+    stage = "persisting_observations";
     await deps.progress(runId, "persisting_observations");
     const persisted = await deps.persist(runId, context, { shopify, gsc, ga4, crawl });
     const readiness = computeBaselineReadiness({ shopify, gsc, ga4, crawl });
+    stage = readiness.state === "ready" ? "evaluate_load_signals" : "evaluate_load_signals";
     await deps.progress(runId, readiness.state === "ready" ? "evaluating_baseline" : "partial_evidence");
     const evaluated = await deps.evaluate(runId, context, readiness, { shopify, gsc, ga4, crawl });
     const result = { readiness, counts: { ...persisted, findings: evaluated.findings, opportunities: evaluated.opportunities }, certification: evaluated.certification };
+    stage = "finish";
     await deps.finish(runId, result);
     return { runId, status: "completed", ...result };
   } catch (error) {
     const category = error instanceof Error && /^pilot_[a-z0-9_]+$/.test(error.message) ? error.message : "pilot_internal_failure";
-    if (runId) await deps.fail(runId, category).catch(() => undefined);
-    throw new Error(category);
+    const detail = error instanceof PilotExecutionError ? error.detail : sanitizePilotFailureDetail(error);
+    const failureStage = error instanceof PilotExecutionError ? error.stage : stage;
+    if (runId) await deps.fail(runId, category, failureStage, detail).catch(() => undefined);
+    throw new PilotExecutionError(category, failureStage, detail);
   }
 }
 
