@@ -170,10 +170,8 @@ function pageSpecificContentCheck(input: ProposalQualityInput, proposed: string,
   const identity = comparable(input.page.title || input.page.h1);
   const body = comparable(input.page.contentText);
   const proposedComparable = comparable(proposed);
-  const identityTerms = meaningfulWords(input.page.title || input.page.h1);
+  const identityTerms = meaningfulWords(input.page.title || input.page.h1 || "");
   const identityOverlap = identityTerms.filter((term) => proposedComparable.includes(term)).length;
-  const rawPrefix = comparable(input.page.contentText).slice(0, 80);
-  if (rawPrefix.length >= 40 && proposedComparable.includes(rawPrefix)) return check("page_specific_content", "Page-specific content", "blocked", 0, "The proposal mirrors a raw crawl prefix instead of a cleaned page-specific description.", evidenceIds);
   if (identityOverlap < Math.min(2, identityTerms.length) || body.length < 40) return check("page_specific_content", "Page-specific content", "blocked", 0, "The proposal lacks sufficient page identity and meaningful body evidence.", evidenceIds);
   return check("page_specific_content", "Page-specific content", "pass", 100, "The proposal contains page identity and meaningful persisted content.", evidenceIds);
 }

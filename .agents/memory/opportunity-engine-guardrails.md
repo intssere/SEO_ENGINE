@@ -50,3 +50,9 @@ Human approval is a per-proposal audit decision, not execution authorization. A 
 **Why:** Human review must not create an action row or silently authorize public-site changes, and rejected proposals must remain auditable rather than being overwritten by an unchanged rerun.
 
 **How to apply:** Require exact same-origin confirmation for one proposal at a time. Preserve actor, reason, timestamp, quality result, and evidence fingerprint. Regenerate a decided proposal only when evidence changes or rejection explicitly requests revision.
+
+Meta-description quality must reject raw crawl prefixes and template text even when length, uniqueness, and keyword overlap appear valid. Clean source evidence before generation, and require a complete page-specific body sentence beyond title/H1 identity.
+
+**Why:** A production run produced distinct 154–155 character values that scored 100 while containing navigation and promotional chrome such as “Skip to content,” shipping banners, checkout labels, and HTML entities.
+
+**How to apply:** Decode entities in source evidence, strip known header/footer/navigation/utility patterns, and hard-block any output that still contains those patterns, truncation artifacts, raw contaminated prefixes, generic filler, or unsupported claims. If meaningful body evidence is absent after cleaning, persist a blocked draft rather than inventing text.

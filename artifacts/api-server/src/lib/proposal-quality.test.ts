@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createDryRunProposal } from "./action-planner.js";
 import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
+import { buildPageSpecificMetaDescription, cleanPageEvidence } from "./proposal-content.js";
 import { applyProposalQualityGate, evaluateProposalQuality } from "./proposal-quality.js";
 
 const page: CrawlPageSignal = {
@@ -84,4 +85,90 @@ test("missing required provider evidence blocks product-page approval readiness"
   const result = gated({ evidence: { shopify: undefined } });
   assert.equal(result.gate.checks.find((item) => item.id === "evidence_consistency")?.status, "blocked");
   assert.equal(result.proposal.expectedOutcome.lifecycleStage, "draft_dry_run");
+});
+
+test("exact production navigation and promotional patterns hard-block approval", () => {
+  const patterns = [
+    "Skip to content",
+    "FREE SHIPPING $69+",
+    "SECURE CHECKOUT",
+    "Home Shop",
+    "CURATED FRAGRANCE",
+    "Bath &amp; Body",
+  ];
+  for (const pattern of patterns) {
+    const result = gated({ afterValue: `Classic Solitaire Diamond Ring. ${pattern} with a refined platinum setting designed for everyday wear.` });
+    assert.equal(result.gate.approvalEligible, false, pattern);
+    assert.equal(result.proposal.expectedOutcome.lifecycleStage, "draft_dry_run", pattern);
+    assert.ok(
+      result.gate.checks.some((item) => item.status === "blocked" && ["template_boilerplate", "format_integrity", "unsupported_claims"].includes(item.id)),
+      pattern,
+    );
+  }
+});
+
+test("raw production crawl prefix is cleaned out and cannot become a proposal", () => {
+  const contaminatedPage: CrawlPageSignal = {
+    ...page,
+    title: "Fragrance Gift Sets – Diamond Shelf",
+    h1: "Fragrance Gift Sets",
+    contentText: "Fragrance Gift Sets – Diamond Shelf Skip to content FREE SHIPPING $69+ · CURATED FRAGRANCE · SECURE CHECKOUT Home Shop Shop Diamond Shelf Shop all New &amp; trending",
+  };
+  assert.equal(buildPageSpecificMetaDescription(contaminatedPage), null);
+  const proposal = createDryRunProposal(candidate, contaminatedPage, ["crawl-1", "shopify-1", "opportunity-1"]);
+  assert.equal(proposal.expectedOutcome.proposal.afterValue, null);
+  assert.equal(proposal.expectedOutcome.lifecycleStage, "draft_dry_run");
+  assert.doesNotMatch(cleanPageEvidence(contaminatedPage.contentText), /skip to content|free shipping|secure checkout|curated fragrance|home shop|&amp;/i);
+});
+
+test("clean page-specific evidence regenerates a deterministic metadata proposal", () => {
+  const cleanPage: CrawlPageSignal = {
+    ...page,
+    title: "Classic Solitaire Diamond Ring",
+    h1: "Classic Solitaire Diamond Ring",
+    contentText: "This classic solitaire ring pairs a round brilliant diamond with a refined platinum setting. Its minimal four-prong profile keeps attention on the center stone.",
+  };
+  const first = createDryRunProposal(candidate, cleanPage, ["crawl-1", "shopify-1", "opportunity-1"]);
+  const second = createDryRunProposal(candidate, cleanPage, ["opportunity-1", "shopify-1", "crawl-1"]);
+  assert.equal(first.expectedOutcome.proposal.afterValue, second.expectedOutcome.proposal.afterValue);
+  assert.match(first.expectedOutcome.proposal.afterValue ?? "", /Classic Solitaire Diamond Ring/);
+  assert.doesNotMatch(first.expectedOutcome.proposal.afterValue ?? "", /skip to content|free shipping|secure checkout|home shop|curated fragrance|&amp;/i);
+  const gate = evaluateProposalQuality({
+    proposal: first,
+    candidate,
+    page: cleanPage,
+    activeProposalValues: [],
+    evidence: { crawl: "crawl-1", shopify: "shopify-1", opportunity: "opportunity-1" },
+  });
+  assert.equal(gate.status, "pass");
+  assert.equal(gate.approvalEligible, true);
+});
+
+test("clean regenerated values still enforce duplicate and unsupported-claim blocks", () => {
+  const clean = gated();
+  const duplicate = gated({ activeProposalValues: [{ generationKey: "another-page", value: clean.base.expectedOutcome.proposal.afterValue! }] });
+  assert.equal(duplicate.gate.checks.find((item) => item.id === "active_set_uniqueness")?.status, "blocked");
+  const unsupported = gated({ afterValue: "Classic Solitaire Diamond Ring. Guaranteed to be the best conflict-free ring at the lowest price." });
+  assert.equal(unsupported.gate.checks.find((item) => item.id === "unsupported_claims")?.status, "blocked");
+});
+
+test("HTML entities are decoded from meaningful source evidence but forbidden in output", () => {
+  const encodedPage: CrawlPageSignal = {
+    ...page,
+    title: "Bath & Body Collection",
+    h1: "Bath & Body Collection",
+    contentText: "The Bath &amp; Body collection includes cleansers, lotions, and body-care products organized by product type. Each collection page presents the currently observed catalog items.",
+  };
+  const proposal = createDryRunProposal(candidate, encodedPage, ["crawl-1", "shopify-1", "opportunity-1"]);
+  const proposed = proposal.expectedOutcome.proposal.afterValue ?? "";
+  assert.match(proposed, /Bath & Body/);
+  assert.doesNotMatch(proposed, /&amp;/);
+  const gate = evaluateProposalQuality({
+    proposal,
+    candidate,
+    page: encodedPage,
+    activeProposalValues: [],
+    evidence: { crawl: "crawl-1", shopify: "shopify-1", opportunity: "opportunity-1" },
+  });
+  assert.equal(gate.status, "pass");
 });

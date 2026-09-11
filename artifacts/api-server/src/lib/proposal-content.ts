@@ -31,6 +31,9 @@ export const normalizeProposalText = (value: string | null | undefined) => (valu
 export const containsProposalBoilerplate = (value: string | null | undefined) =>
   proposalBoilerplatePatterns.some((pattern) => pattern.test(value ?? ""));
 
+const containsNavigationBoilerplate = (value: string | null | undefined) =>
+  proposalBoilerplatePatterns.slice(0, -1).some((pattern) => pattern.test(value ?? ""));
+
 const stripTemplateText = (value: string) => value
   .replace(/\bskip\s+to\s+content\b/gi, " ")
   .replace(/\bfree\s+shipping(?:\s+\$?\d+\+?)?/gi, " ")
@@ -58,7 +61,7 @@ function cleanSentences(value: string) {
   return cleanPageEvidence(value)
     .split(/(?<=[.!?])\s+/)
     .map((sentence) => sentence.trim())
-    .filter((sentence) => meaningfulWordCount(sentence) >= 6 && !containsProposalBoilerplate(sentence));
+    .filter((sentence) => /[.!?]$/.test(sentence) && meaningfulWordCount(sentence) >= 6 && !containsProposalBoilerplate(sentence));
 }
 
 function fitDescription(value: string) {
@@ -71,7 +74,12 @@ function fitDescription(value: string) {
 export function buildPageSpecificMetaDescription(page: CrawlPageSignal) {
   const identity = normalizeProposalText(page.h1 || page.title);
   const sentences = cleanSentences(page.contentText);
-  const bodySentence = sentences.find((sentence) => meaningfulWordCount(sentence) >= 8);
+  const identityTerms = new Set((identity.match(/[A-Za-z][A-Za-z'’-]*/g) ?? []).map((word) => word.toLowerCase()));
+  const bodySentence = sentences.find((sentence) => {
+    const bodyTerms = sentence.match(/[A-Za-z][A-Za-z'’-]*/g) ?? [];
+    const pageSpecificTerms = bodyTerms.filter((word) => word.length > 2 && !identityTerms.has(word.toLowerCase()));
+    return pageSpecificTerms.length >= 5;
+  });
   if (!identity || !bodySentence) return null;
   const body = bodySentence.toLowerCase().startsWith(identity.toLowerCase()) ? bodySentence : `${identity}. ${bodySentence}`;
   const description = fitDescription(body);
@@ -79,7 +87,7 @@ export function buildPageSpecificMetaDescription(page: CrawlPageSignal) {
 }
 
 export function hasRawTemplatePrefix(proposed: string, page: CrawlPageSignal | undefined) {
-  if (!page || !containsProposalBoilerplate(page.contentText)) return false;
+  if (!page || !containsNavigationBoilerplate(page.contentText)) return false;
   const rawPrefix = normalizeProposalText(page.contentText).slice(0, 80).toLowerCase();
   return rawPrefix.length >= 40 && normalizeProposalText(proposed).toLowerCase().includes(rawPrefix);
 }
