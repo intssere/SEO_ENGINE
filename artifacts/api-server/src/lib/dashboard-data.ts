@@ -111,13 +111,17 @@ function n(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export function pilotCountsFromPayload(counts: Record<string, unknown>) {
+export function pilotCountsFromPayload(counts: Record<string, unknown>, historicalCatalog: Record<string, unknown> = {}) {
   const products = n(counts.products);
+  const currentCatalog = n(counts.catalogProducts);
+  const knownCatalog = n(historicalCatalog.productCount);
+  const catalogProducts = currentCatalog > 0 ? currentCatalog : knownCatalog > 0 ? knownCatalog : products;
+  const productsObserved = n(counts.productsObserved ?? products);
   return {
     products,
-    catalogProducts: n(counts.catalogProducts ?? products),
-    productsObserved: n(counts.productsObserved ?? products),
-    shopifyComplete: counts.shopifyComplete === true,
+    catalogProducts,
+    productsObserved,
+    shopifyComplete: counts.shopifyComplete === true && (catalogProducts === 0 || productsObserved >= catalogProducts),
     gscRows: n(counts.gscRows),
     ga4Rows: n(counts.ga4Rows),
     pages: n(counts.pages),
@@ -262,7 +266,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
         ) AS freshest
       `,
       sql`SELECT status,payload,created_at,updated_at,completed_at,last_error FROM jobs WHERE site_id=${site.id}::uuid AND job_type='pilot_ingestion_v1' ORDER BY created_at DESC LIMIT 1`,
-      sql`SELECT payload FROM evidence WHERE site_id=${site.id}::uuid AND source='shopify' AND kind='catalog_baseline' ORDER BY observed_at DESC,created_at DESC LIMIT 1`,
+      sql`SELECT payload FROM evidence WHERE site_id=${site.id}::uuid AND source='shopify' AND kind='catalog_baseline' AND COALESCE(payload->>'productCount','') ~ '^[1-9][0-9]*$' ORDER BY observed_at DESC,created_at DESC LIMIT 1`,
     ]);
 
     const search = searchRows[0] ?? {};
@@ -290,12 +294,6 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
     const pilotPayload = pilotRow?.payload ?? {};
     const pilotCounts = typeof pilotPayload.counts === "object" && pilotPayload.counts ? pilotPayload.counts as Record<string, unknown> : {};
     const latestShopifyCatalog = typeof shopifyCatalogRows[0]?.payload === "object" && shopifyCatalogRows[0]?.payload ? shopifyCatalogRows[0].payload as Record<string, unknown> : {};
-    const effectivePilotCounts = {
-      ...pilotCounts,
-      catalogProducts: pilotCounts.catalogProducts ?? latestShopifyCatalog.productCount,
-      productsObserved: pilotCounts.productsObserved ?? latestShopifyCatalog.productsObserved,
-      shopifyComplete: pilotCounts.shopifyComplete ?? latestShopifyCatalog.complete ?? (latestShopifyCatalog.truncated === false),
-    };
     const pilotReadiness = typeof pilotPayload.readiness === "object" && pilotPayload.readiness ? pilotPayload.readiness as Record<string, unknown> : {};
     const pilotRawDiagnostics = typeof pilotReadiness.diagnostics === "object" && pilotReadiness.diagnostics ? pilotReadiness.diagnostics as Record<string, unknown> : {};
     const pilotDiagnostic = (provider: string) => {
@@ -377,7 +375,7 @@ export async function loadDashboardData(filters: DashboardFilters = { days: 28, 
         phase: typeof pilotPayload.phase === "string" ? pilotPayload.phase : "not_started",
         freshness: pilotRow ? new Date(String(pilotRow.completed_at ?? pilotRow.updated_at ?? pilotRow.created_at)).toISOString() : null,
         blockers: Array.isArray(pilotReadiness.blockers) ? pilotReadiness.blockers.filter((item): item is string => typeof item === "string") : [],
-        counts: pilotCountsFromPayload(effectivePilotCounts),
+        counts: pilotCountsFromPayload(pilotCounts, latestShopifyCatalog),
         diagnostics: { shopify: pilotDiagnostic("shopify"), gsc: pilotDiagnostic("gsc"), ga4: pilotDiagnostic("ga4"), crawl: pilotDiagnostic("crawl") },
       },
     };

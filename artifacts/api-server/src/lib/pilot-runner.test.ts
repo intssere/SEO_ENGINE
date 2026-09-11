@@ -5,8 +5,11 @@ import {
   computeBaselineReadiness,
   crawlSite,
   executePilot,
+  ga4ReportBody,
+  isSelectedGa4PropertyDiscovered,
   paginateShopifyCatalog,
   providerFailureCategory,
+  sanitizedGoogleFailureCategory,
   type PilotDependencies,
 } from "./pilot-runner.js";
 
@@ -46,6 +49,7 @@ test("provider request guard permits only required read-only endpoints", () => {
   assert.doesNotThrow(() => assertReadOnlyProviderRequest("shopify", "GET", "https://store.myshopify.com/admin/api/2025-10/shop.json"));
   assert.doesNotThrow(() => assertReadOnlyProviderRequest("gsc", "POST", "https://www.googleapis.com/webmasters/v3/sites/site/searchAnalytics/query"));
   assert.doesNotThrow(() => assertReadOnlyProviderRequest("ga4", "POST", "https://analyticsdata.googleapis.com/v1beta/properties/1:runReport"));
+  assert.doesNotThrow(() => assertReadOnlyProviderRequest("ga4_admin", "GET", "https://analyticsadmin.googleapis.com/v1beta/properties/1"));
   assert.throws(() => assertReadOnlyProviderRequest("shopify", "POST", "https://store.myshopify.com/admin/api/2025-10/products.json"));
   assert.throws(() => assertReadOnlyProviderRequest("gsc", "DELETE", "https://www.googleapis.com/webmasters/v3/sites/site"));
 });
@@ -92,6 +96,23 @@ test("provider failures are mapped to sanitized categories without response payl
   assert.equal(providerFailureCategory(404), "resource_not_found");
   assert.equal(providerFailureCategory(429), "rate_limited");
   assert.equal(providerFailureCategory(503), "provider_unavailable");
+  assert.equal(sanitizedGoogleFailureCategory(403, { error: { message: "Google Analytics Data API has not been used in project 123 or it is disabled." } }), "api_not_enabled");
+  assert.equal(sanitizedGoogleFailureCategory(403, { error: { status: "PERMISSION_DENIED", message: "User does not have sufficient permissions for this property." } }), "property_access_denied");
+});
+
+test("GA4 requires the selected property to belong to authenticated discovery", () => {
+  const metadata = { ga4Discovery: { ok: true }, discoveredGa4Properties: [{ propertyId: "551047383" }] };
+  assert.equal(isSelectedGa4PropertyDiscovered(metadata, "551047383"), true);
+  assert.equal(isSelectedGa4PropertyDiscovered(metadata, "999"), false);
+  assert.equal(isSelectedGa4PropertyDiscovered({ ...metadata, ga4Discovery: { ok: false } }, "551047383"), false);
+  assert.deepEqual(ga4ReportBody("2026-08-15", "2026-09-10"), {
+    dateRanges: [{ startDate: "2026-08-15", endDate: "2026-09-10" }],
+    dimensions: [{ name: "date" }],
+    metrics: [{ name: "sessions" }, { name: "totalUsers" }, { name: "screenPageViews" }],
+    keepEmptyRows: false,
+    returnPropertyQuota: false,
+    limit: 100,
+  });
 });
 
 test("Shopify catalog pagination follows read-only cursors and reports completeness", async () => {
@@ -119,7 +140,29 @@ test("Shopify catalog pagination follows read-only cursors and reports completen
   assert.equal(result.data.variantCount, 3);
   assert.equal(result.data.inventoryQuantity, 9);
   assert.equal(requests.length, 2);
-  assert.match(requests[0]!, /status=any/);
+  assert.doesNotMatch(requests[0]!, /status=any/);
+});
+
+test("Shopify pagination does not trust a false zero count and still observes the catalog", async () => {
+  let calls = 0;
+  const fetchImpl = async () => {
+    calls++;
+    return new Response(JSON.stringify({ products: [{ id: 1, variants: [] }] }), { status: 200 });
+  };
+  const result = await paginateShopifyCatalog({ base: "https://store.myshopify.com/admin/api/2025-10", accessToken: "test", productCount: 0, fetchImpl: fetchImpl as typeof fetch, limit: 10 });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(calls, 1);
+  assert.equal(result.data.productsObserved, 1);
+  assert.equal(result.data.complete, true);
+});
+
+test("a verified zero-product Shopify result cannot make baseline ready", () => {
+  const emptyShopify = { ok: true as const, data: { storeVerified: true, productCount: 0, productsObserved: 0, variantCount: 0, inventoryQuantity: 0, truncated: false, complete: true } };
+  const result = computeBaselineReadiness({ shopify: emptyShopify, gsc, ga4, crawl });
+  assert.equal(result.state, "partial");
+  assert.ok(result.blockers.includes("shopify_evidence_empty"));
+  assert.equal(result.coverage.shopify, false);
 });
 
 test("Shopify completeness remains partial when the bounded catalog limit is reached", async () => {

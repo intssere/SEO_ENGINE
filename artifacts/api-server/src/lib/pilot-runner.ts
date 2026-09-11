@@ -64,12 +64,15 @@ export interface PilotDependencies {
   fail(runId: string, category: string): Promise<void>;
 }
 
-export function assertReadOnlyProviderRequest(provider: "shopify" | "gsc" | "ga4" | "google_token", method: string, url: string) {
+type ReadOnlyProvider = "shopify" | "gsc" | "ga4" | "ga4_admin" | "google_token";
+
+export function assertReadOnlyProviderRequest(provider: ReadOnlyProvider, method: string, url: string) {
   const parsed = new URL(url);
   const allowed =
     (provider === "shopify" && method === "GET" && parsed.hostname.endsWith(".myshopify.com") && parsed.pathname.startsWith("/admin/api/"))
     || (provider === "gsc" && method === "POST" && parsed.hostname === "www.googleapis.com" && parsed.pathname.includes("/searchAnalytics/query"))
     || (provider === "ga4" && method === "POST" && parsed.hostname === "analyticsdata.googleapis.com" && parsed.pathname.endsWith(":runReport"))
+    || (provider === "ga4_admin" && method === "GET" && parsed.hostname === "analyticsadmin.googleapis.com" && /^\/v1beta\/properties\/\d+$/.test(parsed.pathname))
     || (provider === "google_token" && method === "POST" && parsed.hostname === "oauth2.googleapis.com" && parsed.pathname === "/token");
   if (!allowed) throw new Error("pilot_read_only_request_blocked");
 }
@@ -93,6 +96,7 @@ export function computeBaselineReadiness(input: { shopify: Outcome<ShopifyObserv
   const blockers: string[] = [];
   if (!input.shopify.ok) blockers.push(`shopify_${input.shopify.category}`);
   else if (!input.shopify.data.storeVerified) blockers.push("shopify_identity_unavailable");
+  else if (input.shopify.data.productsObserved === 0) blockers.push("shopify_evidence_empty");
   else if (!input.shopify.data.complete) blockers.push("shopify_catalog_incomplete");
   if (!input.gsc.ok) blockers.push(`gsc_${input.gsc.category}`);
   else if (input.gsc.data.rows.length === 0) blockers.push("gsc_evidence_empty");
@@ -110,7 +114,7 @@ export function computeBaselineReadiness(input: { shopify: Outcome<ShopifyObserv
     state: blockers.length === 0 ? "ready" : "partial",
     blockers,
     coverage: {
-      shopify: input.shopify.ok && input.shopify.data.storeVerified && input.shopify.data.complete,
+      shopify: input.shopify.ok && input.shopify.data.storeVerified && input.shopify.data.productsObserved > 0 && input.shopify.data.complete,
       gsc: input.gsc.ok && input.gsc.data.rows.length > 0,
       ga4: input.ga4.ok && input.ga4.data.rows.length > 0,
       crawl: input.crawl.ok && input.crawl.data.fetched > 0,
@@ -269,19 +273,42 @@ function tokenFromConnection(connection: ConnectionRecord): TokenBundle {
   return decryptTokenBundle(envelope, required("OAUTH_CREDENTIAL_ENCRYPTION_KEY"));
 }
 
-async function requestJson<T>(provider: "shopify" | "gsc" | "ga4", url: string, method: "GET" | "POST", accessToken: string, body?: unknown): Promise<Outcome<T>> {
+export function sanitizedGoogleFailureCategory(httpStatus: number, payload: unknown): string {
+  if (httpStatus !== 403) return providerFailureCategory(httpStatus);
+  const error = typeof payload === "object" && payload ? (payload as { error?: unknown }).error : null;
+  const record = typeof error === "object" && error ? error as { message?: unknown; status?: unknown; details?: unknown } : {};
+  const message = typeof record.message === "string" ? record.message.toLowerCase().slice(0, 2_000) : "";
+  const details = Array.isArray(record.details) ? JSON.stringify(record.details).toLowerCase().slice(0, 4_000) : "";
+  if (message.includes("has not been used") || message.includes("is disabled") || details.includes("service_disabled")) return "api_not_enabled";
+  if (message.includes("permission") || message.includes("access") || record.status === "PERMISSION_DENIED") return "property_access_denied";
+  return "permission_denied";
+}
+
+async function requestJson<T>(provider: Exclude<ReadOnlyProvider, "google_token">, url: string, method: "GET" | "POST", accessToken: string, body?: unknown, fetchImpl: typeof fetch = fetch): Promise<Outcome<T>> {
   assertReadOnlyProviderRequest(provider, method, url);
   try {
     const authHeaders = provider === "shopify"
       ? { "X-Shopify-Access-Token": accessToken }
       : { Authorization: `Bearer ${accessToken}` };
-    const response = await fetch(url, {
+    const response = await fetchImpl(url, {
       method,
       headers: { Accept: "application/json", ...authHeaders, ...(body ? { "Content-Type": "application/json" } : {}) },
       ...(body ? { body: JSON.stringify(body) } : {}),
       signal: AbortSignal.timeout(20_000),
     });
-    if (!response.ok) return { ok: false, category: providerFailureCategory(response.status), httpStatus: response.status };
+    if (!response.ok) {
+      let payload: unknown = null;
+      if (provider === "ga4" || provider === "ga4_admin") {
+        try { payload = await response.json(); } catch {}
+      }
+      return {
+        ok: false,
+        category: provider === "ga4" || provider === "ga4_admin"
+          ? sanitizedGoogleFailureCategory(response.status, payload)
+          : providerFailureCategory(response.status),
+        httpStatus: response.status,
+      };
+    }
     return { ok: true, data: await response.json() as T };
   } catch {
     return { ok: false, category: "network_error", httpStatus: null };
@@ -308,13 +335,14 @@ export async function paginateShopifyCatalog(options: {
 }): Promise<Outcome<Omit<ShopifyObservation, "storeVerified" | "productCount">>> {
   const fetchImpl = options.fetchImpl ?? fetch;
   const limit = Math.max(0, Math.floor(options.limit ?? PILOT_LIMITS.shopifyProducts));
-  let url: string | null = limit > 0 && options.productCount > 0
-    ? `${options.base}/products.json?limit=${Math.min(250, limit)}&status=any&fields=id,variants`
+  let url: string | null = limit > 0
+    ? `${options.base}/products.json?limit=${Math.min(250, limit)}&fields=id,variants`
     : null;
   let productsObserved = 0;
   let variantCount = 0;
   let inventoryQuantity = 0;
   let inventoryAvailable = true;
+  let exhausted = limit === 0;
   const seen = new Set<string>();
   while (url && productsObserved < limit && !seen.has(url)) {
     seen.add(url);
@@ -337,9 +365,16 @@ export async function paginateShopifyCatalog(options: {
           else inventoryAvailable = false;
         }
       }
-      if (products.length === 0 || productsObserved >= limit) break;
+      if (products.length === 0) {
+        exhausted = true;
+        break;
+      }
       const next = nextShopifyLink(response.headers.get("link"));
-      if (!next) break;
+      if (!next) {
+        exhausted = true;
+        break;
+      }
+      if (productsObserved >= limit) break;
       const parsed = new URL(next);
       if (parsed.origin !== new URL(options.base).origin) return { ok: false, category: "pagination_resource_mismatch", httpStatus: null };
       url = parsed.toString();
@@ -347,8 +382,27 @@ export async function paginateShopifyCatalog(options: {
       return { ok: false, category: "network_error", httpStatus: null };
     }
   }
-  const complete = productsObserved >= options.productCount;
+  const complete = exhausted && productsObserved >= options.productCount;
   return { ok: true, data: { productsObserved, variantCount, inventoryQuantity: inventoryAvailable ? inventoryQuantity : null, truncated: !complete, complete } };
+}
+
+export function isSelectedGa4PropertyDiscovered(metadata: Record<string, unknown>, propertyId: string): boolean {
+  if ((metadata.ga4Discovery as { ok?: unknown } | undefined)?.ok !== true) return false;
+  const properties = Array.isArray(metadata.discoveredGa4Properties)
+    ? metadata.discoveredGa4Properties as Array<{ propertyId?: unknown }>
+    : [];
+  return properties.some((property) => property.propertyId === propertyId);
+}
+
+export function ga4ReportBody(startDate: string, endDate: string) {
+  return {
+    dateRanges: [{ startDate, endDate }],
+    dimensions: [{ name: "date" }],
+    metrics: [{ name: "sessions" }, { name: "totalUsers" }, { name: "screenPageViews" }],
+    keepEmptyRows: false,
+    returnPropertyQuota: false,
+    limit: 100,
+  };
 }
 
 function isoDate(daysAgo: number) {
@@ -438,15 +492,18 @@ async function readShopify(context: PilotContext): Promise<Outcome<ShopifyObserv
   const base = `https://${shopDomain}/admin/api/2025-10`;
   const [shop, count] = await Promise.all([
     requestJson<{ shop?: { domain?: string; myshopify_domain?: string } }>("shopify", `${base}/shop.json?fields=domain,myshopify_domain`, "GET", token.accessToken),
-    requestJson<{ count?: number }>("shopify", `${base}/products/count.json?status=any`, "GET", token.accessToken),
+    requestJson<{ count?: number }>("shopify", `${base}/products/count.json`, "GET", token.accessToken),
   ]);
   if (!shop.ok) return shop;
   if (!count.ok) return count;
-  const productCount = Number(count.data.count ?? 0);
-  const catalog = await paginateShopifyCatalog({ base, accessToken: token.accessToken, productCount });
+  const reportedCount = Number(count.data.count);
+  if (!Number.isInteger(reportedCount) || reportedCount < 0) return { ok: false, category: "invalid_count_response", httpStatus: 200 };
+  const catalog = await paginateShopifyCatalog({ base, accessToken: token.accessToken, productCount: reportedCount });
   if (!catalog.ok) return catalog;
+  const productCount = Math.max(reportedCount, catalog.data.productsObserved);
+  const complete = catalog.data.complete && catalog.data.productsObserved >= productCount;
   const verifiedDomain = [shop.data.shop?.domain, shop.data.shop?.myshopify_domain].some((value) => typeof value === "string" && (value === shopDomain || /diamondshelf\.us$/i.test(value)));
-  return { ok: true, data: { storeVerified: verifiedDomain, productCount, ...catalog.data } };
+  return { ok: true, data: { storeVerified: verifiedDomain, productCount, ...catalog.data, complete, truncated: !complete } };
 }
 
 async function readGsc(context: PilotContext): Promise<Outcome<GscObservation>> {
@@ -475,14 +532,23 @@ async function readGa4(context: PilotContext): Promise<Outcome<Ga4Observation>> 
   const bundle = await refreshGoogleIfNeeded(context);
   const propertyId = typeof context.connections.google.metadata.ga4PropertyId === "string" ? context.connections.google.metadata.ga4PropertyId : "";
   if (!/^\d+$/.test(propertyId)) return { ok: false, category: "property_missing", httpStatus: null };
+  if (!isSelectedGa4PropertyDiscovered(context.connections.google.metadata, propertyId)) return { ok: false, category: "property_not_discovered", httpStatus: null };
   const startDate = isoDate(27);
   const endDate = isoDate(1);
+  const property = await requestJson<{ name?: string }>(
+    "ga4_admin",
+    `https://analyticsadmin.googleapis.com/v1beta/properties/${propertyId}`,
+    "GET",
+    bundle.accessToken,
+  );
+  if (!property.ok) return property;
+  if (property.data.name !== `properties/${propertyId}`) return { ok: false, category: "property_validation_failed", httpStatus: 200 };
   const result = await requestJson<{ rows?: Array<{ dimensionValues?: Array<{ value?: string }>; metricValues?: Array<{ value?: string }> }> }>(
     "ga4",
     `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
     "POST",
     bundle.accessToken,
-    { dateRanges: [{ startDate, endDate }], dimensions: [{ name: "date" }], metrics: [{ name: "sessions" }, { name: "totalUsers" }, { name: "screenPageViews" }], limit: 100 },
+    ga4ReportBody(startDate, endDate),
   );
   if (!result.ok) return result;
   const rows = (result.data.rows ?? []).flatMap((row) => {
