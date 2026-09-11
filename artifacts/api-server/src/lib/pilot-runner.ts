@@ -299,7 +299,7 @@ async function requestJson<T>(provider: Exclude<ReadOnlyProvider, "google_token"
     if (!response.ok) {
       let payload: unknown = null;
       if (provider === "ga4" || provider === "ga4_admin") {
-        try { payload = await response.json(); } catch {}
+        try { payload = JSON.parse(await boundedText(response, 16_000)); } catch {}
       }
       return {
         ok: false,
@@ -405,6 +405,10 @@ export function ga4ReportBody(startDate: string, endDate: string) {
   };
 }
 
+export function parseShopifyProductCount(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
+}
+
 function isoDate(daysAgo: number) {
   const date = new Date();
   date.setUTCDate(date.getUTCDate() - daysAgo);
@@ -496,8 +500,8 @@ async function readShopify(context: PilotContext): Promise<Outcome<ShopifyObserv
   ]);
   if (!shop.ok) return shop;
   if (!count.ok) return count;
-  const reportedCount = Number(count.data.count);
-  if (!Number.isInteger(reportedCount) || reportedCount < 0) return { ok: false, category: "invalid_count_response", httpStatus: 200 };
+  const reportedCount = parseShopifyProductCount(count.data.count);
+  if (reportedCount === null) return { ok: false, category: "invalid_count_response", httpStatus: 200 };
   const catalog = await paginateShopifyCatalog({ base, accessToken: token.accessToken, productCount: reportedCount });
   if (!catalog.ok) return catalog;
   const productCount = Math.max(reportedCount, catalog.data.productsObserved);

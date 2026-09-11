@@ -7,6 +7,7 @@ import {
   executePilot,
   ga4ReportBody,
   isSelectedGa4PropertyDiscovered,
+  parseShopifyProductCount,
   paginateShopifyCatalog,
   providerFailureCategory,
   sanitizedGoogleFailureCategory,
@@ -155,6 +156,14 @@ test("Shopify pagination does not trust a false zero count and still observes th
   assert.equal(calls, 1);
   assert.equal(result.data.productsObserved, 1);
   assert.equal(result.data.complete, true);
+});
+
+test("Shopify count parsing cannot coerce null-like values into a complete empty catalog", () => {
+  assert.equal(parseShopifyProductCount(2997), 2997);
+  assert.equal(parseShopifyProductCount(0), 0);
+  assert.equal(parseShopifyProductCount(null), null);
+  assert.equal(parseShopifyProductCount("0"), null);
+  assert.equal(parseShopifyProductCount(undefined), null);
 });
 
 test("a verified zero-product Shopify result cannot make baseline ready", () => {
