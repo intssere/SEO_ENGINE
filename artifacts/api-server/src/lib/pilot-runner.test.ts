@@ -14,8 +14,10 @@ import {
   organicCtrOpportunityValidity,
   parseShopifyProductCount,
   paginateShopifyCatalog,
+  PilotExecutionError,
   providerFailureCategory,
   reconcileGscAggregate,
+  sanitizePilotFailureDetail,
   sanitizedGoogleFailureCategory,
   type PilotDependencies,
 } from "./pilot-runner.js";
@@ -259,11 +261,69 @@ test("Shopify completeness remains partial when the bounded catalog limit is rea
 });
 
 test("pilot records a sanitized failure transition and does not finish after persistence failure", async () => {
+  let failure: unknown[] | null = null;
   const { deps, calls } = dependencies({
     persist: async () => { calls.push("persist"); throw new Error("database detail that must not escape"); },
+    fail: async (...args) => { calls.push("fail"); failure = args; },
   });
   await assert.rejects(() => executePilot(deps, "existing-run"), /pilot_internal_failure/);
   assert.deepEqual(calls, ["progress:provider_reads", "progress:persisting_observations", "persist", "fail"]);
+  assert.deepEqual(failure, ["existing-run", "pilot_internal_failure", "persisting_observations", "Error"]);
+});
+
+test("evaluation failures retain the precise sanitized stage and stable API category", async () => {
+  let failure: unknown[] | null = null;
+  const { deps, calls } = dependencies({
+    evaluate: async (_run, _context, _readiness, _observations, setStage) => {
+      calls.push("evaluate");
+      setStage?.("evaluate_persist_action_plan");
+      throw Object.assign(new Error("constraint contains private provider payload"), { code: "23514" });
+    },
+    fail: async (...args) => { calls.push("fail"); failure = args; },
+  });
+  await assert.rejects(
+    () => executePilot(deps, "existing-run"),
+    (error: unknown) => error instanceof PilotExecutionError
+      && error.category === "pilot_internal_failure"
+      && error.stage === "evaluate_persist_action_plan"
+      && error.detail === "sqlstate_23514",
+  );
+  assert.deepEqual(failure, ["existing-run", "pilot_internal_failure", "evaluate_persist_action_plan", "sqlstate_23514"]);
+  assert.equal(calls.includes("finish"), false);
+});
+
+test("failure detail sanitizer emits only bounded allowlisted diagnostics", () => {
+  assert.equal(sanitizePilotFailureDetail(Object.assign(new Error("secret row value"), { code: "23505" })), "sqlstate_23505");
+  assert.equal(sanitizePilotFailureDetail(new Error("operator does not exist: text = uuid; token=private")), "operator_mismatch");
+  const unknown = sanitizePilotFailureDetail(new Error("Bearer secret-token provider payload"));
+  assert.equal(unknown, "Error");
+  assert.ok(unknown.length <= 160);
+  assert.doesNotMatch(unknown, /secret|token|payload/i);
+});
+
+test("failed planner persistence does not finish or authorize any provider or public-site write", async () => {
+  let providerReads = 0;
+  let publicWrites = 0;
+  let committedPlannerRows = 0;
+  const { deps, calls } = dependencies({
+    readShopify: async () => { providerReads++; return shopify; },
+    readGsc: async () => { providerReads++; return gsc; },
+    readGa4: async () => { providerReads++; return ga4; },
+    crawl: async () => { providerReads++; return crawl; },
+    evaluate: async (_run, _context, _readiness, _observations, setStage) => {
+      const transactionRows = ["opportunity", "plan"];
+      setStage?.("evaluate_persist_action_plan");
+      assert.equal(transactionRows.length, 2);
+      throw new Error("planner transaction rejected");
+    },
+    finish: async () => { committedPlannerRows++; calls.push("finish"); },
+  });
+  await assert.rejects(() => executePilot(deps, "existing-run"), /pilot_internal_failure/);
+  assert.equal(providerReads, 4);
+  assert.equal(publicWrites, 0);
+  assert.equal(committedPlannerRows, 0);
+  assert.equal(deps.publicWritesEnabled, false);
+  assert.deepEqual(calls.slice(-1), ["fail"]);
 });
 
 test("readiness requires real rows rather than synthetic zero metrics", () => {

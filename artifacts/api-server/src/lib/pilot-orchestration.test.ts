@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { requestPilotRun, type PilotQueueDependencies } from "./pilot-orchestration.js";
+import { PilotExecutionError } from "./pilot-runner.js";
+import { backgroundPilotFailureFields, requestPilotRun, type PilotQueueDependencies } from "./pilot-orchestration.js";
 
 function dependencies(overrides: Partial<PilotQueueDependencies> = {}) {
   const launched: string[] = [];
@@ -34,4 +35,17 @@ test("accepted pilot run is queued exactly once", async () => {
   const { deps, launched } = dependencies();
   assert.deepEqual(await requestPilotRun(deps), { accepted: true, runId: "run" });
   assert.deepEqual(launched, ["run"]);
+});
+
+test("background failure logging fields exclude detail and provider payloads", () => {
+  const fields = backgroundPilotFailureFields(
+    "run",
+    new PilotExecutionError("pilot_internal_failure", "evaluate_persist_action_plan", "sqlstate_23514"),
+  );
+  assert.deepEqual(fields, {
+    runId: "run",
+    stage: "evaluate_persist_action_plan",
+    category: "pilot_internal_failure",
+  });
+  assert.equal("detail" in fields, false);
 });

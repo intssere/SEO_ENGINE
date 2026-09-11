@@ -26,6 +26,45 @@ test("metadata proposals use observed page content rather than generic filler", 
   assert.equal(proposal.expectedOutcome.page.url, page.url);
 });
 
+test("observed meta description is preserved as the proposal before value", () => {
+  const observed = "A persisted description from the bounded read-only crawl.";
+  const proposal = createDryRunProposal(candidate, { ...page, description: observed }, ["crawl-evidence"]);
+  assert.equal(proposal.expectedOutcome.proposal.beforeValue, observed);
+  assert.equal(proposal.expectedOutcome.executionAuthorized, false);
+  assert.equal(proposal.expectedOutcome.publicSiteWrites, false);
+});
+
+test("29 production-shaped legacy blocked plans can be enriched in place without authorization", () => {
+  const legacyPlans = Array.from({ length: 29 }, (_, index) => ({
+    id: `legacy-plan-${index + 1}`,
+    status: "pending",
+    riskLevel: "blocked",
+    expectedOutcome: {
+      dryRun: true,
+      confidence: 0.62,
+      recommendation: "Dry run only.",
+      opportunityType: "technical_remediation",
+      publicSiteWrites: false,
+      riskClassification: "medium",
+      executionAuthorized: false,
+    } as Record<string, unknown>,
+  }));
+  const proposal = createDryRunProposal({ ...candidate, queryId: null }, { ...page, description: "Observed description" }, ["crawl-evidence"]);
+  const enriched = legacyPlans.map((row) => ({
+    ...row,
+    status: proposal.status,
+    riskLevel: proposal.riskLevel,
+    expectedOutcome: proposal.expectedOutcome,
+  }));
+  assert.equal(new Set(enriched.map((row) => row.id)).size, 29);
+  assert.equal(enriched.length, 29);
+  assert.ok(legacyPlans.every((row) => !("planner" in row.expectedOutcome) && !("proposal" in row.expectedOutcome)));
+  assert.ok(enriched.every((row) => row.expectedOutcome.planner === "dry_run_action_planner_v1"));
+  assert.ok(enriched.every((row) => row.expectedOutcome.executionAuthorized === false));
+  assert.ok(enriched.every((row) => row.expectedOutcome.publicSiteWrites === false));
+  assert.equal(candidate.queryId, null);
+});
+
 test("planner output is deterministic, reviewable, blocked, and reversible", () => {
   const first = createDryRunProposal(candidate, page, ["opportunity-signal", "crawl-evidence"]);
   const second = createDryRunProposal(candidate, page, ["crawl-evidence", "opportunity-signal"]);

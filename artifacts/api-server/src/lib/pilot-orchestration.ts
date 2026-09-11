@@ -1,5 +1,5 @@
 import postgres from "postgres";
-import { PILOT_LIMITS, runProductionPilot, validateProductionPilotPreflight, type BaselineCertification, type ProviderDiagnostic } from "./pilot-runner";
+import { PILOT_LIMITS, PilotExecutionError, runProductionPilot, validateProductionPilotPreflight, type BaselineCertification, type PilotFailureStage, type ProviderDiagnostic } from "./pilot-runner";
 
 export type PilotPublicStatus = "not_started" | "queued" | "running" | "completed" | "partial" | "failed";
 export type PilotRunStatus = {
@@ -67,9 +67,17 @@ export async function runQueuedPilot(runId: string) {
   await runProductionPilot(runId);
 }
 
+export function backgroundPilotFailureFields(runId: string, error: unknown): { runId: string; stage: PilotFailureStage | "queue"; category: string } {
+  return error instanceof PilotExecutionError
+    ? { runId, stage: error.stage, category: error.category }
+    : { runId, stage: "queue", category: "pilot_internal_failure" };
+}
+
 export function launchQueuedPilot(runId: string) {
   setImmediate(() => {
-    void runQueuedPilot(runId).catch(() => undefined);
+    void runQueuedPilot(runId).catch((error) => {
+      console.error("pilot_background_failure", backgroundPilotFailureFields(runId, error));
+    });
   });
 }
 

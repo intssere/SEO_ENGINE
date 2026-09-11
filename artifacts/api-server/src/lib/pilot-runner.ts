@@ -116,7 +116,7 @@ export interface PilotDependencies {
   readGa4(context: PilotContext): Promise<Outcome<Ga4Observation>>;
   crawl(origin: string): Promise<Outcome<CrawlObservation>>;
   persist(runId: string, context: PilotContext, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }): Promise<PersistedCounts>;
-  evaluate(runId: string, context: PilotContext, readiness: PilotReadiness, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }): Promise<{ findings: number; opportunities: number; certification: BaselineCertification }>;
+  evaluate(runId: string, context: PilotContext, readiness: PilotReadiness, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }, setStage?: (stage: PilotFailureStage) => void): Promise<{ findings: number; opportunities: number; certification: BaselineCertification }>;
   progress(runId: string, phase: string): Promise<void>;
   finish(runId: string, result: Omit<PilotResult, "runId" | "status">): Promise<void>;
   fail(runId: string, category: string, stage: PilotFailureStage, detail: string): Promise<void>;
@@ -239,9 +239,9 @@ export async function executePilot(deps: PilotDependencies, existingRunId?: stri
     await deps.progress(runId, "persisting_observations");
     const persisted = await deps.persist(runId, context, { shopify, gsc, ga4, crawl });
     const readiness = computeBaselineReadiness({ shopify, gsc, ga4, crawl });
-    stage = readiness.state === "ready" ? "evaluate_load_signals" : "evaluate_load_signals";
+    stage = "evaluate_load_signals";
     await deps.progress(runId, readiness.state === "ready" ? "evaluating_baseline" : "partial_evidence");
-    const evaluated = await deps.evaluate(runId, context, readiness, { shopify, gsc, ga4, crawl });
+    const evaluated = await deps.evaluate(runId, context, readiness, { shopify, gsc, ga4, crawl }, (nextStage) => { stage = nextStage; });
     const result = { readiness, counts: { ...persisted, findings: evaluated.findings, opportunities: evaluated.opportunities }, certification: evaluated.certification };
     stage = "finish";
     await deps.finish(runId, result);
@@ -789,9 +789,10 @@ async function persist(runId: string, context: PilotContext, observations: { sho
   }
 }
 
-async function evaluate(runId: string, context: PilotContext, readiness: PilotReadiness, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }) {
+async function evaluate(runId: string, context: PilotContext, readiness: PilotReadiness, observations: { shopify: Outcome<ShopifyObservation>; gsc: Outcome<GscObservation>; ga4: Outcome<Ga4Observation>; crawl: Outcome<CrawlObservation> }, setStage: (stage: PilotFailureStage) => void = () => undefined) {
   const sql = database();
   try {
+    setStage("evaluate_load_signals");
     const summaryEvidence = await sql<{ id: string }[]>`INSERT INTO evidence(site_id,source,kind,confidence,payload,provenance) VALUES(${context.siteId}::uuid,'seo_engine','baseline_readiness',1,${sql.json(readiness)},${sql.json({ runId, evaluator: "baseline_v2" })}) RETURNING id::text`;
     const evidenceId = summaryEvidence[0]!.id;
     const findingRows = readiness.state === "ready" ? await sql<{ id: string }[]>`
@@ -830,7 +831,7 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
         FROM evidence e
         JOIN pages p ON p.id=(e.payload->>'pageId')::uuid
         JOIN LATERAL (
-          SELECT title,h1,content_text,links FROM page_snapshots
+          SELECT title,meta_description,h1,content_text,links FROM page_snapshots
           WHERE page_id=p.id AND raw_signals->>'runId'=${runId}
           ORDER BY observed_at DESC LIMIT 1
         ) ps ON true
@@ -873,6 +874,7 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       ctr: Number(row.ctr ?? 0),
       position: row.position == null ? null : Number(row.position),
     }));
+    setStage("evaluate_reconcile");
     const aggregateAvailable = observations.gsc.ok && observations.gsc.data.aggregate.ok;
     const reconciliation = observations.gsc.ok ? observations.gsc.data.reconciliation.status : "aggregate_unavailable";
     const candidates = generateOpportunityCandidates({
@@ -886,7 +888,9 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
     });
     const reconciliationResult = reconcileManagedOpportunities(existingRows, candidates);
 
+    setStage("evaluate_persist_opportunity");
     await sql.begin(async (tx) => {
+      setStage("evaluate_persist_opportunity");
       await tx`
         UPDATE opportunities SET status='dismissed',
           rationale='Superseded by Opportunity Engine v1 because the legacy page-level CTR candidate lacks current query-level eligibility evidence.',
@@ -894,11 +898,13 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
         WHERE site_id=${context.siteId}::uuid AND opportunity_type='organic_ctr' AND status IN ('new','accepted','planned')
           AND COALESCE(impact_estimate->>'engine','')<>'opportunity_engine_v1'`;
       if (reconciliationResult.staleIds.length > 0) {
+        setStage("evaluate_persist_opportunity");
         await tx`
           UPDATE opportunities SET status='dismissed',
             rationale='Superseded by Opportunity Engine v1 after the page or current evidence no longer met indexability and organic-remediation eligibility guardrails.',
             updated_at=now()
           WHERE id=ANY(${reconciliationResult.staleIds}::uuid[])`;
+        setStage("evaluate_persist_action_plan");
         await tx`
           UPDATE action_plans SET status='cancelled',
             expected_outcome=expected_outcome || ${tx.json({ planner: "dry_run_action_planner_v1", lifecycleStage: "invalidated", executionAuthorized: false, publicSiteWrites: false, invalidatedReason: "source_opportunity_stale_or_ineligible", invalidatedAtReconciliation: true })},
@@ -908,6 +914,7 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       }
 
       for (const item of candidates) {
+        setStage("evaluate_persist_opportunity");
         const signalRows = await tx<{ id: string }[]>`
           INSERT INTO evidence(site_id,page_id,source,kind,confidence,payload,provenance)
           VALUES(${context.siteId}::uuid,${item.pageId}::uuid,'seo_engine','opportunity_signal',${item.confidence},
@@ -943,6 +950,7 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
               RETURNING id::text`;
         const opportunityId = opportunityRows[0]!.id;
         const plan = createDryRunProposal(item, crawlPagesById.get(item.pageId), sourceEvidenceIds);
+        setStage("evaluate_persist_action_plan");
         const updatedPlans = await tx<{ id: string }[]>`
           UPDATE action_plans SET status=${plan.status},risk_level=${plan.riskLevel},rationale=${plan.rationale},
             expected_outcome=${tx.json(plan.expectedOutcome)},updated_at=now()
@@ -959,6 +967,7 @@ async function evaluate(runId: string, context: PilotContext, readiness: PilotRe
       }
     });
 
+    setStage("certification");
     const activeOpportunityRows = await sql<{ count: number }[]>`
       SELECT COUNT(*)::int AS count FROM opportunities
       WHERE site_id=${context.siteId}::uuid AND status IN ('new','accepted','planned')
@@ -979,10 +988,10 @@ async function finish(runId: string, result: Omit<PilotResult, "runId" | "status
   }
 }
 
-async function fail(runId: string, category: string) {
+async function fail(runId: string, category: string, stage: PilotFailureStage, detail: string) {
   const sql = database();
   try {
-    await sql`UPDATE jobs SET status='failed',payload=payload || ${sql.json({ phase: "failed", publicSiteWrites: false })},completed_at=now(),updated_at=now(),last_error=${category} WHERE id=${runId}::uuid`;
+    await sql`UPDATE jobs SET status='failed',payload=payload || ${sql.json({ phase: "failed", failure: { stage, category, detail: safeFailureDetail(detail) }, publicSiteWrites: false })},completed_at=now(),updated_at=now(),last_error=${category} WHERE id=${runId}::uuid`;
   } finally {
     await sql.end({ timeout: 2 });
   }
