@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
-    "build": "pnpm --filter @seo-engine/oauth-connection-manager build && node ./build.mjs",
+    "build": "pnpm --filter @seo-engine/oauth-connection-manager build && node ./build.mjs && node ./verify-build.mjs",
+    "build:production": "pnpm run build",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "test": "pnpm --filter @seo-engine/oauth-connection-manager build && AI_PROPOSAL_GENERATION_ENABLED=false AI_INTEGRATIONS_OPENAI_BASE_URL=http://127.0.0.1:9 AI_INTEGRATIONS_OPENAI_API_KEY=ci-test-key tsx --test src/lib/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
