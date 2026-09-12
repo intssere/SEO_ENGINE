@@ -25,6 +25,13 @@ function requestId(req: Request): string | null {
   return candidate == null ? null : String(candidate);
 }
 
+function effectiveRequiredRole(req: Request): AppRole {
+  const path = req.path;
+  if (path.startsWith("/connections/") && path !== "/connections/status") return "admin";
+  if (/^\/execution\/actions\/[^/]+\/task53\/reverify-rollback$/.test(path)) return "admin";
+  return requiredRoleForApiRequest(req.method, path);
+}
+
 export function securityHeaders(_req: Request, res: Response, next: NextFunction) {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
@@ -70,7 +77,7 @@ export function requireApiAuthentication(req: Request, res: Response, next: Next
     return res.status(401).json({ error: "authentication_required" });
   }
 
-  const requiredRole = requiredRoleForApiRequest(req.method, req.path);
+  const requiredRole = effectiveRequiredRole(req);
   if (!roleAllows(req.auth.role, requiredRole)) {
     void writeAuthAudit({
       eventType: "api_role_forbidden",
@@ -85,7 +92,9 @@ export function requireApiAuthentication(req: Request, res: Response, next: Next
   }
 
   if (UNSAFE_METHODS.has(req.method.toUpperCase())) {
-    const csrf = req.get("x-csrf-token")?.trim() ?? "";
+    const headerCsrf = req.get("x-csrf-token")?.trim() ?? "";
+    const bodyCsrf = typeof req.body?._csrf === "string" ? req.body._csrf.trim() : "";
+    const csrf = headerCsrf || bodyCsrf;
     const csrfHash = csrf ? sha256(csrf) : "";
     if (!csrfHash || !safeEqualHex(csrfHash, req.auth.csrfTokenHash)) {
       void writeAuthAudit({
