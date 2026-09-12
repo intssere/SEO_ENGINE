@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { isSameOriginRequest } from "../lib/pilot-authorization";
 import { authorizeApprovedProposal, ExecutionAuthorizationError, loadExecutionFoundation } from "../lib/execution-store.js";
 import { task52OperatorStates } from "../lib/shopify-write-foundation.js";
+import { runTask52RuntimeSelfTest } from "../lib/task52-runtime-self-test.js";
 
 const router: IRouter = Router();
 
@@ -17,9 +18,15 @@ router.get("/execution", async (_req, res) => {
       public_site_write_required_for_live_dispatch: true,
       independent_read_after_write: true,
       rollback_from_pre_write_snapshot: true,
+      runtime_self_test: "/api/execution/task52/self-test",
       operator_states: task52OperatorStates,
     },
   });
+});
+
+router.get("/execution/task52/self-test", (_req, res) => {
+  const result = runTask52RuntimeSelfTest();
+  return res.status(result.status === "passed" ? 200 : 503).json(result);
 });
 
 router.post("/execution/:id/authorize", async (req, res) => {
