@@ -52,17 +52,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client
 
-      - name: Validate PostgreSQL schema
+      - name: Validate legacy PostgreSQL core schema
         run: |
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
-          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'" | grep -q '^29$'
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^29$'
 
-      - name: Test runtime database bootstrap
+      - name: Test Task #55 runtime auth migration and database bootstrap
         env:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
         run: |
           pnpm --filter @workspace/db test:bootstrap
           pnpm db:bootstrap
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^31$'
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT to_regclass('public.auth_sessions') IS NOT NULL AND to_regclass('public.auth_audit_events') IS NOT NULL" | grep -q '^t$'
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT domain FROM sites WHERE domain='diamondshelf.us' AND is_active=true" | grep -q '^diamondshelf.us$'
 
       - name: Test all current workspace packages

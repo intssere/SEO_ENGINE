@@ -4,6 +4,36 @@ modules = ["nodejs-24", "postgresql-16"]
 router = "application"
 deploymentTarget = "autoscale"
 
+[[deployment.responseHeaders]]
+path = "/*"
+name = "Content-Security-Policy"
+value = "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; form-action 'self'"
+
+[[deployment.responseHeaders]]
+path = "/*"
+name = "Strict-Transport-Security"
+value = "max-age=31536000; includeSubDomains"
+
+[[deployment.responseHeaders]]
+path = "/*"
+name = "X-Frame-Options"
+value = "DENY"
+
+[[deployment.responseHeaders]]
+path = "/*"
+name = "X-Content-Type-Options"
+value = "nosniff"
+
+[[deployment.responseHeaders]]
+path = "/*"
+name = "Referrer-Policy"
+value = "no-referrer"
+
+[[deployment.responseHeaders]]
+path = "/*"
+name = "Permissions-Policy"
+value = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
 [deployment.postBuild]
 args = ["pnpm", "store", "prune"]
 env = { "CI" = "true" }
@@ -41,7 +71,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "curl -fsS http://localhost:80/api/healthz && curl -fsS http://localhost:80/api/dashboard >/dev/null && curl -fsS http://localhost:80/ >/dev/null"
+args = "curl -fsS http://localhost:80/api/healthz && curl -fsS http://localhost:80/api/auth/status >/dev/null && curl -fsS http://localhost:80/ >/dev/null"
 
 [workflows.workflow.metadata]
 isValidation = true

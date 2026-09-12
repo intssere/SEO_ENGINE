@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useState, createContext, useContext } from "
 import { Link, useLocation } from "wouter";
 import { AskModal } from "./ask-modal";
 import { useGetDashboard } from "@workspace/api-client-react";
+import { useAuth } from "@/lib/auth-client";
 
 export const AskModalContext = createContext<(open: boolean) => void>(() => {});
 export const useAskModal = () => useContext(AskModalContext);
@@ -39,6 +40,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { data, isLoading } = useGetDashboard();
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
+  const auth = useAuth();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -85,6 +87,20 @@ export function Layout({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className="sidebarFoot">
+            {auth.enforcementEnabled && auth.authenticated && auth.user ? (
+              <div className="mb-3 border-b border-[#24344f] pb-3 text-xs leading-5 text-[#9fb0c9]">
+                <strong className="block truncate text-[#dce6f4]">{auth.user.displayName || auth.user.email}</strong>
+                <span className="block truncate">{auth.user.email}</span>
+                <span className="uppercase tracking-wide">{auth.user.role}</span>
+                <button
+                  type="button"
+                  className="mt-2 rounded border border-[#334766] px-2 py-1 text-[#dce6f4] hover:bg-[#17253a]"
+                  onClick={() => void auth.logout()}
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : null}
             {isLoading ? (
               <span className="text-[#7f91af]">Loading state...</span>
             ) : data ? (

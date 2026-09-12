@@ -44,12 +44,27 @@ const requiredBundleMarkers = [
   "task54_bounded_forward_propagation_verification_v1",
   "rollback_on_verification_failure",
   "measurement_handoff_on_verified_live_change",
+  "application_auth_rbac_foundation_v1",
+  "/auth/google/start",
+  "/auth/google/callback",
+  "/auth/session",
+  "/auth/logout",
+  "authentication_required",
+  "authentication_configuration_invalid",
+  "csrf_validation_failed",
+  "seo_engine_session",
+  "AUTH_ENFORCEMENT_ENABLED",
+  "google_oidc",
+  "publicRegistrationEnabled",
 ];
 
 const requiredSourceMarkers = [
   "routes/execution.ts",
   "routes/connections.ts",
   "routes/task53-write-scope.ts",
+  "routes/auth.ts",
+  "middlewares/auth-security.ts",
+  "lib/auth-foundation.ts",
   "lib/execution-foundation.ts",
   "lib/execution-store.ts",
   "lib/shopify-write-foundation.ts",
@@ -74,4 +89,4 @@ if (missingBundleMarkers.length > 0 || missingSourceMarkers.length > 0) {
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: Task #51 execution foundation, Task #52 dry-run verification/rollback, hardened Task #53 controlled execute-and-rollback pilot, and Task #54 verified persistent single-action apply foundation are present.");
+console.log("Production API bundle verification passed: Tasks #51–#54 execution safety foundations and Task #55 authentication/RBAC/CSRF security foundation are present.");

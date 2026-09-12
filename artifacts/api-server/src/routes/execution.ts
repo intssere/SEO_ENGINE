@@ -1,5 +1,6 @@
 import { Router, type IRouter, type Response } from "express";
 import { isSameOriginRequest } from "../lib/pilot-authorization";
+import { verifiedActorId } from "../middlewares/auth-security.js";
 import { authorizeApprovedProposal, ExecutionAuthorizationError, loadExecutionFoundation } from "../lib/execution-store.js";
 import { ApprovalWindowRenewalError, renewApprovedProposalAuthorizationWindow } from "../lib/task51-approval-renewal.js";
 import {
@@ -189,8 +190,8 @@ router.post("/execution/:id/renew-authorization-window", async (req, res) => {
   const proposalFingerprint = typeof req.body?.proposalFingerprint === "string" ? req.body.proposalFingerprint.trim() : "";
   const confirmation = typeof req.body?.confirmation === "string" ? req.body.confirmation : "";
   if (!proposalFingerprint || !confirmation) return res.status(400).json({ error: "invalid_authorization_window_renewal_request" });
-  const actorId = req.get("x-replit-user-id") ?? req.get("x-replit-user-name") ?? "same_origin_reviewer";
   try {
+    const actorId = verifiedActorId(req);
     return res.json(await renewApprovedProposalAuthorizationWindow(
       req.params.id,
       { proposalFingerprint, confirmation },
@@ -198,6 +199,7 @@ router.post("/execution/:id/renew-authorization-window", async (req, res) => {
     ));
   } catch (error) {
     if (error instanceof ApprovalWindowRenewalError) return res.status(error.status).json({ error: error.category });
+    if (error instanceof Error && error.message === "verified_actor_missing") return res.status(401).json({ error: "authentication_required" });
     return res.status(500).json({ error: "authorization_window_renewal_failed" });
   }
 });
@@ -213,8 +215,8 @@ router.post("/execution/actions/:actionId/renew-authorization", async (req, res)
   if (!currentAuthorizationFingerprint || !confirmation) {
     return res.status(400).json({ error: "invalid_executable_action_renewal_request" });
   }
-  const actorId = req.get("x-replit-user-id") ?? req.get("x-replit-user-name") ?? "same_origin_reviewer";
   try {
+    const actorId = verifiedActorId(req);
     return res.json(await renewExecutableActionAuthorization(
       req.params.actionId,
       { currentAuthorizationFingerprint, confirmation },
@@ -224,6 +226,7 @@ router.post("/execution/actions/:actionId/renew-authorization", async (req, res)
     if (error instanceof ExecutableActionAuthorizationRenewalError) {
       return res.status(error.status).json({ error: error.category });
     }
+    if (error instanceof Error && error.message === "verified_actor_missing") return res.status(401).json({ error: "authentication_required" });
     return res.status(500).json({ error: "executable_action_authorization_renewal_failed" });
   }
 });
