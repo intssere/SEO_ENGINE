@@ -4,7 +4,7 @@ import { authorizeApprovedProposal, ExecutionAuthorizationError, loadExecutionFo
 import { task52OperatorStates } from "../lib/shopify-write-foundation.js";
 import { runTask52RuntimeSelfTest } from "../lib/task52-runtime-self-test.js";
 import { inspectTask53ShopifyCapability, Task53CredentialError } from "../lib/task53-shopify-credential.js";
-import { executeTask53ProductionPilot, getTask53Preflight, Task53ExecutionError } from "../lib/task53-store.js";
+import { executeTask53ProductionPilotV2, getTask53PreflightV2, TASK53_ADMIN_API_VERSION, Task53ExecutionV2Error } from "../lib/task53-store-v2.js";
 import { TASK53_VERSION, Task53ProviderError, type Task53Resource } from "../lib/task53-production-pilot.js";
 
 const router: IRouter = Router();
@@ -18,7 +18,7 @@ function task53Resource(body: unknown): Task53Resource | null {
 }
 
 function task53Error(res: Response, error: unknown) {
-  if (error instanceof Task53ExecutionError) return res.status(error.status).json({ error: error.category });
+  if (error instanceof Task53ExecutionV2Error) return res.status(error.status).json({ error: error.category });
   if (error instanceof Task53CredentialError) return res.status(409).json({ error: error.category });
   if (error instanceof Task53ProviderError) return res.status(error.httpStatus && error.httpStatus >= 400 && error.httpStatus < 600 ? 502 : 409).json({ error: error.category });
   return res.status(500).json({ error: "task53_execution_failed" });
@@ -52,6 +52,8 @@ router.get("/execution", async (_req, res) => {
     },
     task53: {
       version: TASK53_VERSION,
+      orchestrator: "task53_store_v2",
+      admin_api_version: TASK53_ADMIN_API_VERSION,
       mode: "single_action_production_pilot",
       provider: "shopify",
       provider_write_dispatch_enabled: process.env.PUBLIC_SITE_WRITES_ENABLED?.trim().toLowerCase() === "true",
@@ -65,6 +67,7 @@ router.get("/execution", async (_req, res) => {
       independent_provider_read_after_write: true,
       independent_storefront_verification: true,
       deterministic_rollback_required: true,
+      rollback_precedes_nonessential_audit_persistence: true,
       automatic_scheduler_enabled: false,
       capability: task53Capability,
     },
@@ -96,7 +99,7 @@ router.post("/execution/:id/task53/preflight", async (req, res) => {
   const resource = task53Resource(req.body);
   if (!resource) return res.status(400).json({ error: "invalid_task53_resource" });
   try {
-    return res.json(await getTask53Preflight(req.params.id, resource));
+    return res.json(await getTask53PreflightV2(req.params.id, resource));
   } catch (error) {
     return task53Error(res, error);
   }
@@ -109,7 +112,7 @@ router.post("/execution/:id/task53/execute", async (req, res) => {
   const confirmation = typeof req.body?.confirmation === "string" ? req.body.confirmation : "";
   if (!resource || !preflightFingerprint || !confirmation) return res.status(400).json({ error: "invalid_task53_execution_request" });
   try {
-    return res.json(await executeTask53ProductionPilot(req.params.id, { resource, preflightFingerprint, confirmation }));
+    return res.json(await executeTask53ProductionPilotV2(req.params.id, { resource, preflightFingerprint, confirmation }));
   } catch (error) {
     return task53Error(res, error);
   }
