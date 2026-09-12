@@ -4,6 +4,13 @@ import { authorizeApprovedProposal, ExecutionAuthorizationError, loadExecutionFo
 import { task52OperatorStates } from "../lib/shopify-write-foundation.js";
 import { runTask52RuntimeSelfTest } from "../lib/task52-runtime-self-test.js";
 import { inspectTask53ShopifyCapability, Task53CredentialError } from "../lib/task53-shopify-credential.js";
+import {
+  resolveTask53ShopifyResource,
+  TASK53_RESOURCE_RESOLVER_API_VERSION,
+  TASK53_RESOURCE_RESOLVER_REQUIRED_SCOPE,
+  TASK53_RESOURCE_RESOLVER_VERSION,
+  Task53ResolverError,
+} from "../lib/task53-resource-resolver.js";
 import { executeTask53ProductionPilotV2, getTask53PreflightV2, TASK53_ADMIN_API_VERSION, Task53ExecutionV2Error } from "../lib/task53-store-v2.js";
 import { TASK53_VERSION, Task53ProviderError, type Task53Resource } from "../lib/task53-production-pilot.js";
 
@@ -69,6 +76,12 @@ router.get("/execution", async (_req, res) => {
       deterministic_rollback_required: true,
       rollback_precedes_nonessential_audit_persistence: true,
       automatic_scheduler_enabled: false,
+      resource_resolver: "/api/execution/task53/resolve-resource",
+      resource_resolver_version: TASK53_RESOURCE_RESOLVER_VERSION,
+      resource_resolver_mode: "read_only",
+      resource_resolver_admin_api_version: TASK53_RESOURCE_RESOLVER_API_VERSION,
+      resource_resolver_required_scope: TASK53_RESOURCE_RESOLVER_REQUIRED_SCOPE,
+      resource_resolver_provider_write_dispatch_enabled: false,
       capability: task53Capability,
     },
   });
@@ -77,6 +90,17 @@ router.get("/execution", async (_req, res) => {
 router.get("/execution/task52/self-test", (_req, res) => {
   const result = runTask52RuntimeSelfTest();
   return res.status(result.status === "passed" ? 200 : 503).json(result);
+});
+
+router.get("/execution/task53/resolve-resource", async (req, res) => {
+  const targetUrl = typeof req.query.url === "string" ? req.query.url.trim() : "";
+  if (!targetUrl) return res.status(400).json({ error: "task53_resolver_target_url_required" });
+  try {
+    return res.json(await resolveTask53ShopifyResource(targetUrl));
+  } catch (error) {
+    if (error instanceof Task53ResolverError) return res.status(error.status).json({ error: error.category });
+    return res.status(500).json({ error: "task53_resource_resolution_failed" });
+  }
 });
 
 router.post("/execution/:id/authorize", async (req, res) => {
