@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { DecideApprovalBody, DecideApprovalResponse, EditApprovalDraftBody, EditApprovalDraftResponse } from "@workspace/api-zod";
 import { isSameOriginRequest } from "../lib/pilot-authorization";
+import { verifiedActorId } from "../middlewares/auth-security.js";
 import { answerOperationalQuestion, decideProposalReview, editProposalDraft, getRuntimeReadiness, loadOperationalList, loadOpportunities, loadPerformance, parsePerformanceFilters, ProposalDecisionError } from "../lib/operational-data";
 
 const router: IRouter = Router();
@@ -24,11 +25,12 @@ router.post("/approvals/:id/decision", async (req, res) => {
   if (!isSameOriginRequest(req.get("origin"), req.get("host"))) return res.status(403).json({ error: "same_origin_review_required" });
   const body = DecideApprovalBody.safeParse(req.body);
   if (!body.success) return res.status(400).json({ error: "invalid_approval_decision" });
-  const actorId = req.get("x-replit-user-id") ?? req.get("x-replit-user-name") ?? "same_origin_reviewer";
   try {
+    const actorId = verifiedActorId(req);
     return res.json(DecideApprovalResponse.parse(await decideProposalReview(req.params.id, body.data, actorId)));
   } catch (error) {
     if (error instanceof ProposalDecisionError) return res.status(error.status).json({ error: error.category });
+    if (error instanceof Error && error.message === "verified_actor_missing") return res.status(401).json({ error: "authentication_required" });
     return res.status(500).json({ error: "approval_decision_failed" });
   }
 });
@@ -36,11 +38,12 @@ router.patch("/approvals/:id/draft", async (req, res) => {
   if (!isSameOriginRequest(req.get("origin"), req.get("host"))) return res.status(403).json({ error: "same_origin_review_required" });
   const body = EditApprovalDraftBody.safeParse(req.body);
   if (!body.success) return res.status(400).json({ error: "invalid_draft_request" });
-  const actorId = req.get("x-replit-user-id") ?? req.get("x-replit-user-name") ?? "same_origin_reviewer";
   try {
+    const actorId = verifiedActorId(req);
     return res.json(EditApprovalDraftResponse.parse(await editProposalDraft(req.params.id, body.data, actorId)));
   } catch (error) {
     if (error instanceof ProposalDecisionError) return res.status(error.status).json({ error: error.category });
+    if (error instanceof Error && error.message === "verified_actor_missing") return res.status(401).json({ error: "authentication_required" });
     return res.status(500).json({ error: "proposal_draft_failed" });
   }
 });
