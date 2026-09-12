@@ -1,6 +1,7 @@
 import { Router, type IRouter, type Response } from "express";
 import { isSameOriginRequest } from "../lib/pilot-authorization";
 import { authorizeApprovedProposal, ExecutionAuthorizationError, loadExecutionFoundation } from "../lib/execution-store.js";
+import { ApprovalWindowRenewalError, renewApprovedProposalAuthorizationWindow } from "../lib/task51-approval-renewal.js";
 import { task52OperatorStates } from "../lib/shopify-write-foundation.js";
 import { runTask52RuntimeSelfTest } from "../lib/task52-runtime-self-test.js";
 import { inspectTask53ShopifyCapability, Task53CredentialError } from "../lib/task53-shopify-credential.js";
@@ -115,6 +116,26 @@ router.post("/execution/:id/authorize", async (req, res) => {
   } catch (error) {
     if (error instanceof ExecutionAuthorizationError) return res.status(error.status).json({ error: error.category });
     return res.status(500).json({ error: "execution_authorization_failed" });
+  }
+});
+
+router.post("/execution/:id/renew-authorization-window", async (req, res) => {
+  if (!isSameOriginRequest(req.get("origin"), req.get("host"))) {
+    return res.status(403).json({ error: "same_origin_authorization_window_renewal_required" });
+  }
+  const proposalFingerprint = typeof req.body?.proposalFingerprint === "string" ? req.body.proposalFingerprint.trim() : "";
+  const confirmation = typeof req.body?.confirmation === "string" ? req.body.confirmation : "";
+  if (!proposalFingerprint || !confirmation) return res.status(400).json({ error: "invalid_authorization_window_renewal_request" });
+  const actorId = req.get("x-replit-user-id") ?? req.get("x-replit-user-name") ?? "same_origin_reviewer";
+  try {
+    return res.json(await renewApprovedProposalAuthorizationWindow(
+      req.params.id,
+      { proposalFingerprint, confirmation },
+      actorId,
+    ));
+  } catch (error) {
+    if (error instanceof ApprovalWindowRenewalError) return res.status(error.status).json({ error: error.category });
+    return res.status(500).json({ error: "authorization_window_renewal_failed" });
   }
 });
 
