@@ -1,8 +1,14 @@
 import { Router, type IRouter } from "express";
 import { GOOGLE_READ_SCOPES } from "@seo-engine/oauth-connection-manager";
 import { logger } from "../lib/logger";
+import { isSameOriginRequest } from "../lib/pilot-authorization";
+import { inspectTask53ShopifyCapability } from "../lib/task53-shopify-credential.js";
 import {
   startUrl,
+  startTask53ShopifyWriteUrl,
+  task53ShopifyWriteExternalAccountId,
+  TASK53_SHOPIFY_WRITE_RETURN_TO,
+  TASK53_SHOPIFY_WRITE_SCOPE,
   seal,
   open,
   assertOAuthState,
@@ -21,6 +27,14 @@ import {
 
 const router: IRouter = Router();
 const blocked = () => process.env.PUBLIC_SITE_WRITES_ENABLED?.trim().toLowerCase() === "true";
+const shopPattern = /^[a-z0-9][a-z0-9-]*\.myshopify\.com$/;
+const shopifyCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: 600_000,
+  path: "/",
+};
 
 type GoogleCallbackStage =
   | "write_gate"
@@ -55,9 +69,9 @@ function safeGoogleFailure(stage: GoogleCallbackStage, error: unknown) {
 
 router.get("/connections/status", async (_req, res) => {
   try {
-    const rows = await list();
+    const [rows, task53Capability] = await Promise.all([list(), inspectTask53ShopifyCapability()]);
     const latest = (provider: string) => rows.find((row) => row.provider === provider);
-    const shop = latest("shopify");
+    const shop = rows.find((row) => row.provider === "shopify" && row.metadata.connectionMode !== "task53_write_products") ?? latest("shopify");
     const google = latest("google");
     const connectionState = typeof google?.metadata.connectionState === "string" ? google.metadata.connectionState : google?.status;
     const needsConfirmation = google?.status === "pending" && connectionState === "pending_confirmation" && google.metadata.needsConfirmation === true;
@@ -69,6 +83,12 @@ router.get("/connections/status", async (_req, res) => {
       shopify: {
         connected: shop?.status === "connected",
         ...(typeof shop?.metadata.shopDomain === "string" ? { domain: shop.metadata.shopDomain } : {}),
+        task53WriteCapability: {
+          connected: task53Capability.connected,
+          writeProductsScopePresent: task53Capability.writeProductsScopePresent,
+          credentialAvailable: task53Capability.credentialAvailable,
+          boundedPilotOnly: true,
+        },
       },
       google: {
         connected: google?.status === "connected",
@@ -95,18 +115,26 @@ router.get("/connections/shopify/start", (req, res) => {
   try {
     if (blocked()) throw new Error();
     const shop = String(req.query.shop ?? "").trim().toLowerCase();
-    if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(shop)) throw new Error();
+    if (!shopPattern.test(shop)) throw new Error();
     const { state, url } = startUrl("shopify", shop);
-    res.cookie(SHOPIFY_STATE_COOKIE, seal(state), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 600_000,
-      path: "/",
-    });
+    res.cookie(SHOPIFY_STATE_COOKIE, seal(state), shopifyCookieOptions);
     return res.redirect(url);
   } catch {
     return res.redirect(`${origin()}/connections?error=shopify_start`);
+  }
+});
+
+router.get("/connections/shopify/task53-write/start", (req, res) => {
+  try {
+    if (blocked()) throw new Error("task53_write_scope_authorization_requires_public_writes_disabled");
+    if (!isSameOriginRequest(req.get("origin") ?? req.get("referer"), req.get("host"))) throw new Error("task53_write_scope_same_origin_required");
+    const shop = String(req.query.shop ?? "").trim().toLowerCase();
+    if (!shopPattern.test(shop)) throw new Error("task53_shop_domain_invalid");
+    const { state, url } = startTask53ShopifyWriteUrl(shop);
+    res.cookie(SHOPIFY_STATE_COOKIE, seal(state), shopifyCookieOptions);
+    return res.redirect(url);
+  } catch {
+    return res.redirect(`${origin()}/connections?error=task53_shopify_write_start`);
   }
 });
 
@@ -129,22 +157,37 @@ router.get("/connections/google/start", (_req, res) => {
 
 router.get("/connections/shopify/callback", async (req, res) => {
   try {
-    if (blocked()) throw new Error();
+    if (blocked()) throw new Error("shopify_oauth_requires_public_writes_disabled");
     const shop = String(req.query.shop ?? "").toLowerCase();
-    if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(shop)) throw new Error();
+    if (!shopPattern.test(shop)) throw new Error("shopify_domain_invalid");
     const state = open(req.cookies[SHOPIFY_STATE_COOKIE]);
     assertOAuthState(state, String(req.query.state ?? ""), "shopify");
-    if (state.shopDomain !== shop) throw new Error();
+    if (state.shopDomain !== shop) throw new Error("shopify_state_domain_mismatch");
+    if (!["/connections", TASK53_SHOPIFY_WRITE_RETURN_TO].includes(state.returnTo)) throw new Error("shopify_oauth_profile_invalid");
     const config = {
       clientId: process.env.SHOPIFY_OAUTH_CLIENT_ID!,
       clientSecret: process.env.SHOPIFY_OAUTH_CLIENT_SECRET!,
       redirectUri: `${origin()}/api/connections/shopify/callback`,
       shopDomain: state.shopDomain!,
     };
-    await save("shopify", state.shopDomain!, await exchangeShopifyCode(config, String(req.query.code)), { shopDomain: shop });
+    const bundle = await exchangeShopifyCode(config, String(req.query.code));
+    if (state.returnTo === TASK53_SHOPIFY_WRITE_RETURN_TO) {
+      if (!bundle.scopes.includes(TASK53_SHOPIFY_WRITE_SCOPE)) throw new Error("task53_shopify_write_scope_missing");
+      await save("shopify", task53ShopifyWriteExternalAccountId(shop), bundle, {
+        shopDomain: shop,
+        connectionMode: "task53_write_products",
+        readOnly: false,
+        boundedPilotOnly: true,
+        requiredScope: TASK53_SHOPIFY_WRITE_SCOPE,
+      });
+      res.clearCookie(SHOPIFY_STATE_COOKIE);
+      return res.redirect(`${origin()}/connections?success=task53_shopify_write`);
+    }
+    await save("shopify", state.shopDomain!, bundle, { shopDomain: shop, connectionMode: "read_only", readOnly: true });
     res.clearCookie(SHOPIFY_STATE_COOKIE);
     return res.redirect(`${origin()}/connections?success=shopify`);
   } catch {
+    res.clearCookie(SHOPIFY_STATE_COOKIE);
     return res.redirect(`${origin()}/connections?error=shopify_callback`);
   }
 });
