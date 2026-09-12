@@ -4,6 +4,8 @@ import { createOAuthState, buildGoogleAuthorizationUrl, buildShopifyAuthorizatio
 
 export const GOOGLE_STATE_COOKIE = "seo_oauth_google_state";
 export const SHOPIFY_STATE_COOKIE = "seo_oauth_shopify_state";
+export const TASK53_SHOPIFY_WRITE_RETURN_TO = "/connections?task53_write_products=1";
+export const TASK53_SHOPIFY_WRITE_SCOPE = "write_products";
 const required = (name: string) => { const v = process.env[name]?.trim(); if (!v) throw new Error(`Missing required OAuth runtime configuration: ${name}`); return v; };
 export const origin = () => { const u = new URL(required("APP_ORIGIN")); if (u.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(u.hostname)) throw new Error("APP_ORIGIN must use HTTPS outside localhost."); return u.origin; };
 const signingSecret = () => process.env.OAUTH_STATE_SIGNING_SECRET?.trim() || required("OAUTH_CREDENTIAL_ENCRYPTION_KEY");
@@ -14,6 +16,25 @@ export function startUrl(provider: OAuthProvider, shop?: string) {
   const state = createOAuthState(provider, { shopDomain: shop, returnTo: "/connections" });
   if (provider === "google") return { state, url: buildGoogleAuthorizationUrl({ clientId: required("GOOGLE_OAUTH_CLIENT_ID"), clientSecret: required("GOOGLE_OAUTH_CLIENT_SECRET"), redirectUri: `${origin()}/api/connections/google/callback` }, state) };
   return { state, url: buildShopifyAuthorizationUrl({ clientId: required("SHOPIFY_OAUTH_CLIENT_ID"), clientSecret: required("SHOPIFY_OAUTH_CLIENT_SECRET"), redirectUri: `${origin()}/api/connections/shopify/callback`, shopDomain: shop ?? "" }, state) };
+}
+export function task53ShopifyWriteExternalAccountId(shopDomain: string) {
+  const shop = shopDomain.trim().toLowerCase();
+  if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(shop)) throw new Error("A permanent *.myshopify.com domain is required.");
+  return `${shop}#task53-write-products`;
+}
+export function startTask53ShopifyWriteUrl(shop: string) {
+  const state = createOAuthState("shopify", { shopDomain: shop, returnTo: TASK53_SHOPIFY_WRITE_RETURN_TO });
+  const base = buildShopifyAuthorizationUrl({
+    clientId: required("SHOPIFY_OAUTH_CLIENT_ID"),
+    clientSecret: required("SHOPIFY_OAUTH_CLIENT_SECRET"),
+    redirectUri: `${origin()}/api/connections/shopify/callback`,
+    shopDomain: shop,
+  }, state);
+  const url = new URL(base);
+  const scopes = new Set((url.searchParams.get("scope") ?? "").split(",").map((scope) => scope.trim()).filter(Boolean));
+  scopes.add(TASK53_SHOPIFY_WRITE_SCOPE);
+  url.searchParams.set("scope", [...scopes].join(","));
+  return { state, url: url.toString() };
 }
 export async function save(provider: OAuthProvider, externalAccountId: string, bundle: { accessToken: string; refreshToken: string | null; expiresAt: string | null; scopes: string[]; tokenType: string | null }, metadata: Record<string, unknown> = {}, status = "connected") {
   const sql = db();
