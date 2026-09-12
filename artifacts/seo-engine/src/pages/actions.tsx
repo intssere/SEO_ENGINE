@@ -39,11 +39,12 @@ const titleize = (value: string) =>
   value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 function isBoundedInternalCandidate(row: ProposalRecord) {
+  const risk = row.risk_classification.toLowerCase();
   return (
     row.plan_status === "pending" &&
     row.bounded_pilot === true &&
     row.whole_site_coverage === false &&
-    row.risk_classification.toLowerCase() === "low" &&
+    !["blocked", "high", "critical"].includes(risk) &&
     row.quality_status === "pass" &&
     row.quality_approval_eligible === true &&
     row.quality_blocking_reasons.length === 0 &&
@@ -163,7 +164,7 @@ export default function ActionsPage() {
               <p className="eyebrow">BOUNDED INTERNAL AUTHORIZATION</p>
               <h2>Internal action gate</h2>
               <p className="muted">
-                Only low-risk, bounded, quality-passed proposals can appear here. Approval and internal action authorization are separate explicit steps. Neither step runs Task #53 preflight/execute, requests Shopify write scope, or writes to the public site.
+                Only bounded, quality-passed proposals that are not blocked, high, or critical risk can appear here. Approval and internal action authorization are separate explicit steps. Neither step runs Task #53 preflight/execute, requests Shopify write scope, or writes to the public site.
               </p>
             </div>
             <Badge tone="approval">
