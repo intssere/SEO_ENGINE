@@ -19,6 +19,12 @@ type ConnectionsStatus = {
   };
 };
 
+type Task53Capability = {
+  connected: boolean;
+  writeProductsScopePresent: boolean;
+  credentialAvailable: boolean;
+};
+
 type DiscoveryStatus = {
   ok: boolean;
   httpStatus: number | null;
@@ -27,6 +33,7 @@ type DiscoveryStatus = {
 
 const successMessages: Record<string, string> = {
   shopify: "Shopify connected successfully.",
+  task53_shopify_write: "Task #53 isolated Shopify write_products credential connected successfully.",
   google: "Google Search Console and GA4 connected successfully.",
   google_pending: "Google authorization succeeded. Confirm the matching Search Console and GA4 properties below.",
   google_attention: "Google authorization was stored securely, but additional setup is required.",
@@ -60,6 +67,7 @@ export default function ConnectionsPage() {
   const errorParam = searchParams.get("error");
 
   const [status, setStatus] = useState<ConnectionsStatus | null>(null);
+  const [task53Capability, setTask53Capability] = useState<Task53Capability | null>(null);
   const [loading, setLoading] = useState(true);
   const [shopDomain, setShopDomain] = useState("");
 
@@ -76,9 +84,21 @@ export default function ConnectionsPage() {
       .catch(() => {
         setLoading(false);
       });
+
+    fetch("/api/execution")
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        const capability = data?.task53?.capability;
+        if (capability) setTask53Capability(capability);
+      })
+      .catch(() => undefined);
   }, []);
 
   const oauthDisabled = status?.readOnly === false;
+  const task53WriteConnected = task53Capability?.connected === true
+    && task53Capability.writeProductsScopePresent === true
+    && task53Capability.credentialAvailable === true;
+  const task53EligibleShop = status?.shopify.domain === "vcuxm7-76.myshopify.com";
   const successMessage = successParam ? successMessages[successParam] : null;
   const errorMessage = errorParam ? errorMessages[errorParam] ?? "The connection could not be completed safely." : null;
 
@@ -139,6 +159,30 @@ export default function ConnectionsPage() {
                 <p className="font-bold text-[#172033]">{status.shopify.domain}</p>
                 <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
                   <p className="text-xs text-[#77839a]">Read-only access granted. Engine cannot modify your live theme without explicit deployment.</p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
+                  <p className="text-xs font-semibold text-[#455168] mb-2">Task #53 isolated write credential</p>
+                  {task53WriteConnected ? (
+                    <div className="text-xs text-[#14764a] flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+                      <span>write_products is connected for the bounded production pilot. This credential does not enable public-site writes by itself.</span>
+                    </div>
+                  ) : task53EligibleShop && !oauthDisabled ? (
+                    <form action="/api/connections/shopify/task53-write/start" method="POST" className="space-y-3">
+                      <input type="hidden" name="shop" value="vcuxm7-76.myshopify.com" />
+                      <input type="hidden" name="confirmation" value="AUTHORIZE_SHOPIFY_WRITE_SCOPE:write_products" />
+                      <p className="text-xs text-[#77839a]">
+                        This requests only the isolated <b>write_products</b> credential. It does not authorize Task #53 execute, a Shopify mutation, or a public-site write.
+                      </p>
+                      <button type="submit" className="w-full bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]">
+                        Authorize Task #53 write_products
+                      </button>
+                    </form>
+                  ) : (
+                    <p className="text-xs text-[#8d5c0d]">
+                      Task #53 write-scope authorization is unavailable unless the approved Diamond Shelf store is connected in read-only mode.
+                    </p>
+                  )}
                 </div>
               </div>
             ) : (
@@ -252,7 +296,7 @@ export default function ConnectionsPage() {
                     Authorize Google
                   </button>
                 ) : (
-                  <a 
+                  <a
                     href="/api/connections/google/start"
                     className="inline-block w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]"
                   >
