@@ -24,6 +24,15 @@ import {
 } from "../lib/task53-rollback-reconciliation.js";
 import { executeTask53ProductionPilotV2, getTask53PreflightV2, TASK53_ADMIN_API_VERSION, Task53ExecutionV2Error } from "../lib/task53-store-v2.js";
 import { TASK53_VERSION, Task53ProviderError, type Task53Resource } from "../lib/task53-production-pilot.js";
+import {
+  executeTask54PersistentApply,
+  getTask54Preflight,
+  TASK54_ADMIN_API_VERSION,
+  TASK54_ORCHESTRATOR,
+  TASK54_PROPAGATION_DELAYS_MS,
+  TASK54_VERSION,
+  Task54ExecutionError,
+} from "../lib/task54-persistent-apply.js";
 
 const router: IRouter = Router();
 
@@ -36,6 +45,7 @@ function task53Resource(body: unknown): Task53Resource | null {
 }
 
 function task53Error(res: Response, error: unknown) {
+  if (error instanceof Task54ExecutionError) return res.status(error.status).json({ error: error.category });
   if (error instanceof Task53ExecutionV2Error) return res.status(error.status).json({ error: error.category });
   if (error instanceof Task53RollbackReconciliationError) return res.status(error.status).json({ error: error.category });
   if (error instanceof Task53CredentialError) return res.status(409).json({ error: error.category });
@@ -103,6 +113,39 @@ router.get("/execution", async (_req, res) => {
       resource_resolver_admin_api_version: TASK53_RESOURCE_RESOLVER_API_VERSION,
       resource_resolver_required_scope: TASK53_RESOURCE_RESOLVER_REQUIRED_SCOPE,
       resource_resolver_provider_write_dispatch_enabled: false,
+      capability: task53Capability,
+    },
+    task54: {
+      version: TASK54_VERSION,
+      orchestrator: TASK54_ORCHESTRATOR,
+      admin_api_version: TASK54_ADMIN_API_VERSION,
+      mode: "persistent_single_action_apply",
+      provider: "shopify",
+      provider_write_dispatch_enabled: process.env.PUBLIC_SITE_WRITES_ENABLED?.trim().toLowerCase() === "true",
+      global_public_write_gate_required: true,
+      same_origin_required: true,
+      explicit_apply_and_verify_confirmation_required: true,
+      isolated_write_credential_required: true,
+      required_scope: "write_products",
+      resource_kinds: ["product", "collection"],
+      fields: ["title", "meta_description"],
+      success_leaves_change_live: true,
+      independent_provider_read_after_write: true,
+      independent_storefront_verification: true,
+      bounded_forward_propagation_verification: {
+        enabled: true,
+        retry_delays_ms: [...TASK54_PROPAGATION_DELAYS_MS],
+        additional_forward_provider_mutation_allowed: false,
+      },
+      rollback_on_verification_failure: true,
+      bounded_rollback_propagation_verification: {
+        enabled: true,
+        retry_delays_ms: [...TASK54_PROPAGATION_DELAYS_MS],
+        additional_rollback_provider_mutation_allowed: false,
+      },
+      measurement_handoff_on_verified_live_change: true,
+      automatic_scheduler_enabled: false,
+      batch_execution_enabled: false,
       capability: task53Capability,
     },
   });
@@ -219,6 +262,30 @@ router.post("/execution/:id/task53/execute", async (req, res) => {
   if (!resource || !preflightFingerprint || !confirmation) return res.status(400).json({ error: "invalid_task53_execution_request" });
   try {
     return res.json(await executeTask53ProductionPilotV2(req.params.id, { resource, preflightFingerprint, confirmation }));
+  } catch (error) {
+    return task53Error(res, error);
+  }
+});
+
+router.post("/execution/:id/task54/preflight", async (req, res) => {
+  if (!isSameOriginRequest(req.get("origin"), req.get("host"))) return res.status(403).json({ error: "same_origin_task54_preflight_required" });
+  const resource = task53Resource(req.body);
+  if (!resource) return res.status(400).json({ error: "invalid_task54_resource" });
+  try {
+    return res.json(await getTask54Preflight(req.params.id, resource));
+  } catch (error) {
+    return task53Error(res, error);
+  }
+});
+
+router.post("/execution/:id/task54/apply", async (req, res) => {
+  if (!isSameOriginRequest(req.get("origin"), req.get("host"))) return res.status(403).json({ error: "same_origin_task54_apply_required" });
+  const resource = task53Resource(req.body);
+  const preflightFingerprint = typeof req.body?.preflightFingerprint === "string" ? req.body.preflightFingerprint.trim() : "";
+  const confirmation = typeof req.body?.confirmation === "string" ? req.body.confirmation : "";
+  if (!resource || !preflightFingerprint || !confirmation) return res.status(400).json({ error: "invalid_task54_apply_request" });
+  try {
+    return res.json(await executeTask54PersistentApply(req.params.id, { resource, preflightFingerprint, confirmation }));
   } catch (error) {
     return task53Error(res, error);
   }
