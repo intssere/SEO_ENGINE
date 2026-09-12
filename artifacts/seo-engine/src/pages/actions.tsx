@@ -40,8 +40,14 @@ const titleize = (value: string) =>
 
 function isBoundedInternalCandidate(row: ProposalRecord) {
   const risk = row.risk_classification.toLowerCase();
+  const lifecycleStateEligible =
+    (row.lifecycle === "approval_ready" &&
+      row.plan_status === "pending" &&
+      row.decision === null) ||
+    (row.lifecycle === "approved_proposal" && row.decision === "approved");
+
   return (
-    row.plan_status === "pending" &&
+    lifecycleStateEligible &&
     row.bounded_pilot === true &&
     row.whole_site_coverage === false &&
     !["blocked", "high", "critical"].includes(risk) &&
@@ -50,9 +56,7 @@ function isBoundedInternalCandidate(row: ProposalRecord) {
     row.quality_blocking_reasons.length === 0 &&
     row.public_site_writes === false &&
     row.execution_authorized === false &&
-    Boolean(row.proposal_fingerprint) &&
-    (row.lifecycle === "approval_ready" || row.lifecycle === "approved_proposal") &&
-    (row.decision === null || row.decision === "approved")
+    Boolean(row.proposal_fingerprint)
   );
 }
 
