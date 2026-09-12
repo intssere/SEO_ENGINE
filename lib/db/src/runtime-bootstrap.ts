@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 
 export const EXPECTED_CORE_TABLE_COUNT = 29;
+export const EXPECTED_AUTH_TABLE_COUNT = 2;
+export const EXPECTED_RUNTIME_TABLE_COUNT = EXPECTED_CORE_TABLE_COUNT + EXPECTED_AUTH_TABLE_COUNT;
 export const DIAMOND_SHELF_SITE = {
   organizationName: "Diamond Shelf Trading LLC",
   organizationSlug: "diamond-shelf-trading",
@@ -14,12 +16,13 @@ export const DIAMOND_SHELF_SITE = {
   timezone: "America/Chicago",
 } as const;
 
-export type RuntimeSchemaState = "empty" | "ready" | "partial";
+export type RuntimeSchemaState = "empty" | "core_ready" | "ready" | "partial";
 
 export interface BootstrapPlan {
   schemaState: RuntimeSchemaState;
   tableCount: number;
   applyCoreMigration: boolean;
+  applyAuthMigration: boolean;
   upsertDiamondShelf: boolean;
   blocked: boolean;
   reason: string | null;
@@ -28,6 +31,8 @@ export interface BootstrapPlan {
 export interface BootstrapResult {
   status: "ready" | "blocked";
   migrationApplied: boolean;
+  coreMigrationApplied?: boolean;
+  authMigrationApplied?: boolean;
   tableCount: number;
   organizationId?: string;
   siteId?: string;
@@ -37,21 +42,61 @@ export interface BootstrapResult {
 
 export function planRuntimeBootstrap(tableCount: number): BootstrapPlan {
   if (!Number.isInteger(tableCount) || tableCount < 0) {
-    return { schemaState: "partial", tableCount, applyCoreMigration: false, upsertDiamondShelf: false, blocked: true, reason: "Invalid public schema table count." };
+    return {
+      schemaState: "partial",
+      tableCount,
+      applyCoreMigration: false,
+      applyAuthMigration: false,
+      upsertDiamondShelf: false,
+      blocked: true,
+      reason: "Invalid public schema table count.",
+    };
   }
+
   if (tableCount === 0) {
-    return { schemaState: "empty", tableCount, applyCoreMigration: true, upsertDiamondShelf: true, blocked: false, reason: null };
+    return {
+      schemaState: "empty",
+      tableCount,
+      applyCoreMigration: true,
+      applyAuthMigration: true,
+      upsertDiamondShelf: true,
+      blocked: false,
+      reason: null,
+    };
   }
+
   if (tableCount === EXPECTED_CORE_TABLE_COUNT) {
-    return { schemaState: "ready", tableCount, applyCoreMigration: false, upsertDiamondShelf: true, blocked: false, reason: null };
+    return {
+      schemaState: "core_ready",
+      tableCount,
+      applyCoreMigration: false,
+      applyAuthMigration: true,
+      upsertDiamondShelf: true,
+      blocked: false,
+      reason: null,
+    };
   }
+
+  if (tableCount === EXPECTED_RUNTIME_TABLE_COUNT) {
+    return {
+      schemaState: "ready",
+      tableCount,
+      applyCoreMigration: false,
+      applyAuthMigration: false,
+      upsertDiamondShelf: true,
+      blocked: false,
+      reason: null,
+    };
+  }
+
   return {
     schemaState: "partial",
     tableCount,
     applyCoreMigration: false,
+    applyAuthMigration: false,
     upsertDiamondShelf: false,
     blocked: true,
-    reason: `Refusing automatic migration because public schema is partial (${tableCount}/${EXPECTED_CORE_TABLE_COUNT} expected tables).`,
+    reason: `Refusing automatic migration because public schema is not a recognized state (${tableCount} tables; expected 0, ${EXPECTED_CORE_TABLE_COUNT}, or ${EXPECTED_RUNTIME_TABLE_COUNT}).`,
   };
 }
 
@@ -64,8 +109,8 @@ async function publicTableCount(sql: postgres.Sql): Promise<number> {
   return Number(rows[0]?.count ?? 0);
 }
 
-async function applyCoreMigration(sql: postgres.Sql): Promise<void> {
-  const migrationPath = fileURLToPath(new URL("../migrations/0001_core.sql", import.meta.url));
+async function applyMigration(sql: postgres.Sql, filename: string): Promise<void> {
+  const migrationPath = fileURLToPath(new URL(`../migrations/${filename}`, import.meta.url));
   const migration = await readFile(migrationPath, "utf8");
   await sql.unsafe(migration);
 }
@@ -103,43 +148,119 @@ async function upsertDiamondShelf(sql: postgres.Sql): Promise<{ organizationId: 
 }
 
 export async function bootstrapRuntimeDatabase(databaseUrl = process.env.DATABASE_URL?.trim()): Promise<BootstrapResult> {
-  if (!databaseUrl) return { status: "blocked", migrationApplied: false, tableCount: 0, reason: "DATABASE_URL is not configured." };
+  if (!databaseUrl) {
+    return { status: "blocked", migrationApplied: false, tableCount: 0, reason: "DATABASE_URL is not configured." };
+  }
 
   const sql = postgres(databaseUrl, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
+  let lockHeld = false;
+  let coreMigrationApplied = false;
+  let authMigrationApplied = false;
   try {
+    await sql`SELECT pg_advisory_lock(hashtext('seo_engine_runtime_bootstrap_v2'))`;
+    lockHeld = true;
+
     let tableCount = await publicTableCount(sql);
     const plan = planRuntimeBootstrap(tableCount);
-    if (plan.blocked) return { status: "blocked", migrationApplied: false, tableCount, reason: plan.reason ?? "Bootstrap blocked." };
+    if (plan.blocked) {
+      return { status: "blocked", migrationApplied: false, tableCount, reason: plan.reason ?? "Bootstrap blocked." };
+    }
 
-    let migrationApplied = false;
     if (plan.applyCoreMigration) {
-      await applyCoreMigration(sql);
-      migrationApplied = true;
+      await applyMigration(sql, "0001_core.sql");
+      coreMigrationApplied = true;
       tableCount = await publicTableCount(sql);
       if (tableCount !== EXPECTED_CORE_TABLE_COUNT) {
-        return { status: "blocked", migrationApplied, tableCount, reason: `Core migration did not produce the expected ${EXPECTED_CORE_TABLE_COUNT} tables.` };
+        return {
+          status: "blocked",
+          migrationApplied: true,
+          coreMigrationApplied,
+          authMigrationApplied,
+          tableCount,
+          reason: `Core migration did not produce the expected ${EXPECTED_CORE_TABLE_COUNT} tables.`,
+        };
+      }
+    }
+
+    if (plan.applyAuthMigration) {
+      await applyMigration(sql, "0002_auth.sql");
+      authMigrationApplied = true;
+      tableCount = await publicTableCount(sql);
+      if (tableCount !== EXPECTED_RUNTIME_TABLE_COUNT) {
+        return {
+          status: "blocked",
+          migrationApplied: true,
+          coreMigrationApplied,
+          authMigrationApplied,
+          tableCount,
+          reason: `Auth migration did not produce the expected ${EXPECTED_RUNTIME_TABLE_COUNT} runtime tables.`,
+        };
       }
     }
 
     const ids = await upsertDiamondShelf(sql);
-    return { status: "ready", migrationApplied, tableCount, organizationId: ids.organizationId, siteId: ids.siteId, domain: DIAMOND_SHELF_SITE.domain };
+    return {
+      status: "ready",
+      migrationApplied: coreMigrationApplied || authMigrationApplied,
+      coreMigrationApplied,
+      authMigrationApplied,
+      tableCount,
+      organizationId: ids.organizationId,
+      siteId: ids.siteId,
+      domain: DIAMOND_SHELF_SITE.domain,
+    };
   } catch (error) {
-    return { status: "blocked", migrationApplied: false, tableCount: 0, reason: error instanceof Error ? error.message : "Unknown database bootstrap error." };
+    return {
+      status: "blocked",
+      migrationApplied: coreMigrationApplied || authMigrationApplied,
+      coreMigrationApplied,
+      authMigrationApplied,
+      tableCount: 0,
+      reason: error instanceof Error ? error.message : "Unknown database bootstrap error.",
+    };
   } finally {
+    if (lockHeld) {
+      await sql`SELECT pg_advisory_unlock(hashtext('seo_engine_runtime_bootstrap_v2'))`.catch(() => undefined);
+    }
     await sql.end({ timeout: 1 }).catch(() => undefined);
   }
 }
 
-/** Ensures identity only; unlike bootstrapRuntimeDatabase this never runs DDL. */
+/** Ensures the post-Task-55 schema is present and upserts the canonical site identity; never runs DDL. */
 export async function ensureDiamondShelfIdentity(databaseUrl = process.env.DATABASE_URL?.trim()): Promise<BootstrapResult> {
-  if (!databaseUrl) return { status: "blocked", migrationApplied: false, tableCount: 0, reason: "DATABASE_URL is not configured." };
+  if (!databaseUrl) {
+    return { status: "blocked", migrationApplied: false, tableCount: 0, reason: "DATABASE_URL is not configured." };
+  }
   const sql = postgres(databaseUrl, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
   try {
     const tableCount = await publicTableCount(sql);
-    if (tableCount !== EXPECTED_CORE_TABLE_COUNT) return { status: "blocked", migrationApplied: false, tableCount, reason: tableCount === 0 ? "Public schema is empty; apply the core migration explicitly." : `Public schema is partial (${tableCount}/${EXPECTED_CORE_TABLE_COUNT} tables).` };
+    if (tableCount !== EXPECTED_RUNTIME_TABLE_COUNT) {
+      return {
+        status: "blocked",
+        migrationApplied: false,
+        tableCount,
+        reason: tableCount === 0
+          ? "Public schema is empty; apply runtime migrations explicitly."
+          : `Public schema is not Task #55 ready (${tableCount}/${EXPECTED_RUNTIME_TABLE_COUNT} tables).`,
+      };
+    }
     const ids = await upsertDiamondShelf(sql);
-    return { status: "ready", migrationApplied: false, tableCount, organizationId: ids.organizationId, siteId: ids.siteId, domain: DIAMOND_SHELF_SITE.domain };
+    return {
+      status: "ready",
+      migrationApplied: false,
+      tableCount,
+      organizationId: ids.organizationId,
+      siteId: ids.siteId,
+      domain: DIAMOND_SHELF_SITE.domain,
+    };
   } catch (error) {
-    return { status: "blocked", migrationApplied: false, tableCount: 0, reason: error instanceof Error ? error.message : "Identity check failed." };
-  } finally { await sql.end({ timeout: 1 }).catch(() => undefined); }
+    return {
+      status: "blocked",
+      migrationApplied: false,
+      tableCount: 0,
+      reason: error instanceof Error ? error.message : "Identity check failed.",
+    };
+  } finally {
+    await sql.end({ timeout: 1 }).catch(() => undefined);
+  }
 }
