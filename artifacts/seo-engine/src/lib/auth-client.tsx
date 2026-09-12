@@ -37,6 +37,10 @@ function readCookie(name: string): string | null {
   return null;
 }
 
+export function getCsrfToken(): string | null {
+  return readCookie("seo_engine_csrf");
+}
+
 function requestMethod(input: RequestInfo | URL, init?: RequestInit): string {
   if (init?.method) return init.method.toUpperCase();
   if (typeof Request !== "undefined" && input instanceof Request) return input.method.toUpperCase();
@@ -53,10 +57,32 @@ function requestUrl(input: RequestInfo | URL): URL | null {
   }
 }
 
+function installFormCsrfInjection(): void {
+  document.addEventListener("submit", (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    const method = (form.method || "get").toUpperCase();
+    if (!method || !["POST", "PUT", "PATCH", "DELETE"].includes(method)) return;
+    const action = new URL(form.action || window.location.href, window.location.origin);
+    if (action.origin !== window.location.origin || !action.pathname.startsWith("/api/")) return;
+    const csrf = getCsrfToken();
+    if (!csrf) return;
+    let input = form.querySelector<HTMLInputElement>('input[name="_csrf"]');
+    if (!input) {
+      input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "_csrf";
+      form.appendChild(input);
+    }
+    input.value = csrf;
+  }, true);
+}
+
 export function installSecureFetch(): void {
   if (secureFetchInstalled || typeof window === "undefined") return;
   secureFetchInstalled = true;
   originalFetch = window.fetch.bind(window);
+  installFormCsrfInjection();
   window.fetch = async (input: RequestInfo | URL, init: RequestInit = {}) => {
     const url = requestUrl(input);
     const method = requestMethod(input, init);
@@ -65,7 +91,7 @@ export function installSecureFetch(): void {
     );
     const sameOriginApi = Boolean(url && url.origin === window.location.origin && url.pathname.startsWith("/api/"));
     if (sameOriginApi && ["POST", "PUT", "PATCH", "DELETE"].includes(method) && !headers.has("x-csrf-token")) {
-      const csrf = readCookie("seo_engine_csrf");
+      const csrf = getCsrfToken();
       if (csrf) headers.set("x-csrf-token", csrf);
     }
     const response = await originalFetch!(input, {
