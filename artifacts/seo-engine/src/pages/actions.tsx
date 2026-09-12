@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  buildAuthorizationWindowRenewalConfirmation,
   buildInternalActionConfirmation,
   getListActionsQueryKey,
   getListApprovalsQueryKey,
   useAuthorizeInternalAction,
   useDecideApproval,
   useListActions,
+  useRenewAuthorizationWindow,
   type ProposalRecord,
 } from "@workspace/api-client-react";
 import {
@@ -32,7 +34,7 @@ import { Textarea } from "../components/ui/textarea";
 
 type PendingOperatorAction = {
   row: ProposalRecord;
-  mode: "approve" | "authorize";
+  mode: "approve" | "authorize" | "renew";
 } | null;
 
 const titleize = (value: string) =>
@@ -60,6 +62,13 @@ function isBoundedInternalCandidate(row: ProposalRecord) {
   );
 }
 
+function approvalWindowExpired(row: ProposalRecord) {
+  const decidedAt = (row as ProposalRecord & { decided_at?: string | null }).decided_at;
+  if (!decidedAt) return false;
+  const decidedAtMs = new Date(decidedAt).getTime();
+  return Number.isFinite(decidedAtMs) && Date.now() >= decidedAtMs + 15 * 60_000;
+}
+
 export default function ActionsPage() {
   const { data, isLoading, isError, refetch } = useListActions();
   const queryClient = useQueryClient();
@@ -67,6 +76,8 @@ export default function ActionsPage() {
   const [reviewNote, setReviewNote] = useState("");
   const [operatorError, setOperatorError] = useState<string | null>(null);
   const [lastAuthorizedActionId, setLastAuthorizedActionId] = useState<string | null>(null);
+  const [lastRenewedPlanId, setLastRenewedPlanId] = useState<string | null>(null);
+  const [authorizationExpiredPlanId, setAuthorizationExpiredPlanId] = useState<string | null>(null);
 
   const refreshOperatorViews = async () => {
     await Promise.all([
@@ -97,6 +108,27 @@ export default function ActionsPage() {
     mutation: {
       onSuccess: async (result) => {
         setLastAuthorizedActionId(result.action_id);
+        setAuthorizationExpiredPlanId(null);
+        await refreshOperatorViews();
+        setPending(null);
+        setOperatorError(null);
+      },
+      onError: (error: any, variables) => {
+        const message = error?.message ||
+          "Internal authorization failed closed. Refresh and verify the approval, fingerprint, and source state.";
+        if (String(message).includes("authorization_window_expired")) {
+          setAuthorizationExpiredPlanId(variables.id);
+        }
+        setOperatorError(message);
+      },
+    },
+  });
+
+  const renewal = useRenewAuthorizationWindow({
+    mutation: {
+      onSuccess: async (result) => {
+        setLastRenewedPlanId(result.action_plan_id);
+        setAuthorizationExpiredPlanId(null);
         await refreshOperatorViews();
         setPending(null);
         setOperatorError(null);
@@ -104,14 +136,14 @@ export default function ActionsPage() {
       onError: (error: any) => {
         setOperatorError(
           error?.message ||
-            "Internal authorization failed closed. Refresh and verify the approval, fingerprint, and source state.",
+            "Authorization-window renewal failed closed. Refresh and verify the proposal state.",
         );
       },
     },
   });
 
   const operatorRows = (data?.rows || []).filter(isBoundedInternalCandidate);
-  const operatorPending = approval.isPending || authorization.isPending;
+  const operatorPending = approval.isPending || authorization.isPending || renewal.isPending;
 
   const submitOperatorAction = () => {
     if (!pending || operatorPending) return;
@@ -133,6 +165,17 @@ export default function ActionsPage() {
     const fingerprint = pending.row.proposal_fingerprint;
     if (!fingerprint) {
       setOperatorError("Persisted proposal fingerprint is missing.");
+      return;
+    }
+
+    if (pending.mode === "renew") {
+      renewal.mutate({
+        id: pending.row.id,
+        data: {
+          proposalFingerprint: fingerprint,
+          confirmation: buildAuthorizationWindowRenewalConfirmation(pending.row.id, fingerprint),
+        },
+      });
       return;
     }
 
@@ -168,13 +211,19 @@ export default function ActionsPage() {
               <p className="eyebrow">BOUNDED INTERNAL AUTHORIZATION</p>
               <h2>Internal action gate</h2>
               <p className="muted">
-                Only bounded, quality-passed proposals that are not blocked, high, or critical risk can appear here. Approval and internal action authorization are separate explicit steps. Neither step runs Task #53 preflight/execute, requests Shopify write scope, or writes to the public site.
+                Only bounded, quality-passed proposals that are not blocked, high, or critical risk can appear here. Approval, authorization-window renewal, and internal action authorization are separate explicit steps. None runs Task #53 preflight/execute, requests Shopify write scope, or writes to the public site.
               </p>
             </div>
             <Badge tone="approval">
               <ShieldCheck className="w-3 h-3 mr-1 inline" /> INTERNAL ONLY
             </Badge>
           </div>
+
+          {lastRenewedPlanId && (
+            <p className="guardrailText">
+              <CheckCircle2 className="inlineIcon" /> Authorization window renewed for plan {lastRenewedPlanId}. Internal action authorization remains a separate explicit step.
+            </p>
+          )}
 
           {lastAuthorizedActionId && (
             <p className="guardrailText">
@@ -192,6 +241,9 @@ export default function ActionsPage() {
                 const canApprove = row.lifecycle === "approval_ready" && row.decision === null;
                 const canAuthorize =
                   row.lifecycle === "approved_proposal" && row.decision === "approved";
+                const renewalRequired =
+                  canAuthorize &&
+                  (authorizationExpiredPlanId === row.id || approvalWindowExpired(row));
                 return (
                   <article className="approvalReviewCard" key={row.id}>
                     <div className="approvalCardHead">
@@ -235,7 +287,19 @@ export default function ActionsPage() {
                           Approve proposal
                         </button>
                       )}
-                      {canAuthorize && (
+                      {canAuthorize && renewalRequired && (
+                        <button
+                          type="button"
+                          className="reviewButton approve"
+                          onClick={() => {
+                            setOperatorError(null);
+                            setPending({ row, mode: "renew" });
+                          }}
+                        >
+                          Renew authorization window
+                        </button>
+                      )}
+                      {canAuthorize && !renewalRequired && (
                         <button
                           type="button"
                           className="reviewButton approve"
@@ -293,12 +357,16 @@ export default function ActionsPage() {
             <AlertDialogTitle>
               {pending?.mode === "approve"
                 ? "Approve this bounded proposal?"
-                : "Authorize this internal action?"}
+                : pending?.mode === "renew"
+                  ? "Renew this authorization window?"
+                  : "Authorize this internal action?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pending?.mode === "approve"
                 ? "This records the human proposal decision only. It does not create a Shopify write capability or change the public site."
-                : "This creates the Task #51 internal executable action only. Provider writes remain disabled, public-site writes remain disabled, and Task #53 preflight/execute is not called."}
+                : pending?.mode === "renew"
+                  ? "This appends a fresh audited approval timestamp only after the Task #51 safety checks pass. It does not create an executable action, request Shopify write scope, run Task #53, or change the public site."
+                  : "This creates the Task #51 internal executable action only. Provider writes remain disabled, public-site writes remain disabled, and Task #53 preflight/execute is not called."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="approvalDialogBody">
@@ -338,7 +406,9 @@ export default function ActionsPage() {
                 ? "Recording..."
                 : pending?.mode === "approve"
                   ? "Confirm non-executable approval"
-                  : "Confirm internal action authorization"}
+                  : pending?.mode === "renew"
+                    ? "Confirm authorization-window renewal"
+                    : "Confirm internal action authorization"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
