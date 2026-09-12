@@ -61,7 +61,10 @@ async function connectionRow() {
       SELECT c.external_account_id AS "externalAccountId",c.secret_ref AS "secretRef",c.scopes,c.status,c.metadata
       FROM connections c
       JOIN sites s ON s.id=c.site_id
-      WHERE lower(s.domain)='diamondshelf.us' AND s.is_active=true AND c.provider='shopify'
+      WHERE lower(s.domain)='diamondshelf.us'
+        AND s.is_active=true
+        AND c.provider='shopify'
+        AND c.metadata->>'connectionMode'='task53_write_products'
       ORDER BY c.updated_at DESC
       LIMIT 1`;
     return rows[0] ?? null;
@@ -70,12 +73,15 @@ async function connectionRow() {
   }
 }
 
+function resolvedShopDomain(row: { externalAccountId: string | null; metadata: Record<string, unknown> }) {
+  const metadataDomain = typeof row.metadata.shopDomain === "string" ? row.metadata.shopDomain.trim().toLowerCase() : null;
+  return metadataDomain && validDomain(metadataDomain) ? metadataDomain : null;
+}
+
 export async function inspectTask53ShopifyCapability(): Promise<Task53ShopifyCapability> {
   const row = await connectionRow();
   if (!row) return { connected: false, shopDomain: null, scopes: [], writeProductsScopePresent: false, credentialAvailable: false };
-  const metadataDomain = typeof row.metadata.shopDomain === "string" ? row.metadata.shopDomain.trim().toLowerCase() : null;
-  const externalDomain = row.externalAccountId?.trim().toLowerCase() ?? null;
-  const shopDomain = metadataDomain && validDomain(metadataDomain) ? metadataDomain : externalDomain && validDomain(externalDomain) ? externalDomain : null;
+  const shopDomain = resolvedShopDomain(row);
   return {
     connected: row.status === "connected",
     shopDomain,
@@ -87,10 +93,8 @@ export async function inspectTask53ShopifyCapability(): Promise<Task53ShopifyCap
 
 export async function loadTask53ShopifyCredential(): Promise<Task53ShopifyCredential> {
   const row = await connectionRow();
-  if (!row || row.status !== "connected") throw new Task53CredentialError("shopify_connection_not_connected");
-  const metadataDomain = typeof row.metadata.shopDomain === "string" ? row.metadata.shopDomain.trim().toLowerCase() : null;
-  const externalDomain = row.externalAccountId?.trim().toLowerCase() ?? null;
-  const shopDomain = metadataDomain && validDomain(metadataDomain) ? metadataDomain : externalDomain && validDomain(externalDomain) ? externalDomain : null;
+  if (!row || row.status !== "connected") throw new Task53CredentialError("task53_shopify_write_connection_not_connected");
+  const shopDomain = resolvedShopDomain(row);
   if (!shopDomain) throw new Task53CredentialError("shopify_domain_missing_or_invalid");
   if (!row.secretRef) throw new Task53CredentialError("shopify_credential_missing");
   const bundle = decodeTask53SecretRef(row.secretRef, encryptionKey());
@@ -98,5 +102,6 @@ export async function loadTask53ShopifyCredential(): Promise<Task53ShopifyCreden
   const persistedScopes = [...new Set(row.scopes.filter(Boolean))].sort();
   const tokenScopes = [...new Set(bundle.scopes.filter(Boolean))].sort();
   if (persistedScopes.join("|") !== tokenScopes.join("|")) throw new Task53CredentialError("shopify_scope_metadata_mismatch");
+  if (!tokenScopes.includes(TASK53_REQUIRED_WRITE_SCOPE)) throw new Task53CredentialError("shopify_write_products_scope_missing");
   return { shopDomain, accessToken: bundle.accessToken, scopes: tokenScopes };
 }
