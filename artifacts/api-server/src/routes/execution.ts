@@ -2,6 +2,10 @@ import { Router, type IRouter, type Response } from "express";
 import { isSameOriginRequest } from "../lib/pilot-authorization";
 import { authorizeApprovedProposal, ExecutionAuthorizationError, loadExecutionFoundation } from "../lib/execution-store.js";
 import { ApprovalWindowRenewalError, renewApprovedProposalAuthorizationWindow } from "../lib/task51-approval-renewal.js";
+import {
+  ExecutableActionAuthorizationRenewalError,
+  renewExecutableActionAuthorization,
+} from "../lib/task51-action-renewal.js";
 import { task52OperatorStates } from "../lib/shopify-write-foundation.js";
 import { runTask52RuntimeSelfTest } from "../lib/task52-runtime-self-test.js";
 import { inspectTask53ShopifyCapability, Task53CredentialError } from "../lib/task53-shopify-credential.js";
@@ -136,6 +140,32 @@ router.post("/execution/:id/renew-authorization-window", async (req, res) => {
   } catch (error) {
     if (error instanceof ApprovalWindowRenewalError) return res.status(error.status).json({ error: error.category });
     return res.status(500).json({ error: "authorization_window_renewal_failed" });
+  }
+});
+
+router.post("/execution/actions/:actionId/renew-authorization", async (req, res) => {
+  if (!isSameOriginRequest(req.get("origin"), req.get("host"))) {
+    return res.status(403).json({ error: "same_origin_executable_action_renewal_required" });
+  }
+  const currentAuthorizationFingerprint = typeof req.body?.currentAuthorizationFingerprint === "string"
+    ? req.body.currentAuthorizationFingerprint.trim()
+    : "";
+  const confirmation = typeof req.body?.confirmation === "string" ? req.body.confirmation : "";
+  if (!currentAuthorizationFingerprint || !confirmation) {
+    return res.status(400).json({ error: "invalid_executable_action_renewal_request" });
+  }
+  const actorId = req.get("x-replit-user-id") ?? req.get("x-replit-user-name") ?? "same_origin_reviewer";
+  try {
+    return res.json(await renewExecutableActionAuthorization(
+      req.params.actionId,
+      { currentAuthorizationFingerprint, confirmation },
+      actorId,
+    ));
+  } catch (error) {
+    if (error instanceof ExecutableActionAuthorizationRenewalError) {
+      return res.status(error.status).json({ error: error.category });
+    }
+    return res.status(500).json({ error: "executable_action_authorization_renewal_failed" });
   }
 });
 
