@@ -12,6 +12,7 @@ import {
   type Task53Resource,
   type Task53ShopifyCredential,
 } from "./task53-production-pilot.js";
+import { verifyTask53RollbackPropagation } from "./task53-rollback-propagation.js";
 import { loadTask53ShopifyCredential } from "./task53-shopify-credential.js";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -390,10 +391,27 @@ export async function executeTask53ProductionPilotV2(actionId: string, input: Ta
   } catch (error) {
     rollbackFailureCategory = error instanceof Error ? error.message : "shopify_rollback_uncertain";
   }
-  const rollbackProviderState = await safeProviderRead(credential, preflight, providerFetch);
-  const rollbackStorefront = await verifyTask53Storefront({ url: context.pageUrl, field: preflight.field, expectedValue: preflight.beforeValue, fetchImpl: providerFetch });
-  const rollbackProviderVerified = rollbackProviderState?.fingerprint === context.envelope.expectedCurrentState.fingerprint;
-  const rollbackVerified = Boolean(rollbackProviderVerified && rollbackStorefront.ok);
+  const rollbackPropagation = await verifyTask53RollbackPropagation({
+    expectedProviderFingerprint: context.envelope.expectedCurrentState.fingerprint,
+    readProvider: () => safeProviderRead(credential, preflight, providerFetch),
+    verifyStorefront: () => verifyTask53Storefront({
+      url: context.pageUrl,
+      field: preflight.field,
+      expectedValue: preflight.beforeValue,
+      fetchImpl: providerFetch,
+    }),
+  });
+  const rollbackProviderState = rollbackPropagation.providerState;
+  const rollbackStorefront = rollbackPropagation.storefront;
+  const rollbackProviderVerified = rollbackPropagation.providerVerified;
+  const rollbackVerified = rollbackPropagation.verified;
+  const rollbackPropagationAudit = {
+    version: "task53_bounded_rollback_propagation_reverification_v1",
+    attemptCount: rollbackPropagation.attemptCount,
+    totalDelayMs: rollbackPropagation.totalDelayMs,
+    converged: rollbackPropagation.verified,
+    attempts: rollbackPropagation.attempts,
+  };
 
   let forwardVerificationId: string | null = null;
   let rollbackId: string | null = null;
@@ -417,6 +435,7 @@ export async function executeTask53ProductionPilotV2(actionId: string, input: Ta
       failureCategory: rollbackFailureCategory,
       providerState: rollbackProviderState,
       storefront: rollbackStorefront,
+      propagation: rollbackPropagationAudit,
     });
     rollbackVerificationId = await persistVerification(deploymentId, context.pageId, "rollback", rollbackVerified, {
       field: preflight.field,
@@ -430,7 +449,8 @@ export async function executeTask53ProductionPilotV2(actionId: string, input: Ta
       storefrontVerified: rollbackStorefront.ok,
       rollbackMutationAccepted,
       rollbackFailureCategory,
-      auditFingerprint: task53AuditFingerprint({ provider: rollbackProviderState, storefront: rollbackStorefront, rollbackMutationAccepted, rollbackFailureCategory }),
+      propagation: rollbackPropagationAudit,
+      auditFingerprint: task53AuditFingerprint({ provider: rollbackProviderState, storefront: rollbackStorefront, rollbackMutationAccepted, rollbackFailureCategory, propagation: rollbackPropagationAudit }),
     });
   } catch (error) {
     auditFailureCategory = error instanceof Error ? error.message : "task53_audit_persistence_failed";
@@ -466,6 +486,9 @@ export async function executeTask53ProductionPilotV2(actionId: string, input: Ta
     public_write_occurred: publicWriteOccurred,
     forward_verified: forwardVerified,
     rollback_verified: rollbackVerified,
+    rollback_propagation_attempts: rollbackPropagation.attemptCount,
+    rollback_propagation_total_delay_ms: rollbackPropagation.totalDelayMs,
+    rollback_propagation_converged: rollbackPropagation.verified,
     audit_persisted: auditFailureCategory === null,
     manual_intervention_required: publicWriteOccurred && !rollbackVerified,
     final_state: publicWriteOccurred && !rollbackVerified
