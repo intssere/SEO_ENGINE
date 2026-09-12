@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import test from "node:test";
+import assert from "node:assert/strict";
 import { executionStateFingerprint, type AuthorizationEnvelope } from "./execution-foundation.js";
 import {
   buildExecutableActionRenewalConfirmation,
@@ -79,49 +80,48 @@ function input(overrides: Record<string, unknown> = {}) {
   };
 }
 
-describe("executable-action authorization renewal", () => {
-  it("requires an exact fingerprint-bound confirmation", () => {
-    expect(buildExecutableActionRenewalConfirmation(actionId, "abc")).toBe(
-      `RENEW_EXECUTABLE_ACTION_AUTHORIZATION:${actionId}:abc`,
-    );
-  });
+test("executable-action renewal confirmation is bound to action ID and current envelope fingerprint", () => {
+  assert.equal(
+    buildExecutableActionRenewalConfirmation(actionId, "abc"),
+    `RENEW_EXECUTABLE_ACTION_AUTHORIZATION:${actionId}:abc`,
+  );
+});
 
-  it("renews only the expired internal envelope while keeping provider/public write flags false", () => {
-    const result = evaluateExecutableActionAuthorizationRenewal(input());
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.previousExpiresAt).toBe("2026-09-12T12:02:37.660Z");
-    expect(result.envelope.authorization.issuedAt).toBe("2026-09-12T13:15:00.000Z");
-    expect(result.envelope.authorization.expiresAt).toBe("2026-09-12T13:30:00.000Z");
-    expect(result.envelope.authorization.executionAuthorized).toBe(true);
-    expect(result.envelope.authorization.providerWriteAllowed).toBe(false);
-    expect(result.envelope.authorization.publicSiteWrites).toBe(false);
-    expect(result.envelope.authorization.automaticTransition).toBe(false);
-    expect(result.envelope.envelopeFingerprint).not.toBe("old-envelope-fingerprint");
-  });
+test("renews only the expired internal envelope while keeping provider/public write flags false", () => {
+  const result = evaluateExecutableActionAuthorizationRenewal(input());
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.previousExpiresAt, "2026-09-12T12:02:37.660Z");
+  assert.equal(result.envelope.authorization.issuedAt, "2026-09-12T13:15:00.000Z");
+  assert.equal(result.envelope.authorization.expiresAt, "2026-09-12T13:30:00.000Z");
+  assert.equal(result.envelope.authorization.executionAuthorized, true);
+  assert.equal(result.envelope.authorization.providerWriteAllowed, false);
+  assert.equal(result.envelope.authorization.publicSiteWrites, false);
+  assert.equal(result.envelope.authorization.automaticTransition, false);
+  assert.notEqual(result.envelope.envelopeFingerprint, "old-envelope-fingerprint");
+});
 
-  it("fails closed while the existing envelope is still active", () => {
-    const result = evaluateExecutableActionAuthorizationRenewal(input({ now: "2026-09-12T12:00:00.000Z" }));
-    expect(result).toEqual({ ok: false, reason: "action_authorization_still_active" });
-  });
+test("fails closed while the existing envelope is still active", () => {
+  const result = evaluateExecutableActionAuthorizationRenewal(input({ now: "2026-09-12T12:00:00.000Z" }));
+  assert.deepEqual(result, { ok: false, reason: "action_authorization_still_active" });
+});
 
-  it("fails closed if Shopify no longer matches the approved before state", () => {
-    const result = evaluateExecutableActionAuthorizationRenewal(input({ providerCurrentValue: "changed" }));
-    expect(result).toEqual({ ok: false, reason: "provider_state_changed_since_authorization" });
-  });
+test("fails closed if Shopify no longer matches the approved before state", () => {
+  const result = evaluateExecutableActionAuthorizationRenewal(input({ providerCurrentValue: "changed" }));
+  assert.deepEqual(result, { ok: false, reason: "provider_state_changed_since_authorization" });
+});
 
-  it("requires the global production write gate for this Task #53 readiness renewal", () => {
-    const result = evaluateExecutableActionAuthorizationRenewal(input({ publicWriteGateEnabled: false }));
-    expect(result).toEqual({ ok: false, reason: "public_site_write_gate_not_enabled" });
-  });
+test("requires the global production write gate for this Task #53 readiness renewal", () => {
+  const result = evaluateExecutableActionAuthorizationRenewal(input({ publicWriteGateEnabled: false }));
+  assert.deepEqual(result, { ok: false, reason: "public_site_write_gate_not_enabled" });
+});
 
-  it("blocks renewal after any provider deployment reservation", () => {
-    const result = evaluateExecutableActionAuthorizationRenewal(input({ priorDeploymentCount: 1 }));
-    expect(result).toEqual({ ok: false, reason: "duplicate_provider_execution_blocked" });
-  });
+test("blocks renewal after any provider deployment reservation", () => {
+  const result = evaluateExecutableActionAuthorizationRenewal(input({ priorDeploymentCount: 1 }));
+  assert.deepEqual(result, { ok: false, reason: "duplicate_provider_execution_blocked" });
+});
 
-  it("blocks renewal if a public write was already recorded", () => {
-    const result = evaluateExecutableActionAuthorizationRenewal(input({ publicWriteOccurred: true }));
-    expect(result).toEqual({ ok: false, reason: "execution_safety_invariant_failed" });
-  });
+test("blocks renewal if a public write was already recorded", () => {
+  const result = evaluateExecutableActionAuthorizationRenewal(input({ publicWriteOccurred: true }));
+  assert.deepEqual(result, { ok: false, reason: "execution_safety_invariant_failed" });
 });
