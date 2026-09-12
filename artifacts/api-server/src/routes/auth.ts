@@ -27,6 +27,12 @@ import {
 
 const router: IRouter = Router();
 
+router.use((_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+  res.setHeader("Pragma", "no-cache");
+  next();
+});
+
 function requestIp(req: Request): string | null {
   return req.get("x-forwarded-for")?.split(",")[0]?.trim() || req.socket.remoteAddress || null;
 }
@@ -42,6 +48,10 @@ function clearFlowCookie(res: Response) {
 
 function authErrorRedirect(res: Response, code: string) {
   return res.redirect(302, `/login?error=${encodeURIComponent(code)}`);
+}
+
+async function safeAudit(input: Parameters<typeof writeAuthAudit>[0]) {
+  await writeAuthAudit(input).catch(() => undefined);
 }
 
 router.get("/auth/status", (req, res) => {
@@ -73,6 +83,7 @@ router.get("/auth/session", (req, res) => {
 
 router.get("/auth/google/start", authEndpointRateLimit, (req, res) => {
   const config = loadAuthConfig();
+  if (!config.enabled) return res.status(409).json({ error: "authentication_enforcement_disabled" });
   if (!config.configured || !config.sessionSecret) {
     return res.status(503).json({ error: "authentication_configuration_invalid" });
   }
@@ -88,8 +99,9 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
   const flow = config.sessionSecret && sealedFlow ? unsealAuthFlow(sealedFlow, config.sessionSecret) : null;
   clearFlowCookie(res);
 
+  if (!config.enabled) return authErrorRedirect(res, "authentication_disabled");
   if (!config.configured || !flow) {
-    void writeAuthAudit({
+    void safeAudit({
       eventType: "login_callback_invalid_state",
       outcome: "failure",
       requestId: requestId(req),
@@ -103,7 +115,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
   const code = typeof req.query.code === "string" ? req.query.code : "";
   const oauthError = typeof req.query.error === "string" ? req.query.error : "";
   if (oauthError || !state || !code || state !== flow.state) {
-    void writeAuthAudit({
+    void safeAudit({
       eventType: "login_callback_rejected",
       outcome: "failure",
       requestId: requestId(req),
@@ -118,7 +130,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
     const identity = await exchangeGoogleLoginCode({ config, code, flow });
     const role = roleForEmail(identity.email, config);
     if (!role) {
-      await writeAuthAudit({
+      await safeAudit({
         eventType: "login_allowlist_denied",
         outcome: "denied",
         requestId: requestId(req),
@@ -141,7 +153,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
     });
     res.cookie(AUTH_SESSION_COOKIE, session.token, authCookieOptions(true, AUTH_SESSION_TTL_MS));
     res.cookie(AUTH_CSRF_COOKIE, session.csrfToken, authCookieOptions(false, AUTH_SESSION_TTL_MS));
-    await writeAuthAudit({
+    await safeAudit({
       eventType: "login_success",
       outcome: "success",
       principal: session.principal,
@@ -151,7 +163,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
     });
     return res.redirect(302, flow.returnTo);
   } catch (error) {
-    void writeAuthAudit({
+    void safeAudit({
       eventType: "login_failure",
       outcome: "failure",
       requestId: requestId(req),
@@ -175,7 +187,7 @@ router.post("/auth/logout", authEndpointRateLimit, async (req, res) => {
     }
   }
   if (sessionToken) await revokeAuthSession(sessionToken).catch(() => undefined);
-  await writeAuthAudit({
+  await safeAudit({
     eventType: "logout",
     outcome: "success",
     principal: req.auth ?? null,
