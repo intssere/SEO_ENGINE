@@ -16,6 +16,12 @@ import {
   TASK53_RESOURCE_RESOLVER_VERSION,
   Task53ResolverError,
 } from "../lib/task53-resource-resolver.js";
+import { TASK53_ROLLBACK_REVERIFY_DELAYS_MS } from "../lib/task53-rollback-propagation.js";
+import {
+  reconcileTask53RollbackPropagation,
+  TASK53_ROLLBACK_RECONCILIATION_VERSION,
+  Task53RollbackReconciliationError,
+} from "../lib/task53-rollback-reconciliation.js";
 import { executeTask53ProductionPilotV2, getTask53PreflightV2, TASK53_ADMIN_API_VERSION, Task53ExecutionV2Error } from "../lib/task53-store-v2.js";
 import { TASK53_VERSION, Task53ProviderError, type Task53Resource } from "../lib/task53-production-pilot.js";
 
@@ -31,6 +37,7 @@ function task53Resource(body: unknown): Task53Resource | null {
 
 function task53Error(res: Response, error: unknown) {
   if (error instanceof Task53ExecutionV2Error) return res.status(error.status).json({ error: error.category });
+  if (error instanceof Task53RollbackReconciliationError) return res.status(error.status).json({ error: error.category });
   if (error instanceof Task53CredentialError) return res.status(409).json({ error: error.category });
   if (error instanceof Task53ProviderError) return res.status(error.httpStatus && error.httpStatus >= 400 && error.httpStatus < 600 ? 502 : 409).json({ error: error.category });
   return res.status(500).json({ error: "task53_execution_failed" });
@@ -80,6 +87,15 @@ router.get("/execution", async (_req, res) => {
       independent_storefront_verification: true,
       deterministic_rollback_required: true,
       rollback_precedes_nonessential_audit_persistence: true,
+      bounded_rollback_propagation_reverification: {
+        enabled: true,
+        retry_delays_ms: [...TASK53_ROLLBACK_REVERIFY_DELAYS_MS],
+        additional_provider_mutation_allowed: false,
+        reconciliation_version: TASK53_ROLLBACK_RECONCILIATION_VERSION,
+        reconciliation_endpoint: "/api/execution/actions/:actionId/task53/reverify-rollback",
+        explicit_reconciliation_confirmation_required: true,
+        preserves_original_failed_audit_rows: true,
+      },
       automatic_scheduler_enabled: false,
       resource_resolver: "/api/execution/task53/resolve-resource",
       resource_resolver_version: TASK53_RESOURCE_RESOLVER_VERSION,
@@ -166,6 +182,21 @@ router.post("/execution/actions/:actionId/renew-authorization", async (req, res)
       return res.status(error.status).json({ error: error.category });
     }
     return res.status(500).json({ error: "executable_action_authorization_renewal_failed" });
+  }
+});
+
+router.post("/execution/actions/:actionId/task53/reverify-rollback", async (req, res) => {
+  if (!isSameOriginRequest(req.get("origin"), req.get("host"))) {
+    return res.status(403).json({ error: "same_origin_task53_rollback_reconciliation_required" });
+  }
+  const deploymentId = typeof req.body?.deploymentId === "string" ? req.body.deploymentId.trim() : "";
+  const rollbackId = typeof req.body?.rollbackId === "string" ? req.body.rollbackId.trim() : "";
+  const confirmation = typeof req.body?.confirmation === "string" ? req.body.confirmation : "";
+  if (!deploymentId || !rollbackId || !confirmation) return res.status(400).json({ error: "invalid_task53_rollback_reconciliation_request" });
+  try {
+    return res.json(await reconcileTask53RollbackPropagation(req.params.actionId, { deploymentId, rollbackId, confirmation }));
+  } catch (error) {
+    return task53Error(res, error);
   }
 });
 
