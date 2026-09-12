@@ -32,6 +32,10 @@ function effectiveRequiredRole(req: Request): AppRole {
   return requiredRoleForApiRequest(req.method, path);
 }
 
+function auditDenied(input: Parameters<typeof writeAuthAudit>[0]) {
+  void writeAuthAudit(input).catch(() => undefined);
+}
+
 export function securityHeaders(_req: Request, res: Response, next: NextFunction) {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
@@ -66,7 +70,7 @@ export function requireApiAuthentication(req: Request, res: Response, next: Next
   if (!config.enabled) return next();
   if (!config.configured) return res.status(503).json({ error: "authentication_configuration_invalid" });
   if (!req.auth) {
-    void writeAuthAudit({
+    auditDenied({
       eventType: "api_authentication_required",
       outcome: "denied",
       requestId: requestId(req),
@@ -79,7 +83,7 @@ export function requireApiAuthentication(req: Request, res: Response, next: Next
 
   const requiredRole = effectiveRequiredRole(req);
   if (!roleAllows(req.auth.role, requiredRole)) {
-    void writeAuthAudit({
+    auditDenied({
       eventType: "api_role_forbidden",
       outcome: "denied",
       principal: req.auth,
@@ -97,7 +101,7 @@ export function requireApiAuthentication(req: Request, res: Response, next: Next
     const csrf = headerCsrf || bodyCsrf;
     const csrfHash = csrf ? sha256(csrf) : "";
     if (!csrfHash || !safeEqualHex(csrfHash, req.auth.csrfTokenHash)) {
-      void writeAuthAudit({
+      auditDenied({
         eventType: "api_csrf_rejected",
         outcome: "denied",
         principal: req.auth,
