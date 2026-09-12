@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Response } from "express";
 import { isSameOriginRequest } from "../lib/pilot-authorization";
 import { authorizeApprovedProposal, ExecutionAuthorizationError, loadExecutionFoundation } from "../lib/execution-store.js";
 import { task52OperatorStates } from "../lib/shopify-write-foundation.js";
@@ -17,11 +17,7 @@ function task53Resource(body: unknown): Task53Resource | null {
   return { kind, gid };
 }
 
-function sameOrigin(req: Parameters<typeof isSameOriginRequest>[0] extends never ? never : { get(name: string): string | undefined }) {
-  return isSameOriginRequest(req.get("origin"), req.get("host"));
-}
-
-function task53Error(res: Parameters<IRouter["use"]>[0] extends never ? never : any, error: unknown) {
+function task53Error(res: Response, error: unknown) {
   if (error instanceof Task53ExecutionError) return res.status(error.status).json({ error: error.category });
   if (error instanceof Task53CredentialError) return res.status(409).json({ error: error.category });
   if (error instanceof Task53ProviderError) return res.status(error.httpStatus && error.httpStatus >= 400 && error.httpStatus < 600 ? 502 : 409).json({ error: error.category });
