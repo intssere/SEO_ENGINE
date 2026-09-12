@@ -18,14 +18,24 @@ const requiredBundleMarkers = [
   "shopify_write_connector_v1",
   "rollback_verified",
   "manual_intervention_required",
+  "controlled_single_action_production_execution_pilot_v1",
+  "/execution/:id/task53/preflight",
+  "/execution/:id/task53/execute",
+  "explicit_task53_execute_and_rollback_confirmation_required",
+  "task53_write_products",
+  "provider_write_dispatch_enabled",
 ];
 
 const requiredSourceMarkers = [
   "routes/execution.ts",
+  "routes/connections.ts",
   "lib/execution-foundation.ts",
   "lib/execution-store.ts",
   "lib/shopify-write-foundation.ts",
   "lib/task52-runtime-self-test.ts",
+  "lib/task53-production-pilot.ts",
+  "lib/task53-shopify-credential.ts",
+  "lib/task53-store.ts",
 ];
 
 const missingBundleMarkers = requiredBundleMarkers.filter((marker) => !bundle.includes(marker));
@@ -40,4 +50,4 @@ if (missingBundleMarkers.length > 0 || missingSourceMarkers.length > 0) {
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: Task #51 execution foundation and Task #52 Shopify dry-run verification/rollback runtime are present.");
+console.log("Production API bundle verification passed: Task #51 execution foundation, Task #52 dry-run verification/rollback, and Task #53 controlled single-action production pilot are present.");
