@@ -41,7 +41,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "curl -fsS http://localhost:80/api/healthz && curl -fsS http://localhost:80/api/dashboard >/dev/null && curl -fsS http://localhost:80/ >/dev/null"
+args = "curl -fsS http://localhost:80/api/healthz && curl -fsS http://localhost:80/api/auth/status >/dev/null && curl -fsS http://localhost:80/ >/dev/null"
 
 [workflows.workflow.metadata]
 isValidation = true
