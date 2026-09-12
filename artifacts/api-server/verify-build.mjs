@@ -13,12 +13,19 @@ const requiredBundleMarkers = [
   "same_origin_execution_authorization_required",
   "task51_requires_public_writes_disabled",
   "controlled_execution_foundation_v1",
+  "/execution/task52/self-test",
+  "shopify_write_verification_rollback_dry_run_v1",
+  "shopify_write_connector_v1",
+  "rollback_verified",
+  "manual_intervention_required",
 ];
 
 const requiredSourceMarkers = [
   "routes/execution.ts",
   "lib/execution-foundation.ts",
   "lib/execution-store.ts",
+  "lib/shopify-write-foundation.ts",
+  "lib/task52-runtime-self-test.ts",
 ];
 
 const missingBundleMarkers = requiredBundleMarkers.filter((marker) => !bundle.includes(marker));
@@ -33,4 +40,4 @@ if (missingBundleMarkers.length > 0 || missingSourceMarkers.length > 0) {
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: Task #51 execution foundation is present.");
+console.log("Production API bundle verification passed: Task #51 execution foundation and Task #52 Shopify dry-run verification/rollback runtime are present.");
