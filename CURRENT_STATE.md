@@ -1,60 +1,89 @@
 # SEO ENGINE — Current State Checkpoint
 
-This file is the authoritative **mutable checkpoint** for resuming work. It intentionally avoids claiming that a documentation merge SHA is the permanent `main` SHA, because merging the checkpoint itself necessarily advances `main`.
+This file is the authoritative **mutable checkpoint** for resuming work. It intentionally avoids treating any documentation merge SHA as permanent, because merging a checkpoint necessarily advances `main`.
 
-If this file conflicts with older exact-SHA wording in `PROJECT_HANDOFF.md`, use this file for the **current release position** and use `PROJECT_HANDOFF.md` for detailed historical/architectural context.
+If this file conflicts with older mutable release wording in `PROJECT_HANDOFF.md`, use this file for the **current release position** and `PROJECT_HANDOFF.md` for detailed historical/architectural context.
 
-## Task #56 — fully production-certified
+## Task #57 — fully production-certified
 
-Task #56 — Risk Semantics Alignment & Effective-Risk Diagnostics v1 — is fully merged, published, runtime-certified, and closed.
+Task #57 — Measurement & Attribution Foundation v1 — is fully merged, published, runtime-certified, reconciled, and closed.
 
-Application implementation:
+Primary implementation:
 
-- Issue: `https://github.com/intssere/SEO_ENGINE/issues/62`
-- PR: `https://github.com/intssere/SEO_ENGINE/pull/63`
-- Tested PR head: `115709335c5cd1fb118cdceda56b1a6740ae5be2`
-- PR CI #131 / run `34751293138`: success
-- Task #56 application merge SHA: `8d1c65e630253a4e0f052076bfc6bf21fbf5679f`
-- Task #56 application tree: `11bc62ba2545769d78f29c41a268423b1350545f`
-- Post-merge application main CI #132 / run `34751384367`: success
+- Issue: `https://github.com/intssere/SEO_ENGINE/issues/67`
+- PR: `https://github.com/intssere/SEO_ENGINE/pull/68`
+- Task #57 application merge SHA: `4310cbed4ab8a6177d6ae77e6a076c1bcd54df49`
+- Application tree: `5312d1cc2aac6ee0a95f36c939a3adb3eafa632d`
+- post-merge main CI #144: success
 
-Repository continuity before publication:
+Runtime follow-up discovered during merged-main Replit certification:
 
-- PR #64 added the repository-native continuity package.
-- PR #65 added the self-stable mutable checkpoint.
-- GitHub `main` immediately before Task #56 publication was `0c5213d98ece0406aeaab059233c3af6373e0459`.
-- Its tree was `16b63fca211cd8fe54fdcdaaadb1f99d06774fc0`.
-- CI #139 / run `34752925093`: success.
-- Comparison from the Task #56 application merge to that release source showed only documentation/continuity-file changes after the application baseline.
+- Issue: `https://github.com/intssere/SEO_ENGINE/issues/69`
+- PR: `https://github.com/intssere/SEO_ENGINE/pull/70`
+- Problem: postgres.js bound `MEASUREMENT_WINDOW_DAYS` parameters in `date +/- integer` arithmetic were untyped, producing PostgreSQL error `42883` in the exact exported `loadMeasurementImpact()` read path.
+- Fix: explicitly cast every interpolated measurement-window parameter used in date arithmetic to `::int` and add a regression guard.
+- Corrective merge / certified release source: `4259323c5cc424404ac40436110dd50f3c6f3367`
+- Certified release tree: `08869c885a1cc9d11d15bad86989e2ab1d06baaa`
+- PR CI #145: success
+- post-merge main CI #146 / run `34757810115`: success
 
-Task #56 makes these three risk domains explicit without changing Task #51 authorization policy:
+## Task #57 behavior
 
-- evaluator risk
-- plan-control risk
-- effective execution risk
+Task #57 adds a **read-only observational measurement projection** over existing deployment/action/search-metric/evidence lineage. It does not create a second execution system and does not authorize mutations.
 
-## Task #56 publication and runtime certification
+Measurement semantics include:
 
-The user explicitly authorized publication of certified canonical source `0c5213d98ece0406aeaab059233c3af6373e0459` with no DB DDL, provider/public-site mutation, or Task #53/#54 execution.
+- 28-day baseline window before deployment
+- deployment day excluded
+- 28-day comparison window after deployment
+- minimum observed-day and impression thresholds
+- confidence levels: `insufficient | low | medium | high`
+- measurement states: `not_eligible | pending | ready`
+- advisory recommendations: `not_eligible | measurement_pending | retain | replace_candidate | rollback_candidate`
+- `causalAttribution=false`
+- `advisoryOnly=true`
+- `executionAuthorized=false`
+- `publicSiteWrites=false`
+- `automaticTransition=false`
 
-Publication to the existing Replit autoscale deployment completed successfully.
+Eligibility fails closed unless a deployment is a completed, verified-live persistent production change with both deployment/execution measurement-eligibility markers, a page identity, verified read-after-write state, and no completed rollback record.
 
-Production certification passed using read-only/least-privilege checks:
+Historical Task #53 rolled-back pilot records therefore remain `not_eligible` by design.
 
-- `GET /api/healthz`: healthy
-- authentication configured and enforcement enabled
+## Task #57 publication and production certification
+
+The user explicitly authorized publication of certified canonical GitHub source:
+
+- SHA: `4259323c5cc424404ac40436110dd50f3c6f3367`
+- tree: `08869c885a1cc9d11d15bad86989e2ab1d06baaa`
+
+with no DB DDL, provider/public-site mutation, or Task #53/#54 execution.
+
+Publication to the existing Replit autoscale deployment completed successfully:
+
+- deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
+- production URL: `https://dsseoengine.replit.app`
+- final status: success
+
+Post-publication certification passed using side-effect-free GETs, SELECT-only database checks, static asset inspection, aggregate log inspection, and read-only Git inspection:
+
+- `/api/healthz`: HTTP 200 / ok
+- authentication enforcement enabled
 - Google OIDC configured
 - allowlist-only access enabled
 - public registration disabled
+- missing auth configuration: none
+- production frontend asset served successfully and contains Task #57 measurement markers
+- typed production measurement prerequisite query executes without PostgreSQL `42883`
+- historical Task #53 deployments: 1
+- historical Task #53 fail-closed deployments: 1
+- persistent Task #54 measurement-eligible deployments: 0
+- joined evidence rows observed: 663
 - development DB: 31 public base tables
 - production DB: 31 public base tables
 - `auth_sessions`: present in both
 - `auth_audit_events`: present in both
 - all six Task #55 auth indexes present in both
-- live frontend bundle contains `evaluatorRisk`
-- live frontend bundle contains `planControlRisk`
-- live frontend bundle contains `effectiveExecutionRisk`
-- live UI contains the labels `Evaluator risk`, `Plan control`, and `Effective execution risk`
 - `PUBLIC_SITE_WRITES_ENABLED` effectively false
 - `AI_PROPOSAL_GENERATION_ENABLED` effectively false
 - Task #53 provider-write dispatch disabled
@@ -62,33 +91,48 @@ Production certification passed using read-only/least-privilege checks:
 - Task #53 scheduler disabled
 - Task #54 scheduler disabled
 - Task #54 batch execution disabled
-- no evidence of unexpected provider writes, Shopify mutation, public-site mutation, autonomous execution, Task #53 execution, or Task #54 apply around the deployment
+- post-deployment deployments/rollbacks/verifications/actions/action-plans/approvals/jobs: 0
+- provider/public-site write attempts: 0
+- Task #53 executions: 0
+- Task #54 applies: 0
+- autonomous/execution jobs: 0
+- no fatal/database/provider-mutation errors found in the bounded post-deployment log inspection
 
-No new interactive authentication session was created solely for this release because Task #55 authentication behavior did not change. Protected proposal-record API behavior was therefore not re-certified through a new login; the same-release API deployment, public health/auth status, schema checks, production bundle markers, and safety-state checks passed.
+No interactive login/session was created solely for this release because authentication behavior did not change.
 
-## Replit/Git state after publication
+## Replit/Git state after Task #57 publication
 
-The publication created one empty Replit-generated commit:
+Publication created one empty Replit-generated metadata commit:
 
-- SHA: `a6f8822d7ff00cf65c25383ae088e1ca500caed0`
+- SHA: `6febd261bfce97365f4e074bc1559c94c80f92f7`
 - subject: `Published your App`
-- parent: `0c5213d98ece0406aeaab059233c3af6373e0459`
-- tree: `16b63fca211cd8fe54fdcdaaadb1f99d06774fc0`
+- tree: `08869c885a1cc9d11d15bad86989e2ab1d06baaa`
 - changed files: none
 
-Because that commit was metadata-only and tree-identical to canonical GitHub `main`, Replit was reconciled back to canonical source **without republishing**.
+Because it was metadata-only and tree-identical to canonical GitHub `main`, the local-only commit was removed **without republishing**.
 
 Final certified Replit Git state before this documentation closeout:
 
 - branch: `main`
-- HEAD: `0c5213d98ece0406aeaab059233c3af6373e0459`
-- tree: `16b63fca211cd8fe54fdcdaaadb1f99d06774fc0`
+- HEAD: `4259323c5cc424404ac40436110dd50f3c6f3367`
+- tree: `08869c885a1cc9d11d15bad86989e2ab1d06baaa`
+- `origin/main`: same
 - ahead/behind: `0/0`
 - working tree: clean
 - changed files: none
 - untracked files: none
 
 The production deployment remained successful after Git reconciliation.
+
+## Prior completed milestones
+
+Task #56 — Risk Semantics Alignment & Effective-Risk Diagnostics v1 — remains fully production-certified and closed. It makes evaluator risk, plan-control risk, and effective execution risk explicit without weakening Task #51 authorization policy.
+
+Task #55 authentication/RBAC remains production-certified: Google OIDC, allowlist-only access, public registration disabled, viewer/operator/admin roles, PostgreSQL sessions, CSRF protection for unsafe authenticated requests, and auth auditing.
+
+Task #53 reversible live pilot was previously proven and rolled back successfully.
+
+No first persistent Task #54 live apply has occurred yet.
 
 ## Current safety state
 
@@ -97,20 +141,23 @@ Unless separately and explicitly authorized:
 - `PUBLIC_SITE_WRITES_ENABLED=false`
 - `AI_PROPOSAL_GENERATION_ENABLED=false`
 - ordinary Shopify/Google operational connections remain read-only
+- isolated write-capable credential presence is not authorization
 - no autonomous public-site/provider mutation worker
 - no automatic approval -> execution transition
 - no Task #53 execution
 - no Task #54 preflight/apply
+- no Task #53/#54 scheduler execution
+- no Task #54 batch execution
 - no production DB DDL
-- no secret/credential change
+- no secret/credential change or scope broadening
 
-A generic `continue` advances safe engineering/documentation work only. It does not authorize provider/public-site mutation.
+A generic `continue` advances safe engineering/documentation work only. It never authorizes provider/public-site mutation.
 
 ## Current execution milestone
 
-The reversible Task #53 live pilot has already been proven and rolled back successfully.
+The project is now at the **persistent-change + measurement-loop stage**.
 
-No first persistent Task #54 live apply has occurred yet.
+The measurement/attribution foundation needed to observe a future persistent Task #54 change is live. However, no persistent Task #54 deployment exists yet, so there is intentionally nothing eligible for retain/replace/rollback measurement today.
 
 The likely future first persistent candidate remains Unisex Fragrance:
 
@@ -127,33 +174,36 @@ The likely future first persistent candidate remains Unisex Fragrance:
 - lifecycle at diagnosis: `approval_ready`
 - approvals/actions/deployments at diagnosis: `0 / 0 / 0`
 
-Task #56 does not approve or authorize that proposal.
+Task #56/#57 do not approve or authorize this proposal.
 
 ## Exact next project stage
 
-Task #56 is closed. The project is now at the **next-milestone selection / controlled execution + measurement stage**.
+Task #57 is closed. Safe future work can proceed in either of two categories:
 
-Before any first persistent Task #54 apply, the controlled sequence remains:
+1. **Next engineering module** — competitor evidence ingestion / SERP-gap / taxonomy-content-entity-schema / internal-link / backlink-citation / GEO-AIO visibility intelligence, all read-only/non-mutating first.
+2. **First persistent Task #54 change** — only through the separately gated authorization sequence below.
 
-1. independently verify the current GitHub/Replit/runtime checkpoint
-2. keep the proposal non-executable initially
-3. obtain explicit proposal approval
+Before any first persistent Task #54 apply:
+
+1. independently verify current GitHub/Replit/runtime checkpoint
+2. keep public writes false during proposal approval/internal authorization
+3. obtain explicit proposal approval for the exact plan/fingerprint
 4. obtain exact Task #51 internal authorization
-5. separately authorize any write-gate opening
+5. separately authorize any required write-gate opening
 6. read-only certify runtime safety state
 7. separately authorize Task #54 preflight
 8. produce a fresh preflight fingerprint and exact target/before/after state
-9. obtain exact `APPLY_AND_VERIFY_TASK54` confirmation
+9. obtain exact `APPLY_AND_VERIFY_TASK54` authorization for that fresh action/preflight
 10. perform exactly one bounded forward mutation
 11. read-after-write verify
-12. leave the verified change live on success; rollback only on verification/controlled failure
-13. enter measurement mode; do not batch additional changes
+12. leave verified success live; rollback only on verification/controlled failure
+13. enter Task #57 measurement mode and do not batch additional changes during the observation window
 
-Alternatively, safe engineering work may continue on non-mutating future modules such as measurement/attribution, competitor evidence ingestion, SERP/taxonomy/content/entity/schema/internal-link/backlink intelligence, GEO/AIO visibility monitoring, and controlled decision loops. These should still follow branch -> PR -> CI -> merge -> Replit validation -> publication/certification when applicable.
+Do not collapse these gates and do not infer live-write permission from `continue`.
 
 ## Resume rule
 
-At the beginning of a new chat, do not assume this documentation commit is still current. Read the current GitHub `main` SHA/tree first, then read:
+At the beginning of a new chat, do not assume this documentation commit is still current. Resolve current GitHub `main` SHA/tree first, then read:
 
 1. `CURRENT_STATE.md`
 2. `AGENTS.md`
