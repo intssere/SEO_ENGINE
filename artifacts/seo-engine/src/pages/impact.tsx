@@ -3,8 +3,9 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { OperationalTable, PageHeader, type Column } from "../components/operational-table";
 
 const asRecord = (value: unknown) => value && typeof value === "object" ? value as Record<string, unknown> : {};
-const formatNumber = (value: unknown) => Number.isFinite(Number(value)) ? Number(value).toLocaleString() : "-";
-const formatPercent = (value: unknown) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "-";
+const isNumeric = (value: unknown) => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value));
+const formatNumber = (value: unknown) => isNumeric(value) ? Number(value).toLocaleString() : "-";
+const formatPercent = (value: unknown) => isNumeric(value) ? `${(Number(value) * 100).toFixed(1)}%` : "-";
 const formatDate = (value: unknown) => typeof value === "string" && value ? value.slice(0, 10) : "-";
 
 const columns: Column[] = [
@@ -19,7 +20,7 @@ const columns: Column[] = [
   { header: "CTR Δ", accessorKey: "deltas", cell: (value) => formatPercent(asRecord(value).ctrPct) },
   { header: "Position Δ", accessorKey: "deltas", cell: (value) => {
     const delta = asRecord(value).averagePosition;
-    return Number.isFinite(Number(delta)) ? Number(delta).toFixed(2) : "-";
+    return isNumeric(delta) ? Number(delta).toFixed(2) : "-";
   } },
   { header: "Recommendation", accessorKey: "recommendation" },
   { header: "Blockers", accessorKey: "eligibilityBlockers", cell: (value) => Array.isArray(value) && value.length ? value.join(", ") : "-" },
