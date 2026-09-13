@@ -70,6 +70,7 @@ test("planner output is deterministic, reviewable, blocked, and reversible", () 
   const second = createDryRunProposal(candidate, page, ["crawl-evidence", "opportunity-signal"]);
   assert.deepEqual(first, second);
   assert.equal(first.riskLevel, "blocked");
+  assert.equal(first.expectedOutcome.riskClassification, "medium");
   assert.equal(first.expectedOutcome.executionAuthorized, false);
   assert.equal(first.expectedOutcome.publicSiteWrites, false);
   assert.equal(first.expectedOutcome.automaticTransition, false);
@@ -103,7 +104,9 @@ test("proposal API contract exposes review details without execution authority",
     readiness: { state: "live" },
     rows: [{
       id: "plan-1", opportunity_id: "opportunity-1", title: "Meta description is missing", opportunity_type: "technical_remediation",
-      url: page.url, path: "/products/solitaire-ring", query: null, score: 52, confidence: 0.62, risk_classification: "medium", lifecycle: "approval_ready",
+      url: page.url, path: "/products/solitaire-ring", query: null, score: 52, confidence: 0.62,
+      risk_classification: "medium", evaluatorRisk: "medium", planControlRisk: "blocked", effectiveExecutionRisk: "medium",
+      lifecycle: "approval_ready",
       plan_status: "pending", dry_run: true, execution_authorized: false, public_site_writes: false,
       action_type: "update_meta_description", field: "meta_description", before_value: null,
       after_value: "This solitaire diamond ring pairs a round brilliant diamond with a classic platinum setting for everyday wear.",
@@ -119,4 +122,7 @@ test("proposal API contract exposes review details without execution authority",
   });
   assert.equal(response.rows[0]?.execution_authorized, false);
   assert.equal(response.rows[0]?.lifecycle, "approval_ready");
+  assert.equal(response.rows[0]?.evaluatorRisk, "medium");
+  assert.equal(response.rows[0]?.planControlRisk, "blocked");
+  assert.equal(response.rows[0]?.effectiveExecutionRisk, "medium");
 });

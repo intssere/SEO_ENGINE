@@ -39,7 +39,7 @@ const activeColumns = [
     ),
   },
   {
-    header: "Risk",
+    header: "Evaluator risk",
     accessorKey: "risk_classification",
     cell: (value: string) => <Badge tone={riskTone(value)}>{value.toUpperCase()}</Badge>,
   },

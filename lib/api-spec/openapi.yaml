@@ -183,7 +183,7 @@ components:
       enum: [draft_dry_run, approval_ready, approved_proposal, executable_action, executed_change, verified_result, invalidated]
     ProposalRecord:
       type: object
-      required: [id, opportunity_id, title, opportunity_type, url, path, query, score, confidence, risk_classification, lifecycle, plan_status, dry_run, execution_authorized, public_site_writes, action_type, field, before_value, after_value, rationale, expected_benefit, rollback, evidence_ids, evidence_count, evidence_sufficient, bounded_pilot, whole_site_coverage, quality_status, quality_score, quality_approval_eligible, quality_checks, quality_blocking_reasons, quality_warnings, quality_evidence_ids, decision, decision_reason, decided_by, decided_at, revision_requested, updated_at]
+      required: [id, opportunity_id, title, opportunity_type, url, path, query, score, confidence, risk_classification, evaluatorRisk, planControlRisk, effectiveExecutionRisk, lifecycle, plan_status, dry_run, execution_authorized, public_site_writes, action_type, field, before_value, after_value, rationale, expected_benefit, rollback, evidence_ids, evidence_count, evidence_sufficient, bounded_pilot, whole_site_coverage, quality_status, quality_score, quality_approval_eligible, quality_checks, quality_blocking_reasons, quality_warnings, quality_evidence_ids, decision, decision_reason, decided_by, decided_at, revision_requested, updated_at]
       properties:
         id: { type: string }
         opportunity_id: { type: string }
@@ -195,6 +195,9 @@ components:
         score: { type: number }
         confidence: { type: number }
         risk_classification: { type: string }
+        evaluatorRisk: { type: string }
+        planControlRisk: { type: string }
+        effectiveExecutionRisk: { type: string }
         lifecycle: { $ref: "#/components/schemas/ProposalLifecycleStage" }
         plan_status: { type: string }
         dry_run: { type: boolean }
