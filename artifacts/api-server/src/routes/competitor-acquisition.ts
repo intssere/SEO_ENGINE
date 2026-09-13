@@ -4,8 +4,13 @@ import {
   runConfiguredCompetitorAcquisition,
   type AcquisitionRunResult,
 } from "../lib/competitor-acquisition.js";
+import {
+  createSecureCompetitorRuntimeDependencies,
+  secureCompetitorTransportCapability,
+} from "../lib/secure-competitor-transport.js";
 
 const router: IRouter = Router();
+const secureRuntimeDeps = createSecureCompetitorRuntimeDependencies();
 
 function statusForResult(result: AcquisitionRunResult): number {
   if (result.ok) return 200;
@@ -21,20 +26,31 @@ function targetId(req: Request): string | null {
 }
 
 router.get("/competitor-acquisition/capability", (_req: Request, res: Response) => {
-  res.json(competitorAcquisitionCapability());
+  res.json({
+    ...competitorAcquisitionCapability(),
+    transport: secureCompetitorTransportCapability(),
+  });
 });
 
 router.post("/competitor-acquisition/dry-run", async (req: Request, res: Response) => {
   const id = targetId(req);
   if (!id) return res.status(400).json({ error: "invalid_competitor_target_id" });
-  const result = await runConfiguredCompetitorAcquisition({ targetId: id, mode: "dry_run" });
+  const result = await runConfiguredCompetitorAcquisition({
+    targetId: id,
+    mode: "dry_run",
+    deps: secureRuntimeDeps,
+  });
   return res.status(statusForResult(result)).json(result.ok ? result : { error: result.reason });
 });
 
 router.post("/competitor-acquisition/persist", async (req: Request, res: Response) => {
   const id = targetId(req);
   if (!id) return res.status(400).json({ error: "invalid_competitor_target_id" });
-  const result = await runConfiguredCompetitorAcquisition({ targetId: id, mode: "persist" });
+  const result = await runConfiguredCompetitorAcquisition({
+    targetId: id,
+    mode: "persist",
+    deps: secureRuntimeDeps,
+  });
   return res.status(statusForResult(result)).json(result.ok ? result : { error: result.reason });
 });
 
