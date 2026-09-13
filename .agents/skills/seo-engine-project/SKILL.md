@@ -118,13 +118,14 @@ After merge:
 2. Query push-event GitHub Actions for the merge SHA; do not confuse PR-run status with main push status.
 3. Require post-merge main CI green.
 4. Inspect Replit before syncing.
-5. Exact-sync GitHub `main` to Replit; never merge arbitrary Replit drift into canonical history.
-6. Run tests/typechecks/build/bundle verification in Replit.
+5. Exact-sync GitHub `main` to Replit if it is not already exact-aligned; never merge arbitrary Replit drift into canonical history.
+6. Run tests/typechecks/build/bundle verification in Replit on the exact merged tree.
 7. Verify dev/prod DB schema parity before publish.
-8. Publish only if the task needs a new deployment.
-9. Runtime-certify with GET/SELECT-first checks.
-10. Inspect logs/data for unexpected writes.
-11. Reconcile Replit-generated commits after certification without republishing merely for Git cleanup.
+8. Verify auth and safety gates before publish.
+9. Publish only if the task needs a new deployment and the required authorization has been obtained.
+10. Runtime-certify with GET/SELECT-first checks.
+11. Inspect logs/data for unexpected writes.
+12. Reconcile Replit-generated commits after certification without republishing merely for Git cleanup.
 
 ## Step 6 — Replit publication safety
 
@@ -138,6 +139,8 @@ Before publish, explicitly verify:
 - API bundle includes expected Task markers
 - auth configuration is still valid
 - public writes remain disabled
+- AI proposal generation remains disabled unless a separately approved task intentionally changes it
+- Task #53/#54 dispatch/scheduler/batch remain closed unless a separately approved bounded execution requires them
 
 If Replit schema review proposes dropping objects that should exist in production, cancel. Align development schema first; do not approve destructive synchronization simply to get a publish through.
 
@@ -170,6 +173,8 @@ Keep separate:
 - effective execution risk
 
 Task #51 effective risk uses evaluator-first fallback. Preserve this exact semantics unless a dedicated policy-change task explicitly changes it.
+
+Task #56 introduced explicit API/UI diagnostics for these three domains; do not regress to ambiguous `risk` labeling in execution-facing surfaces.
 
 ## Step 9 — Task #51/#53/#54 control
 
@@ -212,12 +217,20 @@ Before ending a long chat/task:
 - do not include secrets or personal identity values
 - give the next chat a copy/paste prompt whose first action independently verifies the checkpoint
 
-## Current checkpoint when this skill was introduced
+## Current checkpoint when this skill was refreshed
 
-Task #56 PR #63 is open and PR CI #131 has passed for exact head:
+Task #56 PR #63 is merged.
 
-`115709335c5cd1fb118cdceda56b1a6740ae5be2`
+Canonical merged `main`:
 
-The next chat should verify that head is unchanged, merge it, then require post-merge main CI green before Replit sync/deployment work.
+`8d1c65e630253a4e0f052076bfc6bf21fbf5679f`
+
+Canonical tree:
+
+`11bc62ba2545769d78f29c41a268423b1350545f`
+
+PR CI #131 and post-merge main CI #132 both passed. Replit workspace is already aligned to this exact SHA/tree and clean; dev/prod DBs are 31/31; auth is enabled/configured; public writes and AI proposal generation are effectively false; Task #53/#54 dispatch/scheduler/batch remain closed.
+
+Production still serves the pre-Task-56 bundle. The next chat should run merged-main Replit validation, then request explicit publication authorization if still needed, publish Task #56, runtime-certify the new risk-semantics fields and all safety gates, and reconcile Replit-only Git drift.
 
 See `PROJECT_HANDOFF.md` for the complete state.
