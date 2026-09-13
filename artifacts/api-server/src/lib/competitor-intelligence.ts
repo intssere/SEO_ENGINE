@@ -119,10 +119,14 @@ const normalizeDomain = (value: string | null | undefined) => {
   }
 };
 
+const isOwnedDomain = (candidate: string | null, ownDomain: string | null) => Boolean(candidate && ownDomain && (candidate === ownDomain || candidate.endsWith(`.${ownDomain}`)));
+
 const normalizeSourceUrl = (value: string) => {
   try {
     const parsed = new URL(value);
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
+    if (parsed.username || parsed.password) return null;
+    parsed.search = "";
     parsed.hash = "";
     return parsed.toString();
   } catch {
@@ -177,7 +181,7 @@ export function normalizeCompetitorObservation(input: CompetitorObservationInput
   if (sourceDomain !== competitorDomain) return { ok: false, reason: "domain_url_mismatch" };
 
   const normalizedOwnDomain = normalizeDomain(ownDomain);
-  if (normalizedOwnDomain && normalizedOwnDomain === competitorDomain) return { ok: false, reason: "own_domain_observation" };
+  if (isOwnedDomain(competitorDomain, normalizedOwnDomain)) return { ok: false, reason: "own_domain_observation" };
 
   const observedAt = normalizeObservedAt(input.observedAt);
   if (!observedAt) return { ok: false, reason: "invalid_observed_at" };
@@ -291,7 +295,7 @@ function sanitizePersistedRow(row: CompetitorDbRow) {
   const ownDomain = normalizeDomain(row.site_domain);
   const competitorDomain = normalizeDomain(payload.competitorDomain);
   const sourceUrl = normalizeSourceUrl(payload.sourceUrl);
-  if (!competitorDomain || !sourceUrl || ownDomain === competitorDomain) return null;
+  if (!competitorDomain || !sourceUrl || isOwnedDomain(competitorDomain, ownDomain)) return null;
   if (normalizeDomain(new URL(sourceUrl).hostname) !== competitorDomain) return null;
 
   const signals: CompetitorSignals = {
