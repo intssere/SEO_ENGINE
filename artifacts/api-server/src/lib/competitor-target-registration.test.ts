@@ -46,8 +46,7 @@ function makePlan(now = NOW): CompetitorCollectionPlan {
 
 function proposal(): TargetRegistrationProposal {
   const created = createTargetRegistrationProposal({ plan: makePlan(), selectedRank: 1, now: NOW });
-  assert.equal(created.ok, true);
-  if (!created.ok) throw new Error(created.reason);
+  if (!created.ok) throw new Error("proposal_creation_failed");
   return created.proposal;
 }
 
