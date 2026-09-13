@@ -179,11 +179,11 @@ test("unsupported methods, bodies, redirect modes, credentials, and sensitive fo
 });
 
 test("secure fetch returns the executor response and exposes only the validated pinned plan", async () => {
-  let captured: PinnedRequestPlan | null = null;
+  const captured: PinnedRequestPlan[] = [];
   const fetchImpl = createSecureCompetitorFetch({
     resolveHost: async () => [PUBLIC_V4],
     execute: async (plan) => {
-      captured = plan;
+      captured.push(plan);
       return new Response("safe", { status: 203, headers: { "x-test": "yes" } });
     },
   });
@@ -191,7 +191,10 @@ test("secure fetch returns the executor response and exposes only the validated 
   assert.equal(result.status, 203);
   assert.equal(await result.text(), "safe");
   assert.equal(result.headers.get("x-test"), "yes");
-  assert.equal(captured?.address, PUBLIC_V4);
-  assert.equal(captured?.servername, "example.com");
-  assert.equal(captured?.proxyMode, "disabled");
+  assert.equal(captured.length, 1);
+  const plan = captured[0];
+  assert.ok(plan);
+  assert.equal(plan.address, PUBLIC_V4);
+  assert.equal(plan.servername, "example.com");
+  assert.equal(plan.proxyMode, "disabled");
 });
