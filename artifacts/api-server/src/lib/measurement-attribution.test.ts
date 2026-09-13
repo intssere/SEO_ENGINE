@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { evaluateMeasurementImpact, type MeasurementEvaluationInput } from "./measurement-attribution.js";
 
@@ -90,4 +91,11 @@ test("insufficient persisted search coverage fails closed to measurement_pending
   assert.equal(result.confidence, "low");
   assert.equal(result.measurementState, "pending");
   assert.equal(result.recommendation, "measurement_pending");
+});
+
+test("all parameterized measurement-window values are explicitly typed for PostgreSQL date arithmetic", () => {
+  const source = readFileSync(new URL("./measurement-attribution.ts", import.meta.url), "utf8");
+  const interpolations = source.match(/\$\{MEASUREMENT_WINDOW_DAYS\}(?:::\w+)?/g) ?? [];
+  assert.ok(interpolations.length > 0);
+  assert.equal(interpolations.some((value) => value !== "${MEASUREMENT_WINDOW_DAYS}::int"), false);
 });
