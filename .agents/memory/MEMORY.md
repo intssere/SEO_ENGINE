@@ -8,3 +8,4 @@
 - [Project continuity and release discipline](project-continuity.md) — GitHub-first release gates, Replit reconciliation, schema-parity publication safety, and exact handoff requirements.
 - [Task #57 production closeout](task57-production-closeout.md) — measurement/attribution release, runtime SQL fix, production certification, and publication-drift reconciliation.
 - [Task #58 production closeout](task58-production-closeout.md) — competitor evidence foundation release, production certification, publication-drift reconciliation, and bounded acquisition next-step controls.
+- [Task #59 production closeout](task59-production-closeout.md) — bounded competitor acquisition release, production certification, default-off runtime gates, publication-drift reconciliation, and Task #60 discovery/planning boundary.
