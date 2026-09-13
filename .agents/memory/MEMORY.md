@@ -10,3 +10,4 @@
 - [Task #58 production closeout](task58-production-closeout.md) — competitor evidence foundation release, production certification, publication-drift reconciliation, and bounded acquisition next-step controls.
 - [Task #59 production closeout](task59-production-closeout.md) — bounded competitor acquisition release, production certification, default-off runtime gates, publication-drift reconciliation, and Task #60 discovery/planning boundary.
 - [Task #60 production closeout](task60-production-closeout.md) — competitor discovery/planning release, deterministic advisory planning, production certification, publication-drift reconciliation, and Task #61 controlled target-registration boundary.
+- [Task #61 production closeout](task61-production-closeout.md) — controlled target-registration/preflight release, production certification, publication-drift reconciliation, and the Task #62 secure outbound transport / DNS-rebinding hardening boundary.
