@@ -1,0 +1,338 @@
+# SEO ENGINE Architecture
+
+## Purpose
+
+SEO ENGINE is the control plane for evidence-driven SEO/GEO/AIO analysis and progressively bounded execution for Diamond Shelf (`diamondshelf.us`). It is designed to automate research, opportunity discovery, proposal generation, approval workflows, measurement, and eventually tightly controlled site changes without allowing ambiguous state or broad autonomous mutation.
+
+The architecture deliberately separates **observation**, **reasoning/proposal**, **authorization**, **provider mutation**, and **verification**. A capability existing in one layer never implies authorization in the next.
+
+## System map
+
+```text
+Google Search Console ─┐
+Google Analytics      ├──> ingestion / normalized evidence ──> findings + opportunities
+Shopify read APIs     ┘                                      │
+                                                             v
+                                              deterministic opportunity engine
+                                                             │
+                                                             v
+                                              dry-run action planner
+                                                             │
+                                      quality/evidence gate + human review
+                                                             │
+                                                             v
+                                   Task #51 controlled authorization foundation
+                                                             │
+                                                             v
+                                   Task #52 connector/verify/rollback mechanics
+                                                             │
+                                    ┌────────────────────────┴──────────────────────┐
+                                    v                                               v
+                         Task #53 reversible pilot                    Task #54 persistent single apply
+                                    │                                               │
+                                    └──────────────> verification / measurement <───┘
+
+Browser/UI <──> Express API <──> PostgreSQL
+     │              │
+     │              ├── Google OIDC / RBAC / CSRF / server sessions
+     │              └── bounded provider connectors
+     │
+     └── React/Vite frontend
+```
+
+## Repository topology
+
+The repository is a pnpm workspace. The primary runtime surfaces are:
+
+- `artifacts/api-server` — Express/Node API, operational data, auth/RBAC, opportunity/planning/execution foundations, provider adapters, tests, production bundle verification.
+- `artifacts/seo-engine` — React/Vite operator UI.
+- `lib/api-spec/openapi.yaml` — source API contract.
+- `lib/api-client-react` — generated React/API client artifacts.
+- `lib/api-zod` — generated validators/types.
+- `lib/db/migrations` — PostgreSQL schema migrations.
+- `.agents/memory` — durable implementation lessons and guardrails.
+- `.agents/skills/seo-engine-project/SKILL.md` — agent execution procedure.
+- `AGENTS.md` — normative repository operating contract.
+- `PROJECT_HANDOFF.md` — current continuation checkpoint.
+
+Generated API files are downstream artifacts; `openapi.yaml` is the contract source of truth.
+
+## Runtime topology
+
+### GitHub
+
+GitHub is the canonical source-control and CI system.
+
+- Repository: `intssere/SEO_ENGINE`.
+- Engineering work occurs on dedicated branches.
+- PR CI is a release gate.
+- Merged `main` CI is a second release gate.
+
+### Replit
+
+Replit hosts the application runtime and production deployment.
+
+- App: `SEO_ENGINE`.
+- replId: `4f36f99c-0492-43c4-80e7-a7f7660fc3f7`.
+- Production: `https://dsseoengine.replit.app`.
+- Deployment target: autoscale.
+
+Replit is **not** canonical source control. Replit may create local metadata/configuration commits during publication; after certification, reconcile those against GitHub rather than pushing them upstream blindly.
+
+### PostgreSQL
+
+The application uses PostgreSQL for operational state, evidence, plans, approvals, execution records, provider connections, and authentication sessions/audit.
+
+Current intended public schema: **31 base tables**.
+
+Task #55 adds:
+
+- `auth_sessions`
+- `auth_audit_events`
+
+and six dedicated auth indexes.
+
+Development and production schema shape must match before publication. Publishing while they diverge can cause Replit schema synchronization to remove production-only objects.
+
+## Evidence and opportunity layer
+
+The system ingests bounded, persisted provider/site evidence and produces findings/opportunities. Opportunity candidates contain evidence-backed scoring, confidence, and evaluator risk. Durable rules include:
+
+- Never treat provider discovery/count success alone as complete access/certification.
+- GSC headline metrics require property-level aggregates; bounded crawl evidence certifies only the bounded scope.
+- Opportunity generation must be traceable to persisted query/page/finding evidence.
+- Stale opportunities are history, not silently reused live candidates.
+
+## Proposal layer
+
+The action planner produces reviewable dry-run proposals.
+
+A dry-run proposal intentionally begins with:
+
+- `dryRun=true`
+- `executionAuthorized=false`
+- `publicSiteWrites=false`
+- `automaticTransition=false`
+- plan-control `riskLevel=blocked`
+
+while preserving the opportunity evaluator risk separately in proposal outcome metadata.
+
+Quality gates verify evidence sufficiency, bounded target, proposed field/action, rollback metadata, quality score, warnings/blocking reasons, and fingerprint/revision state before a proposal can become approval-ready.
+
+Approval itself is audited and non-executable. It does not grant provider-write permission.
+
+## Risk model
+
+SEO ENGINE contains multiple deliberately separate risk domains.
+
+### Evaluator / impact risk
+
+Values such as `low`, `medium`, `high`, `critical`. This describes the potential impact/risk classification of an opportunity/proposal.
+
+### Plan-control risk
+
+`action_plans.risk_level` uses the control-state domain `auto | approval | blocked`. Dry-run plans are deliberately persisted as `blocked` until the execution workflow establishes stronger authorization state.
+
+### Effective execution risk
+
+Task #51 resolves the risk used by execution authorization with evaluator-first fallback:
+
+```sql
+COALESCE(
+  o.impact_estimate->>'riskClassification',
+  ap.risk_level,
+  'blocked'
+)
+```
+
+The risk gate rejects `blocked`, `high`, and `critical`. Task #56 makes all three risk semantics explicit in reporting/API/UI without changing this policy.
+
+## Controlled execution architecture
+
+### Task #51 — Controlled Execution Foundation v1
+
+Purpose: convert an explicitly approved proposal into a bounded internal executable action under exact confirmation and a short authorization window.
+
+Core properties:
+
+- exact proposal fingerprint binding
+- freshness/TTL checks
+- evaluator-first risk gate
+- no automatic provider write
+- provider-write permission remains false at authorization creation
+- user confirmation is explicit and single-context
+
+### Task #52 — Shopify Write Connector + Verification/Rollback Foundation v1
+
+Purpose: implement the bounded mechanics needed for a safe provider write.
+
+Core properties:
+
+- bounded fields/actions
+- stale-before-state verification
+- idempotency/fingerprints
+- provider receipts
+- read-after-write verification
+- deterministic rollback
+- network-free dry-run/self-test mode
+- manual-intervention outcome for uncertainty
+
+### Task #53 — Controlled Single-Action Production Pilot v1
+
+Purpose: one live mutation followed by verification and rollback.
+
+Core properties:
+
+- isolated provider write account
+- fresh preflight
+- exact `EXECUTE_AND_ROLLBACK_TASK53:<actionId>:<preflightFingerprint>` confirmation
+- one bounded write
+- verification
+- rollback to original state
+- manual-intervention state if rollback cannot be proven
+
+The historical Home Fragrance pilot completed successfully and restored its original null meta description.
+
+### Task #54 — Verified Persistent Single-Action Production Apply Foundation v1
+
+Purpose: one persistent bounded live change, verified and intentionally left live on success.
+
+Core properties:
+
+- separate preflight and apply routes
+- exact `APPLY_AND_VERIFY_TASK54:<actionId>:<preflightFingerprint>` confirmation
+- exactly one forward mutation
+- read-after-write verification
+- leave verified change live on success
+- rollback on verification failure
+- manual-intervention if state becomes uncertain
+- scheduler and batch execution disabled
+
+No first persistent Task #54 live apply has occurred yet.
+
+## Authentication and trust boundary
+
+Task #55 provides production application authentication.
+
+### Google OIDC
+
+- Authorization-code flow.
+- State, nonce, and PKCE S256.
+- Exact production callback: `https://dsseoengine.replit.app/api/auth/google/callback`.
+- Scopes: `openid email profile`.
+- Allowlist-only accounts.
+- Public registration disabled.
+
+### Roles
+
+Role hierarchy:
+
+```text
+admin > operator > viewer
+```
+
+GET/HEAD/OPTIONS operational access requires viewer or above. Selected approval/preflight operations require operator. Higher-risk mutations require admin. Server-side middleware is authoritative.
+
+### Sessions
+
+- Stored server-side in PostgreSQL.
+- Session cookie plus separate CSRF cookie.
+- 12-hour absolute expiration.
+- 30-minute idle expiration.
+- rotation threshold after 15 minutes.
+- logout revokes server session.
+- audit events record login/logout/denial outcomes.
+
+Authentication has been production-certified through anonymous denial, allowlisted admin Google login, protected GET access, CSRF-protected logout, and revocation.
+
+## Provider boundaries
+
+### Shopify
+
+Ordinary connections are read-only. A separate isolated write-capable credential exists for controlled Task #53/#54 flows. Its scope does not grant autonomous permission.
+
+Current bounded execution support is centered on product/collection title and meta-description operations. Do not expand fields/resources without a task-specific design, tests, verification strategy, and rollback strategy.
+
+### Google
+
+Google provider connections are used for evidence/measurement. Authentication OIDC is a distinct application-auth concern and should not be conflated with Search Console/Analytics provider authorization.
+
+## Safety gates
+
+The strongest global invariant is that public-site/provider mutation remains disabled by default.
+
+- `PUBLIC_SITE_WRITES_ENABLED=false`
+- `AI_PROPOSAL_GENERATION_ENABLED=false`
+- Task #53/#54 dispatch disabled unless explicitly opened for a bounded authorized operation.
+- scheduler/worker execution disabled.
+- no implicit approval-to-execution transition.
+
+Multiple independent gates are intentional. Removing a single gate must never make a mutation automatically possible.
+
+## Deployment architecture
+
+The release path is:
+
+```text
+task branch
+  -> focused/full validation
+  -> GitHub PR
+  -> PR CI green
+  -> exact-head merge
+  -> main CI green
+  -> exact GitHub main sync to Replit
+  -> Replit tests/typecheck/build/bundle verification
+  -> publish when required
+  -> live read-only certification
+  -> reconcile Replit-only Git metadata
+```
+
+Before publish, certify development and production schema parity. After publish, certify health/auth/write gates/version markers and absence of unexpected mutation activity.
+
+## Measurement architecture
+
+Persistent changes must eventually feed a measurement loop rather than being judged on deployment success alone. Intended evidence includes:
+
+- GSC pre/post impressions, clicks, CTR, average position, query/page segmentation.
+- analytics sessions/conversions/revenue where attribution is valid.
+- indexation/crawl observations.
+- AI/GEO visibility/citation observations when supported by verifiable sources.
+- deployment/action lineage and measurement windows.
+- confidence and retain/replace/rollback decision.
+
+Measurement must respect cooldown windows and avoid attributing unrelated site movement to one SEO action.
+
+## Competitor intelligence architecture direction
+
+Competitor research is an evidence input, not a copying engine. Future autonomous competitor modules may collect and compare:
+
+- category/taxonomy structures
+- titles/meta patterns
+- SERP coverage
+- entity/schema patterns
+- internal-link structures
+- keyword/content gaps
+- backlink/citation signals
+- AI-answer/citation visibility
+
+The engine should derive gaps and strategies from evidence, never copy competitor text or mutate the site automatically merely because a pattern is common.
+
+## Failure and recovery principles
+
+- Fail closed on stale fingerprints, stale before-values, missing evidence, target ambiguity, auth/session uncertainty, provider verification failure, rollback uncertainty, or schema mismatch.
+- Preserve audit history rather than rewriting history to make current state look clean.
+- For an uncertain provider mutation, enter `manual_intervention_required`; do not guess success/failure.
+- For DB recovery, fingerprint the target first, apply only an approved migration, verify schema/indexes/constraints, and do not republish solely because a migration ran.
+- For Replit Git drift, compare commit trees and changed files; reset to canonical main without republishing when drift is metadata/incidental workspace configuration only.
+
+## Current architectural checkpoint
+
+At the time this document was introduced:
+
+- Task #55 auth/RBAC is merged, live, and fully certified.
+- canonical GitHub `main` is `6e0761a92c54f7f5a47ee68a1b9b99e2fa113c84` with tree `874d137138b9ab4473c7cc833ae143e176c61f82`.
+- Task #56 exists as PR #63 on head `115709335c5cd1fb118cdceda56b1a6740ae5be2`.
+- PR #63 CI run #131 has completed successfully.
+- PR #63 is intentionally left unmerged for the continuation chat.
+
+For the exact mutable continuation state, use `PROJECT_HANDOFF.md`.
