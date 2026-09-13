@@ -5,3 +5,4 @@
 - [GSC baseline certification](gsc-baseline-certification.md) — headline KPIs require property aggregates; bounded crawl can certify a pilot, never the whole site.
 - [Opportunity engine guardrails](opportunity-engine-guardrails.md) — query/page evidence drives candidates; stale rows become history and plans remain blocked dry runs.
 - [Collection copy diversity](collection-copy-diversity.md) — vary certified composition copy deterministically and gate structural similarity separately from lexical overlap.
+- [Project continuity and release discipline](project-continuity.md) — GitHub-first release gates, Replit reconciliation, schema-parity publication safety, and exact handoff requirements.

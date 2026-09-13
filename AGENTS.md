@@ -1,0 +1,160 @@
+# SEO ENGINE — Agent Operating Contract
+
+This file is the normative operating contract for any human or AI agent working in this repository. Read it before changing code, data, configuration, deployments, or provider state.
+
+## 1. Canonical systems
+
+- Canonical source repository: `intssere/SEO_ENGINE` on GitHub.
+- Canonical development history: GitHub branches, pull requests, and GitHub Actions.
+- Replit app: `SEO_ENGINE`, replId `4f36f99c-0492-43c4-80e7-a7f7660fc3f7`.
+- Production URL: `https://dsseoengine.replit.app`.
+- Replit is a deployment/runtime target, not the source of truth.
+- Never preserve a Replit-generated commit merely because Replit created it. Compare its tree with GitHub first. Metadata-only publish commits and incidental `.replit` module edits should normally be discarded after certification unless intentionally required.
+
+## 2. Mandatory engineering workflow
+
+For every engineering change:
+
+1. Confirm the current canonical GitHub `main` SHA and clean baseline.
+2. Create a dedicated GitHub task branch from that exact SHA.
+3. Implement only the scoped task.
+4. Run focused tests, full relevant tests, typechecks, generated-code checks, build checks, and `git diff --check`.
+5. Push the task branch.
+6. Open a PR against `main`.
+7. Require PR CI to complete successfully.
+8. Merge the exact tested PR head SHA; do not merge a moved head without rechecking CI.
+9. Require post-merge `main` CI to complete successfully.
+10. Exact-sync the merged GitHub `main` to Replit.
+11. Rebuild and certify tests/typechecks/bundles/runtime markers in Replit.
+12. Publish only when publication is actually required and explicitly authorized when the current workflow requires authorization.
+13. Runtime-certify the live deployment using the least-privileged checks possible.
+14. Reconcile Replit-only publish/configuration commits back to canonical GitHub state without republishing merely for reconciliation.
+15. Do not begin the next engineering task until the current task is certified.
+
+A short user message such as `continue` authorizes continuation of the current safe engineering workflow. It does **not** authorize provider writes, public-site mutation, Task #53/#54 execution, credential changes, database DDL, or destructive recovery steps unless those actions were already explicitly authorized.
+
+## 3. Permanent safety invariants
+
+Unless the user gives exact, specific authorization for a bounded action:
+
+- `PUBLIC_SITE_WRITES_ENABLED=false` must remain effective.
+- `AI_PROPOSAL_GENERATION_ENABLED=false` must remain effective.
+- Ordinary Shopify and Google connections stay read-only.
+- The isolated Task #53/#54 Shopify credential may retain its existing write scope; possession of that scope is not execution authorization.
+- Do not broaden provider scopes or supported mutation fields casually.
+- No autonomous scheduler/worker may perform public-site or provider mutations.
+- No automatic transition from proposal/approval to execution.
+- Do not invoke Task #53/#54 preflight, execute, or apply from a generic `continue` instruction.
+- Do not mutate Shopify or the public site merely to test a code path.
+- Do not overwrite production plan data merely to make labels or reporting fields agree.
+- Fail closed on stale state, incomplete evidence, schema mismatch, unknown authorization, ambiguous target identity, or verification uncertainty.
+
+## 4. Explicit execution boundaries
+
+### Task #51 — Controlled Execution Foundation
+
+Task #51 converts an explicitly approved proposal into a bounded executable action. It requires exact confirmation and time-bounded authorization. It does not by itself authorize a provider write.
+
+### Task #52 — Shopify write/verification/rollback foundation
+
+Task #52 supplies bounded connector mechanics, stale-state checks, fingerprints, read-after-write verification, and rollback mechanics. Dry-run/self-tests must remain network-safe unless a later task explicitly authorizes live provider interaction.
+
+### Task #53 — Controlled single-action production pilot
+
+A Task #53 live pilot requires its own fresh preflight plus exact execute-and-rollback confirmation. Historical fingerprints are single-use and must never be reused.
+
+### Task #54 — Verified persistent single-action production apply
+
+A Task #54 persistent apply requires a fresh preflight and separate exact confirmation naming the action/preflight target. Successful apply intentionally leaves one verified bounded change live. Do not invoke it without explicit user authorization.
+
+## 5. Authentication and RBAC
+
+Task #55 authentication is live in production.
+
+- Provider: Google OIDC authorization-code flow with state, nonce, and PKCE.
+- Public registration: disabled.
+- Access: allowlist only.
+- Roles: `viewer`, `operator`, `admin`.
+- Sessions: server-side PostgreSQL.
+- Absolute session lifetime: 12 hours.
+- Idle timeout: 30 minutes.
+- Rotation threshold: 15 minutes.
+- Unsafe authenticated requests require CSRF protection.
+- Anonymous protected API access must fail with 401.
+- Role checks are enforced server-side; never trust frontend visibility as authorization.
+- Do not expose client secrets, session secrets, token hashes, CSRF material, allowlisted identity values, or provider tokens in logs, PRs, issues, docs, or chat.
+
+Production authentication has been certified end-to-end: anonymous denial, Google admin sign-in, admin server session creation, protected GET access, CSRF-protected logout, and session revocation.
+
+## 6. Database discipline
+
+Current intended schema is 31 public base tables, including:
+
+- `auth_sessions`
+- `auth_audit_events`
+
+with the six Task #55 auth indexes.
+
+Before any Replit publish, development and production schemas must be aligned. A prior manual publish demonstrated that Replit may synchronize the development schema toward production; publishing while development was 29 tables and production 31 removed the production auth tables. That incident was recovered by applying the approved auth migration to both environments.
+
+Rules:
+
+- Compare development and production schema shape before publish.
+- Never identify a Neon target only by database/user names; use the bound environment and read-only data/schema fingerprints.
+- Do not run production DDL unless specifically authorized.
+- Capture a read-only production fingerprint before authorized DDL/recovery.
+- Use `ON_ERROR_STOP` for manual migration execution and certify resulting tables/indexes/constraints afterward.
+- Never republish solely because a manual DB migration succeeded.
+
+## 7. Risk semantics
+
+Do not conflate these domains:
+
+- Evaluator/impact risk: `low | medium | high | critical` (opportunity/proposal impact classification).
+- Plan-control risk: `auto | approval | blocked` (`action_plans.risk_level`).
+- Effective execution risk: the exact risk evaluated by Task #51.
+
+Task #51 currently resolves effective risk using evaluator-first precedence:
+
+`COALESCE(o.impact_estimate->>'riskClassification', ap.risk_level, 'blocked')`
+
+and rejects `blocked`, `high`, and `critical` at the risk gate. A dry-run plan may therefore legitimately have evaluator risk `medium`, plan-control risk `blocked`, and effective execution risk `medium`.
+
+Task #56 exists to make this distinction explicit in API/UI diagnostics without weakening fail-closed execution semantics.
+
+## 8. Testing and generated code
+
+The repository is a pnpm workspace. Generated API clients/types must be regenerated from `lib/api-spec/openapi.yaml`; do not hand-edit generated files as the source of truth.
+
+Typical validation includes, as applicable:
+
+- API specification code generation.
+- API server tests.
+- focused frontend tests.
+- API and frontend typechecks.
+- API production build and bundle-marker verification.
+- frontend production build.
+- `git diff --check`.
+- GitHub Actions PR CI.
+- GitHub Actions post-merge main CI.
+
+If a test command fails because a binary is package-scoped, run it from the package that owns that dependency rather than installing ad-hoc tooling.
+
+## 9. Production certification principles
+
+- Prefer GET/HEAD and SELECT-only verification.
+- Authentication tests may legitimately create auth audit/session records when the user has explicitly authorized login/logout certification.
+- Do not call mutation-capable operational endpoints just to inspect their metadata.
+- After deployment, verify health, auth state, safety gates, Task version markers, schema alignment, and absence of unexpected provider/public-site/autonomous activity.
+- Treat successful build/publish as insufficient until runtime certification passes.
+
+## 10. Continuity documents
+
+Before resuming a task, read:
+
+1. `ARCHITECTURE.md` — system architecture and trust boundaries.
+2. `PROJECT_HANDOFF.md` — current mutable checkpoint and exact next action.
+3. `.agents/skills/seo-engine-project/SKILL.md` — procedural execution skill.
+4. `.agents/memory/MEMORY.md` and linked memory notes — durable implementation lessons.
+
+When the project state changes materially, update `PROJECT_HANDOFF.md`; when architecture or invariant behavior changes, update `ARCHITECTURE.md` and this contract in the same PR.
