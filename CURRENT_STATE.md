@@ -2,139 +2,112 @@
 
 This file is the authoritative **mutable checkpoint** for resuming work. If it conflicts with older mutable release wording in `PROJECT_HANDOFF.md`, use this file for the current release position and `PROJECT_HANDOFF.md` for historical/architectural context.
 
-## Current production release — Task #59 fully production-certified
+## Current production release — Task #60 fully production-certified
 
-Task #59 — Bounded Competitor Evidence Acquisition Foundation v1 — is fully merged, published, runtime-certified, reconciled, and ready to be treated as closed.
+Task #60 — Competitor Discovery + Collection Planning Foundation v1 — is fully merged, published, runtime-certified, reconciled, and closed.
 
-Canonical implementation:
+Canonical Task #60 release:
 
-- Issue: `https://github.com/intssere/SEO_ENGINE/issues/75`
-- PR: `https://github.com/intssere/SEO_ENGINE/pull/76`
-- exact tested PR head: `f5c2ed87cda413489bf324ed6037c8658188c279`
-- application merge / certified release source: `d5c7471a4bc788d7b0dbd63720ebe3b5f532c1b1`
-- certified release tree: `e4e57b7da4dcbfc6e2db3f93c701e5155c6773f3`
-- PR CI #156: success
-- post-merge main CI #157: success
-- Replit deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
+- Issue: `https://github.com/intssere/SEO_ENGINE/issues/78`
+- PR: `https://github.com/intssere/SEO_ENGINE/pull/79`
+- exact tested PR head: `3b4ec7e97633cff5c1b4bbd3461c5a35d0c86139`
+- certified application merge/source: `06e90582082b9e850af25add3ce6dc9d83a2b7cd`
+- certified tree: `76a5974fbd75c5267bdf78d6747aa0a6d90da504`
+- PR CI #160: success
+- post-merge main CI #161: success
+- deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - production URL: `https://dsseoengine.replit.app`
 - publication status: success
 
-## Task #59 behavior
+## Task #60 behavior
 
-Task #59 extends Task #58 with a bounded acquisition/persistence foundation while remaining default-off and non-autonomous.
+Task #60 is a pure advisory planning layer. It accepts already-held/manual competitor candidate inputs and deterministically produces bounded proposed targets compatible with Task #59 semantics.
 
-The v1 contract includes:
+It provides:
 
-- explicit configured competitor/source target allowlist
-- callers select only configured target IDs; no arbitrary crawler frontier
-- public-network / SSRF checks before every fetch hop
-- same-host and path-bounded redirects
-- HTTPS downgrade rejection
-- strict timeout, redirect-count, response-size, and HTML content-type limits
-- robots/policy gate
-- transient extraction of public structural signals only
-- raw competitor title/meta/H1/body copy is not retained
-- every observation normalized through Task #58
-- deterministic evidence IDs from `(siteId, Task58 fingerprint)`
-- migration-free idempotency through the existing `evidence` primary key and `ON CONFLICT (id) DO NOTHING`
-- Task #59 POST routes inherit existing API authentication, admin role enforcement, CSRF protection, and sensitive-mutation rate limiting
-- no scheduler
-- no autonomous worker
-- no opportunity/action/proposal/execution creation
-- no approval-to-execution transition
+- canonical candidate normalization
+- owned-domain/subdomain rejection
+- malformed, credential-bearing, unsupported scheme/port, IP-literal and special-use-host rejection
+- deterministic SHA-256 fingerprints and stable deduplication
+- explainable confidence/relevance/freshness/coverage/overlap scoring
+- deterministic ranking
+- diversity-aware selection across competitor domains
+- hard budgets for competitors, URLs per competitor and total proposed targets
+- provenance and diagnostics
+- Task #59-compatible proposed target structures
+- fixed safety markers showing advisory-only/no-network/no-persistence/no-target-mutation/no-scheduler/no-worker/no-public-write/no-execution state
 
-Task #59 does **not** mean competitor acquisition is currently active. The runtime gates remain closed.
+Task #60 added no API route, HTTP client, DNS resolver, database client, migration, runtime-readiness dependency, scheduler, worker, or target-config mutation path.
 
-## Task #59 engineering and production certification
+## Task #60 certification
 
-Before publication:
+Engineering certification before publication:
 
-- GitHub/Replit exact-synced to `d5c7471a4bc788d7b0dbd63720ebe3b5f532c1b1`
-- tree `e4e57b7da4dcbfc6e2db3f93c701e5155c6773f3`
-- ahead/behind `0/0`
-- working tree clean
-- dedicated Task #59 tests: `13/13` pass
-- API typecheck: pass
-- frontend typecheck: pass
-- isolated API production build: pass
-- isolated frontend production build: pass
-- source and compiled safety markers verified
-- development DB: 31 public base tables
-- production DB: 31 public base tables
-- Task #55 auth tables present in both
-- Task #55 auth indexes: 6/6 in both
-- competitor evidence: 0 in development / 0 in production
-- all observed operational counters unchanged
-- no real competitor page, robots.txt, acquisition route, provider mutation, or database write was invoked during certification
+- GitHub/Replit exact-synced at `06e90582082b9e850af25add3ce6dc9d83a2b7cd`
+- tree `76a5974fbd75c5267bdf78d6747aa0a6d90da504`
+- clean `0/0`
+- dedicated tests: `13/13` pass
+- API/frontend no-emit typechecks: pass
+- isolated API/frontend production builds: pass
+- isolated compiled Task #60 safety-value verification: pass
+- development/prod schema: 31/31 public base tables
+- Task #55 auth tables present; auth indexes 6/6 in both
+- all competitor/public-write/execution gates closed
+- no operational counter deltas
 
-The user explicitly authorized publication only for the certified source above while preserving all safety gates and forbidding DDL, provider/public-site mutation, Task #53/#54 execution, scheduler/batch/autonomous-worker enablement, and secret/config/OAuth-scope changes.
+The user explicitly authorized publication only for certified canonical source `06e90582082b9e850af25add3ce6dc9d83a2b7cd`, while requiring external discovery, Task #59 collection, evidence persistence, target-config mutation, public writes, Task #53/#54 execution, schedulers/batch/workers, DDL, and secret/config/OAuth changes to remain disabled/prohibited.
 
 Post-publication certification passed:
 
 - `/api/healthz`: HTTP 200 / ok
 - `/api/auth/status`: HTTP 200
-- authentication configured and enforced
-- provider: Google OIDC
+- Google OIDC configured/enforced
 - allowlist-only access enabled
 - public registration disabled
-- development/prod schema: 31/31 public base tables
+- development/prod schema: 31/31
 - Task #55 auth indexes: 6/6 in both
+- Task #60 network collection authorization: false
+- Task #60 target-config mutation: false
+- Task #60 scheduler/autonomous worker: false
 - Task #59 collection: false
-- Task #59 evidence persistence: false
+- competitor evidence persistence: false
 - configured competitor targets: 0
-- Task #59 scheduler: false
-- Task #59 autonomous worker: false
 - `PUBLIC_SITE_WRITES_ENABLED=false`
 - `AI_PROPOSAL_GENERATION_ENABLED=false`
 - Task #53/#54 provider dispatch disabled
 - Task #53/#54 schedulers disabled
-- Task #54 batch disabled
-- total evidence unchanged: development 0 / production 922
-- `competitor_page_observation` unchanged: development 0 / production 0
-- action plans/actions/approvals/deployments/rollbacks/verifications/jobs: zero delta
-- no unsafe mutation/execution markers
-- no scheduler/batch activity markers
-- no provider/public-site write markers
-- no unexpected Task #59 acquisition/collection/persistence/robots activity
+- Task #54 batch execution disabled
+- evidence/action-plan/action/approval/deployment/rollback/verification/job counts: zero delta
+- `competitor_page_observation`: 0 in development / 0 in production
+- no unsafe mutation/execution activity
+- no scheduler/batch/autonomous activity
+- no unexpected competitor discovery/collection/persistence
+- no provider/public-site writes
 - no PostgreSQL `42883`
 - no fatal/crash errors
 
-Transient healthcheck 500 responses occurred only during process startup before the API port became ready. The deployment initialized normally and the live health endpoint returned HTTP 200 afterward.
+Transient startup healthcheck 500s stopped once the API was ready; current production health returned HTTP 200.
 
-## Replit/Git state after Task #59 publication
-
-Publication created one empty Replit-generated metadata commit:
-
-- SHA: `154edfe5643778395571653e09b6918f8c7d2546`
-- subject: `Published your App`
-- parent: `d5c7471a4bc788d7b0dbd63720ebe3b5f532c1b1`
-- changed files: none
-- tree: `e4e57b7da4dcbfc6e2db3f93c701e5155c6773f3`, exactly equal to the canonical parent tree
-
-The metadata-only commit was removed without republishing.
+Publication created one empty Replit metadata commit `679ec76333cd4eb938ddcd9fbc7230c9c9520915` with zero changed files and the exact canonical tree. It was removed without republishing.
 
 Final reconciled Replit state before this documentation closeout:
 
 - branch: `main`
-- HEAD: `d5c7471a4bc788d7b0dbd63720ebe3b5f532c1b1`
-- tree: `e4e57b7da4dcbfc6e2db3f93c701e5155c6773f3`
-- `origin/main`: same
-- GitHub `main`: same
+- HEAD/origin/main/GitHub main: `06e90582082b9e850af25add3ce6dc9d83a2b7cd`
+- tree: `76a5974fbd75c5267bdf78d6747aa0a6d90da504`
 - ahead/behind: `0/0`
-- tracked changes: 0
-- untracked files: 0
-- working tree: clean
-- no second publish during reconciliation
-
-Do **not** republish solely because a documentation-only merge or metadata reconciliation advances Git history without changing the application runtime tree.
+- tracked/untracked: `0/0`
+- working tree clean
+- no second publish
 
 ## Prior completed milestones
 
-- Task #58 — Competitor Evidence Ingestion Foundation v1 — fully production-certified and closed. It defines the normalized competitor evidence contract and authenticated read-only projection.
-- Task #57 — Measurement & Attribution Foundation v1 — fully production-certified and closed. Its advisory measurement loop remains available for future verified persistent Task #54 changes.
-- Task #56 — Risk Semantics Alignment & Effective-Risk Diagnostics v1 — fully production-certified and closed.
-- Task #55 — Authentication/RBAC — production-certified: Google OIDC, allowlist-only access, viewer/operator/admin roles, PostgreSQL sessions, CSRF protection, and auth auditing.
-- Task #53 reversible live pilot was previously proven and rolled back successfully.
+- Task #59 — bounded competitor acquisition/persistence foundation — production-certified and closed. Runtime collection and persistence remain disabled by default.
+- Task #58 — normalized competitor evidence contract/read projection — production-certified and closed.
+- Task #57 — measurement and attribution foundation — production-certified and closed.
+- Task #56 — risk semantics alignment — production-certified and closed.
+- Task #55 — authentication/RBAC — production-certified: Google OIDC, allowlist-only access, viewer/operator/admin roles, PostgreSQL sessions, CSRF and auth auditing.
+- Task #53 reversible live pilot was proven and rolled back successfully.
 - No first persistent Task #54 live apply has occurred.
 
 Detailed closeouts are linked from `.agents/memory/MEMORY.md`.
@@ -147,62 +120,56 @@ Unless separately and explicitly authorized:
 - `AI_PROPOSAL_GENERATION_ENABLED=false`
 - `COMPETITOR_COLLECTION_ENABLED=false`
 - `COMPETITOR_EVIDENCE_PERSISTENCE_ENABLED=false`
-- configured competitor target count remains 0 unless intentionally changed through a reviewed engineering/configuration step
-- ordinary Shopify/Google operational integrations remain read-only
-- isolated write-capable credential presence is not authorization
-- no autonomous public-site/provider mutation worker
-- no autonomous competitor-collection worker
-- no automatic approval -> execution transition
+- configured competitor targets remain 0
+- Task #60 planning does not authorize target activation
+- no automatic Task #60 plan -> Task #59 active-target transition
+- no autonomous competitor discovery/collection worker
+- no scheduler/batch collection
 - no Task #53 execution
 - no Task #54 preflight/apply
 - no Task #53/#54 scheduler execution
 - no Task #54 batch execution
 - no production DB DDL
 - no secret/credential change or OAuth-scope broadening
-- no real external competitor collection run
-- no production competitor-evidence persistence run
+- no real external competitor discovery/collection
+- no production competitor-evidence persistence
 
-A generic `continue` advances safe engineering/documentation work only. It never authorizes external competitor collection, evidence persistence, provider/public-site mutation, production DDL, or publication.
+A generic `continue` advances safe engineering/documentation work only. It never authorizes target activation, external collection, persistence, provider/public-site mutation, production DDL, or publication.
 
-## Current engineering milestone
+## Current engineering milestone — Task #61
 
-The project is now at the **competitor discovery + collection planning stage**.
+The project is now at the **controlled target registration + live-discovery preflight stage**.
 
-Task #58 supplies the normalized evidence contract. Task #59 supplies the bounded default-off collector and idempotent persistence path. The next engineering problem is deciding **which competitors and which public pages are worth observing**, and producing deterministic collection plans before any network or persistence gate is opened.
+Task #58 defines what competitor evidence looks like. Task #59 can perform bounded collection/persistence but remains default-off. Task #60 can decide which competitor candidates/pages are worth observing but cannot activate them. The missing layer is an auditable bridge from an advisory Task #60 plan to a reviewed target-registration/preflight contract without automatically changing runtime target configuration or making any network request.
 
-### Task #60 — Competitor Discovery + Collection Planning Foundation v1
+### Recommended Task #61 — Controlled Competitor Target Registration & Collection Preflight Foundation v1
 
-Safe initial scope:
+Safe v1 scope:
 
-1. Define a canonical competitor candidate model with domain, source/reason, confidence, category/page-type relevance, provenance, and freshness.
-2. Define a deterministic candidate normalization/deduplication/fingerprinting contract.
-3. Accept safe candidate inputs from already-held/internal sources or manually supplied candidates in v1; no external discovery fetch is required for the first implementation.
-4. Exclude the owned domain and its subdomains, malformed/credential-bearing URLs, private/local hosts, and invalid domains.
-5. Rank candidates deterministically using transparent factors such as relevance, source confidence, coverage diversity, freshness, and duplication penalties.
-6. Convert eligible candidates into bounded **collection plans** compatible with Task #59 allowlisted target semantics.
-7. Keep planning advisory-only: no automatic target-config mutation, no network collection, no evidence persistence, no scheduler, and no autonomous worker.
-8. Expose read-only planning diagnostics or an authenticated dry-run planning route if useful.
-9. Add deterministic tests for normalization, dedupe, owned-domain exclusion, scoring/ranking, plan-budget bounds, and no-execution safety markers.
-10. Preserve the existing 31-table schema if feasible; prefer pure planning contracts over new persistence unless a durable registry is demonstrably required later.
+1. Define a deterministic target-registration proposal derived from a Task #60 proposed target.
+2. Preserve source plan fingerprint, candidate fingerprint, provenance, score/diagnostics, requested target URL/path prefix, confidence, page type and review timestamp.
+3. Produce a stable registration fingerprint and stable proposal ID.
+4. Validate that the proposed target still satisfies Task #59 structural target constraints and Task #60 safety rules.
+5. Add lifecycle states such as `proposed`, `review_ready`, `authorized_for_registration`, `expired`, `rejected`, while keeping actual target-config mutation out of scope initially.
+6. Add explicit expiry/TTL and stale-plan rejection.
+7. Define an exact authorization string for a future registration step, but do not treat generic `continue` as that authorization.
+8. Provide dry-run/read-only preflight diagnostics only in the first implementation.
+9. No automatic plan -> registered target transition.
+10. No external HTTP/robots/SERP request, no Task #59 collection, no evidence persistence, no scheduler/worker, no public-site/provider mutation.
+11. Preserve the existing 31-table schema if feasible; prefer pure contracts over persistence in v1.
+12. Add deterministic network-free tests.
 
-Task #60 should separate **discovery/planning** from **collection execution**. A candidate becoming recommended does not authorize a Task #59 network request or persistence operation.
+### Critical security review before any real Task #59 collection
 
-### Likely future Task #60+ progression
+Task #59 validates DNS results as public before each native fetch, but native fetch can re-resolve the hostname. That leaves a DNS TOCTOU/rebinding risk because the transport is not pinned to the already validated IP.
 
-After the pure planning foundation is proven safely, later separately scoped work may add discovery inputs such as:
+Before any real competitor HTTP request is authorized, Task #61 or a dedicated security-hardening milestone should ensure the outbound connection cannot resolve to a private/special-use address after validation. Acceptable designs include a validated-IP-pinned transport or an equivalent connection-level SSRF control, with redirect-hop revalidation and TLS hostname verification preserved.
 
-- existing GSC/query/category signals
-- search/SERP research providers
-- merchant/category overlap
-- user-approved competitor seeds
-- backlink/citation/entity sources
-- taxonomy/schema/entity comparisons
-
-Any third-party search API, external SERP query, competitor HTTP request, recurring scheduler, or automatic target-list mutation should remain separately gated until its source, cost, rate limit, terms, provenance, and failure behavior are explicitly designed and tested.
+Real collection remains separately prohibited until this is reviewed and certified.
 
 ## Persistent Task #54 remains separately gated
 
-A previously diagnosed possible first persistent candidate remains Unisex Fragrance:
+The previously diagnosed possible first persistent candidate remains Unisex Fragrance:
 
 - Plan: `b4c6eb99-0974-4ea9-a8b7-4ea897a06a56`
 - Proposal: `7404c9c7-0cf3-4577-906e-2a39d0e9e925`
@@ -217,26 +184,25 @@ A previously diagnosed possible first persistent candidate remains Unisex Fragra
 - lifecycle at diagnosis: `approval_ready`
 - approvals/actions/deployments at diagnosis: `0 / 0 / 0`
 
-Tasks #56/#57/#58/#59 do not approve or authorize it.
+Tasks #56-#60 do not approve or authorize it.
 
-Before any first persistent Task #54 apply, preserve the existing multi-gate sequence: verify current GitHub/Replit/runtime state, obtain exact proposal approval and Task #51 authorization, separately authorize write-gate opening and Task #54 preflight, generate a fresh preflight fingerprint, obtain exact `APPLY_AND_VERIFY_TASK54` authorization, execute one bounded mutation, read-after-write verify, and then enter Task #57 measurement mode. Never collapse those gates.
+Before any first persistent Task #54 apply, preserve the existing multi-gate sequence and never infer live-write permission from `continue`.
 
 ## Exact next project stage
 
-Task #59 is closed. The next safe work is **Task #60 engineering** for competitor discovery and collection planning with no external collection, no competitor evidence persistence, no scheduler/autonomy, and no public-site/provider mutation.
+Task #60 is closed. Safe next work is Task #61 engineering only:
 
-The intended sequence is:
-
-1. formalize Task #60 issue and invariants
+1. formalize Task #61 issue/invariants
 2. branch from exact current `main`
-3. implement pure candidate normalization/ranking/planning contracts
-4. add network-free deterministic tests
-5. PR + exact-head CI
-6. merge exact tested head
-7. post-merge main CI
-8. exact-sync Replit
-9. certify default-off/no-network/no-persistence behavior
-10. obtain separate publication authorization if runtime code changes are to be published
+3. implement pure target-registration proposal/preflight contracts
+4. add TTL/staleness/fingerprint/authorization tests
+5. keep target configuration unchanged and collection/persistence disabled
+6. PR + exact-head CI
+7. merge exact tested head
+8. post-merge main CI
+9. exact-sync Replit
+10. certify no-network/no-persistence/no-target-mutation behavior
+11. obtain separate publication authorization if runtime code changes are to be published
 
 ## Resume rule
 
@@ -250,4 +216,4 @@ At the beginning of a new chat, resolve current GitHub `main` SHA/tree first, th
 6. `.agents/memory/MEMORY.md`
 7. relevant linked memory notes
 
-Stop rather than improvise on schema mismatch, missing auth objects, unexpectedly open write/AI/competitor/Task #53/#54 gates, unexplained Replit code drift, failed validation, or unexpected external/provider/public-site mutation activity.
+Stop rather than improvise on schema mismatch, missing auth objects, unexpectedly open write/AI/competitor/Task #53/#54 gates, unexplained Replit drift, failed validation, or unexpected external/provider/public-site mutation activity.
