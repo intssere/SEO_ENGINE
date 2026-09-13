@@ -11,7 +11,7 @@ import {
 
 const base: CompetitorObservationInput = {
   source: "SERP Research",
-  sourceUrl: "https://example-competitor.com/collections/unisex#details",
+  sourceUrl: "https://example-competitor.com/collections/unisex?utm_source=research#details",
   competitorDomain: "www.example-competitor.com",
   pageType: "Collection",
   observedAt: "2026-09-13T12:00:00.000Z",
@@ -38,6 +38,7 @@ test("normalization is deterministic across duplicate and reordered derived sign
   const first = requireRecord();
   const second = requireRecord({
     ...base,
+    sourceUrl: "https://example-competitor.com/collections/unisex?different=tracking#other-fragment",
     keywordThemes: ["gift sets", "UNISEX FRAGRANCE", "gift sets"],
     taxonomyLabels: ["gift sets", "perfume oils"],
     schemaTypes: ["itemlist", "COLLECTIONPAGE", "itemlist"],
@@ -53,9 +54,12 @@ test("normalization is deterministic across duplicate and reordered derived sign
   assert.equal(first.payload.sourceUrl, "https://example-competitor.com/collections/unisex");
 });
 
-test("own-domain and mismatched-domain observations fail closed", () => {
+test("own-domain, owned subdomains, and mismatched-domain observations fail closed", () => {
   const own = normalizeCompetitorObservation({ ...base, sourceUrl: "https://diamondshelf.us/collections/unisex", competitorDomain: "diamondshelf.us" }, "www.diamondshelf.us");
   assert.deepEqual(own, { ok: false, reason: "own_domain_observation" });
+
+  const ownedSubdomain = normalizeCompetitorObservation({ ...base, sourceUrl: "https://shop.diamondshelf.us/collections/unisex", competitorDomain: "shop.diamondshelf.us" }, "diamondshelf.us");
+  assert.deepEqual(ownedSubdomain, { ok: false, reason: "own_domain_observation" });
 
   const mismatch = normalizeCompetitorObservation({ ...base, competitorDomain: "different-example.com" }, "diamondshelf.us");
   assert.deepEqual(mismatch, { ok: false, reason: "domain_url_mismatch" });
@@ -69,6 +73,7 @@ test("normalization retains derived structure but never raw competitor copy", ()
   assert.equal(serialized.includes(base.metaDescription as string), false);
   assert.equal(serialized.includes(base.title as string), false);
   assert.equal(serialized.includes(base.h1 as string), false);
+  assert.equal(serialized.includes("utm_source"), false);
   assert.equal(record.payload.signals.titleLength, "Unisex Fragrance Collection".length);
   assert.equal(record.payload.signals.metaDescriptionLength, (base.metaDescription as string).length);
   assert.equal(record.payload.signals.h1Present, true);
@@ -110,9 +115,10 @@ test("gap comparison is advisory only and never authorizes execution", () => {
   assert.equal(result.automaticTransition, false);
 });
 
-test("malformed URLs, timestamps, confidence, and source fail closed", () => {
+test("malformed or credential-bearing URLs, timestamps, confidence, and source fail closed", () => {
   assert.deepEqual(normalizeCompetitorObservation({ ...base, source: "   " }, "diamondshelf.us"), { ok: false, reason: "invalid_source" });
   assert.deepEqual(normalizeCompetitorObservation({ ...base, sourceUrl: "not-a-url" }, "diamondshelf.us"), { ok: false, reason: "invalid_source_url" });
+  assert.deepEqual(normalizeCompetitorObservation({ ...base, sourceUrl: "https://user:secret@example-competitor.com/collections/unisex" }, "diamondshelf.us"), { ok: false, reason: "invalid_source_url" });
   assert.deepEqual(normalizeCompetitorObservation({ ...base, observedAt: "not-a-date" }, "diamondshelf.us"), { ok: false, reason: "invalid_observed_at" });
   assert.deepEqual(normalizeCompetitorObservation({ ...base, confidence: 1.5 }, "diamondshelf.us"), { ok: false, reason: "invalid_confidence" });
 });
