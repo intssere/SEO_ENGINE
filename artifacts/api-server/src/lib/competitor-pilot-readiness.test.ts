@@ -44,7 +44,7 @@ function makeRegistrationProposal(url = "https://rivalshop.com/collections/fragr
     registrationTtlMinutes: 60,
   });
   assert.equal(result.ok, true);
-  if (!result.ok) throw new Error(result.reason);
+  if (!result.ok) throw new Error("registration_fixture_creation_failed");
   return result.proposal;
 }
 
@@ -61,7 +61,7 @@ function makePilot(options: { ttl?: number; proposal?: TargetRegistrationProposa
     pilotTtlMinutes: options.ttl ?? 30,
   });
   assert.equal(result.ok, true);
-  if (!result.ok) throw new Error(result.reason);
+  if (!result.ok) throw new Error("pilot_fixture_creation_failed");
   return result.plan;
 }
 
