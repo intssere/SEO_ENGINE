@@ -29,8 +29,8 @@ const base: CompetitorObservationInput = {
 
 const requireRecord = (input: CompetitorObservationInput = base, ownDomain = "diamondshelf.us") => {
   const result = normalizeCompetitorObservation(input, ownDomain);
+  if (!result.ok) throw new Error(`competitor observation normalization failed: ${result.reason}`);
   assert.equal(result.ok, true);
-  if (!result.ok) throw new Error(result.reason);
   return result.record;
 };
 
