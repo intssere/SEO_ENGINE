@@ -327,12 +327,18 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-At the time this document was introduced:
+At the time this checkpoint was refreshed:
 
-- Task #55 auth/RBAC is merged, live, and fully certified.
-- canonical GitHub `main` is `6e0761a92c54f7f5a47ee68a1b9b99e2fa113c84` with tree `874d137138b9ab4473c7cc833ae143e176c61f82`.
-- Task #56 exists as PR #63 on head `115709335c5cd1fb118cdceda56b1a6740ae5be2`.
-- PR #63 CI run #131 has completed successfully.
-- PR #63 is intentionally left unmerged for the continuation chat.
+- Task #55 authentication/RBAC is merged, live, enabled, and fully certified.
+- Task #56 risk-semantics alignment is merged to GitHub `main`.
+- Canonical `main` SHA: `8d1c65e630253a4e0f052076bfc6bf21fbf5679f`.
+- Canonical tree: `11bc62ba2545769d78f29c41a268423b1350545f`.
+- Task #56 PR CI #131 passed.
+- Post-merge main CI #132, run ID `34751384367`, passed.
+- Replit workspace is already aligned to the same `main` SHA/tree, clean, ahead/behind 0/0.
+- Development and production DBs remain 31/31 with Task #55 auth tables.
+- Auth enforcement remains enabled/configured.
+- Public-site writes and AI proposal generation are effectively false; Task #53/#54 dispatch/scheduler/batch write capabilities remain closed.
+- Production still serves the pre-Task-56 bundle. The remaining Task #56 release sequence is Replit merged-main validation -> explicit publish authorization -> publish -> read-only runtime certification -> Git reconciliation.
 
 For the exact mutable continuation state, use `PROJECT_HANDOFF.md`.
