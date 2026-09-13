@@ -271,24 +271,24 @@ export async function loadMeasurementImpact() {
       ) rollback ON true
       LEFT JOIN LATERAL (
         SELECT
-          COUNT(DISTINCT sm.metric_date) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS} AND d.deployed_at::date - 1)::int AS pre_observed_days,
-          COALESCE(SUM(sm.clicks) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS} AND d.deployed_at::date - 1),0) AS pre_clicks,
-          COALESCE(SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS} AND d.deployed_at::date - 1),0) AS pre_impressions,
-          CASE WHEN COALESCE(SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS} AND d.deployed_at::date - 1 AND sm.average_position IS NOT NULL),0)>0
-            THEN SUM(sm.average_position*sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS} AND d.deployed_at::date - 1 AND sm.average_position IS NOT NULL)
-              / SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS} AND d.deployed_at::date - 1 AND sm.average_position IS NOT NULL)
+          COUNT(DISTINCT sm.metric_date) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS}::int AND d.deployed_at::date - 1)::int AS pre_observed_days,
+          COALESCE(SUM(sm.clicks) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS}::int AND d.deployed_at::date - 1),0) AS pre_clicks,
+          COALESCE(SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS}::int AND d.deployed_at::date - 1),0) AS pre_impressions,
+          CASE WHEN COALESCE(SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS}::int AND d.deployed_at::date - 1 AND sm.average_position IS NOT NULL),0)>0
+            THEN SUM(sm.average_position*sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS}::int AND d.deployed_at::date - 1 AND sm.average_position IS NOT NULL)
+              / SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS}::int AND d.deployed_at::date - 1 AND sm.average_position IS NOT NULL)
             ELSE NULL END AS pre_position,
-          COUNT(DISTINCT sm.metric_date) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS})::int AS post_observed_days,
-          COALESCE(SUM(sm.clicks) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}),0) AS post_clicks,
-          COALESCE(SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}),0) AS post_impressions,
-          CASE WHEN COALESCE(SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS} AND sm.average_position IS NOT NULL),0)>0
-            THEN SUM(sm.average_position*sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS} AND sm.average_position IS NOT NULL)
-              / SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS} AND sm.average_position IS NOT NULL)
+          COUNT(DISTINCT sm.metric_date) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}::int)::int AS post_observed_days,
+          COALESCE(SUM(sm.clicks) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}::int),0) AS post_clicks,
+          COALESCE(SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}::int),0) AS post_impressions,
+          CASE WHEN COALESCE(SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}::int AND sm.average_position IS NOT NULL),0)>0
+            THEN SUM(sm.average_position*sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}::int AND sm.average_position IS NOT NULL)
+              / SUM(sm.impressions) FILTER (WHERE sm.metric_date BETWEEN d.deployed_at::date + 1 AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}::int AND sm.average_position IS NOT NULL)
             ELSE NULL END AS post_position
         FROM search_metrics sm
         JOIN search_queries sq ON sq.id=sm.query_id AND sq.site_id=ap.site_id
         WHERE sm.page_id=a.page_id AND sm.source='gsc' AND d.deployed_at IS NOT NULL
-          AND sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS} AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}
+          AND sm.metric_date BETWEEN d.deployed_at::date - ${MEASUREMENT_WINDOW_DAYS}::int AND d.deployed_at::date + ${MEASUREMENT_WINDOW_DAYS}::int
           AND sm.metric_date<>d.deployed_at::date
       ) metrics ON true
       LEFT JOIN LATERAL (
