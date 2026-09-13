@@ -46,7 +46,9 @@ export const proposalColumns: Column[] = [
     cell: (value: ProposalRecord["lifecycle"], row: ProposalRecord) => (
       <div className="proposalChange">
         <Badge tone={lifecycleTone(value)}>{titleize(value)}</Badge>
-        <span>Risk: <b>{row.risk_classification}</b></span>
+        <span>Evaluator risk: <b>{row.evaluatorRisk}</b></span>
+        <span>Plan control: <b>{row.planControlRisk}</b></span>
+        <span>Effective execution risk: <b>{row.effectiveExecutionRisk}</b></span>
         <small>{row.bounded_pilot ? "Bounded pilot evidence — not whole-site coverage" : "Coverage status unavailable"}</small>
       </div>
     ),

@@ -64,6 +64,9 @@ export async function loadOperationalList(kind: "opportunities" | "actions" | "a
           COALESCE(o.impact_estimate->>'title',o.opportunity_type) AS title,o.opportunity_type,p.url,p.path,sq.query,o.score,
           COALESCE((o.impact_estimate->>'confidence')::float,0) AS confidence,
           COALESCE(o.impact_estimate->>'riskClassification','unclassified') AS risk_classification,
+          COALESCE(ap.expected_outcome->>'riskClassification',o.impact_estimate->>'riskClassification','unclassified') AS "evaluatorRisk",
+          ap.risk_level AS "planControlRisk",
+          COALESCE(o.impact_estimate->>'riskClassification',ap.risk_level,'blocked') AS "effectiveExecutionRisk",
           COALESCE(ap.expected_outcome->>'lifecycleStage','draft_dry_run') AS lifecycle,ap.status AS plan_status,
           COALESCE((ap.expected_outcome->>'dryRun')::boolean,true) AS dry_run,
           COALESCE((ap.expected_outcome->>'executionAuthorized')::boolean,false) AS execution_authorized,
@@ -111,6 +114,9 @@ export async function loadOperationalList(kind: "opportunities" | "actions" | "a
           COALESCE(o.impact_estimate->>'title',o.opportunity_type) AS title,o.opportunity_type,p.url,p.path,sq.query,o.score,
           COALESCE((o.impact_estimate->>'confidence')::float,0) AS confidence,
           COALESCE(o.impact_estimate->>'riskClassification','unclassified') AS risk_classification,
+          COALESCE(ap.expected_outcome->>'riskClassification',o.impact_estimate->>'riskClassification','unclassified') AS "evaluatorRisk",
+          ap.risk_level AS "planControlRisk",
+          COALESCE(o.impact_estimate->>'riskClassification',ap.risk_level,'blocked') AS "effectiveExecutionRisk",
           COALESCE(ap.expected_outcome->>'lifecycleStage','draft_dry_run') AS lifecycle,ap.status AS plan_status,
           COALESCE((ap.expected_outcome->>'dryRun')::boolean,true) AS dry_run,
           COALESCE((ap.expected_outcome->>'executionAuthorized')::boolean,false) AS execution_authorized,
@@ -155,7 +161,7 @@ export async function loadOperationalList(kind: "opportunities" | "actions" | "a
           AND ap.expected_outcome->>'planner'='dry_run_action_planner_v1'
           AND ap.expected_outcome->'qualityGate' IS NOT NULL
         ORDER BY (latest_approval.decision IS NULL) DESC,(ap.expected_outcome->>'lifecycleStage'='approval_ready') DESC,o.score DESC,ap.updated_at DESC LIMIT 200`,
-      deployments: sql`SELECT d.id::text,d.provider,d.status,d.deployed_at,ap.risk_level,ap.rationale,v.status verification_status FROM deployments d JOIN action_plans ap ON ap.id=d.action_plan_id LEFT JOIN LATERAL (SELECT status FROM verifications WHERE deployment_id=d.id ORDER BY created_at DESC LIMIT 1) v ON true WHERE ap.site_id=${readiness.siteId}::uuid ORDER BY d.created_at DESC LIMIT 200`,
+      deployments: sql`SELECT d.id::text,d.provider,d.status,d.deployed_at,ap.risk_level,ap.risk_level AS "planControlRisk",COALESCE(ap.expected_outcome->>'riskClassification',o.impact_estimate->>'riskClassification','unclassified') AS "evaluatorRisk",COALESCE(o.impact_estimate->>'riskClassification',ap.risk_level,'blocked') AS "effectiveExecutionRisk",ap.rationale,v.status verification_status FROM deployments d JOIN action_plans ap ON ap.id=d.action_plan_id LEFT JOIN opportunities o ON o.id=ap.opportunity_id LEFT JOIN LATERAL (SELECT status FROM verifications WHERE deployment_id=d.id ORDER BY created_at DESC LIMIT 1) v ON true WHERE ap.site_id=${readiness.siteId}::uuid ORDER BY d.created_at DESC LIMIT 200`,
       findings: sql`SELECT f.id::text,f.title,f.category,f.severity,f.status,f.description,p.url FROM findings f LEFT JOIN pages p ON p.id=f.page_id WHERE f.site_id=${readiness.siteId}::uuid ORDER BY f.detected_at DESC LIMIT 200`,
     };
     return { readiness, rows: await queries[kind] };

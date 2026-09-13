@@ -109,6 +109,9 @@ export interface ProposalRecord {
   score: number;
   confidence: number;
   risk_classification: string;
+  evaluatorRisk: string;
+  planControlRisk: string;
+  effectiveExecutionRisk: string;
   lifecycle: ProposalLifecycleStage;
   plan_status: string;
   dry_run: boolean;

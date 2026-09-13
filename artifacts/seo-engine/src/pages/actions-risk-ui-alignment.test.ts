@@ -22,6 +22,18 @@ test("bounded internal UI risk gate matches Task #51 backend guard", () => {
   assert.equal(riskAllowed("critical"), false);
 });
 
+test("dry-run risk semantics use Task #51 effective risk without conflating plan control", () => {
+  const risk = {
+    evaluatorRisk: "medium",
+    planControlRisk: "blocked",
+    effectiveExecutionRisk: "medium",
+  };
+  assert.equal(risk.evaluatorRisk, "medium");
+  assert.equal(risk.planControlRisk, "blocked");
+  assert.equal(risk.effectiveExecutionRisk, "medium");
+  assert.equal(riskAllowed(risk.effectiveExecutionRisk), true);
+});
+
 test("approved proposal remains eligible after planner marks plan completed", () => {
   assert.equal(
     lifecycleStateEligible({

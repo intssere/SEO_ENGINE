@@ -46,7 +46,7 @@ const titleize = (value: string) =>
   value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 function isBoundedInternalCandidate(row: ProposalRecord) {
-  const risk = row.risk_classification.toLowerCase();
+  const risk = row.effectiveExecutionRisk.toLowerCase();
   const lifecycleStateEligible =
     (row.lifecycle === "approval_ready" &&
       row.plan_status === "pending" &&
@@ -83,7 +83,7 @@ function executableActionAuthorizationExpired(action?: ExecutionFoundationRow) {
 
 function isExpiredExecutableActionCandidate(row: ProposalRecord, action?: ExecutionFoundationRow) {
   if (!action) return false;
-  const risk = row.risk_classification.toLowerCase();
+  const risk = row.effectiveExecutionRisk.toLowerCase();
   const authorization = action.proposed_change.authorizationEnvelope?.authorization;
   return (
     row.lifecycle === "executable_action" &&
@@ -364,7 +364,8 @@ export default function ActionsPage() {
                       </section>
                       <section>
                         <span className="approvalLabel">Safety state</span>
-                        <p><b>{titleize(row.risk_classification)} risk</b> · bounded pilot</p>
+                        <p><b>{titleize(row.effectiveExecutionRisk)} effective execution risk</b> · bounded pilot</p>
+                        <small>Evaluator: {titleize(row.evaluatorRisk)} · Plan control: {titleize(row.planControlRisk)}</small>
                         {canRenewExecutableAction ? (
                           <>
                             <p className="guardrailText">

@@ -372,9 +372,10 @@ function ProposalReviewCard({
         <section>
           <span className="approvalLabel">Risk & reversion</span>
           <p>
-            <b>{titleize(row.risk_classification)} risk</b> ·{" "}
+            <b>{titleize(row.effectiveExecutionRisk)} effective execution risk</b> ·{" "}
             {titleize(row.action_type)}
           </p>
+          <p>Evaluator: {titleize(row.evaluatorRisk)} · Plan control: {titleize(row.planControlRisk)}</p>
           <p>
             <RotateCcw className="inlineIcon" /> {row.rollback}
           </p>

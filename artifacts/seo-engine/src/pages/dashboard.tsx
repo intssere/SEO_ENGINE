@@ -325,7 +325,7 @@ export default function DashboardPage() {
                     <th>Opportunity</th>
                     <th>Score</th>
                     <th>Evidence</th>
-                    <th>Risk</th>
+                    <th>Evaluator risk</th>
                     <th>State</th>
                   </tr>
                 </thead>
