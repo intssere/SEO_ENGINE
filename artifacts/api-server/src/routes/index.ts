@@ -4,6 +4,7 @@ import authRouter from "./auth";
 import dashboardRouter from "./dashboard";
 import operationalRouter from "./operational";
 import competitorAcquisitionRouter from "./competitor-acquisition";
+import competitorPilotExecutionRouter from "./competitor-pilot-execution";
 import task53WriteScopeRouter from "./task53-write-scope";
 import connectionsRouter from "./connections";
 import pilotRouter from "./pilot";
@@ -24,6 +25,7 @@ router.use((req, res, next) => {
 router.use(dashboardRouter);
 router.use(operationalRouter);
 router.use(competitorAcquisitionRouter);
+router.use(competitorPilotExecutionRouter);
 router.use(task53WriteScopeRouter);
 router.use(connectionsRouter);
 router.use(pilotRouter);
