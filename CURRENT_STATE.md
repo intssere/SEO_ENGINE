@@ -2,92 +2,94 @@
 
 This file is the authoritative **mutable checkpoint** for resuming work. If it conflicts with older mutable release wording in `PROJECT_HANDOFF.md`, use this file for the current release position and `PROJECT_HANDOFF.md` for historical/architectural context.
 
-## Current production release — Task #62 fully production-certified
+## Current production application release — Task #63 fully production-certified
 
-Task #62 — Secure Competitor Collection Transport & DNS-Rebinding/SSRF Hardening Foundation v1 — is fully merged, published, runtime-certified, reconciled, and closed.
+Task #63 — **Controlled One-Target Competitor Collection Pilot Readiness Foundation v1** — is fully merged, published, runtime-certified, reconciled, and closed.
 
-Canonical Task #62 release:
+Canonical Task #63 application release:
 
-- Issue: `https://github.com/intssere/SEO_ENGINE/issues/84`
-- PR: `https://github.com/intssere/SEO_ENGINE/pull/85`
-- exact tested PR head: `e3a3a1572cd4dc3fbae7eba629aa21f9d60a5a8d`
-- certified application merge/source: `e96563d093902dc115eb2d0747d414dec1cef4ee`
-- certified tree: `f50f4364c2a7870b02823127e70a3de577810d67`
-- PR CI #170: success
-- post-merge main CI #171: success
+- Issue: `https://github.com/intssere/SEO_ENGINE/issues/87`
+- PR: `https://github.com/intssere/SEO_ENGINE/pull/88`
+- exact tested PR head: `483d194a9eff54de0128fff08f8d79dbf26a4749`
+- certified application merge/source: `7ebdc976576dbfa45d13bd54a74d4ad7ae187ef7`
+- certified application tree: `093126ed881cfefe9609a4c376d5e03fe0236b21`
+- PR CI #175: success
+- post-merge main CI #176: success
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - production URL: `https://dsseoengine.replit.app`
 - publication status: success
-- pre-publication certification comment: issue #84 comment `5654790826`
-- production certification comment: issue #84 comment `5654866625`
+- pre-publication certification comment: issue #87 comment `5654989417`
+- production certification comment: issue #87 comment `5655039928`
 
-## Task #62 behavior
+The GitHub `main` SHA after this documentation-only closeout will be newer than the application release SHA above. That does **not** imply a newer runtime publication. Always resolve current GitHub `main` first, and distinguish the docs-only canonical checkpoint from the last published application source.
 
-Task #62 hardens the existing Task #59 competitor-acquisition network path against DNS TOCTOU/rebinding and SSRF bypass at connection establishment.
+## Task #63 behavior
+
+Task #63 adds a pure, deterministic, network-free readiness contract for exactly one future competitor dry-run.
 
 It provides:
 
-- controlled hostname resolution
-- rejection if any resolved address is private, loopback, link-local, reserved, multicast, documentation, or otherwise non-public
-- validated-IP pinning into the actual TCP connection target
-- no connection-time hostname re-resolution after validation
-- preservation of the original hostname for HTTP `Host`
-- preservation of the original hostname for TLS SNI and certificate hostname verification
-- TLS certificate verification retained
-- no ambient HTTP/HTTPS proxy routing for the hardened request path
-- fresh resolution and pinning per request
-- revalidation/repinning on every existing Task #59 redirect hop
-- existing redirect limits, same-host checks, allowlisted-path checks, HTTPS-downgrade rejection, timeout, response-size, content-type, and robots/policy controls retained
-- rejection of credential-bearing URLs and sensitive forwarding headers
-- explicit capability markers for controlled resolution, public-address validation, connection pinning, rebinding mitigation, TLS verification, redirect-hop revalidation, and disabled ambient proxy routing
+- one reviewed Task #61 registration proposal as source lineage
+- Task #61 fingerprint, TTL, tamper, and review-decision validation
+- Task #62 hardened-transport capability verification without DNS/HTTP
+- deterministic pilot ID and pilot fingerprint
+- exact lineage to source plan, registration proposal, candidate, and target
+- pilot TTL capped by the source registration expiry
+- hard budget: one target, one run, zero persistence
+- tamper detection for target, budget, and lineage changes
+- fail-closed handling for stale/rejected/tampered source proposals and downgraded transport capability
+- exact future authorization form:
+  `AUTHORIZE_ONE_TARGET_COMPETITOR_DRY_RUN:<pilotId>:<pilotFingerprint>`
 
-Task #62 does **not** activate collection, target registration, target mutation, persistence, scheduling, or autonomous work.
+Task #63 does **not** consume that authorization and does **not** implement live dry-run execution.
 
-## Task #62 production certification
+## Task #63 production certification
 
 Engineering certification before publication:
 
-- dedicated Task #62 tests: `11/11` pass
+- dedicated Task #63 tests: 13/13 pass
+- complete API suite in CI: 256 tests pass
 - full workspace tests: pass
 - API/frontend no-emit typechecks: pass
 - isolated API/frontend production builds: pass
-- compiled secure-transport capability verification: pass
-- GitHub/Replit exact-synced to `e96563d093902dc115eb2d0747d414dec1cef4ee`
-- tree `f50f4364c2a7870b02823127e70a3de577810d67`
-- clean `0/0`
-- development/prod schema: 31/31 public base tables
+- compiled Task #63 safety/capability markers: pass
+- deterministic in-memory authorization/preflight fixture: pass
+- no API route imports or wires Task #63
+- no DB access/migration
+- no DNS/HTTP/robots/SERP/provider/external competitor call
+- development/production public base tables: 31/31
 - Task #55 auth tables present; auth indexes 6/6 in both
-- all competitor/public-write/execution gates closed
-- configured competitor targets: 0
-- no operational counter deltas
-- no real competitor HTTP, DNS, robots, SERP, or acquisition route invoked during certification
+- all monitored counters: zero delta
 
-The first Task #62 CI head passed functional tests but exposed a TypeScript-only test assertion issue. The test helper was corrected without changing transport behavior; exact head `e3a3a157...` then passed complete CI before merge.
+The first Task #63 PR head passed functional tests but exposed a TypeScript-only test-helper narrowing issue. The helper was corrected without changing production behavior; exact head `483d194a...` then passed complete CI before merge.
 
-The user explicitly authorized publication only for certified canonical source `e96563d093902dc115eb2d0747d414dec1cef4ee`, while keeping target registration inactive, target mutation disabled, real competitor discovery/collection disabled, Task #59 collection/persistence disabled, schedulers/workers/batch disabled, public/provider writes disabled, Task #53/#54 execution disabled, DDL prohibited, secrets/config/OAuth unchanged, and no real competitor HTTP/DNS/robots/SERP request during certification.
+The user explicitly authorized publication only for certified canonical source `7ebdc976576dbfa45d13bd54a74d4ad7ae187ef7` while keeping target registration/config mutation inactive, Task #59 collection/persistence disabled, configured targets unchanged, Task #63 execution and authorization consumption disabled, `networkCollectionReady=false`, public/provider writes disabled, Task #53/#54 execution disabled, schedulers/workers/batch disabled, DDL prohibited, secrets/config/OAuth unchanged, and no competitor HTTP/DNS/robots/SERP request during certification.
 
 Post-publication certification passed:
 
 - `/api/healthz`: HTTP 200 / ok
 - `/api/auth/status`: HTTP 200; authentication enforcement enabled
-- development/prod schema: 31/31
+- development/production public base tables: 31/31
 - Task #55 auth indexes: 6/6 in both
-- Task #59 collection: false
+- competitor collection: false
 - competitor evidence persistence: false
 - configured competitor targets: 0
-- Task #61 target registration inactive
-- Task #61 target-configuration mutation disabled
-- `networkCollectionReady=false`
-- `PUBLIC_SITE_WRITES_ENABLED=false`
-- `AI_PROPOSAL_GENERATION_ENABLED=false`
-- Task #53/#54 provider dispatch disabled
-- Task #53/#54 schedulers disabled
-- Task #54 batch disabled
-- Task #59 scheduler/autonomous worker disabled
-- evidence/action-plan/action/approval/deployment/rollback/verification/job counts: zero delta
-- `competitor_page_observation`: 0 in development / 0 in production
-- no competitor acquisition/collection/persistence/robots/SERP/provider/public-site activity observed
-- no fatal/crash/panic/unhandled runtime errors observed
+- Task #61 target registration authorization: false
+- Task #61 target-configuration mutation authorization: false
+- Task #63 `networkCollectionReady=false`
+- Task #63 `networkCollectionAuthorized=false`
+- Task #63 `evidencePersistenceAuthorized=false`
+- Task #63 live dry-run execution implemented: false
+- Task #63 authorization consumption implemented: false
+- public-site writes: false
+- AI proposal generation: false
+- Task #53/#54 dispatch and schedulers: false
+- Task #54 batch: false
+- Task #59 scheduler/autonomous worker: false
+- all monitored operational counters: zero delta
+- production `competitor_page_observation`: 0
+- no unsafe mutation/execution/provider/public-site/competitor activity observed
+- no fatal/crash/panic/unhandled errors observed
 - no PostgreSQL `42883` errors observed
 
 Production counts remained:
@@ -102,23 +104,24 @@ Production counts remained:
 - verifications: 3
 - jobs: 22
 
-Publication created one empty Replit metadata commit `ae4fad14a55bfed3f1f08fb786139364702bb715` with the exact canonical tree. It was removed without republishing.
+Publication created local-only empty Replit metadata commit `c85afc3c79b05ca702c26003f6ac8b8e56c08013`, with the exact canonical Task #63 tree. It was removed without republishing.
 
-Final reconciled Replit state before this documentation closeout:
+Final reconciled application state before this documentation closeout:
 
 - branch: `main`
-- HEAD/origin/main/GitHub main: `e96563d093902dc115eb2d0747d414dec1cef4ee`
-- tree: `f50f4364c2a7870b02823127e70a3de577810d67`
+- HEAD/origin/main/GitHub main: `7ebdc976576dbfa45d13bd54a74d4ad7ae187ef7`
+- tree: `093126ed881cfefe9609a4c376d5e03fe0236b21`
 - ahead/behind: `0/0`
 - tracked/untracked: `0/0`
 - working tree clean
 - no cleanup republish
 
-Detailed closeout: `.agents/memory/task62-production-closeout.md`.
+Detailed closeout: `.agents/memory/task63-production-closeout.md`.
 
 ## Prior completed milestones
 
-- Task #61 — controlled target-registration/collection-preflight foundation — production-certified and closed; no target activation occurred.
+- Task #62 — secure competitor transport / DNS-rebinding and SSRF hardening — production-certified and closed.
+- Task #61 — controlled target-registration/preflight foundation — production-certified and closed; no target activation occurred.
 - Task #60 — competitor discovery/planning foundation — production-certified and closed.
 - Task #59 — bounded competitor acquisition/persistence foundation — production-certified and closed; runtime collection and persistence remain disabled.
 - Task #58 — normalized competitor evidence contract/read projection — production-certified and closed.
@@ -141,8 +144,10 @@ Unless separately and explicitly authorized:
 - configured competitor targets remain 0
 - Task #61 target registration remains inactive
 - Task #61 cannot mutate active target configuration
+- Task #63 authorization consumption is not implemented
+- Task #63 live dry-run execution is not implemented
 - `networkCollectionReady=false`
-- no automatic Task #60 plan -> Task #61 proposal -> Task #59 active-target transition
+- no automatic Task #60 plan -> Task #61 proposal -> active Task #59 target transition
 - no real external competitor discovery/collection
 - no production competitor-evidence persistence
 - no autonomous competitor discovery/collection worker
@@ -154,47 +159,52 @@ Unless separately and explicitly authorized:
 - no production DB DDL
 - no secret/credential change or OAuth-scope broadening
 
-A generic `continue` advances safe engineering/documentation work only. It never authorizes target activation, external collection, persistence, provider/public-site mutation, production DDL, or publication.
+A generic `continue` advances safe engineering/documentation work only. It never authorizes target activation, an external competitor request, persistence, provider/public-site mutation, production DDL, or publication.
 
-## Security status after Task #62
+## Security and control status after Tasks #62-#63
 
-The previous DNS TOCTOU/rebinding gap is now closed in the hardened Task #62 transport: the actual connection target is bound to a validated public address while the original hostname is retained for TLS SNI, certificate hostname verification, and Host semantics.
+Task #62 closed the previous DNS TOCTOU/rebinding gap by pinning the actual outbound connection to a validated public address while retaining the original hostname for TLS SNI, certificate hostname verification, and Host semantics.
 
-This security improvement removes the prior transport blocker, but it is **not itself collection authorization**.
+Task #63 then added deterministic one-target pilot readiness on top of that hardened transport.
+
+These capabilities are necessary but **not authorization**.
 
 Therefore:
 
-- a valid Task #60 proposed target is still not an active target
-- an authorization-ready Task #61 registration proposal is still not an active target
+- a Task #60 proposed target is not an active target
+- a Task #61 registration proposal is not an active target
+- a Task #63 authorization-ready pilot plan is not a live run
 - Task #59 collection remains disabled
+- persistence remains disabled
 - no real competitor request should occur under generic `continue`
-- a one-target pilot must have its own deterministic preflight and separate exact authorization
-- persistence remains a later, separate authorization boundary
+- a real one-target dry-run still requires its own exact explicit authorization after the execution bridge itself is implemented and production-certified
 
-## Current engineering milestone — Task #63
+## Current engineering milestone — Task #64
 
-The project is now at the **controlled one-target pilot-readiness stage**.
+The project is now at the **controlled one-target dry-run execution foundation stage**.
 
-### Recommended Task #63 — Controlled One-Target Competitor Collection Pilot Readiness Foundation v1
+### Recommended Task #64 — Controlled One-Target Competitor Dry-Run Execution Foundation v1
 
 Safe v1 scope:
 
-1. Define a deterministic one-target pilot plan/preflight contract derived from a reviewed Task #61 registration proposal or equivalent validated Task #59-compatible target.
-2. Preserve exact lineage to source plan/proposal/target fingerprints.
-3. Revalidate target structure and Task #62 transport capability without performing a real external request.
-4. Require an explicit pilot TTL and reject stale/tampered plans.
-5. Encode a bounded one-target/one-run/zero-persistence budget.
-6. Require collection mode to remain dry-run/read-only and prevent evidence persistence.
-7. Define an exact future live-dry-run authorization string bound to pilot ID + fingerprint.
-8. Do not consume that authorization in v1 unless separately scoped and reviewed.
-9. Keep configured active targets unchanged and do not mutate `COMPETITOR_COLLECTION_TARGETS_JSON` or equivalent runtime configuration.
-10. Keep `COMPETITOR_COLLECTION_ENABLED=false`, evidence persistence false, and `networkCollectionReady=false` throughout engineering.
-11. Add deterministic network-free tests for lineage, TTL, tampering, target mismatch, budget violations, transport-capability mismatch, and authorization-string determinism.
-12. Add no scheduler/worker, no DB migration, no target activation, no external competitor request, no robots/SERP request, and no public/provider mutation.
-13. Publication remains a separate explicit authorization boundary.
-14. After Task #63 is production-certified, a **real one-target dry-run** must still require separate explicit authorization and must initially remain non-persistent.
+1. Add the smallest auditable execution bridge that can validate and consume an exact Task #63 authorization.
+2. Bind execution strictly to one Task #63 pilot ID + pilot fingerprint.
+3. Re-run Task #63 TTL, lineage, target, budget, and tamper preflight immediately before any execution path.
+4. Require Task #62 hardened transport exclusively.
+5. Preserve one target / one run / zero persistence.
+6. Keep active target configuration unchanged.
+7. Return/store only a bounded execution receipt and normalized metadata; never persist the raw competitor body.
+8. Inherit existing timeout, response-size, redirect, robots/policy, content-type, hostname/path, and SSRF/rebinding controls.
+9. Require authenticated privileged access and CSRF for any unsafe route.
+10. Keep every live execution gate default closed during engineering and publication certification.
+11. Add deterministic network-free tests for authorization mismatch, replay, expiry, target mismatch, tampering, transport downgrade, zero-persistence invariants, and receipt determinism.
+12. Add no scheduler, worker, batch, retry loop, or autonomous transition.
+13. Generate no SEO opportunity/proposal/action/public-site mutation from a pilot result.
+14. Add no production DDL unless separately reviewed and authorized; prefer migration-free bounded state if possible.
+15. Publication remains a separate explicit authorization boundary.
+16. **After Task #64 is production-certified, the first real one-target external dry-run must still require a separate exact user authorization.**
 
-Task #63 should prepare the control plane for a pilot; it must not silently turn the hardened transport into autonomous crawling.
+Task #64 engineering may create a gated execution mechanism; it must not perform the external dry-run under generic `continue`.
 
 ## Persistent Task #54 remains separately gated
 
@@ -213,26 +223,26 @@ The previously diagnosed possible first persistent candidate remains Unisex Frag
 - lifecycle at diagnosis: `approval_ready`
 - approvals/actions/deployments at diagnosis: `0 / 0 / 0`
 
-Tasks #56-#62 do not approve or authorize it.
+Tasks #56-#63 do not approve or authorize it.
 
 Before any first persistent Task #54 apply, preserve the existing multi-gate sequence and never infer live-write permission from `continue`.
 
 ## Exact next project stage
 
-Task #62 is closed. Safe next work is Task #63 engineering only:
+Task #63 is closed. Safe next work is Task #64 engineering only:
 
-1. formalize Task #63 issue/invariants
-2. branch from exact current canonical GitHub `main`
-3. implement deterministic one-target pilot-readiness/preflight logic only
-4. add network-free deterministic tests
-5. keep target configuration unchanged and collection/persistence disabled
+1. resolve current GitHub `main` SHA/tree after this docs closeout
+2. formalize Task #64 issue/invariants
+3. branch from exact current canonical GitHub `main`
+4. implement the bounded authorization-consumption/execution foundation with all live gates closed
+5. add deterministic network-free tests; do not execute a real competitor request
 6. PR + exact-head CI
 7. merge exact tested head
 8. post-merge main CI
 9. exact-sync Replit
-10. certify no real network collection and no state mutation
-11. obtain separate publication authorization if runtime code changes are to be published
-12. after production certification, separately authorize any real one-target dry-run; do not infer live pilot authorization from Task #63 publication
+10. certify gates/schema/counters and no external collection
+11. obtain separate publication authorization for Task #64 runtime code
+12. after Task #64 production certification, obtain a separate exact authorization for any first real one-target dry-run
 
 ## Resume rule
 
