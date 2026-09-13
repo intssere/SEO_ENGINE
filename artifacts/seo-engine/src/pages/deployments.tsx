@@ -1,6 +1,18 @@
 import { useListDeployments } from "@workspace/api-client-react";
 import { Loader2, AlertCircle } from "lucide-react";
-import { OperationalTable, PageHeader } from "../components/operational-table";
+import { OperationalTable, PageHeader, type Column } from "../components/operational-table";
+
+const columns: Column[] = [
+  { header: "Provider", accessorKey: "provider" },
+  { header: "Status", accessorKey: "status" },
+  { header: "Deployed", accessorKey: "deployed_at", cell: (value) => typeof value === "string" ? value.slice(0, 19).replace("T", " ") : "-" },
+  { header: "Verification", accessorKey: "verification_status" },
+  { header: "Lifecycle", accessorKey: "lifecycle" },
+  { header: "Plan control", accessorKey: "planControlRisk" },
+  { header: "Effective risk", accessorKey: "effectiveExecutionRisk" },
+  { header: "Page", accessorKey: "url", cell: (value) => typeof value === "string" ? value.replace("https://diamondshelf.us", "") || "/" : "-" },
+  { header: "Field", accessorKey: "field" },
+];
 
 export default function DeploymentsPage() {
   const { data, isLoading, isError } = useListDeployments();
@@ -18,7 +30,7 @@ export default function DeploymentsPage() {
         <PageHeader 
           eyebrow="EXECUTED" 
           title="Deployments" 
-          description="A verifiable ledger of all changes shipped to production."
+          description="A verifiable ledger of all changes shipped to production. Measurement diagnostics remain read-only and are summarized separately under Impact."
           readiness={data?.readiness}
         />
 
@@ -36,6 +48,7 @@ export default function DeploymentsPage() {
           ) : (
             <OperationalTable 
               data={data.rows} 
+              columns={columns}
               emptyMessage="No completed deployments recorded yet." 
             />
           )}

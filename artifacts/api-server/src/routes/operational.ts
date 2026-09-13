@@ -3,15 +3,17 @@ import { DecideApprovalBody, DecideApprovalResponse, EditApprovalDraftBody, Edit
 import { isSameOriginRequest } from "../lib/pilot-authorization";
 import { verifiedActorId } from "../middlewares/auth-security.js";
 import { answerOperationalQuestion, decideProposalReview, editProposalDraft, getRuntimeReadiness, loadOperationalList, loadOpportunities, loadPerformance, parsePerformanceFilters, ProposalDecisionError } from "../lib/operational-data";
+import { loadMeasurementImpact } from "../lib/measurement-attribution.js";
 
 const router: IRouter = Router();
-for (const section of ["ai-visibility", "learning", "impact", "verification", "policies"]) {
+for (const section of ["ai-visibility", "learning", "verification", "policies"]) {
   router.get(`/${section}`, async (_req, res) => res.json({ readiness: await getRuntimeReadiness(), rows: [] }));
 }
+router.get("/impact", async (_req, res) => res.json(await loadMeasurementImpact()));
 router.get("/technical-seo", async (_req, res) => res.json(await loadOperationalList("findings")));
 router.get("/technical-seo/findings", async (_req, res) => res.json(await loadOperationalList("findings")));
 router.get("/opportunities", async (_req, res) => res.json(await loadOpportunities()));
-const listKinds = ["actions", "approvals", "deployments", "findings"] as const;
+const listKinds = ["actions", "approvals", "findings"] as const;
 for (const kind of listKinds) {
   router.get(`/${kind}`, async (_req, res) => res.json(await loadOperationalList(kind)));
   router.get(`/${kind}/:id`, async (req, res) => {
@@ -21,6 +23,13 @@ for (const kind of listKinds) {
     return res.json({ readiness: data.readiness, row });
   });
 }
+router.get("/deployments", async (_req, res) => res.json(await loadMeasurementImpact()));
+router.get("/deployments/:id", async (req, res) => {
+  const data = await loadMeasurementImpact();
+  const row = data.rows.find((item) => item.id === req.params.id);
+  if (!row) return res.status(404).json({ error: "Record not found." });
+  return res.json({ readiness: data.readiness, row });
+});
 router.post("/approvals/:id/decision", async (req, res) => {
   if (!isSameOriginRequest(req.get("origin"), req.get("host"))) return res.status(403).json({ error: "same_origin_review_required" });
   const body = DecideApprovalBody.safeParse(req.body);
