@@ -6,3 +6,5 @@
 - [Opportunity engine guardrails](opportunity-engine-guardrails.md) — query/page evidence drives candidates; stale rows become history and plans remain blocked dry runs.
 - [Collection copy diversity](collection-copy-diversity.md) — vary certified composition copy deterministically and gate structural similarity separately from lexical overlap.
 - [Project continuity and release discipline](project-continuity.md) — GitHub-first release gates, Replit reconciliation, schema-parity publication safety, and exact handoff requirements.
+- [Task #57 production closeout](task57-production-closeout.md) — measurement/attribution release, runtime SQL fix, production certification, and publication-drift reconciliation.
+- [Task #58 production closeout](task58-production-closeout.md) — competitor evidence foundation release, production certification, publication-drift reconciliation, and bounded acquisition next-step controls.

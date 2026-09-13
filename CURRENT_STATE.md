@@ -4,68 +4,96 @@ This file is the authoritative **mutable checkpoint** for resuming work. It inte
 
 If this file conflicts with older mutable release wording in `PROJECT_HANDOFF.md`, use this file for the **current release position** and `PROJECT_HANDOFF.md` for detailed historical/architectural context.
 
-## Task #57 — fully production-certified
+## Task #58 — fully production-certified
 
-Task #57 — Measurement & Attribution Foundation v1 — is fully merged, published, runtime-certified, reconciled, and closed.
+Task #58 — Competitor Evidence Ingestion Foundation v1 — is fully merged, published, runtime-certified, reconciled, and closed.
 
 Primary implementation:
 
-- Issue: `https://github.com/intssere/SEO_ENGINE/issues/67`
-- PR: `https://github.com/intssere/SEO_ENGINE/pull/68`
-- Task #57 application merge SHA: `4310cbed4ab8a6177d6ae77e6a076c1bcd54df49`
-- Application tree: `5312d1cc2aac6ee0a95f36c939a3adb3eafa632d`
-- post-merge main CI #144: success
+- Issue: `https://github.com/intssere/SEO_ENGINE/issues/72`
+- PR: `https://github.com/intssere/SEO_ENGINE/pull/73`
+- final hardened PR head: `ca35e4eb6610d4ec9ef290e5d925894f0574e325`
+- application merge / certified release source: `a5c2f057e1748c1be76733325b061bab2a574d53`
+- certified release tree: `d0acc5f39e462c39ac4576458b7d56c8438502d7`
+- PR CI #152: success
+- post-merge main CI #153: success
 
-Runtime follow-up discovered during merged-main Replit certification:
+## Task #58 behavior
 
-- Issue: `https://github.com/intssere/SEO_ENGINE/issues/69`
-- PR: `https://github.com/intssere/SEO_ENGINE/pull/70`
-- Problem: postgres.js bound `MEASUREMENT_WINDOW_DAYS` parameters in `date +/- integer` arithmetic were untyped, producing PostgreSQL error `42883` in the exact exported `loadMeasurementImpact()` read path.
-- Fix: explicitly cast every interpolated measurement-window parameter used in date arithmetic to `::int` and add a regression guard.
-- Corrective merge / certified release source: `4259323c5cc424404ac40436110dd50f3c6f3367`
-- Certified release tree: `08869c885a1cc9d11d15bad86989e2ab1d06baaa`
-- PR CI #145: success
-- post-merge main CI #146 / run `34757810115`: success
+Task #58 adds a migration-free, read-only competitor-intelligence evidence foundation on top of the existing `evidence` table. It does not create a parallel persistence model and does not ingest or mutate competitor evidence by itself.
 
-## Task #57 behavior
+The v1 contract includes:
 
-Task #57 adds a **read-only observational measurement projection** over existing deployment/action/search-metric/evidence lineage. It does not create a second execution system and does not authorize mutations.
-
-Measurement semantics include:
-
-- 28-day baseline window before deployment
-- deployment day excluded
-- 28-day comparison window after deployment
-- minimum observed-day and impression thresholds
-- confidence levels: `insufficient | low | medium | high`
-- measurement states: `not_eligible | pending | ready`
-- advisory recommendations: `not_eligible | measurement_pending | retain | replace_candidate | rollback_candidate`
-- `causalAttribution=false`
+- evidence kind: `competitor_page_observation`
+- schema marker: `competitor_page_observation_v1`
+- deterministic normalization and SHA-256 content fingerprinting
+- fail-closed handling for malformed source URLs/domains, own-domain observations, and domain mismatches
+- own-domain protection includes subdomains of the owned site
+- credential-bearing source URLs are rejected
+- query strings and fragments are removed from canonicalized source URLs
+- normalized structural signals only; raw competitor title/meta/H1/body copy is not retained
+- deterministic deduplication by normalized fingerprint
+- advisory-only competitor gap comparison
+- authenticated GET-only route: `/api/competitor-intelligence`
+- SELECT-only loader over existing `evidence` rows joined to `sites`
 - `advisoryOnly=true`
+- `causalAttribution=false`
 - `executionAuthorized=false`
 - `publicSiteWrites=false`
 - `automaticTransition=false`
 
-Eligibility fails closed unless a deployment is a completed, verified-live persistent production change with both deployment/execution measurement-eligibility markers, a page identity, verified read-after-write state, and no completed rollback record.
+No schema migration, DDL, OpenAPI/generated-client mutation, provider connector, scheduler, batch executor, automatic opportunity creation, approval transition, action creation, or execution path was added.
 
-Historical Task #53 rolled-back pilot records therefore remain `not_eligible` by design.
+## Task #58 engineering certification
 
-## Task #57 publication and production certification
+Merged-main certification completed before publication:
 
-The user explicitly authorized publication of certified canonical GitHub source:
+- Replit exact-synced to canonical GitHub `main`
+- real exported `loadCompetitorIntelligence()` executed successfully against the bound development database
+- operational readiness: `live`
+- persisted `competitor_page_observation` rows: `0`
+- returned competitor rows: `0`
+- zero-row state is expected because Task #58 intentionally defines the evidence contract/read path but does not collect or persist competitor evidence
+- dedicated Task #58 tests: `6/6` pass
+- full API suite in CI: `193/193` pass
+- API/frontend no-emit typechecks: pass
+- API production bundle: pass
+- API safety-marker verifier: pass
+- frontend production build: pass
+- known non-fatal tooltip sourcemap warning only
+- development DB: 31 public base tables
+- production DB: 31 public base tables
+- `auth_sessions`: present in both
+- `auth_audit_events`: present in both
+- all six Task #55 auth indexes present in both
+- authentication configured/enforced with Google OIDC
+- allowlist-only access enabled
+- public registration disabled
+- public-site writes false
+- AI proposal generation false
+- Task #53/#54 provider-write dispatch disabled
+- Task #53/#54 schedulers disabled
+- Task #54 batch execution disabled
 
-- SHA: `4259323c5cc424404ac40436110dd50f3c6f3367`
-- tree: `08869c885a1cc9d11d15bad86989e2ab1d06baaa`
+During the pre-publication observation window, one unrelated production `login_success` created one auth session and one auth audit event. No evidence, opportunity, plan, action, approval, deployment, rollback, verification, provider, job, or public-site activity accompanied it. Therefore the broad statement “zero production DB writes occurred” was intentionally not claimed; the narrower execution/provider/content safety certification passed.
 
-with no DB DDL, provider/public-site mutation, or Task #53/#54 execution.
+## Task #58 publication and production certification
+
+The user explicitly authorized publication of only certified canonical GitHub source:
+
+- SHA: `a5c2f057e1748c1be76733325b061bab2a574d53`
+- tree: `d0acc5f39e462c39ac4576458b7d56c8438502d7`
+
+with no DB DDL, provider/public-site mutation, Task #53/#54 execution, scheduler/batch enablement, or secret/config/OAuth-scope change.
 
 Publication to the existing Replit autoscale deployment completed successfully:
 
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - production URL: `https://dsseoengine.replit.app`
 - final status: success
+- observed deployment startup: `2026-09-13T14:13:21.660Z`
 
-Post-publication certification passed using side-effect-free GETs, SELECT-only database checks, static asset inspection, aggregate log inspection, and read-only Git inspection:
+Post-publication certification passed:
 
 - `/api/healthz`: HTTP 200 / ok
 - authentication enforcement enabled
@@ -73,40 +101,46 @@ Post-publication certification passed using side-effect-free GETs, SELECT-only d
 - allowlist-only access enabled
 - public registration disabled
 - missing auth configuration: none
-- production frontend asset served successfully and contains Task #57 measurement markers
-- typed production measurement prerequisite query executes without PostgreSQL `42883`
-- historical Task #53 deployments: 1
-- historical Task #53 fail-closed deployments: 1
-- persistent Task #54 measurement-eligible deployments: 0
-- joined evidence rows observed: 663
+- Task #58 source and route are present in the published tree
+- `/api/competitor-intelligence` remains behind existing API authentication and is GET-only/SELECT-only
+- protected competitor route was not called anonymously because denied requests may create auth-audit side effects
 - development DB: 31 public base tables
 - production DB: 31 public base tables
-- `auth_sessions`: present in both
-- `auth_audit_events`: present in both
-- all six Task #55 auth indexes present in both
-- `PUBLIC_SITE_WRITES_ENABLED` effectively false
-- `AI_PROPOSAL_GENERATION_ENABLED` effectively false
+- Task #55 auth tables/indexes intact in both
+- `PUBLIC_SITE_WRITES_ENABLED=false`
+- `AI_PROPOSAL_GENERATION_ENABLED=false`
 - Task #53 provider-write dispatch disabled
 - Task #54 provider-write dispatch disabled
 - Task #53 scheduler disabled
 - Task #54 scheduler disabled
 - Task #54 batch execution disabled
-- post-deployment deployments/rollbacks/verifications/actions/action-plans/approvals/jobs: 0
-- provider/public-site write attempts: 0
-- Task #53 executions: 0
-- Task #54 applies: 0
-- autonomous/execution jobs: 0
-- no fatal/database/provider-mutation errors found in the bounded post-deployment log inspection
+- total competitor evidence remains `0`
+- post-publication new evidence: `0`
+- new opportunities: `0`
+- new action plans: `0`
+- new actions: `0`
+- new approvals: `0`
+- new operational deployments: `0`
+- new rollbacks: `0`
+- new verifications: `0`
+- new jobs: `0`
+- execution/autonomous jobs: `0`
+- Task #53/#54 or provider-write deployments: `0`
+- unsafe-mutation log markers: `0`
+- scheduler/batch-enable log markers: `0`
+- PostgreSQL `42883` log markers: `0`
+- fatal/crash log markers: `0`
 
-No interactive login/session was created solely for this release because authentication behavior did not change.
+The Replit read-only deployment metadata interface does not expose the deployed source SHA/tree directly. Release identity was therefore certified by successful publication/build continuity plus exact post-publication tree identity and absence of conflicting source.
 
-## Replit/Git state after Task #57 publication
+## Replit/Git state after Task #58 publication
 
 Publication created one empty Replit-generated metadata commit:
 
-- SHA: `6febd261bfce97365f4e074bc1559c94c80f92f7`
+- SHA: `40b867a927f9b108314b79a907666b7e5dd84619`
 - subject: `Published your App`
-- tree: `08869c885a1cc9d11d15bad86989e2ab1d06baaa`
+- parent: `a5c2f057e1748c1be76733325b061bab2a574d53`
+- tree: `d0acc5f39e462c39ac4576458b7d56c8438502d7`
 - changed files: none
 
 Because it was metadata-only and tree-identical to canonical GitHub `main`, the local-only commit was removed **without republishing**.
@@ -114,17 +148,20 @@ Because it was metadata-only and tree-identical to canonical GitHub `main`, the 
 Final certified Replit Git state before this documentation closeout:
 
 - branch: `main`
-- HEAD: `4259323c5cc424404ac40436110dd50f3c6f3367`
-- tree: `08869c885a1cc9d11d15bad86989e2ab1d06baaa`
+- HEAD: `a5c2f057e1748c1be76733325b061bab2a574d53`
+- tree: `d0acc5f39e462c39ac4576458b7d56c8438502d7`
 - `origin/main`: same
+- current GitHub `main`: same
 - ahead/behind: `0/0`
 - working tree: clean
 - changed files: none
 - untracked files: none
 
-The production deployment remained successful after Git reconciliation.
+Production remained successful after reconciliation. Do **not** republish solely because documentation or metadata-only Git cleanup advances/reconciles repository state.
 
 ## Prior completed milestones
+
+Task #57 — Measurement & Attribution Foundation v1 — remains fully production-certified and closed. Its read-only measurement loop is available for a future verified persistent Task #54 deployment.
 
 Task #56 — Risk Semantics Alignment & Effective-Risk Diagnostics v1 — remains fully production-certified and closed. It makes evaluator risk, plan-control risk, and effective execution risk explicit without weakening Task #51 authorization policy.
 
@@ -155,11 +192,29 @@ A generic `continue` advances safe engineering/documentation work only. It never
 
 ## Current execution milestone
 
-The project is now at the **persistent-change + measurement-loop stage**.
+The project is now at the **competitor-intelligence acquisition + persistent-change measurement stage**.
 
-The measurement/attribution foundation needed to observe a future persistent Task #54 change is live. However, no persistent Task #54 deployment exists yet, so there is intentionally nothing eligible for retain/replace/rollback measurement today.
+Task #58 provides the normalized competitor evidence contract and authenticated read-only projection, but intentionally contains **no collector or persistence path**. The next engineering milestone should add bounded competitor evidence acquisition/persistence without creating an execution path.
 
-The likely future first persistent candidate remains Unisex Fragrance:
+The recommended next milestone is:
+
+### Task #59 — Bounded Competitor Evidence Acquisition Foundation v1
+
+Safe initial scope:
+
+1. Define an explicit allowlisted competitor/source-target configuration for collection; no arbitrary crawler frontier.
+2. Add a bounded read-only HTTP collector with strict timeouts, response-size limits, content-type checks, redirect limits, robots/policy-aware behavior, and no authenticated competitor access.
+3. Parse only public structural signals needed by the Task #58 contract; never persist raw page/body copy.
+4. Normalize every observation through Task #58 before persistence.
+5. Add idempotent persistence of valid `competitor_page_observation` evidence into the existing `evidence` table with deterministic fingerprints and provenance.
+6. Keep collection manually invoked or dry-run-first in v1; **no scheduler or autonomous worker**.
+7. No opportunity/action/proposal/execution creation from collection.
+8. Add bounded read-only coverage/freshness diagnostics and deterministic tests.
+9. No production collection run without a separately reviewed/authorized runtime step if the implementation would make external network requests or persist production evidence.
+
+Task #59 must preserve the existing 31-table schema if feasible. A migration should be introduced only if a current-table contract demonstrably cannot satisfy the bounded collector safely.
+
+The likely future first persistent Task #54 candidate remains Unisex Fragrance:
 
 - Plan: `b4c6eb99-0974-4ea9-a8b7-4ea897a06a56`
 - Proposal: `7404c9c7-0cf3-4577-906e-2a39d0e9e925`
@@ -174,13 +229,13 @@ The likely future first persistent candidate remains Unisex Fragrance:
 - lifecycle at diagnosis: `approval_ready`
 - approvals/actions/deployments at diagnosis: `0 / 0 / 0`
 
-Task #56/#57 do not approve or authorize this proposal.
+Tasks #56/#57/#58 do not approve or authorize this proposal.
 
 ## Exact next project stage
 
-Task #57 is closed. Safe future work can proceed in either of two categories:
+Task #58 is closed. Safe future work can proceed in either of two categories:
 
-1. **Next engineering module** — competitor evidence ingestion / SERP-gap / taxonomy-content-entity-schema / internal-link / backlink-citation / GEO-AIO visibility intelligence, all read-only/non-mutating first.
+1. **Task #59 engineering** — bounded competitor evidence acquisition/persistence, no scheduler/autonomy and no public-site/provider mutation.
 2. **First persistent Task #54 change** — only through the separately gated authorization sequence below.
 
 Before any first persistent Task #54 apply:
