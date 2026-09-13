@@ -4,11 +4,13 @@ import { isSameOriginRequest } from "../lib/pilot-authorization";
 import { verifiedActorId } from "../middlewares/auth-security.js";
 import { answerOperationalQuestion, decideProposalReview, editProposalDraft, getRuntimeReadiness, loadOperationalList, loadOpportunities, loadPerformance, parsePerformanceFilters, ProposalDecisionError } from "../lib/operational-data";
 import { loadMeasurementImpact } from "../lib/measurement-attribution.js";
+import { loadCompetitorIntelligence } from "../lib/competitor-intelligence.js";
 
 const router: IRouter = Router();
 for (const section of ["ai-visibility", "learning", "verification", "policies"]) {
   router.get(`/${section}`, async (_req, res) => res.json({ readiness: await getRuntimeReadiness(), rows: [] }));
 }
+router.get("/competitor-intelligence", async (_req, res) => res.json(await loadCompetitorIntelligence()));
 router.get("/impact", async (_req, res) => res.json(await loadMeasurementImpact()));
 router.get("/technical-seo", async (_req, res) => res.json(await loadOperationalList("findings")));
 router.get("/technical-seo/findings", async (_req, res) => res.json(await loadOperationalList("findings")));
