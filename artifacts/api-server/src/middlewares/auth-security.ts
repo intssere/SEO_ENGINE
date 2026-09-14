@@ -28,6 +28,7 @@ function requestId(req: Request): string | null {
 function effectiveRequiredRole(req: Request): AppRole {
   const path = req.path;
   if (path.startsWith("/connections/") && path !== "/connections/status") return "admin";
+  if (path.startsWith("/signal-collection-execution/")) return "admin";
   if (/^\/execution\/actions\/[^/]+\/task53\/reverify-rollback$/.test(path)) return "admin";
   return requiredRoleForApiRequest(req.method, path);
 }
