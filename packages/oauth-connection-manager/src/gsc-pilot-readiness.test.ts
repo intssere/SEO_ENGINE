@@ -14,8 +14,9 @@ import {
   isGscPilotPacketValid,
 } from "./gsc-pilot-readiness.js";
 
-const issuedAt = "2026-09-14T16:00:00.000Z";
-const expiresAt = "2026-09-14T16:20:00.000Z";
+const validationNow = new Date();
+const issuedAt = new Date(validationNow.getTime() - 60_000).toISOString();
+const expiresAt = new Date(validationNow.getTime() + 20 * 60_000).toISOString();
 
 function validInput() {
   return {
@@ -78,7 +79,7 @@ test("builds a deterministic bounded packet with exact GSC readonly identity", (
   assert.equal(first.queryPolicy.retriesAllowed, false);
   assert.equal(first.queryPolicy.providerWriteAllowed, false);
   assert.equal(first.queryPolicy.dimensionalResultSemantics, "partial");
-  assert.equal(isGscPilotPacketValid(first, new Date("2026-09-14T16:10:00.000Z")), true);
+  assert.equal(isGscPilotPacketValid(first, validationNow), true);
 });
 
 test("fails closed on broader scope, wrong profile, unsupported property, or unaccepted permission", () => {
@@ -108,7 +109,8 @@ test("production packet requires an exact allowlisted HTTPS non-local redirect a
 });
 
 test("enforces bounded TTL and Task #71 query limits", () => {
-  assert.throws(() => buildGscPilotPacket({ ...validInput(), expiresAt: "2026-09-14T17:00:00.000Z" }), /pilot_ttl_exceeds_limit/);
+  const overlongExpiry = new Date(Date.parse(issuedAt) + 60 * 60_000).toISOString();
+  assert.throws(() => buildGscPilotPacket({ ...validInput(), expiresAt: overlongExpiry }), /pilot_ttl_exceeds_limit/);
   assert.throws(() => buildGscPilotPacket({ ...validInput(), dateRangeDays: 32 }), /invalid_pilot_date_range/);
   assert.throws(() => buildGscPilotPacket({ ...validInput(), rowLimit: 5001 }), /invalid_pilot_row_limit/);
   assert.throws(() => buildGscPilotPacket({ ...validInput(), maxPages: 3 }), /invalid_pilot_page_limit/);
@@ -117,8 +119,8 @@ test("enforces bounded TTL and Task #71 query limits", () => {
 
 test("packet fingerprint detects tampering and expiry", () => {
   const packet = buildGscPilotPacket(validInput());
-  assert.equal(isGscPilotPacketValid({ ...packet, oauth: { ...packet.oauth, googleProjectId: "tampered" } }, new Date("2026-09-14T16:10:00.000Z")), false);
-  assert.equal(isGscPilotPacketValid(packet, new Date("2026-09-14T16:21:00.000Z")), false);
+  assert.equal(isGscPilotPacketValid({ ...packet, oauth: { ...packet.oauth, googleProjectId: "tampered" } }, validationNow), false);
+  assert.equal(isGscPilotPacketValid(packet, new Date(Date.parse(expiresAt) + 60_000)), false);
 });
 
 test("live readiness requires every independent lineage, Task #70, and exact live-read authorization gate", () => {
