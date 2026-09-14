@@ -1,10 +1,15 @@
 import { Router, type IRouter } from "express";
 import { GOOGLE_READ_SCOPES } from "@seo-engine/oauth-connection-manager";
+import {
+  GSC_READONLY_PROFILE,
+  assertGscReadonlyState,
+} from "@seo-engine/oauth-connection-manager/gsc-readonly";
 import { logger } from "../lib/logger";
 import { isSameOriginRequest } from "../lib/pilot-authorization";
 import { inspectTask53ShopifyCapability } from "../lib/task53-shopify-credential.js";
 import {
   startUrl,
+  startGscReadonlyUrl,
   startTask53ShopifyWriteUrl,
   task53ShopifyWriteExternalAccountId,
   TASK53_SHOPIFY_WRITE_RETURN_TO,
@@ -20,6 +25,9 @@ import {
   list,
   selectGoogleProperties,
   GoogleSelectionError,
+  classifyGoogleOAuthState,
+  asGscReadonlyState,
+  isGscReadonlyOAuthRuntimeEnabled,
   GOOGLE_STATE_COOKIE,
   SHOPIFY_STATE_COOKIE,
   origin,
@@ -28,7 +36,7 @@ import {
 const router: IRouter = Router();
 const blocked = () => process.env.PUBLIC_SITE_WRITES_ENABLED?.trim().toLowerCase() === "true";
 const shopPattern = /^[a-z0-9][a-z0-9-]*\.myshopify\.com$/;
-const shopifyCookieOptions = {
+const oauthCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
@@ -39,7 +47,9 @@ const shopifyCookieOptions = {
 type GoogleCallbackStage =
   | "write_gate"
   | "state_cookie"
+  | "purpose_dispatch"
   | "state_validation"
+  | "profile_runtime"
   | "token_exchange"
   | "scope_validation"
   | "resource_discovery"
@@ -53,7 +63,7 @@ function providerStatus(error: unknown): number | null {
 function safeGoogleFailure(stage: GoogleCallbackStage, error: unknown) {
   const status = providerStatus(error);
   const category =
-    stage === "state_cookie" || stage === "state_validation"
+    stage === "state_cookie" || stage === "purpose_dispatch" || stage === "state_validation"
       ? "state"
       : stage === "token_exchange"
         ? status
@@ -105,6 +115,14 @@ router.get("/connections/status", async (_req, res) => {
           ? { ga4Properties: google.metadata.discoveredGa4Properties }
           : {}),
       },
+      gscReadonlyRuntime: {
+        supported: true,
+        profile: GSC_READONLY_PROFILE,
+        enabled: isGscReadonlyOAuthRuntimeEnabled(),
+        liveTransportBound: false,
+        providerWrites: false,
+        publicSiteWrites: false,
+      },
     });
   } catch {
     return res.status(503).json({ error: "Connection status is unavailable." });
@@ -117,7 +135,7 @@ router.get("/connections/shopify/start", (req, res) => {
     const shop = String(req.query.shop ?? "").trim().toLowerCase();
     if (!shopPattern.test(shop)) throw new Error();
     const { state, url } = startUrl("shopify", shop);
-    res.cookie(SHOPIFY_STATE_COOKIE, seal(state), shopifyCookieOptions);
+    res.cookie(SHOPIFY_STATE_COOKIE, seal(state), oauthCookieOptions);
     return res.redirect(url);
   } catch {
     return res.redirect(`${origin()}/connections?error=shopify_start`);
@@ -131,10 +149,21 @@ router.get("/connections/shopify/task53-write/start", (req, res) => {
     const shop = String(req.query.shop ?? "").trim().toLowerCase();
     if (!shopPattern.test(shop)) throw new Error("task53_shop_domain_invalid");
     const { state, url } = startTask53ShopifyWriteUrl(shop);
-    res.cookie(SHOPIFY_STATE_COOKIE, seal(state), shopifyCookieOptions);
+    res.cookie(SHOPIFY_STATE_COOKIE, seal(state), oauthCookieOptions);
     return res.redirect(url);
   } catch {
     return res.redirect(`${origin()}/connections?error=task53_shopify_write_start`);
+  }
+});
+
+router.get("/connections/google/gsc-readonly/start", (_req, res) => {
+  try {
+    if (blocked()) throw new Error("gsc_oauth_requires_public_writes_disabled");
+    const { state, url } = startGscReadonlyUrl();
+    res.cookie(GOOGLE_STATE_COOKIE, seal(state), oauthCookieOptions);
+    return res.redirect(url);
+  } catch {
+    return res.redirect(`${origin()}/connections?error=gsc_oauth_start`);
   }
 });
 
@@ -142,13 +171,7 @@ router.get("/connections/google/start", (_req, res) => {
   try {
     if (blocked()) throw new Error();
     const { state, url } = startUrl("google");
-    res.cookie(GOOGLE_STATE_COOKIE, seal(state), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 600_000,
-      path: "/",
-    });
+    res.cookie(GOOGLE_STATE_COOKIE, seal(state), oauthCookieOptions);
     return res.redirect(url);
   } catch {
     return res.redirect(`${origin()}/connections?error=google_start`);
@@ -199,6 +222,19 @@ router.get("/connections/google/callback", async (req, res) => {
 
     stage = "state_cookie";
     const state = open(req.cookies[GOOGLE_STATE_COOKIE]);
+
+    stage = "purpose_dispatch";
+    const purpose = classifyGoogleOAuthState(state);
+    if (purpose === GSC_READONLY_PROFILE) {
+      stage = "state_validation";
+      const gscState = asGscReadonlyState(state);
+      assertGscReadonlyState(gscState, String(req.query.state ?? ""));
+      if (!isGscReadonlyOAuthRuntimeEnabled()) throw new Error("gsc_oauth_runtime_disabled");
+
+      stage = "profile_runtime";
+      throw new Error("gsc_oauth_live_transport_not_bound_task75");
+    }
+
     stage = "state_validation";
     assertOAuthState(state, String(req.query.state ?? ""), "google");
 
@@ -231,6 +267,7 @@ router.get("/connections/google/callback", async (req, res) => {
 
     logger.info({
       provider: "google",
+      oauthPurpose: "legacy",
       stage: "resource_discovery",
       searchConsoleCategory: discovered.searchConsoleStatus.category,
       searchConsoleStatus: discovered.searchConsoleStatus.httpStatus,
@@ -240,11 +277,12 @@ router.get("/connections/google/callback", async (req, res) => {
       ga4ResourceCount: discovered.ga4Properties.length,
       hasRefreshToken,
       scopeComplete: missingScopes.length === 0,
-    }, "Google OAuth discovery completed");
+    }, "Legacy Google OAuth discovery completed");
 
     stage = "credential_persistence";
     await save("google", "google", bundle, {
       connectionMode: "oauth",
+      oauthPurpose: "legacy",
       readOnly: true,
       discoveredSearchConsoleProperties: discovered.searchConsoleProperties,
       discoveredGa4Properties: discovered.ga4Properties,
@@ -259,11 +297,12 @@ router.get("/connections/google/callback", async (req, res) => {
 
     logger.info({
       provider: "google",
+      oauthPurpose: "legacy",
       stage: "credential_persistence",
       status: connectionState,
       hasRefreshToken,
       needsConfirmation,
-    }, "Google OAuth connection persisted");
+    }, "Legacy Google OAuth connection persisted");
 
     if (!needsConfirmation) res.clearCookie(GOOGLE_STATE_COOKIE);
     const outcome = connectionState === "connected" ? "google" : connectionState === "pending_confirmation" ? "google_pending" : "google_attention";
