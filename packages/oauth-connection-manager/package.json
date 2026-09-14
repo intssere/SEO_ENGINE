@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./gsc-readonly": {
+      "types": "./src/gsc-readonly.ts",
+      "default": "./dist/gsc-readonly.js"
     }
   },
   "types": "./src/index.ts",
