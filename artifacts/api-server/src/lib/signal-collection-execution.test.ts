@@ -158,7 +158,7 @@ function baseOverrides(values: ReturnType<typeof fixture>, store: SignalCollecti
   };
 }
 
-function execute(values: ReturnType<typeof fixture>, overrides: ReturnType<typeof baseOverrides>["overrides"], extras: { authorization?: string; now?: string; env?: Record<string, string | undefined> } = {}) {
+function execute(values: ReturnType<typeof fixture>, overrides: Parameters<typeof executeAuthorizedSignalCollectionJob>[1], extras: { authorization?: string; now?: string; env?: Record<string, string | undefined> } = {}) {
   return executeAuthorizedSignalCollectionJob({
     packet: values.packet,
     source: values.source,
