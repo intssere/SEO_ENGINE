@@ -11,6 +11,10 @@
     "./gsc-readonly": {
       "types": "./src/gsc-readonly.ts",
       "default": "./dist/gsc-readonly.js"
+    },
+    "./gsc-pilot-readiness": {
+      "types": "./src/gsc-pilot-readiness.ts",
+      "default": "./dist/gsc-pilot-readiness.js"
     }
   },
   "types": "./src/index.ts",
