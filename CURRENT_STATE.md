@@ -4,45 +4,47 @@ This file is the authoritative **mutable checkpoint** for resuming work. Always 
 
 ## Current published production application
 
-Production still serves the certified **Task #65 — One-Target Pilot Preparation & Authorization Packet Foundation v1** application bundle.
+Task #70 — **Controlled Single-Job Signal Collection Execution Foundation v1** — is now published and production-certified on the existing SEO_ENGINE deployment.
 
-- certified application source: `1f2a2a9cefd07676b0569b93401bd116ff995fa4`
-- certified application tree: `33b049d3bc35acaaef508db3432aabd8b2522de8`
+Published canonical release source:
+
+- GitHub source SHA: `d43629dc8b4c50bff1088fad6c74c15825ee0373`
+- Git tree: `9b5cc9b2e1153cba82f13859829544cff7581127`
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - production URL: `https://dsseoengine.replit.app`
+- deployment type: autoscale
+- deployment status after publication: success
 
-Tasks #66-#70 are newer GitHub/Replit engineering foundations and have **not** been separately published. Do not confuse current repository/workspace HEAD with the published runtime bundle.
+The published bundle includes the Task #66-#70 engineering chain. Publication did **not** authorize or perform a Task #70 execution.
 
-## Canonical engineering checkpoint — Task #70 complete
+Detailed production closeout: `.agents/memory/task70-production-closeout.md`.
 
-Task #70 — **Controlled Single-Job Signal Collection Execution Foundation v1** — is engineering-complete, merged, CI-certified, and synchronized to Replit without publication.
+## Task #70 canonical engineering lineage
 
-Canonical release:
+Task #70 implementation:
 
 - issue: #114
-- PR: #116
-- exact tested PR head: `44d970ded1697e7ecb2e8c9d527b1eee2cad93ed`
-- PR CI #213: success
-- merged GitHub `main`: `1a9ad06049249def4b0c105bebaea1c1c76be7ca`
-- merged tree: `9dec59db23fde87f18916e7ff2d1aa2f40263e07`
-- post-merge main CI #214: success
+- engineering PR: #116
+- exact tested engineering head: `44d970ded1697e7ecb2e8c9d527b1eee2cad93ed`
+- engineering PR CI #213: success
+- engineering merge: `1a9ad06049249def4b0c105bebaea1c1c76be7ca`
+- engineering tree: `9dec59db23fde87f18916e7ff2d1aa2f40263e07`
+- engineering main CI #214: success
 
-Latest independently verified Replit workspace state before this docs closeout:
+Engineering closeout docs:
 
-- branch: `main`
-- HEAD: `1a9ad06049249def4b0c105bebaea1c1c76be7ca`
-- tree: `9dec59db23fde87f18916e7ff2d1aa2f40263e07`
-- cached `origin/main`: same SHA
-- ahead/behind: `0/0`
-- tracked/untracked: `0/0`
-- working tree: clean
-- publication/redeploy: **not performed**
+- docs PR: #117
+- exact tested docs head: `83a05e9ac9c47d9b1a080676dece096b00ae3e6a`
+- docs PR CI #215: success
+- docs merge / published source: `d43629dc8b4c50bff1088fad6c74c15825ee0373`
+- published tree: `9b5cc9b2e1153cba82f13859829544cff7581127`
+- post-merge main CI #216: success
 
-Detailed closeout: `.agents/memory/task70-engineering-closeout.md`.
+The exact published source was re-verified against GitHub and Replit immediately before publication.
 
-## Task #70 execution boundary
+## Task #70 execution architecture
 
-Task #70 is the smallest durable execution bridge between an exact Task #69 authorization packet and a future source-specific read runner.
+Task #70 is the smallest durable execution bridge between one exact Task #69 authorization packet and a future source-specific read-only runner.
 
 Control chain:
 
@@ -66,34 +68,57 @@ Exact Task #69 authorization family:
 
 The gate alone is never authorization.
 
-Each Task #70 execution is strictly one Task #69 job, one source, one market, one category, one signal type, one Task #68 request, one runner invocation, and one deterministic durable execution identity.
+One Task #70 execution is exactly one Task #69 job, one source, one market, one category, one signal type, one Task #68 request, one runner invocation, and one deterministic durable execution identity.
 
 Task #70 reuses the existing `jobs` table with job type `signal_collection_single_job_v1` and lifecycle `pending -> active -> completed|failed`. Existing exact identity is replay-locked; identity collision fails closed. No migration or production DDL was required.
 
-API surface in engineering code:
+Published API surface:
 
 - `GET /api/signal-collection-execution/capability`
 - `POST /api/signal-collection-execution/run`
 
-Both require authenticated admin role. Unsafe POST remains under the existing authenticated-session, CSRF, and mutation-rate-limit controls.
+Both require authenticated admin role. Unsafe POST remains under authenticated-session, CSRF, and mutation-rate-limit controls.
 
-## Task #70 runner and persistence state
+## Production certification
 
-The production/default runner is intentionally:
+Prepublication certification passed before deployment:
 
-- configured: false
-- credential ready: false
-- network ready: false
+- GitHub/Replit exact source/tree match
+- Replit `0/0`, clean
+- development/production public base tables: `31 / 31`
+- `auth_sessions` present in both
+- `auth_audit_events` present in both
+- Task #55 auth indexes: `6 / 6` in both
+- auth enforcement enabled
+- auth configuration complete
+- Task #70 jobs: `0 / 0`
+- no production DDL
 
-Engineering/CI used only deterministic fake/in-memory runners and stores. No live source/provider/competitor request occurred.
+Post-publication read-only certification passed:
 
-Task #70 does not persist normalized observations or competitor evidence. Durable receipts retain only bounded normalized metadata/fingerprints and do not retain raw provider bodies, headers, cookies, tokens, API keys, OAuth credentials, or arbitrary runner error text.
+- deployment active/successful
+- `GET /api/healthz`: `200`, status ok
+- `HEAD /`: `200`
+- `GET /api/auth/status`: `200`
+- production auth enforcement enabled
+- production auth configuration ready
+- public registration disabled
+- unauthenticated `GET /api/signal-collection-execution/capability`: `401 authentication_required`
+- development/production public base tables remained `31 / 31`
+- Task #55 auth indexes remained `6 / 6`
+- Task #70 jobs remained `0 / 0`
+- no Task #70 observation/evidence persistence detected
+- no Task #70 execution markers detected in inspected recent deployment logs
+- no competitor/provider/external-source markers detected in inspected recent deployment logs
+- no provider-write or public-site-write markers detected in inspected recent deployment logs
 
-Task #70 introduced no scheduler, batch executor, autonomous worker, or retry loop.
+Recent deployment logs contained transient startup healthcheck failures during service startup; current direct health checks passed afterward.
 
-## Current sanitized safety state
+Certification limitation: the production Task #70 capability endpoint correctly requires authenticated admin access and no interactive login was performed. Replit deployment metadata also does not expose production environment-variable values. Therefore the production process's gate/runner booleans were not independently read from an authenticated runtime capability response. The published source is fail-closed, the prepublication sanitized environment showed the gate false and runner unconfigured, and production has zero Task #70 jobs and no matching execution/activity evidence.
 
-Latest verified Replit state:
+## Current safety boundary
+
+The last sanitized prepublication and post-publication workspace checks confirmed:
 
 - `SIGNAL_COLLECTION_JOB_EXECUTION_ENABLED=false`
 - `COMPETITOR_ONE_TARGET_DRY_RUN_EXECUTION_ENABLED=false`
@@ -109,6 +134,18 @@ Latest verified Replit state:
 - production/default Task #70 credential ready: false
 - production/default Task #70 network ready: false
 
+Publication did **not**:
+
+- execute Task #53, #54, #64, or #70
+- configure/use a real Task #70 runner
+- use or mutate provider credentials/API keys/OAuth scopes
+- make a provider/competitor/external source request
+- persist Task #70 observations/evidence
+- mutate competitor targets
+- enable scheduler/batch/worker/retry behavior
+- perform production DDL
+- write to Diamond Shelf/provider/public-site state
+
 Unless separately and explicitly authorized:
 
 - `AI_PROPOSAL_GENERATION_ENABLED=false`
@@ -122,62 +159,56 @@ Unless separately and explicitly authorized:
 - no credential/API-key/OAuth use or mutation
 - no production DB DDL
 - no target configuration mutation
-- no scheduler/batch/worker/retry loop activation
+- no scheduler/batch/worker/retry-loop activation
 - no provider/public-site writes
 - no approval-to-execution automatic transition
 
-A merged PR, admin login, enabled capability gate, or generic `continue` is not authorization for these boundaries.
+A merged PR, admin login, enabled capability gate, publication, or generic `continue` is not authorization for these boundaries.
 
-## Market/category intelligence engineering chain
+## Replit publication reconciliation
+
+Publication created one empty Replit metadata commit:
+
+- commit: `a2d7d0e53b5bdfd1e7ba75fddf87dd2b8dad6ce9`
+- subject: `Published your App`
+- parent: `d43629dc8b4c50bff1088fad6c74c15825ee0373`
+- tree: `9b5cc9b2e1153cba82f13859829544cff7581127`
+- changed files: none
+
+Because its tree was exactly identical to the authorized canonical source, it was removed without republishing.
+
+Final application-source reconciliation before this production closeout docs branch:
+
+- branch: `main`
+- HEAD: `d43629dc8b4c50bff1088fad6c74c15825ee0373`
+- tree: `9b5cc9b2e1153cba82f13859829544cff7581127`
+- cached `origin/main`: same SHA/tree
+- ahead/behind: `0/0`
+- tracked/untracked: `0/0`
+- working tree: clean
+- cleanup republish: none
+
+## Market/category signal chain now published
 
 ### Task #66 — Market-Aware Category Competitor, Trend & Keyword Intelligence Architecture v1
 
-- issue #96 / PR #99
-- tested head: `01a00a6757a6c5355824e39b8b4d0730c4712557`
-- merge: `47105c6a2667edc37aece69307c001d535ea5c4a`
-- tree: `0521dff83b1805782a541af646421e23eb76a504`
-- PR CI #191 / main CI #193: success
-- no publication
+Provides deterministic market/category identities, first-party vs external signal separation, category-specific competitor relevance, and advisory trend/keyword opportunity synthesis.
 
 ### Task #67 — Signal Source Registry & Refresh Planning Foundation v1
 
-- issue #101 / PR #102
-- tested head: `d5207bbe17f3c9b277addc3d524dcd38256da5fc`
-- merge: `444b22747ea537735e4778f6fd63bb39919f6a67`
-- tree: `09cf5eaa76a2ea422600c904ee2f0a85c54754df`
-- corrected PR CI #197 / main CI #198: success
-- no publication
+Provides reviewed source descriptors, market/category/signal coverage, freshness/volatility urgency, bounded refresh budgets, and deterministic refresh-plan identity. Performs zero collection by itself.
 
 ### Task #68 — Source Adapter Contract & Signal Observation Normalization Foundation v1
 
-- issue #104 / PR #105
-- tested head: `73de8511cc86c421108d587171a8fba5d1e608f7`
-- merge: `0f1371e0cfdd1678bb9ff78bc0bc54abec49caec`
-- tree: `43b1b1a1948212ddd9d319e3e465698e06e1d124`
-- corrected PR CI #202 / main CI #203: success
-- no publication
+Provides strict adapter requests, supplied-result normalization, `success|empty|partial|error` semantics, bounded metrics, raw/unknown payload rejection, deterministic observation identities, and dedupe/conflict handling.
 
 ### Task #69 — Signal Collection Job Planning & Authorization Foundation v1
 
-- issue #109 / PR #110
-- tested head: `63995d86e2a8c2a03b7b574fe924c02be7f39e8f`
-- merge: `e1b6264c4d14376bbe65a568b5483f6d752fcb56`
-- tree: `3f391a4de591181d1e9c72b9396a5d88019e2edd`
-- PR CI #207 / main CI #208: success
-- no publication
+Provides one-source/market/category/signal collection-job packets with exact Task #67/#68 lineage, bounded TTL, deterministic replay identity, and exact future authorization text. It does not execute network collection by itself.
 
 ### Task #70 — Controlled Single-Job Signal Collection Execution Foundation v1
 
-- issue #114 / PR #116
-- tested head: `44d970ded1697e7ecb2e8c9d527b1eee2cad93ed`
-- merge: `1a9ad06049249def4b0c105bebaea1c1c76be7ca`
-- tree: `9dec59db23fde87f18916e7ff2d1aa2f40263e07`
-- PR CI #213 / main CI #214: success
-- Replit exact engineering sync complete
-- no publication
-- no real source request
-- no observation/evidence persistence
-- no production DDL
+Provides default-off exact authorization consumption, durable replay lock, strict scalar execution, admin/CSRF route boundary, fake-runner tests, bounded receipts, and zero automatic persistence. Its production/default runner remains intentionally unconfigured.
 
 ## First real competitor pilot — historical completed proof
 
@@ -188,7 +219,6 @@ The first real one-target competitor dry-run against `https://tripletraders.com/
 - Task #64 job: `799e8813-6769-5a62-b64f-aec0e03762ff`
 - exactly one production job/attempt/receipt
 - completed/terminal/replay-locked
-- redirects: 0
 - raw competitor body retained: false
 - evidence persisted: 0
 - configured competitor targets: 0
@@ -223,25 +253,44 @@ Core loop:
 
 Observation may eventually become autonomous. Mutation remains separately gated, auditable, reversible, and measurable.
 
-## Next safe milestone — Task #70 prepublication certification
+## Next safe milestone — source/provider review for the first read-only signal runner
 
-After this docs-only closeout is merged and exact-synced to Replit, the next safe phase is **read-only Task #70 prepublication certification**.
+Task numbers after #70 remain provisional until an issue is created.
 
-Safe work under generic `continue` may include:
+The next safe phase is a **read-only source/provider review** for the first source-specific signal runner foundation. Do not choose a provider by assumption.
 
-- independently resolving the new GitHub `main` SHA/tree
-- verifying the docs-only diff/merge/CI
-- exact docs-only Replit sync
-- confirming Replit `0/0` and clean
-- read-only inspection of build/runtime prerequisites
-- confirming dev/prod schema parity without DDL
-- confirming auth objects and sanitized safety gates
-- confirming production still serves Task #65
-- preparing a bounded publication authorization packet
+Candidate source classes to compare include:
 
-Generic `continue` does **not** authorize publication/redeploy.
+- first-party Google Search Console query evidence
+- first-party analytics/catalog evidence
+- reviewed SERP provider
+- reviewed keyword-demand provider
+- reviewed trend provider
+- reviewed GEO/AIO visibility source
 
-Publication of Task #70 requires separate explicit authorization. Any later real signal-source execution additionally requires a separately reviewed source-specific runner/provider boundary, fresh Task #67/#68/#69 lineage, exact Task #69 authorization, and any separately authorized temporary Task #70 gate deployment. Observation/evidence persistence remains a separate boundary.
+Safe generic-`continue` work may include:
+
+- read-only source/provider research and comparison
+- architecture/options analysis
+- rate-limit/quota/data-shape review
+- read-only credential/scope requirements analysis without using or changing credentials
+- identifying the smallest source-specific runner boundary
+- creating a dedicated issue for the selected engineering foundation only after the review supports it
+- deterministic fake-provider/transport test design
+
+Generic `continue` does **not** authorize:
+
+- provider enrollment
+- API-key/OAuth creation, use, mutation, or scope broadening
+- a real source/provider request through Task #70
+- enabling `SIGNAL_COLLECTION_JOB_EXECUTION_ENABLED`
+- observation/evidence persistence
+- scheduler/batch/worker/retry activation
+- production DDL
+- Task #53/#54/#64/#70 execution
+- provider/public-site writes
+
+Any first real signal-source read requires a separately reviewed and published read-only runner, provider/credential-boundary approval, fresh Task #67 refresh plan, fresh Task #68 request, fresh Task #69 packet, exact Task #69 authorization, and separately authorized temporary Task #70 gate enablement/deployment if required. Observation/evidence persistence remains a separate authorization boundary.
 
 ## Resume rule
 
