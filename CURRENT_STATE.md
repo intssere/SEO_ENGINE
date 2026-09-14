@@ -51,7 +51,7 @@ Detailed closeout: `.agents/memory/first-live-competitor-pilot-closeout.md`.
 
 ## Completed competitor-intelligence control chain
 
-Tasks #58-#65 plus the first live pilot form the proven bounded competitor pilot chain:
+Tasks #58-#65 plus the first live pilot now form a proven bounded chain:
 
 - Task #58: normalized competitor evidence contract/read projection
 - Task #59: bounded acquisition/persistence foundation, default-off
@@ -62,8 +62,6 @@ Tasks #58-#65 plus the first live pilot form the proven bounded competitor pilot
 - Task #64: durable single-use one-target dry-run execution foundation
 - Task #65: one-target pilot preparation + dual authorization packet
 - first live pilot: exactly one real external request, zero persistence/mutation, replay lock proven, gate restored
-
-Tasks #66-#68 now extend the system toward market/category-aware continuous intelligence while keeping collection and mutation separately gated.
 
 ## Task #66 — engineering complete
 
@@ -78,7 +76,10 @@ Canonical engineering release:
 - merged tree: `0521dff83b1805782a541af646421e23eb76a504`
 - PR CI #191: success
 - post-merge main CI #193: success
-- Replit engineering sync: exact `0/0`, clean
+- Replit HEAD/cached origin/main after engineering sync: same merged SHA
+- Replit ahead/behind: `0/0`
+- Replit tracked/untracked: `0/0`
+- Replit working tree: clean
 - publish/redeploy for Task #66: **not performed**
 
 Task #66 added exactly three files:
@@ -87,11 +88,43 @@ Task #66 added exactly three files:
 2. `artifacts/api-server/src/lib/market-category-intelligence.test.ts`
 3. `docs/task66-market-category-intelligence-architecture.md`
 
-Core model:
+No existing route, schema, migration, provider connector, environment/configuration, target configuration, scheduler, worker, or execution file was changed.
+
+### Task #66 architecture now available
+
+The pure control-plane model is:
 
 `MarketProfile -> CategoryContext -> category-specific competitor relation + first-party/external SignalSnapshot -> advisory opportunity synthesis`
 
-The system has deterministic identities for markets/categories/signals, category-specific competitor relevance, and evidence-backed trend/keyword opportunity synthesis. Raw search volume alone remains insufficient evidence; synthesis never automatically becomes executable.
+The system now has deterministic pure contracts for:
+
+- market identity
+- category identity
+- first-party vs external signal snapshots
+- market/category-specific competitor relevance
+- trend/keyword opportunity synthesis
+
+Competitor relevance is explicitly per market × category. A competitor may therefore be strong for Arabian Fragrance in one market and weak for Designer Fragrance or another market.
+
+Task #66 relevance weights:
+
+- category match: 30
+- keyword overlap: 25
+- page-type match: 15
+- entity overlap: 10
+- market match: 10
+- freshness: 10
+
+Task #66 opportunity synthesis weights:
+
+- first-party support: 30
+- external support: 15
+- competitor gap: 20
+- trend velocity: 15
+- intent fit: 10
+- confidence: 10
+
+Raw search volume alone is explicitly insufficient evidence. Synthesized opportunities remain `advisory` or `blocked`; they never become executable automatically.
 
 Detailed engineering closeout: `.agents/memory/task66-engineering-closeout.md`.
 
@@ -109,7 +142,11 @@ Canonical engineering release:
 - merged tree: `09cf5eaa76a2ea422600c904ee2f0a85c54754df`
 - corrected PR CI #197: success
 - post-merge main CI #198: success
-- Replit engineering sync: exact `0/0`, clean
+- Replit HEAD/cached origin/main after engineering sync: `444b22747ea537735e4778f6fd63bb39919f6a67`
+- Replit tree: `09cf5eaa76a2ea422600c904ee2f0a85c54754df`
+- Replit ahead/behind: `0/0`
+- Replit tracked/untracked: `0/0`
+- Replit working tree: clean
 - publish/redeploy for Task #67: **not performed**
 
 Task #67 added exactly three files:
@@ -118,9 +155,33 @@ Task #67 added exactly three files:
 2. `artifacts/api-server/src/lib/signal-source-registry.test.ts`
 3. `docs/task67-signal-source-registry-refresh-planning.md`
 
-Task #67 provides deterministic source descriptors, first-party/external separation, market/category/signal coverage matching, external manual-review admission, provenance checks, source-specific freshness, volatility-aware urgency, bounded refresh budgets, selected/deferred items, coverage blockers, and deterministic refresh-plan identity.
+No existing route, provider connector, schema, migration, environment/configuration, target configuration, scheduler, worker, execution path, or production persistence path was modified.
 
-A selected refresh item remains descriptive only: it does **not** contact a source, persist evidence, enroll a provider, activate a scheduler, or authorize execution.
+### Task #67 source/refresh planning now available
+
+Task #67 composes Task #66 market/category identities into a deterministic source-registry and refresh-planning layer.
+
+The system now has pure contracts for:
+
+- stable source descriptors and source fingerprints
+- source class separation: first-party vs external
+- source coverage by market/category/signal type
+- explicit wildcard coverage only when declared
+- source trust/provenance/quality metadata
+- manual-review admission for external sources
+- source-specific freshness windows
+- freshness states: `missing`, `fresh`, `stale`, `critical`
+- volatility-aware urgency scoring
+- bounded refresh budgets
+- deterministic selected/deferred refresh items
+- unsupported coverage blockers
+- deterministic refresh plan fingerprint/ID
+
+External sources fail eligibility unless manually reviewed. Incomplete provenance fails eligibility. Market/category/signal mismatches fail closed. Duplicate source descriptors and duplicate observation state fail closed.
+
+Refresh planning remains descriptive only: a selected refresh item does **not** contact a source, persist evidence, enroll a provider, activate a scheduler, or authorize an execution.
+
+Task #67 dedicated deterministic tests cover 13 safety/planning cases. The corrected full workspace CI also completed successfully after the initial typecheck defect was fixed.
 
 Detailed engineering closeout: `.agents/memory/task67-engineering-closeout.md`.
 
@@ -157,15 +218,15 @@ No existing route, provider connector, schema, migration, environment/configurat
 
 ### Task #68 adapter/observation boundary now available
 
-The safe intelligence pipeline is now:
+The safe control-plane sequence is now:
 
 `Task #66 market/category identities -> Task #67 source registry + refresh plan -> Task #68 adapter request contract + supplied-result normalization -> future separately authorized collection/persistence layers`
 
-Task #68 provides pure deterministic contracts for:
+Task #68 provides deterministic pure contracts for:
 
 - Task #67 refresh item -> adapter request identity
 - exact source/market/category/signal/plan lineage binding
-- strict adapter-result field allowlisting
+- strict adapter-result root/metric field allowlisting
 - statuses: `success`, `empty`, `partial`, `error`
 - canonical bounded numeric metric normalization
 - raw/unknown payload rejection
@@ -186,7 +247,7 @@ Important status semantics:
 
 Raw provider bodies, competitor copy, arbitrary payload blobs, undocumented result fields, and unknown metric fields are rejected rather than silently retained.
 
-Task #68 dedicated deterministic tests cover 15 contract/normalization cases. The initial CI typecheck defect was only in test-helper typing; runtime/library behavior was unchanged by the correction.
+Task #68 dedicated deterministic tests cover 15 contract/normalization cases. The initial CI defect was only an overly narrow test-helper TypeScript inference; the correction made metric `unit` explicitly optional and changed no library/runtime behavior.
 
 Detailed engineering closeout: `.agents/memory/task68-engineering-closeout.md`.
 
@@ -283,7 +344,7 @@ Recommended next milestone:
 
 **Task #69 — Signal Collection Job Planning & Authorization Foundation v1**
 
-Goal: compose Task #67 refresh planning and Task #68 adapter-request identities into deterministic, single-purpose future collection-job packets and exact authorization contracts, while still performing **zero live source collection**.
+Goal: compose Task #67 refresh planning and Task #68 adapter-request identities into deterministic future collection-job packets and exact authorization contracts, while still performing **zero live source collection**.
 
 Safe Task #69 scope under generic `continue`:
 
