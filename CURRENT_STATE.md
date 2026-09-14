@@ -4,7 +4,7 @@ This file is the authoritative **mutable checkpoint** for resuming work. If it c
 
 ## Current production application release
 
-The currently published application remains the Task #65 application release:
+The currently published production application remains the Task #65 application bundle:
 
 - Task #65: **One-Target Pilot Preparation & Authorization Packet Foundation v1**
 - Issue: #93
@@ -12,18 +12,14 @@ The currently published application remains the Task #65 application release:
 - exact tested PR head: `e90295abf49003deae7801081da0bbbb548991bc`
 - certified application merge/source: `1f2a2a9cefd07676b0569b93401bd116ff995fa4`
 - certified application tree: `33b049d3bc35acaaef508db3432aabd8b2522de8`
-- PR CI #183: success
-- post-merge main CI #184: success
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - production URL: `https://dsseoengine.replit.app`
 
-GitHub `main` contains newer documentation-only commits. Do not confuse the newer docs checkpoint with a newer application bundle.
+GitHub `main` and the Replit workspace contain newer engineering/docs commits. Do **not** treat those newer Git SHAs as newer published runtime bundles unless a later explicit publication is separately certified.
 
-## First real competitor pilot — completed successfully
+## First real competitor pilot — completed and restored
 
-The first real one-target competitor dry-run has now been executed and fully restored to the default locked-down state.
-
-### Pilot identity
+The first real one-target competitor dry-run completed successfully against:
 
 - competitor: Triple Traders
 - target: `https://tripletraders.com/collections/fragrance`
@@ -31,147 +27,129 @@ The first real one-target competitor dry-run has now been executed and fully res
 - intended market: United States / English
 - pilot ID: `cpr-073e715d5661b885292142cf`
 - pilot fingerprint: `073e715d5661b885292142cf49de5a9fb6b37caad906c4a31315e1be7279bad8`
-- Task #61 proposal ID: `ctr-c8832b40015713cb122b3f18`
-- Task #61 proposal fingerprint: `c8832b40015713cb122b3f189ad798fc1d80bd9d499ad016b2f3112c53764cce`
-- Task #60 source-plan fingerprint: `f69b236cdb8bff04ef3f6bc2b51670c7f87f417f21e5c1bc001a9ceab8822774`
 - deterministic Task #64 job ID: `799e8813-6769-5a62-b64f-aec0e03762ff`
 
-### Execution result
+Certified result:
 
-The user separately authorized temporary Task #64 gate enablement/deployment and the exact one-target dry-run authorization.
-
-The live request was invoked once through the authenticated admin browser path with existing session + CSRF protection.
-
-Certified production result:
-
-- Task #64 production rows for deterministic job: 1
-- job type: `competitor_one_target_dry_run_v1`
-- status: `completed`
-- phase: `completed`
+- exactly 1 production Task #64 job
+- status/phase: completed/completed
 - attempts: 1
 - terminal/replay-locked: yes
-- failure: none
 - exact target receipts: 1
 - redirects: 0
-- response type: `text/html`
-- response bytes: 381362
-- raw competitor content retained: false
-- competitor evidence persisted by pilot: 0
-- total competitor evidence: 0 development / 0 production
+- raw competitor body retained: false
+- competitor evidence persisted: 0
 - configured competitor targets: 0
 - target configuration mutation: false
-- public-site writes: false
-- provider writes: none
-- automatic transition: false
-- no second Task #64 pilot job
-- no second Triple Traders receipt/request observed
+- provider/public-site writes: none
+- no automatic transition
+- no second Task #64 job or second Triple Traders request observed
 
-Schema remained:
-
-- public base tables: 31 development / 31 production
-- Task #55 auth indexes: 6/6
+After the pilot, the temporary Task #64 execution gate was restored to false and the application was republished. Post-restoration health/auth and safety certification passed.
 
 Detailed closeout: `.agents/memory/first-live-competitor-pilot-closeout.md`.
 
-## Gate restoration and final runtime safety
+## Completed competitor-intelligence control chain
 
-After the single successful pilot, the temporary Task #64 gate was restored to false and the same canonical application was republished.
-
-Post-restoration certification passed:
-
-- active Autoscale deployment: successful
-- `/api/healthz`: healthy
-- `/api/auth/status`: healthy
-- authentication configured/enforced
-- allowlist-only
-- public registration disabled
-- `COMPETITOR_ONE_TARGET_DRY_RUN_EXECUTION_ENABLED`: effective false
-- configured competitor targets: 0
-- `COMPETITOR_COLLECTION_ENABLED`: false
-- `COMPETITOR_EVIDENCE_PERSISTENCE_ENABLED`: false
-- public-site writes: false
-- AI proposal generation: false
-- Task #53 dispatch/scheduler: false/false
-- Task #54 dispatch/scheduler/batch: false/false/false
-- Task #59 scheduler/autonomous worker: false/false
-- no post-restore competitor activity
-- no post-restore provider/public-site write activity
-- no fatal/crash/panic/unhandled/PostgreSQL 42883 errors
-- completed Task #64 job remains exactly one terminal production row
-
-The restoration publication created an empty Replit `Published your App` metadata commit with the canonical tree. It was reconciled without another publish.
-
-Final Replit application workspace before this docs-only pilot closeout:
-
-- branch: `main`
-- HEAD: `0c36432826c55eb5091d33568d4b185171b5c828`
-- cached origin/main: `0c36432826c55eb5091d33568d4b185171b5c828`
-- tree: `40c9a50c28bdc5241dc98969fd92da3ad5447724`
-- ahead/behind: `0/0`
-- tracked/untracked: `0/0`
-- working tree clean
-
-## Completed competitor-intelligence foundation
-
-Tasks #58-#65 now form a proven controlled chain:
+Tasks #58-#65 plus the first live pilot now form a proven bounded chain:
 
 - Task #58: normalized competitor evidence contract/read projection
 - Task #59: bounded acquisition/persistence foundation, default-off
 - Task #60: competitor discovery/planning foundation
 - Task #61: controlled target-registration/preflight foundation
-- Task #62: hardened outbound transport, DNS-rebinding/SSRF protections
+- Task #62: hardened outbound transport with DNS-rebinding/SSRF protections
 - Task #63: one-target pilot readiness + exact authorization contract
 - Task #64: durable single-use one-target dry-run execution foundation
 - Task #65: one-target pilot preparation + dual authorization packet
+- first live pilot: exactly one real external request, zero persistence/mutation, replay lock proven, gate restored
 
-The first live pilot proves the chain can make one real competitor request while preserving zero evidence persistence, zero target mutation, zero provider/public-site writes, and a durable one-time replay lock.
+## Task #66 — engineering complete
 
-## Current active milestone — Task #66
+Task #66 — **Market-Aware Category Competitor, Trend & Keyword Intelligence Architecture v1** — is implemented, merged, CI-certified, and synchronized to Replit **without publication**.
 
-Issue #96 is now the active next-stage architecture milestone:
+Canonical engineering release:
 
-**Task #66 — Market-Aware Category Competitor, Trend & Keyword Intelligence Architecture v1**
+- Issue: #96
+- PR: #99
+- exact tested PR head: `01a00a6757a6c5355824e39b8b4d0730c4712557`
+- merged GitHub main: `47105c6a2667edc37aece69307c001d535ea5c4a`
+- merged tree: `0521dff83b1805782a541af646421e23eb76a504`
+- PR CI #191: success
+- post-merge main CI #193: success
+- Replit HEAD/cached origin/main after engineering sync: same merged SHA
+- Replit ahead/behind: `0/0`
+- Replit tracked/untracked: `0/0`
+- Replit working tree: clean
+- publish/redeploy for Task #66: **not performed**
 
-Long-term product requirement:
+Task #66 added exactly three files:
 
-SEO ENGINE must not treat competitors as one global list. Competitor relevance, keyword demand, trends, and opportunities must be modeled by **selected market × Diamond Shelf category × intent/topic cluster**.
+1. `artifacts/api-server/src/lib/market-category-intelligence.ts`
+2. `artifacts/api-server/src/lib/market-category-intelligence.test.ts`
+3. `docs/task66-market-category-intelligence-architecture.md`
 
-The target product direction is:
+No existing route, schema, migration, provider connector, environment/configuration, target configuration, scheduler, worker, or execution file was changed.
 
-1. maintain explicit market profiles
-2. understand Diamond Shelf categories/taxonomy
-3. discover and re-score relevant competitors separately per category/market
-4. monitor first-party and approved external keyword/query signals
-5. monitor trend velocity, breakout terms, seasonality, rising/declining brands/products/topics
-6. compare competitor taxonomy, metadata patterns, product/brand coverage, schema/entities, internal links, content/FAQ/editorial coverage, SERP/query coverage, AI/GEO citation visibility, and approved backlink/citation signals
-7. combine first-party performance + competitor gaps + trend velocity + keyword intent + category context
-8. generate ranked evidence-backed opportunities with confidence/risk
-9. route any future action through the existing controlled authorization/verification/rollback/measurement chain
-10. continuously re-measure and re-score without creating an uncontrolled mutation path
+### Task #66 architecture now available
 
-Task #66 is architecture/control-plane work only unless separately authorized.
+The pure control-plane model is:
 
-Generic `continue` may advance:
+`MarketProfile -> CategoryContext -> category-specific competitor relation + first-party/external SignalSnapshot -> advisory opportunity synthesis`
 
-- architecture specification
-- deterministic identities/fingerprints
-- market/category/competitor/keyword/trend data contracts
-- pure scoring/planning helpers
-- deterministic tests
-- docs
+The system now has deterministic pure contracts for:
 
-Generic `continue` does **not** authorize:
+- market identity
+- category identity
+- first-party vs external signal snapshots
+- market/category-specific competitor relevance
+- trend/keyword opportunity synthesis
 
-- real recurring competitor collection
-- competitor evidence persistence
-- target activation/configuration mutation
-- scheduler/batch/worker/retry-loop enablement
-- external trend/keyword-provider enrollment or credential changes
-- production DB DDL
-- public/provider writes
-- Task #53/#54 execution
-- Task #64 gate enablement or another live dry-run
-- publication/redeploy
+Competitor relevance is explicitly per market × category. A competitor may therefore be strong for Arabian Fragrance in one market and weak for Designer Fragrance or another market.
+
+Task #66 relevance weights:
+
+- category match: 30
+- keyword overlap: 25
+- page-type match: 15
+- entity overlap: 10
+- market match: 10
+- freshness: 10
+
+Task #66 opportunity synthesis weights:
+
+- first-party support: 30
+- external support: 15
+- competitor gap: 20
+- trend velocity: 15
+- intent fit: 10
+- confidence: 10
+
+Raw search volume alone is explicitly insufficient evidence. Synthesized opportunities remain `advisory` or `blocked`; they never become executable automatically.
+
+Detailed engineering closeout: `.agents/memory/task66-engineering-closeout.md`.
+
+## Product direction
+
+The final product requirement remains:
+
+SEO ENGINE must discover, maintain, and re-score relevant competitors **separately for each Diamond Shelf category and selected market**, monitor keyword/query demand and trend velocity, compare SERP/entity/GEO/AIO evidence, detect gaps, generate evidence-backed opportunities, and eventually act through the existing bounded authorization/verification/rollback/measurement framework.
+
+Target long-term loop:
+
+1. observe selected markets
+2. refresh first-party and approved external signals
+3. discover/re-score category competitors
+4. normalize evidence
+5. detect category/keyword/trend/SERP/entity gaps
+6. synthesize/rank opportunities
+7. generate bounded proposals
+8. authorize through policy/human gates as required
+9. execute through controlled connectors
+10. verify and measure
+11. retain/adjust/rollback
+12. feed measured outcomes back into ranking
+
+Observation may eventually become autonomous. Mutation must remain separately gated and auditable.
 
 ## Current safety state
 
@@ -183,13 +161,24 @@ Unless separately and explicitly authorized:
 - `COMPETITOR_EVIDENCE_PERSISTENCE_ENABLED=false`
 - `COMPETITOR_ONE_TARGET_DRY_RUN_EXECUTION_ENABLED` effective false
 - configured competitor targets = 0
-- Task #61 active target registration/config mutation inactive
+- Task #61 active registration/config mutation inactive
 - no autonomous competitor discovery/collection worker
-- no scheduler/batch/retry-loop collection
+- no competitor scheduler/batch/retry loop
 - no Task #53 execution
 - no Task #54 preflight/apply
 - no production DB DDL
 - no secret/credential/OAuth-scope changes
+
+Task #66 capability specifically remains:
+
+- advisory only
+- live collection authorized: false
+- evidence persistence authorized: false
+- target configuration mutation authorized: false
+- scheduler/batch/autonomous worker/retry loop: false
+- provider/public-site writes: false
+- automatic transition: false
+- schema mutation required: false
 
 ## Persistent Task #54 remains separately gated
 
@@ -200,21 +189,48 @@ The previously diagnosed possible first persistent candidate remains Unisex Frag
 - URL: `https://diamondshelf.us/collections/unisex-fragrance`
 - field: `meta_description`
 - diagnosed current value: `null`
-- proposed value: `Unisex Fragrance groups Gift Set, Perfume & Cologne, and Perfume Oils in one collection, keeping these related product types together for comparison.`
 - proposal fingerprint: `5fb1652af8767ecf415520d9144221d7793aa35be27c86c2179ae15399e3849d`
-- evaluator risk: `medium`
-- plan-control risk: `blocked`
-- effective execution risk: `medium`
-- lifecycle at diagnosis: `approval_ready`
+- evaluator risk: medium
+- lifecycle at diagnosis: approval_ready
 - approvals/actions/deployments at diagnosis: `0 / 0 / 0`
 
 Tasks #56-#66 do not approve or authorize it.
 
-## Exact next project stage
+## Next safe milestone — Task #67
 
-After this docs-only pilot-closeout merge/sync, the next safe work is **Task #66 architecture and pure planning/scoring implementation**.
+Recommended next milestone:
 
-Do not start recurring competitor collection or external keyword/trend acquisition under generic `continue`. Those require separately reviewed source, market, persistence, scheduler, and authorization boundaries.
+**Task #67 — Market/Category Signal Source Registry & Refresh Planning Foundation v1**
+
+Goal: move from Task #66 static identity/scoring architecture toward deterministic source coverage and refresh planning, still with zero live collection.
+
+Safe Task #67 scope under generic `continue`:
+
+- source descriptors by market/category/signal type
+- first-party vs external source classes
+- provenance/quality metadata
+- freshness windows
+- refresh priority/urgency
+- market/category coverage mapping
+- bounded source budgets
+- deterministic network-free refresh plans
+- source eligibility/blockers
+- deterministic tests/docs
+
+Generic `continue` still does **not** authorize:
+
+- external trend/keyword/SERP provider enrollment
+- credential/OAuth changes
+- real network collection
+- recurring competitor collection
+- evidence persistence
+- target activation/config mutation
+- scheduler/batch/worker/retry-loop activation
+- production DB DDL
+- provider/public-site writes
+- Task #53/#54 execution
+- Task #64 gate enablement or another live pilot
+- publication/redeploy
 
 ## Resume rule
 
