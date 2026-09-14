@@ -4,13 +4,13 @@ This file is the authoritative **mutable checkpoint** for resuming work. If it c
 
 ## Current production application release
 
-The currently published production application remains the Task #65 application bundle:
+The currently published production application remains the certified Task #65 application bundle:
 
 - Task #65: **One-Target Pilot Preparation & Authorization Packet Foundation v1**
 - Issue: #93
 - PR: #94
 - exact tested PR head: `e90295abf49003deae7801081da0bbbb548991bc`
-- certified application merge/source: `1f2a2a9cefd07676b0569b93401bd116ff995fa4`
+- certified application source: `1f2a2a9cefd07676b0569b93401bd116ff995fa4`
 - certified application tree: `33b049d3bc35acaaef508db3432aabd8b2522de8`
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - production URL: `https://dsseoengine.replit.app`
@@ -19,9 +19,8 @@ GitHub `main` and the Replit workspace contain newer engineering/docs commits. D
 
 ## First real competitor pilot — completed and restored
 
-The first real one-target competitor dry-run completed successfully against:
+The first real one-target competitor dry-run completed successfully against Triple Traders:
 
-- competitor: Triple Traders
 - target: `https://tripletraders.com/collections/fragrance`
 - category: fragrance / Arabian fragrance
 - intended market: United States / English
@@ -32,9 +31,8 @@ The first real one-target competitor dry-run completed successfully against:
 Certified result:
 
 - exactly 1 production Task #64 job
-- status/phase: completed/completed
+- completed/terminal/replay-locked
 - attempts: 1
-- terminal/replay-locked: yes
 - exact target receipts: 1
 - redirects: 0
 - raw competitor body retained: false
@@ -44,14 +42,13 @@ Certified result:
 - provider/public-site writes: none
 - no automatic transition
 - no second Task #64 job or second Triple Traders request observed
-
-After the pilot, the temporary Task #64 execution gate was restored to false and the application was republished. Post-restoration health/auth and safety certification passed.
+- temporary Task #64 execution gate restored to false after the pilot
 
 Detailed closeout: `.agents/memory/first-live-competitor-pilot-closeout.md`.
 
-## Completed competitor-intelligence control chain
+## Competitor-intelligence control chain through Task #65
 
-Tasks #58-#65 plus the first live pilot now form a proven bounded chain:
+Tasks #58-#65 plus the first live pilot form a proven bounded chain:
 
 - Task #58: normalized competitor evidence contract/read projection
 - Task #59: bounded acquisition/persistence foundation, default-off
@@ -63,193 +60,126 @@ Tasks #58-#65 plus the first live pilot now form a proven bounded chain:
 - Task #65: one-target pilot preparation + dual authorization packet
 - first live pilot: exactly one real external request, zero persistence/mutation, replay lock proven, gate restored
 
-## Task #66 — engineering complete
+## Market/category intelligence engineering chain
 
-Task #66 — **Market-Aware Category Competitor, Trend & Keyword Intelligence Architecture v1** — is implemented, merged, CI-certified, and synchronized to Replit **without publication**.
+The newer **unpublished** engineering chain is now:
 
-Canonical engineering release:
+`Task #66 market/category identities + opportunity synthesis`
 
-- Issue: #96
-- PR: #99
-- exact tested PR head: `01a00a6757a6c5355824e39b8b4d0730c4712557`
-- merged GitHub main: `47105c6a2667edc37aece69307c001d535ea5c4a`
-- merged tree: `0521dff83b1805782a541af646421e23eb76a504`
+→ `Task #67 source registry + refresh planning`
+
+→ `Task #68 adapter request + supplied-result normalization`
+
+→ `Task #69 collection-job planning + exact future authorization`
+
+No Task #66-#69 work has been separately published.
+
+### Task #66 — engineering complete
+
+**Market-Aware Category Competitor, Trend & Keyword Intelligence Architecture v1**
+
+- Issue #96
+- PR #99
+- exact tested head: `01a00a6757a6c5355824e39b8b4d0730c4712557`
+- merge: `47105c6a2667edc37aece69307c001d535ea5c4a`
+- tree: `0521dff83b1805782a541af646421e23eb76a504`
 - PR CI #191: success
-- post-merge main CI #193: success
-- Replit HEAD/cached origin/main after engineering sync: same merged SHA
-- Replit ahead/behind: `0/0`
-- Replit tracked/untracked: `0/0`
-- Replit working tree: clean
-- publish/redeploy for Task #66: **not performed**
+- post-merge CI #193: success
+- no publication
 
-Task #66 added exactly three files:
+Task #66 established deterministic market/category identity, first-party vs external signal separation, category-specific competitor relevance, and advisory trend/keyword opportunity synthesis.
 
-1. `artifacts/api-server/src/lib/market-category-intelligence.ts`
-2. `artifacts/api-server/src/lib/market-category-intelligence.test.ts`
-3. `docs/task66-market-category-intelligence-architecture.md`
+Detailed closeout: `.agents/memory/task66-engineering-closeout.md`.
 
-No existing route, schema, migration, provider connector, environment/configuration, target configuration, scheduler, worker, or execution file was changed.
+### Task #67 — engineering complete
 
-### Task #66 architecture now available
+**Market/Category Signal Source Registry & Refresh Planning Foundation v1**
 
-The pure control-plane model is:
-
-`MarketProfile -> CategoryContext -> category-specific competitor relation + first-party/external SignalSnapshot -> advisory opportunity synthesis`
-
-The system now has deterministic pure contracts for:
-
-- market identity
-- category identity
-- first-party vs external signal snapshots
-- market/category-specific competitor relevance
-- trend/keyword opportunity synthesis
-
-Competitor relevance is explicitly per market × category. A competitor may therefore be strong for Arabian Fragrance in one market and weak for Designer Fragrance or another market.
-
-Task #66 relevance weights:
-
-- category match: 30
-- keyword overlap: 25
-- page-type match: 15
-- entity overlap: 10
-- market match: 10
-- freshness: 10
-
-Task #66 opportunity synthesis weights:
-
-- first-party support: 30
-- external support: 15
-- competitor gap: 20
-- trend velocity: 15
-- intent fit: 10
-- confidence: 10
-
-Raw search volume alone is explicitly insufficient evidence. Synthesized opportunities remain `advisory` or `blocked`; they never become executable automatically.
-
-Detailed engineering closeout: `.agents/memory/task66-engineering-closeout.md`.
-
-## Task #67 — engineering complete
-
-Task #67 — **Market/Category Signal Source Registry & Refresh Planning Foundation v1** — is implemented, merged, CI-certified, and synchronized to Replit **without publication**.
-
-Canonical engineering release:
-
-- Issue: #101
-- PR: #102
-- first PR head `1648d6b3e919b04471231e179c7fd4b46fdf4d29`: rejected by CI because typecheck correctly detected an incomplete return shape
-- corrected exact tested PR head: `d5207bbe17f3c9b277addc3d524dcd38256da5fc`
-- merged GitHub main: `444b22747ea537735e4778f6fd63bb39919f6a67`
-- merged tree: `09cf5eaa76a2ea422600c904ee2f0a85c54754df`
+- Issue #101
+- PR #102
+- exact tested head: `d5207bbe17f3c9b277addc3d524dcd38256da5fc`
+- merge: `444b22747ea537735e4778f6fd63bb39919f6a67`
+- tree: `09cf5eaa76a2ea422600c904ee2f0a85c54754df`
 - corrected PR CI #197: success
-- post-merge main CI #198: success
-- Replit HEAD/cached origin/main after engineering sync: `444b22747ea537735e4778f6fd63bb39919f6a67`
-- Replit tree: `09cf5eaa76a2ea422600c904ee2f0a85c54754df`
-- Replit ahead/behind: `0/0`
-- Replit tracked/untracked: `0/0`
-- Replit working tree: clean
-- publish/redeploy for Task #67: **not performed**
+- post-merge CI #198: success
+- no publication
 
-Task #67 added exactly three files:
+Task #67 established reviewed source descriptors, market/category/signal coverage, freshness state, volatility-aware urgency, bounded refresh budgets, selected/deferred items, and deterministic refresh-plan identity. It performs zero collection.
 
-1. `artifacts/api-server/src/lib/signal-source-registry.ts`
-2. `artifacts/api-server/src/lib/signal-source-registry.test.ts`
-3. `docs/task67-signal-source-registry-refresh-planning.md`
+Detailed closeout: `.agents/memory/task67-engineering-closeout.md`.
 
-No existing route, provider connector, schema, migration, environment/configuration, target configuration, scheduler, worker, execution path, or production persistence path was modified.
+### Task #68 — engineering complete
 
-### Task #67 source/refresh planning now available
+**Source Adapter Contract & Signal Observation Normalization Foundation v1**
 
-Task #67 composes Task #66 market/category identities into a deterministic source-registry and refresh-planning layer.
+Canonical implementation:
 
-The system now has pure contracts for:
+- Issue #104
+- PR #105
+- exact tested head: `73de8511cc86c421108d587171a8fba5d1e608f7`
+- merge: `0f1371e0cfdd1678bb9ff78bc0bc54abec49caec`
+- tree: `43b1b1a1948212ddd9d319e3e465698e06e1d124`
+- corrected PR CI #202: success
+- post-merge CI #203: success
+- no publication
 
-- stable source descriptors and source fingerprints
-- source class separation: first-party vs external
-- source coverage by market/category/signal type
-- explicit wildcard coverage only when declared
-- source trust/provenance/quality metadata
-- manual-review admission for external sources
-- source-specific freshness windows
-- freshness states: `missing`, `fresh`, `stale`, `critical`
-- volatility-aware urgency scoring
-- bounded refresh budgets
-- deterministic selected/deferred refresh items
-- unsupported coverage blockers
-- deterministic refresh plan fingerprint/ID
+Task #68 established deterministic Task #67 refresh-item adapter requests, strict supplied-result normalization, `success|empty|partial|error` semantics, bounded metrics, raw/unknown payload rejection, observation identities, duplicate/conflict handling, and bounded observation batches.
 
-External sources fail eligibility unless manually reviewed. Incomplete provenance fails eligibility. Market/category/signal mismatches fail closed. Duplicate source descriptors and duplicate observation state fail closed.
+Duplicate Task #68 work created from stale checkpoints was closed without merge, including PR #107 and issue #111 / PR #112. Canonical Task #68 remains issue #104 / PR #105 only.
 
-Refresh planning remains descriptive only: a selected refresh item does **not** contact a source, persist evidence, enroll a provider, activate a scheduler, or authorize an execution.
+Detailed closeout: `.agents/memory/task68-engineering-closeout.md`.
 
-Task #67 dedicated deterministic tests cover 13 safety/planning cases. The corrected full workspace CI also completed successfully after the initial typecheck defect was fixed.
+### Task #69 — engineering complete
 
-Detailed engineering closeout: `.agents/memory/task67-engineering-closeout.md`.
-
-## Task #68 — engineering complete
-
-Task #68 — **Source Adapter Contract & Signal Observation Normalization Foundation v1** — is implemented, merged, CI-certified, and synchronized to Replit **without publication**.
+**Signal Collection Job Planning & Authorization Foundation v1**
 
 Canonical engineering release:
 
-- Issue: #104
-- PR: #105
-- first PR head `c0b7deebdbca5b4de1a57c848b2defe60e93045d`: rejected by CI because typecheck correctly detected an overly narrow test-helper inference requiring metric `unit`
-- first PR CI #201: schema/tests green; typecheck failed; build skipped
-- corrected exact tested PR head: `73de8511cc86c421108d587171a8fba5d1e608f7`
-- corrected PR CI #202: success
-- merged GitHub main: `0f1371e0cfdd1678bb9ff78bc0bc54abec49caec`
-- merged tree: `43b1b1a1948212ddd9d319e3e465698e06e1d124`
-- post-merge main CI #203: success
-- corrected full workspace suite: 344 tests, 344 pass, 0 fail
-- Replit HEAD/cached origin/main after engineering sync: `0f1371e0cfdd1678bb9ff78bc0bc54abec49caec`
-- Replit tree: `43b1b1a1948212ddd9d319e3e465698e06e1d124`
+- Issue: #109
+- PR: #110
+- exact tested PR head: `63995d86e2a8c2a03b7b574fe924c02be7f39e8f`
+- PR CI #207: success
+- merged GitHub main: `e1b6264c4d14376bbe65a568b5483f6d752fcb56`
+- merged tree: `3f391a4de591181d1e9c72b9396a5d88019e2edd`
+- post-merge main CI #208: success
+- Replit engineering sync: exact same SHA/tree
 - Replit ahead/behind: `0/0`
 - Replit tracked/untracked: `0/0`
 - Replit working tree: clean
-- publish/redeploy for Task #68: **not performed**
+- publication/redeploy: **not performed**
 
-Task #68 added exactly three files:
+Task #69 added exactly three files:
 
-1. `artifacts/api-server/src/lib/signal-observation-normalization.ts`
-2. `artifacts/api-server/src/lib/signal-observation-normalization.test.ts`
-3. `docs/task68-source-adapter-observation-normalization.md`
+1. `artifacts/api-server/src/lib/signal-collection-job-planning.ts`
+2. `artifacts/api-server/src/lib/signal-collection-job-planning.test.ts`
+3. `docs/task69-signal-collection-job-planning-authorization.md`
 
 No existing route, provider connector, schema, migration, environment/configuration, target configuration, scheduler, worker, execution path, or production persistence path was modified.
 
-### Task #68 adapter/observation boundary now available
+Task #69 composes exact Task #67 refresh-plan lineage and Task #68 `SourceAdapterRequest` identity into one scalar proposed collection-job packet:
 
-The safe control-plane sequence is now:
+- one source
+- one market
+- one category
+- one signal type
+- exact Task #67 plan ID/fingerprint
+- exact Task #68 request ID/fingerprint
+- deterministic job ID/fingerprint
+- deterministic replay ID/fingerprint
+- created-at / expires-at
+- TTL default 30 minutes, bounded 1-60 minutes
+- lifecycle `proposed`
+- closed safety markers
 
-`Task #66 market/category identities -> Task #67 source registry + refresh plan -> Task #68 adapter request contract + supplied-result normalization -> future separately authorized collection/persistence layers`
+Exact future authorization family:
 
-Task #68 provides deterministic pure contracts for:
+`AUTHORIZE_SIGNAL_COLLECTION_JOB:<jobId>:<jobFingerprint>`
 
-- Task #67 refresh item -> adapter request identity
-- exact source/market/category/signal/plan lineage binding
-- strict adapter-result root/metric field allowlisting
-- statuses: `success`, `empty`, `partial`, `error`
-- canonical bounded numeric metric normalization
-- raw/unknown payload rejection
-- observation IDs/fingerprints and logical stream IDs
-- source quality/trust/provenance carry-forward
-- confidence/completeness semantics
-- exact duplicate collapse
-- same-stream/same-time conflict rejection
-- deterministic bounded observation batches
-- mixed-market/category batch rejection
+Task #69 only generates and validates this text. `authorization_ready` does **not** mean authorization was consumed and does not permit credentials, transport, network collection, persistence, durable reservation, scheduler activity, or route execution.
 
-Important status semantics:
+Task #69 independently validates source identity, refresh-plan identity/safety, exactly one matching selected refresh item, Task #68 request identity/safety, exact market/category/signal lineage, TTL/expiry, replay identity, job identity, and authorization text. Tamper/stale/expired inputs fail closed.
 
-- `success`: normalized evidence exists
-- `empty`: successful no-evidence response, distinct from failure and not positive evidence
-- `partial`: usable evidence with explicit incompleteness diagnostics and reduced confidence
-- `error`: sanitized failure state with no evidence and confidence 0
-
-Raw provider bodies, competitor copy, arbitrary payload blobs, undocumented result fields, and unknown metric fields are rejected rather than silently retained.
-
-Task #68 dedicated deterministic tests cover 15 contract/normalization cases. The initial CI defect was only an overly narrow test-helper TypeScript inference; the correction made metric `unit` explicitly optional and changed no library/runtime behavior.
-
-Detailed engineering closeout: `.agents/memory/task68-engineering-closeout.md`.
+Detailed closeout: `.agents/memory/task69-engineering-closeout.md`.
 
 ## Product direction
 
@@ -292,27 +222,31 @@ Unless separately and explicitly authorized:
 - no production DB DDL
 - no secret/credential/OAuth-scope changes
 
-Task #68 capability specifically remains:
+Task #69 capability specifically remains:
 
-- contract/normalization only: true
-- network collection authorized: false
-- transport execution authorized: false
-- provider enrollment authorized: false
+- planning/authorization-contract only: true
 - credential use authorized: false
 - credential mutation authorized: false
-- raw payload retention authorized: false
+- transport execution authorized: false
+- network collection authorized: false
+- provider enrollment authorized: false
+- observation persistence authorized: false
 - evidence persistence authorized: false
+- durable job reservation authorized: false
 - target configuration mutation authorized: false
 - scheduler enabled: false
 - batch executor enabled: false
 - autonomous worker enabled: false
 - retry loop enabled: false
+- Task #64 execution authorized: false
 - provider writes: false
 - public-site writes: false
+- authorization consumed: false
+- execution route invoked: false
 - automatic transition: false
 - schema mutation required: false
 
-Sanitized Replit verification after Task #68 engineering sync confirmed:
+Sanitized Replit verification after Task #69 engineering sync confirmed:
 
 - Task #64 one-target dry-run execution gate: false
 - configured competitor targets: 0
@@ -336,43 +270,46 @@ The previously diagnosed possible first persistent candidate remains Unisex Frag
 - lifecycle at diagnosis: approval_ready
 - approvals/actions/deployments at diagnosis: `0 / 0 / 0`
 
-Tasks #56-#68 do not approve or authorize it.
+Tasks #56-#69 do not approve or authorize it.
 
-## Next safe milestone — Task #69
+## Next safe milestone — Task #70
 
 Recommended next milestone:
 
-**Task #69 — Signal Collection Job Planning & Authorization Foundation v1**
+**Task #70 — Controlled Single-Job Signal Collection Execution Foundation v1**
 
-Goal: compose Task #67 refresh planning and Task #68 adapter-request identities into deterministic future collection-job packets and exact authorization contracts, while still performing **zero live source collection**.
+Goal: add the smallest auditable execution bridge that can eventually consume one exact Task #69 authorization and run one bounded source-read job, while remaining default-off and performing no live source request during engineering/CI.
 
-Safe Task #69 scope under generic `continue`:
+Safe Task #70 scope under generic `continue`:
 
-- pure collection-job identity/fingerprint derived from exact Task #67/#68 lineage
-- one source + one market + one category + one signal scope per job packet unless an explicitly bounded pure batch-planning contract is separately proven
-- deterministic TTL/expiry and replay identity
-- exact future authorization wording
-- explicit gate/capability markers remaining false
-- job-state planning semantics only; no durable reservation in v1 unless separately reviewed as non-network persistence
-- source/plan/request lineage preflight
-- fail-closed stale/tampered lineage validation
-- explicit no-credential/no-transport/no-network representation
-- deterministic network-free tests/docs
+- dedicated default-off execution capability gate
+- exact Task #69 authorization-consumption validation
+- deterministic durable single-use reservation/claim/terminal-state design, preferably reusing existing job infrastructure without production DDL
+- strict one-job / one-source / one-market / one-category / one-signal semantics
+- adapter/credential capability checks as policy/descriptors only during engineering
+- bounded receipt/result contract compatible with Task #68 normalization
+- zero automatic observation/evidence persistence by default
+- replay/stale/tamper fail-closed behavior
+- authenticated/admin + CSRF-protected route design if a route is introduced
+- deterministic network-free tests
+- no live source request during engineering or CI
 
 Generic `continue` still does **not** authorize:
 
-- any real source/provider/competitor DNS/HTTP/API request
-- external provider enrollment
-- credential/API-key/OAuth changes
-- recurring collection
-- signal or competitor evidence persistence
+- enabling a Task #70 execution gate
+- any real keyword/trend/SERP/provider/competitor DNS/HTTP/API request
+- provider enrollment
+- credentials/API-key/OAuth use or mutation
+- signal/observation/evidence persistence
 - active target configuration
 - scheduler/batch executor/worker/retry-loop activation
 - production DB DDL
 - provider/public-site writes
 - Task #53/#54 execution
-- Task #64 gate enablement or another live pilot
+- Task #64 gate enablement or another competitor pilot
 - publication/redeploy
+
+Any first real signal-collection run must require separate explicit authorization after Task #70 is implemented, separately published, and production-certified.
 
 ## Resume rule
 
