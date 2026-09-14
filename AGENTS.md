@@ -2,6 +2,8 @@
 
 This file is the normative operating contract for any human or AI agent working in this repository. Read it before changing code, data, configuration, deployments, or provider state.
 
+The durable full-path program plan is `MASTER_COMPLETION_ROADMAP.md`, tracked by GitHub program issue #139. The roadmap is planning/continuity only and never overrides the execution and authorization rules in this contract.
+
 ## 1. Canonical systems
 
 - Canonical source repository: `intssere/SEO_ENGINE` on GitHub.
@@ -150,11 +152,16 @@ If a test command fails because a binary is package-scoped, run it from the pack
 
 ## 10. Continuity documents
 
-Before resuming a task, read:
+Before resuming a task, read in this order:
 
-1. `ARCHITECTURE.md` — system architecture and trust boundaries.
-2. `PROJECT_HANDOFF.md` — current mutable checkpoint and exact next action.
-3. `.agents/skills/seo-engine-project/SKILL.md` — procedural execution skill.
-4. `.agents/memory/MEMORY.md` and linked memory notes — durable implementation lessons.
+1. `CURRENT_STATE.md` — authoritative mutable release/engineering checkpoint and exact next boundary.
+2. `MASTER_COMPLETION_ROADMAP.md` — durable full path from the current checkpoint through application completion; use its stable roadmap IDs in future issues.
+3. `ARCHITECTURE.md` — system architecture and trust boundaries.
+4. `PROJECT_HANDOFF.md` — narrative continuation context and older operational details; mutable SHA wording may be historical.
+5. `.agents/skills/seo-engine-project/SKILL.md` — procedural execution skill.
+6. `.agents/memory/MEMORY.md` and linked memory notes — durable implementation lessons and task closeouts.
+7. The active GitHub issue/PR — exact current task scope and acceptance criteria.
 
-When the project state changes materially, update `PROJECT_HANDOFF.md`; when architecture or invariant behavior changes, update `ARCHITECTURE.md` and this contract in the same PR.
+Every new chat/agent/tool must independently resolve current GitHub `main`, current Replit state, and the separately published production application source before acting. Never infer that a later documentation/engineering commit was published merely because it is current `main`.
+
+When the project state changes materially, update `CURRENT_STATE.md`; when architecture or invariant behavior changes, update `ARCHITECTURE.md` and this contract in the same PR. Every material task closeout must also update the relevant status in `MASTER_COMPLETION_ROADMAP.md` so the program can be resumed through final completion without relying on chat memory alone.
