@@ -15,6 +15,8 @@ const us = normalizeMarketProfile({ countryCode: "US", language: "en-US", curren
 const fragrance = normalizeCategoryContext({ key: "arabian-fragrance", name: "Arabian Fragrance" });
 const candles = normalizeCategoryContext({ key: "candles", name: "Candles" });
 
+type MetricInput = { key: string; value: number; unit?: string | null };
+
 function source() {
   return normalizeSignalSourceDescriptor({
     key: "gsc-query-evidence",
@@ -51,7 +53,7 @@ function fixture(category = fragrance) {
   return { src, plan, request, category };
 }
 
-function successResult(f = fixture(), metrics = [{ key: "impressions", value: 120, unit: "count" }]) {
+function successResult(f = fixture(), metrics: MetricInput[] = [{ key: "impressions", value: 120, unit: "count" }]) {
   return {
     requestFingerprint: f.request.requestFingerprint,
     sourceId: f.request.sourceId,
