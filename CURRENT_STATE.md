@@ -185,6 +185,72 @@ Task #67 dedicated deterministic tests cover 13 safety/planning cases. The corre
 
 Detailed engineering closeout: `.agents/memory/task67-engineering-closeout.md`.
 
+## Task #68 — engineering complete
+
+Task #68 — **Source Adapter Contract & Signal Observation Normalization Foundation v1** — is implemented, merged, CI-certified, and synchronized to Replit **without publication**.
+
+Canonical engineering release:
+
+- Issue: #104
+- PR: #105
+- first PR head `c0b7deebdbca5b4de1a57c848b2defe60e93045d`: rejected by CI because typecheck correctly detected an overly narrow test-helper inference requiring metric `unit`
+- first PR CI #201: schema/tests green; typecheck failed; build skipped
+- corrected exact tested PR head: `73de8511cc86c421108d587171a8fba5d1e608f7`
+- corrected PR CI #202: success
+- merged GitHub main: `0f1371e0cfdd1678bb9ff78bc0bc54abec49caec`
+- merged tree: `43b1b1a1948212ddd9d319e3e465698e06e1d124`
+- post-merge main CI #203: success
+- corrected full workspace suite: 344 tests, 344 pass, 0 fail
+- Replit HEAD/cached origin/main after engineering sync: `0f1371e0cfdd1678bb9ff78bc0bc54abec49caec`
+- Replit tree: `43b1b1a1948212ddd9d319e3e465698e06e1d124`
+- Replit ahead/behind: `0/0`
+- Replit tracked/untracked: `0/0`
+- Replit working tree: clean
+- publish/redeploy for Task #68: **not performed**
+
+Task #68 added exactly three files:
+
+1. `artifacts/api-server/src/lib/signal-observation-normalization.ts`
+2. `artifacts/api-server/src/lib/signal-observation-normalization.test.ts`
+3. `docs/task68-source-adapter-observation-normalization.md`
+
+No existing route, provider connector, schema, migration, environment/configuration, target configuration, scheduler, worker, execution path, or production persistence path was modified.
+
+### Task #68 adapter/observation boundary now available
+
+The safe control-plane sequence is now:
+
+`Task #66 market/category identities -> Task #67 source registry + refresh plan -> Task #68 adapter request contract + supplied-result normalization -> future separately authorized collection/persistence layers`
+
+Task #68 provides deterministic pure contracts for:
+
+- Task #67 refresh item -> adapter request identity
+- exact source/market/category/signal/plan lineage binding
+- strict adapter-result root/metric field allowlisting
+- statuses: `success`, `empty`, `partial`, `error`
+- canonical bounded numeric metric normalization
+- raw/unknown payload rejection
+- observation IDs/fingerprints and logical stream IDs
+- source quality/trust/provenance carry-forward
+- confidence/completeness semantics
+- exact duplicate collapse
+- same-stream/same-time conflict rejection
+- deterministic bounded observation batches
+- mixed-market/category batch rejection
+
+Important status semantics:
+
+- `success`: normalized evidence exists
+- `empty`: successful no-evidence response, distinct from failure and not positive evidence
+- `partial`: usable evidence with explicit incompleteness diagnostics and reduced confidence
+- `error`: sanitized failure state with no evidence and confidence 0
+
+Raw provider bodies, competitor copy, arbitrary payload blobs, undocumented result fields, and unknown metric fields are rejected rather than silently retained.
+
+Task #68 dedicated deterministic tests cover 15 contract/normalization cases. The initial CI defect was only an overly narrow test-helper TypeScript inference; the correction made metric `unit` explicitly optional and changed no library/runtime behavior.
+
+Detailed engineering closeout: `.agents/memory/task68-engineering-closeout.md`.
+
 ## Product direction
 
 The final product requirement remains:
@@ -226,20 +292,27 @@ Unless separately and explicitly authorized:
 - no production DB DDL
 - no secret/credential/OAuth-scope changes
 
-Task #67 capability specifically remains:
+Task #68 capability specifically remains:
 
-- registry/refresh planning only
+- contract/normalization only: true
 - network collection authorized: false
+- transport execution authorized: false
 - provider enrollment authorized: false
+- credential use authorized: false
 - credential mutation authorized: false
+- raw payload retention authorized: false
 - evidence persistence authorized: false
 - target configuration mutation authorized: false
-- scheduler/batch/autonomous worker/retry loop: false
-- provider/public-site writes: false
+- scheduler enabled: false
+- batch executor enabled: false
+- autonomous worker enabled: false
+- retry loop enabled: false
+- provider writes: false
+- public-site writes: false
 - automatic transition: false
 - schema mutation required: false
 
-Sanitized Replit verification after Task #67 engineering sync confirmed:
+Sanitized Replit verification after Task #68 engineering sync confirmed:
 
 - Task #64 one-target dry-run execution gate: false
 - configured competitor targets: 0
@@ -263,28 +336,27 @@ The previously diagnosed possible first persistent candidate remains Unisex Frag
 - lifecycle at diagnosis: approval_ready
 - approvals/actions/deployments at diagnosis: `0 / 0 / 0`
 
-Tasks #56-#67 do not approve or authorize it.
+Tasks #56-#68 do not approve or authorize it.
 
-## Next safe milestone — Task #68
+## Next safe milestone — Task #69
 
 Recommended next milestone:
 
-**Task #68 — Source Adapter Contract & Signal Observation Normalization Foundation v1**
+**Task #69 — Signal Collection Job Planning & Authorization Foundation v1**
 
-Goal: move from Task #67 source eligibility/refresh planning to deterministic adapter/result contracts and normalized observation envelopes, still with zero live source collection and zero persistence.
+Goal: compose Task #67 refresh planning and Task #68 adapter-request identities into deterministic future collection-job packets and exact authorization contracts, while still performing **zero live source collection**.
 
-Safe Task #68 scope under generic `continue`:
+Safe Task #69 scope under generic `continue`:
 
-- pure source-adapter request/response contracts derived from Task #67 selected refresh items
-- canonical normalized signal observation envelope
-- provenance and source-lineage binding
-- market/category/signal identity validation
-- deterministic observation fingerprints
-- partial/empty/error result semantics
-- duplicate/deduplication rules
-- bounded payload/metric normalization
-- source-quality/confidence carry-forward rules
-- fail-closed cross-market/category/signal mixing checks
+- pure collection-job identity/fingerprint derived from exact Task #67/#68 lineage
+- one source + one market + one category + one signal scope per job packet unless an explicitly bounded pure batch-planning contract is separately proven
+- deterministic TTL/expiry and replay identity
+- exact future authorization wording
+- explicit gate/capability markers remaining false
+- job-state planning semantics only; no durable reservation in v1 unless separately reviewed as non-network persistence
+- source/plan/request lineage preflight
+- fail-closed stale/tampered lineage validation
+- explicit no-credential/no-transport/no-network representation
 - deterministic network-free tests/docs
 
 Generic `continue` still does **not** authorize:
@@ -295,7 +367,7 @@ Generic `continue` still does **not** authorize:
 - recurring collection
 - signal or competitor evidence persistence
 - active target configuration
-- scheduler/batch/worker/retry-loop activation
+- scheduler/batch executor/worker/retry-loop activation
 - production DB DDL
 - provider/public-site writes
 - Task #53/#54 execution
