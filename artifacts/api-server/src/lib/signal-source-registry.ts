@@ -293,7 +293,8 @@ export function buildSignalRefreshPlan(input: {
     }
   }
 
-  const identity = {
+  const sortedBlockers = [...blockers].sort();
+  const fingerprintIdentity = {
     generatedAt,
     marketFingerprint: input.need.market.fingerprint,
     categoryFingerprint: input.need.category.fingerprint,
@@ -301,14 +302,21 @@ export function buildSignalRefreshPlan(input: {
     budget,
     selected: selected.map((value) => ({ sourceFingerprint: value.sourceFingerprint, signalType: value.signalType, freshnessState: value.freshnessState, ageMinutes: value.ageMinutes, urgency: value.urgency, quality: value.quality })),
     deferred: deferred.map((value) => ({ sourceFingerprint: value.sourceFingerprint, signalType: value.signalType, freshnessState: value.freshnessState, ageMinutes: value.ageMinutes, urgency: value.urgency, quality: value.quality })),
-    blockers: [...blockers].sort(),
+    blockers: sortedBlockers,
   };
-  const planFingerprint = hash({ version: SIGNAL_SOURCE_REGISTRY_VERSION, ...identity });
+  const planFingerprint = hash({ version: SIGNAL_SOURCE_REGISTRY_VERSION, ...fingerprintIdentity });
   return {
     version: SIGNAL_SOURCE_REGISTRY_VERSION,
     planId: `srp-${planFingerprint.slice(0, 24)}`,
     planFingerprint,
-    ...identity,
+    generatedAt,
+    marketFingerprint: input.need.market.fingerprint,
+    categoryFingerprint: input.need.category.fingerprint,
+    requestedSignalTypes,
+    budget,
+    selected,
+    deferred,
+    blockers: sortedBlockers,
     safety: signalSourceRegistryCapability(),
   };
 }
