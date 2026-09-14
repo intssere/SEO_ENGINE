@@ -1,27 +1,134 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import postgres from "postgres";
-import { createOAuthState, buildGoogleAuthorizationUrl, buildShopifyAuthorizationUrl, assertOAuthState, exchangeGoogleCode, exchangeShopifyCode, discoverGoogleResources, autoMatchDiamondShelf, encryptTokenBundle, sanitizedConnectionMetadata, type OAuthStateRecord, type OAuthProvider } from "@seo-engine/oauth-connection-manager";
+import {
+  createOAuthState,
+  buildGoogleAuthorizationUrl,
+  buildShopifyAuthorizationUrl,
+  assertOAuthState,
+  exchangeGoogleCode,
+  exchangeShopifyCode,
+  discoverGoogleResources,
+  autoMatchDiamondShelf,
+  encryptTokenBundle,
+  sanitizedConnectionMetadata,
+  type GoogleOAuthConfig,
+  type OAuthStateRecord,
+  type OAuthProvider,
+} from "@seo-engine/oauth-connection-manager";
+import {
+  GSC_READONLY_PROFILE,
+  buildGscReadonlyAuthorizationUrl,
+  createGscReadonlyState,
+  type GscReadonlyState,
+} from "@seo-engine/oauth-connection-manager/gsc-readonly";
 
 export const GOOGLE_STATE_COOKIE = "seo_oauth_google_state";
 export const SHOPIFY_STATE_COOKIE = "seo_oauth_shopify_state";
 export const TASK53_SHOPIFY_WRITE_RETURN_TO = "/connections?task53_write_products=1";
 export const TASK53_SHOPIFY_WRITE_SCOPE = "write_products";
-const required = (name: string) => { const v = process.env[name]?.trim(); if (!v) throw new Error(`Missing required OAuth runtime configuration: ${name}`); return v; };
-export const origin = () => { const u = new URL(required("APP_ORIGIN")); if (u.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(u.hostname)) throw new Error("APP_ORIGIN must use HTTPS outside localhost."); return u.origin; };
+export const GSC_READONLY_RETURN_TO = "/connections?gsc_read_only=1";
+export const GSC_READONLY_RUNTIME_GATE = "GSC_READONLY_OAUTH_RUNTIME_ENABLED";
+
+const required = (name: string) => {
+  const v = process.env[name]?.trim();
+  if (!v) throw new Error(`Missing required OAuth runtime configuration: ${name}`);
+  return v;
+};
+
+export const origin = () => {
+  const u = new URL(required("APP_ORIGIN"));
+  if (u.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(u.hostname)) {
+    throw new Error("APP_ORIGIN must use HTTPS outside localhost.");
+  }
+  return u.origin;
+};
+
 const signingSecret = () => process.env.OAUTH_STATE_SIGNING_SECRET?.trim() || required("OAUTH_CREDENTIAL_ENCRYPTION_KEY");
-export function seal(state: OAuthStateRecord) { const payload = Buffer.from(JSON.stringify(state)).toString("base64url"); return `${payload}.${createHmac("sha256", signingSecret()).update(payload).digest("base64url")}`; }
-export function open(value: string | undefined): OAuthStateRecord { if (!value) throw new Error("OAuth state cookie is missing."); const [payload, signature] = value.split("."); if (!payload || !signature) throw new Error("OAuth state cookie is malformed."); const expected = createHmac("sha256", signingSecret()).update(payload).digest(); const got = Buffer.from(signature, "base64url"); if (got.length !== expected.length || !timingSafeEqual(got, expected)) throw new Error("OAuth state cookie signature is invalid."); return JSON.parse(Buffer.from(payload, "base64url").toString()) as OAuthStateRecord; }
+
+export function seal(state: OAuthStateRecord) {
+  const payload = Buffer.from(JSON.stringify(state)).toString("base64url");
+  return `${payload}.${createHmac("sha256", signingSecret()).update(payload).digest("base64url")}`;
+}
+
+export function open(value: string | undefined): OAuthStateRecord {
+  if (!value) throw new Error("OAuth state cookie is missing.");
+  const [payload, signature] = value.split(".");
+  if (!payload || !signature) throw new Error("OAuth state cookie is malformed.");
+  const expected = createHmac("sha256", signingSecret()).update(payload).digest();
+  const got = Buffer.from(signature, "base64url");
+  if (got.length !== expected.length || !timingSafeEqual(got, expected)) throw new Error("OAuth state cookie signature is invalid.");
+  return JSON.parse(Buffer.from(payload, "base64url").toString()) as OAuthStateRecord;
+}
+
+export function isGscReadonlyOAuthRuntimeEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env[GSC_READONLY_RUNTIME_GATE]?.trim().toLowerCase() === "true";
+}
+
+export function classifyGoogleOAuthState(state: OAuthStateRecord): "legacy" | typeof GSC_READONLY_PROFILE {
+  const purpose = (state as OAuthStateRecord & { purpose?: unknown }).purpose;
+  if (purpose === undefined) return "legacy";
+  if (purpose === GSC_READONLY_PROFILE) return GSC_READONLY_PROFILE;
+  throw new Error("google_oauth_purpose_unknown");
+}
+
+export function asGscReadonlyState(state: OAuthStateRecord): GscReadonlyState {
+  if (classifyGoogleOAuthState(state) !== GSC_READONLY_PROFILE) throw new Error("gsc_oauth_purpose_required");
+  return state as GscReadonlyState;
+}
+
+export function gscReadonlyPublicConfig(): GoogleOAuthConfig {
+  return {
+    clientId: required("GSC_OAUTH_CLIENT_ID"),
+    clientSecret: "",
+    redirectUri: `${origin()}/api/connections/google/callback`,
+  };
+}
+
+export function gscReadonlyPrivateConfig(): GoogleOAuthConfig {
+  return {
+    clientId: required("GSC_OAUTH_CLIENT_ID"),
+    clientSecret: required("GSC_OAUTH_CLIENT_SECRET"),
+    redirectUri: `${origin()}/api/connections/google/callback`,
+  };
+}
+
+export function startGscReadonlyUrl() {
+  if (!isGscReadonlyOAuthRuntimeEnabled()) throw new Error("gsc_oauth_runtime_disabled");
+  const state = createGscReadonlyState({ returnTo: GSC_READONLY_RETURN_TO });
+  return { state, url: buildGscReadonlyAuthorizationUrl(gscReadonlyPublicConfig(), state) };
+}
+
 const db = () => postgres(required("DATABASE_URL"), { max: 1, prepare: false });
+
 export function startUrl(provider: OAuthProvider, shop?: string) {
   const state = createOAuthState(provider, { shopDomain: shop, returnTo: "/connections" });
-  if (provider === "google") return { state, url: buildGoogleAuthorizationUrl({ clientId: required("GOOGLE_OAUTH_CLIENT_ID"), clientSecret: required("GOOGLE_OAUTH_CLIENT_SECRET"), redirectUri: `${origin()}/api/connections/google/callback` }, state) };
-  return { state, url: buildShopifyAuthorizationUrl({ clientId: required("SHOPIFY_OAUTH_CLIENT_ID"), clientSecret: required("SHOPIFY_OAUTH_CLIENT_SECRET"), redirectUri: `${origin()}/api/connections/shopify/callback`, shopDomain: shop ?? "" }, state) };
+  if (provider === "google") {
+    return {
+      state,
+      url: buildGoogleAuthorizationUrl({
+        clientId: required("GOOGLE_OAUTH_CLIENT_ID"),
+        clientSecret: required("GOOGLE_OAUTH_CLIENT_SECRET"),
+        redirectUri: `${origin()}/api/connections/google/callback`,
+      }, state),
+    };
+  }
+  return {
+    state,
+    url: buildShopifyAuthorizationUrl({
+      clientId: required("SHOPIFY_OAUTH_CLIENT_ID"),
+      clientSecret: required("SHOPIFY_OAUTH_CLIENT_SECRET"),
+      redirectUri: `${origin()}/api/connections/shopify/callback`,
+      shopDomain: shop ?? "",
+    }, state),
+  };
 }
+
 export function task53ShopifyWriteExternalAccountId(shopDomain: string) {
   const shop = shopDomain.trim().toLowerCase();
   if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(shop)) throw new Error("A permanent *.myshopify.com domain is required.");
   return `${shop}#task53-write-products`;
 }
+
 export function startTask53ShopifyWriteUrl(shop: string) {
   const state = createOAuthState("shopify", { shopDomain: shop, returnTo: TASK53_SHOPIFY_WRITE_RETURN_TO });
   const base = buildShopifyAuthorizationUrl({
@@ -36,11 +143,35 @@ export function startTask53ShopifyWriteUrl(shop: string) {
   url.searchParams.set("scope", [...scopes].join(","));
   return { state, url: url.toString() };
 }
-export async function save(provider: OAuthProvider, externalAccountId: string, bundle: { accessToken: string; refreshToken: string | null; expiresAt: string | null; scopes: string[]; tokenType: string | null }, metadata: Record<string, unknown> = {}, status = "connected") {
+
+export async function save(
+  provider: OAuthProvider,
+  externalAccountId: string,
+  bundle: { accessToken: string; refreshToken: string | null; expiresAt: string | null; scopes: string[]; tokenType: string | null },
+  metadata: Record<string, unknown> = {},
+  status = "connected",
+) {
   const sql = db();
-  try { const sites = await sql<{ id: string }[]>`SELECT id FROM sites WHERE lower(domain)='diamondshelf.us' AND is_active=true ORDER BY created_at LIMIT 1`; if (!sites[0]) throw new Error("Diamond Shelf site record is not available."); const envelope = encryptTokenBundle(bundle, required("OAUTH_CREDENTIAL_ENCRYPTION_KEY")); const secretRef = `enc:v1:${Buffer.from(JSON.stringify(envelope)).toString("base64url")}`; const clean = JSON.parse(JSON.stringify(sanitizedConnectionMetadata(provider, bundle, metadata))); await sql`INSERT INTO connections(site_id,provider,external_account_id,secret_ref,scopes,status,metadata) VALUES(${sites[0].id}::uuid,${provider},${externalAccountId},${secretRef},${bundle.scopes},${status},${sql.json(clean)}) ON CONFLICT(site_id,provider,external_account_id) DO UPDATE SET secret_ref=EXCLUDED.secret_ref,scopes=EXCLUDED.scopes,status=EXCLUDED.status,metadata=EXCLUDED.metadata,updated_at=now()`; } finally { await sql.end({ timeout: 2 }); }
+  try {
+    const sites = await sql<{ id: string }[]>`SELECT id FROM sites WHERE lower(domain)='diamondshelf.us' AND is_active=true ORDER BY created_at LIMIT 1`;
+    if (!sites[0]) throw new Error("Diamond Shelf site record is not available.");
+    const envelope = encryptTokenBundle(bundle, required("OAUTH_CREDENTIAL_ENCRYPTION_KEY"));
+    const secretRef = `enc:v1:${Buffer.from(JSON.stringify(envelope)).toString("base64url")}`;
+    const clean = JSON.parse(JSON.stringify(sanitizedConnectionMetadata(provider, bundle, metadata)));
+    await sql`INSERT INTO connections(site_id,provider,external_account_id,secret_ref,scopes,status,metadata) VALUES(${sites[0].id}::uuid,${provider},${externalAccountId},${secretRef},${bundle.scopes},${status},${sql.json(clean)}) ON CONFLICT(site_id,provider,external_account_id) DO UPDATE SET secret_ref=EXCLUDED.secret_ref,scopes=EXCLUDED.scopes,status=EXCLUDED.status,metadata=EXCLUDED.metadata,updated_at=now()`;
+  } finally {
+    await sql.end({ timeout: 2 });
+  }
 }
-export async function list(): Promise<Array<{ provider: string; status: string; metadata: Record<string, unknown> }>> { const sql = db(); try { return await sql<{ provider: string; status: string; metadata: Record<string, unknown> }[]>`SELECT c.provider,c.status,c.metadata FROM connections c JOIN sites s ON s.id=c.site_id WHERE lower(s.domain)='diamondshelf.us' ORDER BY c.provider,c.updated_at DESC`; } finally { await sql.end({ timeout: 2 }); } }
+
+export async function list(): Promise<Array<{ provider: string; status: string; metadata: Record<string, unknown> }>> {
+  const sql = db();
+  try {
+    return await sql<{ provider: string; status: string; metadata: Record<string, unknown> }[]>`SELECT c.provider,c.status,c.metadata FROM connections c JOIN sites s ON s.id=c.site_id WHERE lower(s.domain)='diamondshelf.us' ORDER BY c.provider,c.updated_at DESC`;
+  } finally {
+    await sql.end({ timeout: 2 });
+  }
+}
 
 export type GoogleSelectionFailure = "site_lookup" | "connection_lookup" | "form_validation" | "resource_validation" | "database_update";
 
@@ -79,6 +210,9 @@ export async function selectGoogleProperties(gscSiteUrl: string, ga4PropertyId: 
     } catch {
       throw new GoogleSelectionError("database_update");
     }
-  } finally { await sql.end({ timeout: 2 }); }
+  } finally {
+    await sql.end({ timeout: 2 });
+  }
 }
+
 export { assertOAuthState, exchangeGoogleCode, exchangeShopifyCode, discoverGoogleResources, autoMatchDiamondShelf };
