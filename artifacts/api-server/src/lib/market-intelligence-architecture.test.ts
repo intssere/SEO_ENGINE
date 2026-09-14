@@ -19,14 +19,7 @@ import {
 
 const NOW = "2026-09-14T12:00:00.000Z";
 
-function market(overrides: Parameters<typeof normalizeMarketProfile>[0] = {
-  country: "US",
-  language: "en",
-  locale: "en-US",
-  currency: "USD",
-  searchEngine: "google",
-  device: "all",
-}) {
+function market(overrides: Partial<Parameters<typeof normalizeMarketProfile>[0]> = {}) {
   return normalizeMarketProfile({
     country: "US",
     language: "en",
@@ -38,11 +31,7 @@ function market(overrides: Parameters<typeof normalizeMarketProfile>[0] = {
   });
 }
 
-function category(overrides: Parameters<typeof normalizeCategoryProfile>[0] = {
-  key: "arabian-fragrance",
-  name: "Arabian Fragrance",
-  canonicalPath: "/collections/arabian-fragrance",
-}) {
+function category(overrides: Partial<Parameters<typeof normalizeCategoryProfile>[0]> = {}) {
   return normalizeCategoryProfile({
     key: "arabian-fragrance",
     name: "Arabian Fragrance",
