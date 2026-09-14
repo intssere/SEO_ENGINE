@@ -1,86 +1,88 @@
 # SEO ENGINE — Current State Checkpoint
 
-This file is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree before acting. `AGENTS.md` remains the durable operating contract and GitHub `main` remains canonical.
+This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the full completion plan, and GitHub `main` remains canonical.
 
 ## Published production
 
-Task #73 — **GSC First-Live-Read Pilot Readiness v1** — remains the currently published and production-certified application release.
+The currently published and production-certified application release remains **Task #73 — GSC First-Live-Read Pilot Readiness v1**.
 
 Published application source:
-
 - SHA: `2498e5b34bbd130c97aa60865cc81875d76eb895`
 - tree: `62016e4a5952628dfbd0eff4f9cf32d797aa6b51`
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Detailed production record: `.agents/memory/task73-production-closeout.md`.
+Task #74 and Task #75 have **not** been published. Git-only Replit synchronization does not change the separately attested production application source.
 
-Task #74 is architecture/planning only and has **not** been published. Git-only Replit synchronization does not change the separately attested production application source.
+## Current engineering state — Task #75 complete
 
-## Current engineering architecture — Task #74
-
-Task #74 — **GSC OAuth Client/Config Binding Architecture & Authorization Planning v1** — is architecture-complete.
+Task #75 — **GSC OAuth Profile-Isolated Runtime Binding Foundation v1** — is engineering-complete, CI-certified, merged, and Git-only synchronized to Replit.
 
 Authoritative issue:
+- issue #142
 
-- issue #132
+Implementation PR:
+- PR #143
+- exact corrected tested head: `45302ccfe5f289481b82a7fdeb0450e8a3e0d7cd`
+- PR CI #245 / run `34890806443`: success
+- application merge: `b6ae18db99baf022cdb7368f3e17c4bb1fa1a687`
+- tree: `66cc24c044145eb93a8a198e3ca817db1aaeaffd`
+- post-merge main CI #246 / run `34891284127`: success
 
-Architecture document:
+The initial Task #75 PR head `f6216e0b69af56b8538998cc19e47a304cda5fe2` passed task/full tests but CI #244 failed typecheck only because a new test variable assigned inside an injected async callback was narrowed incorrectly by TypeScript. The test capture was corrected without changing production behavior; exact-head CI #245 then passed task tests, full workspace tests, typecheck and build.
 
-- `docs/task74-gsc-oauth-client-config-binding-architecture.md`
+Detailed engineering record:
+- `.agents/memory/task75-engineering-closeout.md`
 
-Architecture PR lineage:
+## Replit engineering workspace
 
-- PR #137
-- exact tested head: `e401396a05fa12a329956ef2042e96b5a48e9207`
-- PR CI #238: success
-- merge: `b8280828917e394e0c959487e1a8d44198237aa3`
-- tree: `cd8c61e7b326c5380bcf939600e6358833ace36d`
-- post-merge main CI #239: success
-
-After post-merge CI, Replit was Git-only synchronized and verified at the exact architecture merge:
-
+After post-merge CI #246, Replit was Git-only synchronized and read-only verified at the exact Task #75 merge:
 - branch: `main`
-- HEAD: `b8280828917e394e0c959487e1a8d44198237aa3`
-- tree: `cd8c61e7b326c5380bcf939600e6358833ace36d`
+- HEAD: `b6ae18db99baf022cdb7368f3e17c4bb1fa1a687`
+- tree: `66cc24c044145eb93a8a198e3ca817db1aaeaffd`
 - cached origin/main: same
 - ahead/behind: `0/0`
 - tracked/untracked: `0/0`
-- clean: true
+- working tree clean: true
 - extra local commit: false
 
-No publication/redeploy or runtime/provider mutation occurred.
-
-Detailed record: `.agents/memory/task74-architecture-closeout.md`.
+No publication/redeployment, runtime/config/environment mutation, DB/schema/data operation, credential/OAuth/provider mutation, safety-gate change, provider request, or public-site mutation occurred.
 
 ## GSC control chain
 
 The controlled architecture is now:
 
 `Task #66 market/category identity`
-
 → `Task #67 reviewed signal-source registry + refresh planning`
-
 → `Task #68 exact adapter request + normalization`
-
 → `Task #69 exact expiring collection-job packet + authorization`
-
 → `Task #70 durable default-off single-job execution + replay lock`
-
 → `Task #71 GSC Search Analytics runner foundation`
-
 → `Task #72 GSC delegated OAuth/property readiness`
-
 → `Task #73 first-live-read pilot packet/readiness composition`
-
 → `Task #74 GSC OAuth client/config binding architecture`
+→ `Task #75 profile-isolated GSC runtime binding foundation`
 
-Task #70 remains authoritative for durable execution and replay protection. Tasks #71–#74 do not create an alternate executor.
+Task #70 remains authoritative for durable collection execution and replay protection. Tasks #71–#75 do not create an alternate executor.
 
-## Task #72 GSC identity remains exact
+## Task #75 decisive behavior
 
-The future GSC provider connection must preserve:
+The legacy generic Google runtime remains available only as a separately classified compatibility path. It requests/handles the historical combined Search Console + GA4 profile and persists under generic external identity `google`.
+
+Task #75 prevents a future GSC-only flow from entering that path:
+1. dedicated GSC start behavior creates Task #72 `gsc_read_only_v1` purpose state;
+2. the shared callback opens/authenticates sealed state and classifies purpose **before** legacy client-config selection, token exchange, provider transport selection or discovery;
+3. unknown Google OAuth purpose fails closed;
+4. GSC config uses only `GSC_OAUTH_CLIENT_ID` / `GSC_OAUTH_CLIENT_SECRET`, with no fallback to `GOOGLE_OAUTH_*`;
+5. pure injected orchestration enforces exactly `https://www.googleapis.com/auth/webmasters.readonly`;
+6. GSC discovery is modeled as GSC-only;
+7. persistence identity is fixed to `google#gsc-read-only-v1`;
+8. tests prove no GA4/generic-Google fallback;
+9. `GSC_READONLY_OAUTH_RUNTIME_ENABLED` is exact-true and default-off;
+10. the live GSC transport is intentionally **unbound** in Task #75, so a GSC-purpose callback still fails closed before any real Google token exchange/provider request.
+
+## Exact GSC identity remains
 
 - profile: `gsc_read_only_v1`
 - provider: `google`
@@ -88,111 +90,14 @@ The future GSC provider connection must preserve:
 - exact scope: `https://www.googleapis.com/auth/webmasters.readonly`
 - supported property identity: `sc-domain:<domain>`
 - accepted permission levels: `siteRestrictedUser`, `siteFullUser`
-- delegated provider OAuth as credential source
+- delegated provider OAuth is the credential source
 - application login/OIDC is not provider OAuth material.
 
-Task #72 already models state + PKCE S256, exact-scope authorization, GSC-only `sites.list` discovery through an injected transport, exact discovered-resource membership, and fail-closed readiness.
+## Live-provider boundary remains closed
 
-## Task #74 decisive finding — legacy callback isolation gap
+No real GSC OAuth client or client secret has been created/bound by Tasks #74/#75. No OAuth consent, delegated token, `sites.list`, Search Analytics call, real GSC property binding, Task #70 live execution, observation/evidence persistence, scheduler/worker action, DDL, provider write or public-site write has occurred.
 
-The existing generic Google runtime path is not an acceptable binding target for a future Task #72 GSC-only credential.
-
-The legacy flow currently:
-
-- requests both Search Console readonly and Analytics readonly;
-- validates the combined legacy Google scope set;
-- discovers both Search Console and GA4 resources;
-- persists under generic external account identity `google`.
-
-Therefore **no real GSC OAuth client or client secret may be created or bound until a separately reviewed profile-isolated runtime foundation exists and is published inert**.
-
-The future GSC path must fail closed and, before token exchange, guarantee:
-
-1. exact Task #72 GSC purpose/profile;
-2. GSC-specific client configuration with no legacy fallback;
-3. exact single scope `webmasters.readonly`;
-4. GSC-only discovery;
-5. persistence identity exactly `google#gsc-read-only-v1`;
-6. no GA4 discovery/selection;
-7. no generic `google` record overwrite/fallback;
-8. no Task #70 enablement or Search Analytics execution.
-
-A dedicated GSC start route is preferred. The physical callback URI may be reused only if authenticated/sealed state purpose dispatch happens before token exchange and credential selection.
-
-## Planned production callback identity
-
-For the current production generation, Task #74 records the planned callback as:
-
-`https://dsseoengine.replit.app/api/connections/google/callback`
-
-This is planning metadata only. It has not been registered or changed in Google Cloud by Task #74.
-
-Any future production-origin change invalidates the binding descriptor and requires a new review/fingerprint.
-
-## Credential and secret boundary
-
-Task #74 separates three classes:
-
-1. **public client/config metadata** — project/client ID, redirect, scope/profile and verification descriptors; may enter sanitized binding fingerprints;
-2. **OAuth client secret** — runtime secret store/environment only; never Git, DB metadata, logs, browser payloads, Task #73 packet, or authorization phrase;
-3. **delegated access/refresh tokens** — only after separately authorized consent; later use the existing AES-256-GCM `connections.secret_ref` token-envelope path under the GSC-specific connection identity.
-
-Recommended future GSC-specific runtime names:
-
-- `GSC_OAUTH_CLIENT_ID`
-- `GSC_OAUTH_CLIENT_SECRET`
-
-Legacy `GOOGLE_OAUTH_*` settings must not be an automatic GSC fallback.
-
-## Stage A sanitized binding architecture
-
-Task #74 defines both:
-
-- a pre-creation `GscOAuthClientCreationPlanV1` identity;
-- a post-creation `GscOAuthClientBindingDescriptorV1` identity.
-
-The post-creation descriptor binds only non-secret metadata:
-
-- environment;
-- Google project ID/optional number;
-- OAuth client type `web_application`;
-- public client ID;
-- exact `APP_ORIGIN`;
-- exact redirect URI and allowlist;
-- Task #72 profile/external identity;
-- exact single `webmasters.readonly` scope;
-- offline-access posture;
-- `includeGrantedScopes=false`;
-- `prompt=consent`;
-- PKCE S256 + mandatory state;
-- Google Auth Platform audience/publishing/verification/scope-classification descriptors;
-- secret slot ID/name only, never secret value;
-- every execution/write/persistence/autonomy permission false;
-- bounded timestamps;
-- deterministic SHA-256 fingerprint excluding all secret/token material.
-
-## Google Auth Platform review boundary
-
-Task #74 intentionally does not assume the future selected project's classification of `webmasters.readonly`.
-
-Before production consent, the actual Google Auth Platform state must be reviewed for:
-
-- Branding;
-- Audience;
-- Clients;
-- Data Access;
-- Verification Center;
-- authorized domain;
-- privacy policy/homepage requirements as applicable;
-- exact scope classification;
-- whether verification is required, exempt, in review, or complete.
-
-Unknown classification/verification applicability fails closed.
-
-## Future authorization stages remain independent
-
-Task #74 defines, but does not execute, these authorization families:
-
+Task #74 authorization families remain staged and independent:
 - A0 plan approval: `AUTHORIZE_GSC_OAUTH_CLIENT_PLAN:<planFingerprint>`
 - A1 client creation: `AUTHORIZE_GSC_OAUTH_CLIENT_CREATE:<planFingerprint>`
 - A2 public config binding: `AUTHORIZE_GSC_OAUTH_CLIENT_CONFIG_BINDING:<bindingFingerprint>`
@@ -200,87 +105,65 @@ Task #74 defines, but does not execute, these authorization families:
 - A4 static no-network readiness: `AUTHORIZE_GSC_OAUTH_STATIC_READINESS_CHECK:<bindingFingerprint>:<secretSlotId>`
 - B1 consent: `AUTHORIZE_GSC_OAUTH_CONSENT:<bindingFingerprint>`
 
-Later `sites.list`, exact property binding, Task #70 gate/deployment, exact Task #69 job authorization, first Search Analytics read, and observation/evidence persistence remain separately authorized.
+Later `sites.list`, property binding, Task #70 deployment/gate, exact Task #69 collection authorization, first Search Analytics read and evidence persistence remain separately authorized.
 
-No authorization implies any later stage. Raw secrets are forbidden in authorization phrases.
-
-## Rotation / rollback
-
-Task #74 requires:
-
-- no raw-secret logging or fingerprinting;
-- no automatic legacy Google fallback;
-- new descriptor/fingerprint for client/secret rotation;
-- optional primary/next slots only with explicit active-slot selection;
-- no automatic promotion, revocation, deletion, or fallback;
-- callback exchange with the same client generation that initiated consent;
-- fail-closed `configured`/`credentialReady` on mismatch;
-- explicit rollback authorization;
-- destructive Google-side revocation/deletion always separately authorized.
-
-## No-schema-change decision
-
-Task #74 requires no database migration or DDL. Client configuration remains runtime configuration. Future delegated tokens can use the existing encrypted connection persistence mechanism under the GSC-specific identity.
+A real GSC OAuth client remains blocked until Task #75 is separately **published inert and production-certified** under explicit publication authorization, followed by a fresh sanitized A0 plan and the required explicit later authorizations.
 
 ## Current safety boundary
 
-Keep all of the following closed unless a later task explicitly authorizes otherwise:
-
+Unless a later task explicitly authorizes otherwise, keep closed/default-off:
+- `PUBLIC_SITE_WRITES_ENABLED=false`
+- `AI_PROPOSAL_GENERATION_ENABLED=false`
 - `SIGNAL_COLLECTION_JOB_EXECUTION_ENABLED=false`
-- competitor one-target dry-run execution=false
-- competitor collection=false
-- competitor evidence persistence=false
-- public-site writes=false
-- Task #72 configured=false
-- credentialReady=false
-- scopeReady=false
-- propertyDiscoveryReady=false
-- selectedPropertyReady=false
-- networkReady=false
-- task70ExecutionEnabled=false
-- liveReadAuthorized=false
+- `GSC_READONLY_OAUTH_RUNTIME_ENABLED=false`
+- competitor one-target execution/collection/evidence persistence=false
+- Task #72 configured/credential/scope/property/network/live-read readiness=false
 - Task #73 packet/lineage/Task #69/Task #70/first-live-read readiness=false
 - provider/public writes=false
 - observation/evidence persistence=false
 - scheduler/batch/autonomous-worker/retry=false.
 
-Task #73 production is **published but inert**. Task #74 is **architecture only**.
+## Master roadmap status
 
-No real Google Cloud client/project mutation, client-secret action, OAuth consent, access/refresh token action, `sites.list`, Search Analytics request, real Search Console property binding, Task #70 execution, Task #69 authorization use, persistence, DDL, scheduler/worker action, or provider/public-site mutation was performed in Task #74.
+Program tracker: issue #139. Keep it open until final production completion certification.
 
-## Next safe milestone — proposed Task #75
+Task #75 completes roadmap **P1.1/P1.2 engineering foundation** but not live-provider activation. P1.3–P1.8 remain blocked behind separate publication/provider authorizations as defined in the master roadmap and Task #74 architecture.
 
-The next safe engineering milestone is **Task #75 — GSC OAuth Profile-Isolated Runtime Binding Foundation v1**.
+The 30-page crawl remains a deliberate `baseline` certification mode; it is not the intended production whole-site limit.
 
-Task #75 should remain pure/default-off and use fake/injected transports only. It should provide:
+## Next safe engineering milestone
 
-- dedicated GSC-purpose start behavior;
-- sealed Task #72 GSC state;
-- callback purpose dispatch before token exchange;
-- GSC-specific config interfaces/slots;
-- exact single-scope validation;
-- GSC-only discovery;
-- GSC-specific external account identity;
-- proof of no GA4/generic-Google fallback;
-- no real credentials/provider calls;
-- no Task #70/persistence/autonomy enablement.
+While Task #75 publication/live-provider authorization is pending, the next safe/default-off engineering task is:
 
-Task #75 itself must not create a real Google client/secret/token/property binding or contact Google. A real client may be considered only after Task #75 is engineering-certified and published inert, followed by a fresh sanitized A0 creation plan and explicit A1 authorization.
+**P2.1 — Full-Site Crawl Controller Architecture: `baseline` vs `full_site`.**
 
-## Connector bookkeeping
+The crawler milestone should:
+- preserve the existing approximately 30-page `baseline` mode for quick certification;
+- define an inventory-driven `full_site` mode instead of an unbounded crawler;
+- use sitemap discovery first with internal-link supplementation;
+- canonicalize/dedupe URLs;
+- define robots/noindex/canonical/exclusion accounting;
+- guard query/filter/calendar/facet traps;
+- define bounded concurrency/rate limits/retries;
+- add hard safety ceilings;
+- define batch checkpoints/resume;
+- define a deterministic completion ledger and whole-site certification semantics;
+- keep competitor crawling separately bounded;
+- make no public-site/provider mutation.
 
-During Task #74 action selection, placeholder issues #133–#136 were accidentally created and immediately closed `not_planned`. They contain no project content and caused no code, Replit, runtime, credential, DB, or production change. Issue #132 is the authoritative Task #74 record.
+Generic `continue` may advance this pure/default-off crawler architecture/engineering workflow. It does **not** authorize Task #75 publication, real Google credentials/provider calls, persistence/DDL, autonomous workers, or public-site/provider writes.
 
 ## Resume rule
 
 At every new session:
-
-1. independently resolve GitHub `main` SHA/tree;
-2. read `CURRENT_STATE.md`;
-3. read `AGENTS.md`, `PROJECT_HANDOFF.md`, `ARCHITECTURE.md`;
-4. read `.agents/skills/seo-engine-project/SKILL.md`;
-5. read `.agents/memory/MEMORY.md` and relevant closeouts;
-6. read the active task issue and task-specific architecture document;
-7. inspect Replit branch/HEAD/tree/ahead-behind/clean state and sanitized gates before sync/publish.
+1. independently resolve GitHub `main` SHA/tree and current CI;
+2. read `AGENTS.md`;
+3. read this `CURRENT_STATE.md`;
+4. read `MASTER_COMPLETION_ROADMAP.md`;
+5. read `ARCHITECTURE.md` and `PROJECT_HANDOFF.md`;
+6. read `.agents/skills/seo-engine-project/SKILL.md`;
+7. read `.agents/memory/MEMORY.md` and relevant closeouts, especially Task #75;
+8. read program issue #139 and the active task issue/PR;
+9. inspect Replit branch/HEAD/tree/ahead-behind/clean state and sanitized gates before sync/publish.
 
 Stop and diagnose read-only rather than improvising on GitHub drift, Replit drift, open execution/write gates, unexpected credential/readiness state, schema mismatch, failed CI, unexpected jobs/persistence, or external/provider/public-site activity.
