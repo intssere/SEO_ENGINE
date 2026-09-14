@@ -43,7 +43,7 @@ function discovery(): GscDiscoveryResult {
 test("GSC callback orchestration keeps exact profile identity and uses only injected dependencies", async () => {
   const state = createGscReadonlyState({ now: new Date("2026-09-15T00:00:00.000Z") });
   const calls: string[] = [];
-  let persisted: GscReadonlyPersistenceInput | null = null;
+  const persisted: GscReadonlyPersistenceInput[] = [];
 
   const result = await runGscReadonlyCallback(
     { state, receivedState: state.state, code: "fake-code", config },
@@ -61,7 +61,7 @@ test("GSC callback orchestration keeps exact profile identity and uses only inje
       },
       persist: async (input) => {
         calls.push("persist");
-        persisted = input;
+        persisted.push(input);
       },
     },
   );
@@ -70,13 +70,16 @@ test("GSC callback orchestration keeps exact profile identity and uses only inje
   assert.equal(result.profile, GSC_READONLY_PROFILE);
   assert.equal(result.externalAccountId, GSC_READONLY_EXTERNAL_ACCOUNT_ID);
   assert.equal(result.propertyCount, 1);
-  assert.equal(persisted?.provider, "google");
-  assert.equal(persisted?.externalAccountId, GSC_READONLY_EXTERNAL_ACCOUNT_ID);
-  assert.equal(persisted?.status, "pending");
-  assert.equal(persisted?.metadata.externalAccountId, GSC_READONLY_EXTERNAL_ACCOUNT_ID);
-  assert.equal(persisted?.metadata.oauthPurpose, GSC_READONLY_PROFILE);
-  assert.equal("accessToken" in (persisted?.metadata ?? {}), false);
-  assert.equal("refreshToken" in (persisted?.metadata ?? {}), false);
+  assert.equal(persisted.length, 1);
+  const saved = persisted[0];
+  assert.ok(saved);
+  assert.equal(saved.provider, "google");
+  assert.equal(saved.externalAccountId, GSC_READONLY_EXTERNAL_ACCOUNT_ID);
+  assert.equal(saved.status, "pending");
+  assert.equal(saved.metadata.externalAccountId, GSC_READONLY_EXTERNAL_ACCOUNT_ID);
+  assert.equal(saved.metadata.oauthPurpose, GSC_READONLY_PROFILE);
+  assert.equal("accessToken" in saved.metadata, false);
+  assert.equal("refreshToken" in saved.metadata, false);
 });
 
 test("GSC callback rejects Analytics or any extra granted scope before discovery or persistence", async () => {
