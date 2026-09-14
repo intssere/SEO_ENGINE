@@ -1,0 +1,631 @@
+# SEO ENGINE — Master Completion Roadmap
+
+**Program tracker:** GitHub issue #139 — `PROGRAM — SEO ENGINE industry-grade completion roadmap`  
+**Purpose:** provide one durable, repository-resident plan that lets any future ChatGPT session, coding agent, Replit session, IDE assistant, or human engineer continue from the current checkpoint through a complete industry-grade SEO/GEO operating system without rediscovering scope or weakening safety boundaries.
+
+This document is **planning and continuity**, not execution authorization.
+
+---
+
+## 0. Source-of-truth hierarchy
+
+Every agent must use this precedence:
+
+1. `AGENTS.md` — normative workflow, safety and authorization contract.
+2. `CURRENT_STATE.md` — current mutable engineering/release checkpoint and exact next boundary.
+3. `MASTER_COMPLETION_ROADMAP.md` — full remaining path to application completion and durable program status.
+4. `ARCHITECTURE.md` — system architecture and trust boundaries.
+5. `PROJECT_HANDOFF.md` — narrative continuation context and historical operational details.
+6. `.agents/skills/seo-engine-project/SKILL.md` — procedural execution skill.
+7. `.agents/memory/MEMORY.md` plus linked notes — durable lessons and task closeouts.
+8. Active GitHub issue/PR for the current task — task-specific scope and acceptance criteria.
+
+If any mutable SHA, deployment state, gate state or task status differs between documents, independently verify GitHub/Replit/runtime state and update `CURRENT_STATE.md`; do not guess.
+
+---
+
+## 1. Current program checkpoint
+
+Starting canonical repository state for this roadmap:
+
+- repository: `intssere/SEO_ENGINE`
+- GitHub `main`: `5fea8e63cb36ef2b0e2f11764383d565c826f54a`
+- tree: `9f0d9715e373f3d78cc392b9b5d630fc58e67a74`
+- Replit app: `SEO_ENGINE`
+- Replit replId: `4f36f99c-0492-43c4-80e7-a7f7660fc3f7`
+- production URL: `https://dsseoengine.replit.app`
+
+Current published production application source remains:
+
+- Task #73 source SHA: `2498e5b34bbd130c97aa60865cc81875d76eb895`
+- tree: `62016e4a5952628dfbd0eff4f9cf32d797aa6b51`
+- deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
+- deployment status: success
+
+Task #74 is architecture/planning only and is not the published application release.
+
+Completed high-level foundations include authentication/RBAC, guarded proposal/execution primitives, bounded competitor acquisition, market/category intelligence architecture, source registry/normalization/job authorization, controlled signal execution, GSC read-runner foundation, GSC OAuth/property readiness, first-live-read readiness, and OAuth client/config binding architecture.
+
+**Next safe engineering milestone:** Task #75 — GSC OAuth Profile-Isolated Runtime Binding Foundation v1.
+
+---
+
+## 2. Product north star
+
+SEO ENGINE is not intended to become another collection of disconnected SEO utilities. The target product is an **autonomous search-optimization operating system with verifiable control**.
+
+Target lifecycle:
+
+`Observe → Normalize → Understand → Detect → Prioritize → Propose → Validate → Approve/Policy-Authorize → Execute → Verify → Measure → Learn → Repeat`
+
+The product should combine:
+
+- Ahrefs-level clarity and investigation ergonomics;
+- Sitebulb/Screaming Frog-level technical crawl depth;
+- Semrush-level breadth and thematic organization;
+- Search Atlas/OTTO-like agentic execution experience;
+- Surfer-like detect/optimize/measure content workflows;
+- BrightLocal-like specialized visualization where local/search geography matters;
+- SEO ENGINE-specific evidence lineage, deterministic authorization, replay protection, read-after-write verification, rollback, audit history and impact learning.
+
+The competitive advantage should be **safe closed-loop optimization**, not merely data volume.
+
+---
+
+## 3. What “complete” means
+
+SEO ENGINE v1 is complete only when all of the following are true in production:
+
+### Data and crawling
+- Full-site crawl mode can discover and process 100% of the approved canonical/crawlable inventory within configured safety ceilings.
+- The current 30-page crawl remains available as `baseline`/quick-certification mode; it is not the production full-site ceiling.
+- Full-site crawling is resumable, checkpointed, deduplicated, sitemap-aware, rate-limited and trap-resistant.
+- Incremental recrawls operate from change/freshness/value signals after the first complete crawl.
+- GSC read-only data is connected through a profile-isolated OAuth path and verified property binding.
+- First-party catalog/commerce and analytics signals required by the product are live and normalized.
+- External competitor/SERP/keyword/trend/backlink signal sources required by the initial product are operational through reviewed adapters.
+
+### Intelligence
+- All normalized observations can be represented with provenance, freshness and confidence.
+- Evidence persistence is durable, deduplicated and queryable.
+- Technical, content, keyword, competitor, internal-link, AI/GEO and performance opportunities are generated from real evidence.
+- Opportunity scoring incorporates impact, confidence, risk, freshness and effort.
+- Recommendations expose why they exist, which evidence supports them, what changed, expected effect and verification method.
+
+### Execution
+- Existing proposal → approval → action → provider mutation → verification → rollback foundations are integrated into the product workflow.
+- High-risk or ambiguous actions remain approval-bound and fail closed.
+- Low-risk action classes may become policy-authorized only after separate engineering, certification and explicit authorization.
+- No autonomous worker may bypass RBAC, evidence, replay, scope, target, freshness, verification or rollback rules.
+
+### Product experience
+- No primary navigation destination is a placeholder or engineering-only screen.
+- Product IA is organized around user workflows, not backend task numbers.
+- Command Center, Discover, Audit, Execute, Measure and System workspaces are complete.
+- URL/crawl explorers, evidence drawers, change history, impact attribution, saved filters/views and exports are production quality.
+- Responsive behavior is professional across desktop/tablet/mobile.
+- Accessibility meets WCAG 2.2 AA for supported workflows.
+- Large tables use server-side filtering/pagination and/or virtualization appropriate to dataset size.
+
+### Operations and quality
+- Unit, integration, contract, E2E, accessibility and critical visual-regression coverage exists for production workflows.
+- Runtime health, job health, provider failures, stale data, queue depth, crawl progress and mutation outcomes are observable.
+- Secrets/tokens never leak into browser payloads, logs, issues, docs or authorization strings.
+- Backup/recovery, replay/idempotency, rate limits and provider-failure recovery are documented and certified.
+- Production performance budgets and error handling are defined and met.
+- Final end-to-end production certification demonstrates the closed loop without uncontrolled mutation.
+
+---
+
+## 4. Permanent governance rules
+
+This roadmap does not override `AGENTS.md`.
+
+A roadmap item marked `READY`, `NEXT` or `PLANNED` does **not** authorize:
+
+- real Google OAuth client creation/change;
+- client-secret creation/view/storage/use;
+- OAuth consent or delegated token acquisition;
+- `sites.list` or Search Analytics provider requests;
+- production DDL;
+- provider/public-site writes;
+- Task #53/#54/#64 execution;
+- enabling mutation gates;
+- enabling an autonomous scheduler/worker that can mutate provider/public state;
+- destructive credential, provider or data recovery actions.
+
+Generic `continue` may advance safe/default-off engineering explicitly allowed by the active issue and `AGENTS.md`, but live-provider and mutation stages require their exact bounded authorization.
+
+For every implementation task use the mandatory GitHub-first branch → tests → PR → exact-head CI → merge → postmerge CI → exact Replit sync workflow.
+
+---
+
+## 5. Product information architecture target
+
+Replace the current flat navigation with six product domains.
+
+### A. Command Center
+Primary questions: What changed? What is broken? What matters now? What is running? What needs approval? What improved?
+
+Required surfaces:
+- executive KPI strip;
+- technical/search/AI health summary;
+- priority feed;
+- active jobs/crawls;
+- pending approvals;
+- fresh regressions;
+- top opportunities;
+- recent verified impact;
+- global time/site/device/country filters;
+- `Ask SEO ENGINE` command interface.
+
+### B. Discover
+Subareas:
+- Opportunities;
+- Keywords & Rankings;
+- Competitors;
+- Search Intelligence;
+- Content Opportunities;
+- AI/GEO Visibility.
+
+### C. Audit
+Subareas:
+- Site Health;
+- Full-Site Crawl;
+- URL Explorer;
+- Crawlability/Indexability;
+- Canonicals;
+- Metadata;
+- Structured Data;
+- Internal Links;
+- Performance/Core Web Vitals;
+- Images;
+- Content Quality;
+- AI-bot/accessibility checks;
+- crawl comparison/history.
+
+### D. Execute
+Subareas:
+- Recommended Actions;
+- Approvals;
+- Deployments/Executions;
+- Experiments;
+- Rollbacks/Manual Intervention.
+
+### E. Measure
+Subareas:
+- Search Performance;
+- Rankings;
+- Impact;
+- Change Timeline;
+- Reports/Exports;
+- experiment/holdout results.
+
+### F. System
+Subareas:
+- Connections;
+- Data Sources;
+- Engine Activity;
+- Audit Log;
+- Automation Policies;
+- Users/RBAC where appropriate;
+- Settings.
+
+Remove `Learning` from primary product navigation; contextual education/help belongs inside workflows or documentation.
+
+---
+
+## 6. UX/UI quality program
+
+Do not patch isolated screens indefinitely. Build a coherent product system.
+
+### UX-01 — Design system foundation
+- semantic color tokens for critical/warning/verified/info/AI/running states;
+- typography scale and dense enterprise spacing;
+- light theme as primary; dark theme optional after parity;
+- cards, panels, drawers, dialogs, tabs, filters, chips, badges, empty states, skeletons and toasts;
+- standard chart grammar;
+- standard status/progress grammar;
+- keyboard/focus patterns;
+- responsive breakpoints;
+- accessibility tokens and contrast checks.
+
+### UX-02 — Data workbench primitives
+- virtualized/server-backed data grid;
+- sortable/resizable/reorderable columns;
+- compound filters;
+- saved views;
+- CSV/export controls;
+- row detail drawer;
+- bulk selection where safe;
+- deep links preserving filters;
+- loading/error/stale states;
+- URL/entity inspection patterns.
+
+### UX-03 — Evidence drawer
+Every opportunity/action should expose:
+- why it exists;
+- evidence sources;
+- evidence freshness;
+- confidence;
+- affected entities/URLs;
+- current vs proposed state;
+- expected impact;
+- risk;
+- verification plan;
+- rollback plan;
+- advanced lineage/fingerprint metadata behind an expert tab.
+
+### UX-04 — Professional command experience
+`Ask SEO ENGINE` should eventually answer questions against the governed evidence graph and may prepare plans, but must route any state-changing action through the same authorization/execution controls as the standard UI.
+
+### UX-05 — Accessibility and testability
+- WCAG 2.2 AA target;
+- keyboard-complete primary workflows;
+- meaningful focus state;
+- screen-reader labels/live regions;
+- charts with textual/table alternatives where needed;
+- automated axe checks;
+- E2E interaction tests;
+- visual regression for high-value pages.
+
+Current React/Vite/Tailwind/Radix/TanStack/Recharts/Framer/cmdk foundation is retained unless a task proves replacement is necessary.
+
+---
+
+## 7. Full-site crawling program
+
+The 30-page limit must become a **baseline mode**, not be deleted blindly.
+
+### Crawl modes
+
+`baseline`
+- fast read-only certification;
+- bounded around the existing 30-page behavior;
+- suitable for smoke checks and provider/crawler validation.
+
+`full_site`
+- inventory-driven rather than unlimited;
+- sitemap index/root sitemap discovery first;
+- internal-link discovery may supplement sitemap inventory;
+- canonical normalization and dedupe;
+- robots/noindex/canonical/exclusion accounting;
+- query/filter/trap controls;
+- bounded concurrency and per-origin request rate;
+- safe retry policy;
+- batch checkpoints and resumability;
+- explicit hard safety fuse for unexpectedly large inventories;
+- deterministic completion ledger.
+
+### Full-site completion ledger
+Must report at minimum:
+- discovered;
+- eligible;
+- fetched successful;
+- redirects;
+- canonicalized/deduplicated;
+- robots/excluded;
+- noindex;
+- failed;
+- pending;
+- coverage percent;
+- hard-limit state;
+- whole-site-certified boolean/reason.
+
+### Post-baseline operating mode
+After a successful initial full crawl, schedule incremental recrawls from:
+- new URLs;
+- changed sitemap timestamps/content fingerprints;
+- high-value pages;
+- stale pages;
+- pages with unresolved issues;
+- pages implicated by new GSC opportunities;
+- pages affected by recent executions;
+- periodic full reconciliation.
+
+Competitor crawling remains separately bounded and must never inherit first-party whole-site permissions automatically.
+
+---
+
+## 8. Program phases and durable work-item IDs
+
+Use the stable roadmap IDs below even if GitHub Task numbers change. Every future implementation issue should include its roadmap ID.
+
+### Phase P0 — Continuity and program control
+
+| ID | Work item | Status |
+|---|---|---|
+| P0.1 | Durable master roadmap + program issue + agent read-order | IN_PROGRESS in issue #139 |
+| P0.2 | Maintain roadmap status after every material task | CONTINUOUS |
+| P0.3 | Final program closure only after production completion certification | OPEN |
+
+### Phase P1 — Provider isolation and first-party readiness
+
+| ID | Work item | Status / dependency |
+|---|---|---|
+| P1.1 | Task #75 GSC OAuth Profile-Isolated Runtime Binding Foundation | **NEXT** |
+| P1.2 | GSC-specific config slots, sealed purpose dispatch, no legacy GA4 fallback | part of P1.1 |
+| P1.3 | Static no-network GSC readiness surface | after P1.1 |
+| P1.4 | Real Google OAuth client creation/config binding | explicit authorization required |
+| P1.5 | Real client-secret placement and readiness check | explicit authorization required |
+| P1.6 | Admin Google consent and encrypted delegated token persistence | explicit authorization required |
+| P1.7 | GSC `sites.list`, exact property selection/binding | explicit authorization required |
+| P1.8 | First bounded Search Analytics read through Task #70/#71 lineage | explicit authorization required |
+| P1.9 | Separate GA4 read-only profile/runtime isolation and activation | PLANNED; must not reuse broad legacy path implicitly |
+| P1.10 | Shopify/catalog first-party completeness and refresh contract | PLANNED |
+
+### Phase P2 — Full-site crawl and technical intelligence
+
+| ID | Work item | Status |
+|---|---|---|
+| P2.1 | Crawl controller architecture: baseline vs full_site | READY after P1.1 or as next safe engineering task |
+| P2.2 | Sitemap inventory/discovery + canonical dedupe | PLANNED |
+| P2.3 | Batched crawler, rate limits, trap guards, checkpoints/resume | PLANNED |
+| P2.4 | Crawl completion ledger and whole-site certification | PLANNED |
+| P2.5 | Crawl history/comparison and change detection | PLANNED |
+| P2.6 | Incremental recrawl planner | PLANNED |
+| P2.7 | URL Explorer API/query model | PLANNED |
+| P2.8 | Technical issue taxonomy and evidence model expansion | PLANNED |
+
+### Phase P3 — Durable evidence and unified search data model
+
+| ID | Work item | Status |
+|---|---|---|
+| P3.1 | Observation/evidence persistence design | PLANNED |
+| P3.2 | Dedupe/fingerprint/freshness/provenance persistence | PLANNED |
+| P3.3 | Retention/history/supersession model | PLANNED |
+| P3.4 | Read models for page/query/category/competitor/entity evidence | PLANNED |
+| P3.5 | Evidence quality/conflict handling | PLANNED |
+| P3.6 | Production migration/DDL | only after separately reviewed and explicitly authorized |
+
+### Phase P4 — Product experience foundation
+
+| ID | Work item | Status |
+|---|---|---|
+| P4.1 | Information architecture/navigation v2 | PLANNED |
+| P4.2 | Design tokens/components/status grammar | PLANNED |
+| P4.3 | Enterprise data-grid/workbench primitives | PLANNED |
+| P4.4 | Evidence drawer | PLANNED |
+| P4.5 | Command Center v2 | PLANNED |
+| P4.6 | Full-Site Audit/Crawl Explorer UI | depends on P2 |
+| P4.7 | responsive/mobile/tablet professional polish | PLANNED |
+| P4.8 | accessibility test baseline and WCAG 2.2 AA remediation | PLANNED |
+| P4.9 | Storybook/component documentation if selected | PLANNED |
+| P4.10 | Playwright/axe/visual regression critical-path suite | PLANNED |
+
+### Phase P5 — External market/search intelligence
+
+| ID | Work item | Status |
+|---|---|---|
+| P5.1 | Provider selection/cost/reliability review for SERP + keyword data | PLANNED |
+| P5.2 | SERP/ranking adapter(s) | PLANNED |
+| P5.3 | keyword volume/difficulty/opportunity adapter(s) | PLANNED |
+| P5.4 | trends/source adapter(s) | PLANNED |
+| P5.5 | backlink authority/link-gap adapter(s) | PLANNED |
+| P5.6 | competitor visibility/page/topic-gap operational pipeline | builds on Tasks #58–#70 |
+| P5.7 | category/market competitor intelligence UI | PLANNED |
+| P5.8 | source quality/cost/rate-limit telemetry | PLANNED |
+
+### Phase P6 — Opportunity and recommendation engine
+
+| ID | Work item | Status |
+|---|---|---|
+| P6.1 | Unified opportunity types across technical/content/query/competitor/link/AI | PLANNED |
+| P6.2 | impact × confidence × risk × effort × freshness scoring | PLANNED |
+| P6.3 | conflict/dedupe/suppression/prioritization | PLANNED |
+| P6.4 | explanation/evidence generation | PLANNED |
+| P6.5 | actionability classifier: informational / recommend / approval / blocked | PLANNED |
+| P6.6 | current-vs-proposed preview/diff generation | PLANNED |
+| P6.7 | opportunity lifecycle/history | PLANNED |
+
+### Phase P7 — AI/GEO visibility
+
+| ID | Work item | Status |
+|---|---|---|
+| P7.1 | AI crawler/bot accessibility audit | PLANNED |
+| P7.2 | prompt/topic set model | PLANNED |
+| P7.3 | AI answer/brand/citation visibility collection strategy | PLANNED |
+| P7.4 | citation/domain/competitor comparison | PLANNED |
+| P7.5 | AI visibility scoring/history | PLANNED |
+| P7.6 | AI/GEO opportunity integration | PLANNED |
+| P7.7 | replace current AI Visibility placeholder with production workspace | PLANNED |
+
+### Phase P8 — Governed execution and implementation
+
+Existing Tasks #51–#54 remain the safety foundation.
+
+| ID | Work item | Status |
+|---|---|---|
+| P8.1 | Unify opportunity → proposal → approval UI around existing control primitives | PLANNED |
+| P8.2 | Evidence/risk/preview/verification/rollback action cards | PLANNED |
+| P8.3 | Expand bounded Shopify/site mutation action classes only after individual review | PLANNED |
+| P8.4 | Add verification adapters per mutation class | PLANNED |
+| P8.5 | Add deterministic rollback/manual-intervention workflows | PLANNED |
+| P8.6 | Action history and audit ledger | PLANNED |
+| P8.7 | First persistent live low-risk action pilot | explicit authorization required |
+| P8.8 | Progressive policy-authorized low-risk execution | late-stage; separate architecture/certification required |
+
+### Phase P9 — Scheduler, workers and safe autonomy
+
+| ID | Work item | Status |
+|---|---|---|
+| P9.1 | Read-only scheduler/queue architecture | PLANNED |
+| P9.2 | scheduled GSC/analytics/catalog refresh | PLANNED |
+| P9.3 | scheduled full/incremental crawl policy | PLANNED |
+| P9.4 | bounded external intelligence refresh | PLANNED |
+| P9.5 | failure/retry/dead-letter/idempotency controls | PLANNED |
+| P9.6 | worker observability and pause/kill controls | PLANNED |
+| P9.7 | recommendation generation worker | PLANNED |
+| P9.8 | autonomous mutation policy engine | FUTURE; must remain separate from read automation until explicitly certified |
+
+### Phase P10 — Measure, experiments and learning loop
+
+| ID | Work item | Status |
+|---|---|---|
+| P10.1 | unified change timeline | PLANNED |
+| P10.2 | action-to-page/query/category attribution | PLANNED |
+| P10.3 | before/after windows and confounder flags | PLANNED |
+| P10.4 | experiment/holdout framework where practical | PLANNED |
+| P10.5 | expected-vs-actual outcome tracking | PLANNED |
+| P10.6 | recommendation calibration/learning signals | PLANNED |
+| P10.7 | Impact workspace v2 | PLANNED |
+
+### Phase P11 — Enterprise hardening
+
+| ID | Work item | Status |
+|---|---|---|
+| P11.1 | production performance budgets and profiling | PLANNED |
+| P11.2 | security review: auth, CSRF, SSRF, CSP, headers, secret handling, supply chain | CONTINUOUS + final pass |
+| P11.3 | observability: metrics/logs/traces/alerts/job health | PLANNED |
+| P11.4 | backup/recovery and disaster-runbook certification | PLANNED |
+| P11.5 | accessibility WCAG 2.2 AA certification | PLANNED |
+| P11.6 | responsive/product polish | PLANNED |
+| P11.7 | reporting/export/shareable executive views | PLANNED |
+| P11.8 | multi-site/project abstraction if required for v1 commercial scope | REVIEW before final scope lock |
+| P11.9 | retention/privacy/provider terms and compliance review | PLANNED |
+| P11.10 | load/scale testing for target URL/query volumes | PLANNED |
+
+### Phase P12 — Final production completion certification
+
+| ID | Work item | Status |
+|---|---|---|
+| P12.1 | no primary placeholder screens | NOT READY |
+| P12.2 | full-site crawl complete and repeatable | NOT READY |
+| P12.3 | live first-party data integrations certified | NOT READY |
+| P12.4 | live external intelligence certified | NOT READY |
+| P12.5 | opportunity engine certified against real evidence | NOT READY |
+| P12.6 | governed execution/rollback certified | PARTIAL FOUNDATION ONLY |
+| P12.7 | read automation certified | NOT READY |
+| P12.8 | measurement/impact learning loop certified | NOT READY |
+| P12.9 | UX/accessibility/performance/security acceptance passes | NOT READY |
+| P12.10 | final release publication + runtime certification + program issue #139 closeout | NOT READY |
+
+---
+
+## 9. Critical path and parallel-safe work
+
+### Critical path
+
+`P1.1 GSC isolation`
+→ `P1 real first-party read activation`
+→ `P3 durable evidence`
+→ `P6 opportunity engine`
+→ `P8 governed execution`
+→ `P10 measurement/learning`
+→ `P12 final certification`
+
+### Safe engineering lane while live-provider authorization is pending
+
+The project may continue, one governed task at a time, with default-off/network-fake engineering such as:
+
+- P2 crawl controller architecture and implementation;
+- P4 design system/IA/data-grid/evidence-drawer work;
+- P3 persistence design before DDL;
+- P5 provider research/adapter contracts using fake transports;
+- P6 deterministic scoring/explanation foundations;
+- P7 AI/GEO architecture;
+- P9 scheduler design with execution disabled;
+- tests/docs/observability foundations.
+
+Never use “safe parallel lane” to bypass the repository rule that each active task must be completed/certified before the next task is started unless the operating contract is deliberately revised.
+
+---
+
+## 10. Immediate task sequence from today
+
+Unless a newly discovered dependency forces a reviewed change, the recommended next sequence is:
+
+1. **Task #75 / P1.1 — GSC OAuth Profile-Isolated Runtime Binding Foundation v1.**
+2. **P2.1 — Full-Site Crawl Controller Architecture + baseline/full_site mode contract.**
+3. **P2.2/P2.3 — Sitemap inventory + resumable bounded full-site crawler.**
+4. **P4.1/P4.2/P4.3 — Product IA v2 + design system + data workbench foundation.**
+5. **P3.1–P3.5 — durable observation/evidence model and persistence engineering; keep DDL separately authorized.**
+6. **P1.4–P1.8 — separately authorized real GSC client/secret/consent/property/first-read sequence when ready.**
+7. **P4.5/P4.6 — Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.**
+8. **P1.9/P1.10 — isolated GA4 and catalog completeness/refresh.**
+9. **P5 — external SERP/keyword/trend/backlink/competitor intelligence.**
+10. **P6 — unified opportunity/prioritization/explanation engine.**
+11. **P7 — AI/GEO visibility.**
+12. **P8 — integrated action/approval/deployment UX and expanded bounded execution classes.**
+13. **P9 — scheduled read automation and incremental crawling; mutation automation remains later.**
+14. **P10 — impact attribution, experimentation and learning loop.**
+15. **P11 — enterprise hardening and certification.**
+16. **P12 — final production completion certification and program closeout.**
+
+This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
+
+---
+
+## 11. Roadmap status protocol
+
+Every material task closeout must update this file in the same docs/closeout PR or an immediately following docs-only PR.
+
+Required updates:
+
+- move the relevant roadmap ID to `DONE` / `PARTIAL` / `BLOCKED` as appropriate;
+- add the GitHub issue/PR/merge SHA when stable;
+- update `CURRENT_STATE.md` exact next boundary;
+- update `PROJECT_HANDOFF.md` if continuation context changed materially;
+- add a memory note/index link for lessons that future agents must preserve;
+- never rewrite history to hide failed attempts or safety incidents that materially affect continuation.
+
+Do not hard-code mutable `main` SHAs throughout this file after every task. `CURRENT_STATE.md` owns the exact mutable checkpoint. Historical source SHAs should remain only where they are release/task facts.
+
+---
+
+## 12. Agent resume protocol
+
+When entering the project in a new chat/tool/session:
+
+1. Read `AGENTS.md`.
+2. Read `CURRENT_STATE.md`.
+3. Read this `MASTER_COMPLETION_ROADMAP.md`.
+4. Read `ARCHITECTURE.md`.
+5. Read `PROJECT_HANDOFF.md` and relevant memory/task closeout.
+6. Independently resolve GitHub `main` SHA/tree and CI state.
+7. Independently inspect Replit branch/HEAD/tree/ahead-behind/clean state before sync or publication.
+8. Distinguish **published production application source** from later engineering/docs `main`.
+9. Locate the first roadmap item marked `NEXT` or the active issue explicitly named in `CURRENT_STATE.md`.
+10. Confirm that the requested user instruction actually authorizes the next operation under `AGENTS.md`.
+11. Create a dedicated issue/branch from exact current main for engineering changes.
+12. Complete tests/PR/exact-head CI/merge/postmerge CI/Replit sync/certification before advancing.
+13. Update durable docs and this roadmap before considering the task closed.
+
+If the user says only `continue`, continue only the current safe/default-off task. Do not infer live credentials, provider contact, DDL or mutation authorization.
+
+---
+
+## 13. Product completion scorecard
+
+This scorecard is deliberately conservative and should be updated from evidence, not optimism.
+
+| Domain | Current broad state | Completion condition |
+|---|---|---|
+| Core backend/security | strong foundation | production hardened + observable |
+| Provider/read control plane | strong architecture, limited live activation | live first-party + external reads certified |
+| Whole-site crawling | bounded pilot | full_site + incremental + history certified |
+| Durable evidence | architecture foundations | persisted/provenanced/queryable at scale |
+| Search/competitor intelligence | architecture/pilot foundations | operational external + first-party synthesis |
+| Opportunity engine | partial foundations | unified evidence-backed prioritization |
+| Execution | strong guarded foundations | integrated verified action lifecycle + selected live classes |
+| Automation | intentionally disabled | bounded scheduled reads + later certified policy execution |
+| AI/GEO | placeholder/architecture stage | live visibility + citations + opportunity integration |
+| UX/UI | functional but engineering-oriented | complete enterprise product IA/workflows |
+| Measurement/learning | partial | action impact + experimentation + calibration loop |
+| Enterprise quality | partial | accessibility/perf/obs/recovery/security certification |
+
+Do not use a single percentage as the authoritative progress measure. Use the phase/work-item statuses above.
+
+---
+
+## 14. Final product identity
+
+The intended finished product is:
+
+> **SEO ENGINE — Autonomous Search Optimization with Verifiable Control**
+
+Operationally:
+
+`Collect → Prove → Prioritize → Plan → Authorize → Execute Safely → Verify → Attribute Impact → Learn`
+
+The system is complete when that loop is real, observable, professional to operate, safe under failure, and repeatable across the approved site inventory—not when the backend merely contains the component parts.
