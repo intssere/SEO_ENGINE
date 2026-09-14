@@ -128,6 +128,63 @@ Raw search volume alone is explicitly insufficient evidence. Synthesized opportu
 
 Detailed engineering closeout: `.agents/memory/task66-engineering-closeout.md`.
 
+## Task #67 — engineering complete
+
+Task #67 — **Market/Category Signal Source Registry & Refresh Planning Foundation v1** — is implemented, merged, CI-certified, and synchronized to Replit **without publication**.
+
+Canonical engineering release:
+
+- Issue: #101
+- PR: #102
+- first PR head `1648d6b3e919b04471231e179c7fd4b46fdf4d29`: rejected by CI because typecheck correctly detected an incomplete return shape
+- corrected exact tested PR head: `d5207bbe17f3c9b277addc3d524dcd38256da5fc`
+- merged GitHub main: `444b22747ea537735e4778f6fd63bb39919f6a67`
+- merged tree: `09cf5eaa76a2ea422600c904ee2f0a85c54754df`
+- corrected PR CI #197: success
+- post-merge main CI #198: success
+- Replit HEAD/cached origin/main after engineering sync: `444b22747ea537735e4778f6fd63bb39919f6a67`
+- Replit tree: `09cf5eaa76a2ea422600c904ee2f0a85c54754df`
+- Replit ahead/behind: `0/0`
+- Replit tracked/untracked: `0/0`
+- Replit working tree: clean
+- publish/redeploy for Task #67: **not performed**
+
+Task #67 added exactly three files:
+
+1. `artifacts/api-server/src/lib/signal-source-registry.ts`
+2. `artifacts/api-server/src/lib/signal-source-registry.test.ts`
+3. `docs/task67-signal-source-registry-refresh-planning.md`
+
+No existing route, provider connector, schema, migration, environment/configuration, target configuration, scheduler, worker, execution path, or production persistence path was modified.
+
+### Task #67 source/refresh planning now available
+
+Task #67 composes Task #66 market/category identities into a deterministic source-registry and refresh-planning layer.
+
+The system now has pure contracts for:
+
+- stable source descriptors and source fingerprints
+- source class separation: first-party vs external
+- source coverage by market/category/signal type
+- explicit wildcard coverage only when declared
+- source trust/provenance/quality metadata
+- manual-review admission for external sources
+- source-specific freshness windows
+- freshness states: `missing`, `fresh`, `stale`, `critical`
+- volatility-aware urgency scoring
+- bounded refresh budgets
+- deterministic selected/deferred refresh items
+- unsupported coverage blockers
+- deterministic refresh plan fingerprint/ID
+
+External sources fail eligibility unless manually reviewed. Incomplete provenance fails eligibility. Market/category/signal mismatches fail closed. Duplicate source descriptors and duplicate observation state fail closed.
+
+Refresh planning remains descriptive only: a selected refresh item does **not** contact a source, persist evidence, enroll a provider, activate a scheduler, or authorize an execution.
+
+Task #67 dedicated deterministic tests cover 13 safety/planning cases. The corrected full workspace CI also completed successfully after the initial typecheck defect was fixed.
+
+Detailed engineering closeout: `.agents/memory/task67-engineering-closeout.md`.
+
 ## Product direction
 
 The final product requirement remains:
@@ -169,16 +226,28 @@ Unless separately and explicitly authorized:
 - no production DB DDL
 - no secret/credential/OAuth-scope changes
 
-Task #66 capability specifically remains:
+Task #67 capability specifically remains:
 
-- advisory only
-- live collection authorized: false
+- registry/refresh planning only
+- network collection authorized: false
+- provider enrollment authorized: false
+- credential mutation authorized: false
 - evidence persistence authorized: false
 - target configuration mutation authorized: false
 - scheduler/batch/autonomous worker/retry loop: false
 - provider/public-site writes: false
 - automatic transition: false
 - schema mutation required: false
+
+Sanitized Replit verification after Task #67 engineering sync confirmed:
+
+- Task #64 one-target dry-run execution gate: false
+- configured competitor targets: 0
+- Task #59 collection gate: false
+- Task #59 evidence persistence gate: false
+- public-site write gate: false
+- no publish/redeploy during verification
+- no state modification during verification
 
 ## Persistent Task #54 remains separately gated
 
@@ -194,37 +263,38 @@ The previously diagnosed possible first persistent candidate remains Unisex Frag
 - lifecycle at diagnosis: approval_ready
 - approvals/actions/deployments at diagnosis: `0 / 0 / 0`
 
-Tasks #56-#66 do not approve or authorize it.
+Tasks #56-#67 do not approve or authorize it.
 
-## Next safe milestone — Task #67
+## Next safe milestone — Task #68
 
 Recommended next milestone:
 
-**Task #67 — Market/Category Signal Source Registry & Refresh Planning Foundation v1**
+**Task #68 — Source Adapter Contract & Signal Observation Normalization Foundation v1**
 
-Goal: move from Task #66 static identity/scoring architecture toward deterministic source coverage and refresh planning, still with zero live collection.
+Goal: move from Task #67 source eligibility/refresh planning to deterministic adapter/result contracts and normalized observation envelopes, still with zero live source collection and zero persistence.
 
-Safe Task #67 scope under generic `continue`:
+Safe Task #68 scope under generic `continue`:
 
-- source descriptors by market/category/signal type
-- first-party vs external source classes
-- provenance/quality metadata
-- freshness windows
-- refresh priority/urgency
-- market/category coverage mapping
-- bounded source budgets
-- deterministic network-free refresh plans
-- source eligibility/blockers
-- deterministic tests/docs
+- pure source-adapter request/response contracts derived from Task #67 selected refresh items
+- canonical normalized signal observation envelope
+- provenance and source-lineage binding
+- market/category/signal identity validation
+- deterministic observation fingerprints
+- partial/empty/error result semantics
+- duplicate/deduplication rules
+- bounded payload/metric normalization
+- source-quality/confidence carry-forward rules
+- fail-closed cross-market/category/signal mixing checks
+- deterministic network-free tests/docs
 
 Generic `continue` still does **not** authorize:
 
-- external trend/keyword/SERP provider enrollment
-- credential/OAuth changes
-- real network collection
-- recurring competitor collection
-- evidence persistence
-- target activation/config mutation
+- any real source/provider/competitor DNS/HTTP/API request
+- external provider enrollment
+- credential/API-key/OAuth changes
+- recurring collection
+- signal or competitor evidence persistence
+- active target configuration
 - scheduler/batch/worker/retry-loop activation
 - production DB DDL
 - provider/public-site writes
