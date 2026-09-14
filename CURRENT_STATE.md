@@ -4,42 +4,23 @@ This file is the authoritative mutable resume checkpoint. Always independently r
 
 ## Published production
 
-The currently published application release remains **Task #71 — Google Search Console Read-Only Runner Foundation v1**.
+Task #73 — **GSC First-Live-Read Pilot Readiness v1** — is now published and production-certified on the existing SEO_ENGINE deployment.
 
 Published application source:
 
-- SHA: `2ff2b3db1f6204f773aeec0d68b8780dffd7c9db`
-- tree: `d352b7c74c2a4e35bcf469a5326a784b8d6783ad`
+- SHA: `2498e5b34bbd130c97aa60865cc81875d76eb895`
+- tree: `62016e4a5952628dfbd0eff4f9cf32d797aa6b51`
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - URL: `https://dsseoengine.replit.app`
-- deployment type: autoscale
-- last certified status: success
+- deployment status: success
 
-Task #71 production health/auth certification is recorded in `.agents/memory/task71-production-closeout.md`.
+Detailed production record: `.agents/memory/task73-production-closeout.md`.
 
-**Tasks #72 and #73 are not published.** Later GitHub/Replit engineering synchronization does not alter the separately attested production application source.
+Task #73 publication did **not** authorize or perform a live Google Search Console interaction, real OAuth/client/token/property binding, Task #70 execution, observation/evidence persistence, scheduler/worker activation, DDL, Task #53/#54/#64 execution, or provider/public-site mutation.
 
-## Current engineering main before these closeout docs
+## Task #72/#73 engineering lineage
 
-Task #73 engineering merged as:
-
-- issue: #126
-- PR: #129
-- exact corrected tested head: `0a998bea96f442f00a235086bcada1e8b8f7beeb`
-- PR CI #228: success
-- merge: `d6a7a4b7cb1f3802e1fd9934b5de72d52a221dd2`
-- tree: `d105bf916e15333efef5f7f07fb416e2dcfa4f1b`
-- post-merge main CI #229: success
-
-The initial Task #73 PR head `8a4bda45893587078a59e727332159fdcd844125` was not merged because CI #227 exposed a wall-clock-sensitive test fixture. The test timestamps were corrected on the feature branch; the production contract was unchanged. The corrected exact head passed focused tests, full workspace tests, typecheck, and build before merge.
-
-Detailed record: `.agents/memory/task73-engineering-closeout.md`.
-
-## Task #72 foundation
-
-Task #72 — **GSC Read-Only OAuth + Property Binding Foundation v1** — is engineering-complete, merged, and Git-only synchronized but not published.
-
-Canonical Task #72 lineage:
+Task #72 — **GSC Read-Only OAuth + Property Binding Foundation v1**:
 
 - issue #123 — completed
 - PR #125
@@ -49,7 +30,32 @@ Canonical Task #72 lineage:
 - tree: `3f29182b109ff181a20d5c42950182b33e9ba1c6`
 - post-merge CI #226: success
 
-Task #72 establishes only a GSC-purpose delegated OAuth/property-readiness model:
+Task #73 — **GSC First-Live-Read Pilot Readiness v1**:
+
+- issue #126 — completed
+- engineering PR #129
+- exact corrected tested head: `0a998bea96f442f00a235086bcada1e8b8f7beeb`
+- PR CI #228: success
+- engineering merge: `d6a7a4b7cb1f3802e1fd9934b5de72d52a221dd2`
+- engineering tree: `d105bf916e15333efef5f7f07fb416e2dcfa4f1b`
+- post-merge CI #229: success
+- engineering-closeout docs PR #130
+- docs merge / published source: `2498e5b34bbd130c97aa60865cc81875d76eb895`
+- published tree: `62016e4a5952628dfbd0eff4f9cf32d797aa6b51`
+- post-merge main CI #231: success
+
+The initial Task #73 PR head `8a4bda45893587078a59e727332159fdcd844125` was not merged because CI #227 exposed a wall-clock-sensitive test fixture. The deterministic test timestamps were corrected without changing the production contract.
+
+Detailed engineering records:
+
+- `.agents/memory/task72-engineering-closeout.md`
+- `.agents/memory/task73-engineering-closeout.md`
+
+## GSC control architecture now present in production source
+
+Task #71 provides the bounded Search Analytics runner foundation.
+
+Task #72 adds GSC-purpose delegated OAuth/property-readiness modeling only:
 
 - profile: `gsc_read_only_v1`
 - external account identity: `google#gsc-read-only-v1`
@@ -57,17 +63,9 @@ Task #72 establishes only a GSC-purpose delegated OAuth/property-readiness model
 - supported v1 property: `sc-domain:<domain>`
 - accepted permission levels: `siteRestrictedUser`, `siteFullUser`
 - property selection must come from exact discovered-resource membership
-- app OIDC/login is not provider OAuth credential material
-- no schema migration
-- no live Google transport in engineering/tests.
+- application login/OIDC is not provider OAuth material.
 
-Detailed record: `.agents/memory/task72-engineering-closeout.md`.
-
-## Task #73 pilot-readiness foundation
-
-Task #73 — **GSC First-Live-Read Pilot Readiness v1** — adds the final pure/default-off control layer before any real GSC interaction.
-
-The deterministic pilot packet binds sanitized metadata only:
+Task #73 adds a deterministic first-live-read pilot packet binding sanitized metadata only:
 
 - purpose `gsc_search_analytics_first_pilot`
 - environment
@@ -79,52 +77,37 @@ The deterministic pilot packet binds sanitized metadata only:
 - exact `webmasters.readonly` scope
 - exact supported selected `sc-domain` property
 - accepted permission level
-- fresh Task #67 refresh-plan fingerprint
-- fresh Task #68 adapter-request fingerprint
-- exact Task #69 job ID/fingerprint
+- fresh Task #67/#68/#69 lineage
 - bounded first-pilot query policy
 - issued/expiry timestamps
-- SHA-256 fingerprint.
+- deterministic fingerprint/replay identity.
 
 The packet contains no client secret, access token, refresh token, authorization header, cookie, raw provider payload, or arbitrary provider response.
 
-### Production packet controls
+## First-pilot bounds
 
-Production pilot packets fail closed unless:
-
-- redirect URI exactly matches its allowlist
-- redirect uses HTTPS
-- redirect is not localhost/loopback
-- consent mode is explicitly production
-- Task #72 GSC-purpose identity is exact
-- scope set is exactly `webmasters.readonly`
-- selected property is a supported `sc-domain`
-- permission level is explicitly accepted
-- TTL is at most 30 minutes.
-
-### First pilot query bounds
+The first future Search Analytics pilot is bounded to:
 
 - one selected `sc-domain` property
-- default date range: 7 days
-- maximum date range: 31 days
+- recommended 7-day date range; Task #71 maximum remains 31 days
 - `query` dimension required
 - optional `page` dimension
 - maximum 5,000 rows/page
 - maximum 2 pages
 - no provider write
 - no automatic retry
-- dimensional/top-row Search Analytics result semantics remain `partial` because Google does not guarantee exhaustive rows.
+- dimensional/top-row results remain `partial` because Google does not guarantee exhaustive rows.
 
-## Task #73 readiness
+## Runtime/readiness boundary
 
 `livePilotReady` cannot become true unless all independent controls are true:
 
 1. valid, unexpired Task #73 packet
 2. Task #72 configured
-3. provider OAuth credential ready
+3. credential ready
 4. exact GSC scope ready
-5. GSC property discovery ready
-6. selected supported property ready
+5. property discovery ready
+6. selected property ready
 7. network ready
 8. fresh Task #67 lineage
 9. fresh Task #68 lineage
@@ -132,49 +115,67 @@ Production pilot packets fail closed unless:
 11. exact Task #69 authorization present
 12. Task #70 execution gate separately ready
 13. exact first-live-read authorization present
-14. no conflicting write/autonomy gate open.
+14. no conflicting write/persistence/autonomy gate open.
 
-Provider/public-site writes, observation/evidence persistence, scheduler, batch executor, autonomous worker, and retry loop are hard-false in the Task #73 readiness projection.
+Provider/public-site writes, observation/evidence persistence, scheduler, batch executor, autonomous worker, and retry loop remain hard-false in the Task #73 default readiness projection.
 
-## Future real-provider stages remain separate
+## Production publication and certification
 
-Task #73 defines, but does not execute, these eight future stages:
+Immediately before publication, GitHub and Replit matched exact published SHA/tree, Replit was `0/0` clean, and all execution/write/readiness gates were false.
 
-1. OAuth client/config binding
-2. Google OAuth consent
-3. GSC `sites.list` discovery
-4. exact GSC property selection/binding
-5. Task #70 gate/deployment
-6. exact Task #69 job authorization
-7. first Search Analytics read
-8. observation/evidence persistence.
+Publication lifecycle completed:
 
-No stage authorizes any later stage.
+`pending -> building -> running -> promoting -> success`
 
-## Replit engineering synchronization
+Postpublication SELECT-only certification confirmed:
 
-After Task #73 post-merge CI, Replit was Git-only synchronized and read-only verified at the engineering merge:
+- development/production public base tables: `31 / 31`
+- `auth_sessions` present in both
+- `auth_audit_events` present in both
+- Task #55 auth indexes: `6 / 6` in both
+- `signal_collection_single_job_v1` jobs: `0 / 0`
+- Task #72/#73/GSC-pilot tagged jobs: `0 / 0`
+- Task #72/#73/GSC-pilot tagged evidence: `0 / 0`
+- no matching Task #72/#73 observation persistence
+- no retained-log marker for Task #70 execution
+- no retained-log marker for Google/GSC/Search Console/Search Analytics request
+- no retained-log provider-write or public-site-write marker.
 
-- branch: `main`
-- HEAD: `d6a7a4b7cb1f3802e1fd9934b5de72d52a221dd2`
-- tree: `d105bf916e15333efef5f7f07fb416e2dcfa4f1b`
-- cached origin/main: same
-- ahead/behind: `0/0`
-- tracked/untracked: `0/0`
-- clean: true
-- extra local commit: false
+Direct production checks returned:
 
-Sanitized gates remained:
+- `GET /api/healthz`: `200`
+- `HEAD /`: `200`
+- `GET /api/auth/status`: `200`, auth configured/enforced and public registration disabled
+- unauthenticated `GET /api/signal-collection-execution/capability`: `401 authentication_required`
+
+No POST/mutation route or provider endpoint was used in certification.
+
+## Replit publication reconciliation
+
+Publication created one metadata-only local commit:
+
+- SHA: `60f7b9030b155e98d1a5862479d13b18d220852a`
+- parent: `2498e5b34bbd130c97aa60865cc81875d76eb895`
+- tree: `62016e4a5952628dfbd0eff4f9cf32d797aa6b51`
+- subject: `Published your App`
+- changed files: `0`
+
+It was removed by Git-only reconciliation without republishing. Replit returned to exact published-source `main`, cached origin same, `0/0`, clean, with no extra local commit.
+
+## Post-certification bookkeeping note
+
+Two accidental documentation-only direct-main writes occurred while starting this production-closeout record. Each was immediately reverted with normal non-force commits before any Replit synchronization or republish. The cleanup commits restored the exact published tree `62016e4a5952628dfbd0eff4f9cf32d797aa6b51`. CI #233 passed on the first cleanup; no application/runtime/provider/database state was affected. This closeout is being completed through the normal docs-branch/PR/CI path.
+
+## Current safety boundary
+
+Unless separately and explicitly authorized, keep all of the following closed:
 
 - `SIGNAL_COLLECTION_JOB_EXECUTION_ENABLED=false`
 - `COMPETITOR_ONE_TARGET_DRY_RUN_EXECUTION_ENABLED=false`
 - `COMPETITOR_COLLECTION_ENABLED=false`
 - `COMPETITOR_EVIDENCE_PERSISTENCE_ENABLED=false`
 - `PUBLIC_SITE_WRITES_ENABLED=false`
-
-Task #72 readiness remained all false:
-
-- configured=false
+- Task #72 configured=false
 - credentialReady=false
 - scopeReady=false
 - propertyDiscoveryReady=false
@@ -182,85 +183,55 @@ Task #72 readiness remained all false:
 - networkReady=false
 - task70ExecutionEnabled=false
 - liveReadAuthorized=false
+- Task #73 packet/lineage/Task #69/Task #70/first-live-read readiness=false
+- scheduler/batch/autonomous-worker/retry=false
+- observation/evidence persistence unauthorized
+- provider/public-site writes=false.
 
-Task #73 default readiness remained closed:
+Task #73 is **published but inert**.
 
-- packetPresent=false
-- packetValid=false
-- Task #67/#68/#69 lineage readiness=false
-- exact Task #69 authorization present=false
-- Task #70 execution gate ready=false
-- exact first-live-read authorization present=false
-- conflictingWriteOrAutonomyGateOpen=false
-- `livePilotReady=false`
-- provider/public writes=false
-- observation/evidence persistence authorization=false
-- scheduler/batch/worker/retry=false.
+## Future real-provider stages remain separately authorized
 
-No publication/redeploy, DB/schema/data mutation, credential/OAuth/property mutation, live Google/GSC/provider request, Task #70 execution, observation/evidence persistence, scheduler/batch/worker/retry activation, or provider/public-site mutation occurred.
+Task #73 defines, but does not execute, the following sequence:
+
+1. real OAuth client/config binding
+2. Google OAuth consent
+3. GSC `sites.list` discovery
+4. exact property selection/binding
+5. Task #70 gate/deployment
+6. exact Task #69 job authorization
+7. first Search Analytics read
+8. observation/evidence persistence.
+
+No stage authorizes any later stage.
+
+Generic `continue` does not authorize creation/use of a real Google OAuth client/secret/token, consent, `sites.list`, Search Analytics, real property binding, Task #70 enablement/execution, persistence, scheduler/worker activation, DDL, Task #53/#54/#64 execution, or provider/public-site mutation.
+
+## Next safe milestone
+
+The next safe step is **read-only Stage A provider-binding planning** for a future real GSC pilot. This may define the exact Google Cloud OAuth client/config contract, secret-storage/rotation model, redirect URI, consent-mode requirements, rollback rules, and authorization phrase without creating or using any real credential or contacting Google.
+
+Any actual OAuth client creation/configuration or secret storage remains separately explicitly authorized.
 
 ## Control chain
 
-Current architecture extends the controlled chain as:
-
 `Task #66 market/category identity`
 
-→ `Task #67 reviewed signal-source registry + bounded refresh planning`
+→ `Task #67 reviewed signal-source registry + refresh planning`
 
-→ `Task #68 exact adapter request + supplied-result normalization`
+→ `Task #68 exact adapter request + normalization`
 
-→ `Task #69 exact expiring collection-job packet + fingerprint authorization`
+→ `Task #69 exact expiring collection-job packet + authorization`
 
-→ `Task #70 default-off durable single-job execution + replay lock`
+→ `Task #70 durable default-off single-job execution + replay lock`
 
-→ `Task #71 GSC Search Analytics source runner foundation`
+→ `Task #71 GSC Search Analytics runner foundation`
 
-→ `Task #72 GSC-only delegated OAuth/property readiness`
+→ `Task #72 GSC delegated OAuth/property readiness`
 
 → `Task #73 first-live-read pilot packet/readiness composition`
 
 Task #70 remains authoritative for durable execution and replay protection. Tasks #71–#73 do not create an alternate executor.
-
-## Current authorization boundary
-
-Generic `continue` may cover only pure/default-off engineering, deterministic tests/docs, PR/CI/merge, Git-only Replit synchronization, and read-only certification when the active task explicitly permits it.
-
-It does **not** authorize:
-
-- Task #72/#73 publication/redeploy
-- creation/configuration of a real Google OAuth client or client secret
-- OAuth consent or consent-screen mutation
-- real access/refresh token acquisition, refresh, storage change, or use
-- live `sites.list`, property-verification, Search Analytics, or other Google/provider request
-- real Search Console property binding or permission mutation
-- `SIGNAL_COLLECTION_JOB_EXECUTION_ENABLED=true`
-- Task #70 execution
-- observation/evidence persistence
-- scheduler/batch/worker/retry activation
-- production DDL/migration
-- Task #53/#54/#64 execution
-- provider/public-site mutation.
-
-## Next safe milestone — Task #73 prepublication certification
-
-After these engineering-closeout docs are exact-head CI-green, merged, post-merge CI-green, and Git-only synchronized to Replit, the next safe step is **read-only Task #73 prepublication certification**.
-
-Certification may verify:
-
-- exact current GitHub/Replit SHA/tree and `0/0` clean state
-- Task #72/#73 files in the canonical source tree
-- PR/post-merge CI lineage
-- development/production schema parity without DDL
-- auth objects/configuration without auth mutation
-- all Task #70/competitor/public-write gates false
-- Task #72 and Task #73 readiness fail-closed
-- no real credential/property binding
-- zero unexpected Task #70/GSC pilot jobs
-- no observation/evidence persistence
-- no Google/provider/public-site write activity
-- production deployment remains the separately published Task #71 release unless separately authorized.
-
-Task #72/#73 publication requires a separate explicit authorization. Any first real Google interaction remains separately staged after publication/certification.
 
 ## Resume rule
 
