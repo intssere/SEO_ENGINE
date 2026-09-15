@@ -197,7 +197,7 @@ test("XML DTD/entities, unsupported roots and malformed nesting fail closed", ()
     /sitemap_xml_malformed_nesting/,
   );
   assert.throws(
-    () => buildSitemapInventory({ ...base, documents: [{ url: base.rootSitemapUrl, xml: `<urlset><url><loc>https://diamondshelf.us/x&amp;unknown;</loc></url></urlset>` }] }),
+    () => buildSitemapInventory({ ...base, documents: [{ url: base.rootSitemapUrl, xml: `<urlset><url><loc>https://diamondshelf.us/x&unknown;</loc></url></urlset>` }] }),
     /sitemap_xml_entity_unsupported/,
   );
 });
