@@ -64,7 +64,14 @@ function sourceFromXml(xml: string, hardPageLimit = 20) {
     documents: [{ url: "https://diamondshelf.us/sitemap.xml", xml }],
     policy: sitemapPolicy(hardPageLimit),
   });
-  const executionPlan = planFullSiteCrawlExecution(plan, inventory, executionPolicy());
+  const executionPlan = planFullSiteCrawlExecution(
+    plan,
+    inventory,
+    executionPolicy({
+      batchSize: Math.min(4, hardPageLimit),
+      concurrency: Math.min(2, hardPageLimit),
+    }),
+  );
   const checkpoint = createInitialCrawlCheckpoint(executionPlan);
   return { plan, inventory, executionPlan, checkpoint };
 }
@@ -102,7 +109,8 @@ function stableSerialize(value: unknown): string {
 
 function refingerprint<T extends { fingerprint: string }>(value: T): T {
   const clone = structuredClone(value);
-  const { fingerprint: _ignored, ...withoutFingerprint } = clone;
+  const withoutFingerprint = { ...clone } as Record<string, unknown>;
+  delete withoutFingerprint.fingerprint;
   clone.fingerprint = createHash("sha256").update(stableSerialize(withoutFingerprint)).digest("hex");
   return clone;
 }
