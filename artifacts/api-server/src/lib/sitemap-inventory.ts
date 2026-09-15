@@ -19,6 +19,7 @@ export const SITEMAP_REJECTION_REASONS = Object.freeze([
   "excluded_path",
   "path_depth_exceeded",
   "sitemap_depth_exceeded",
+  "sitemap_document_limit_reached",
   "inventory_url_limit_reached",
 ] as const);
 
@@ -144,6 +145,7 @@ function assertFullSitePlan(plan: CrawlControllerPlan): void {
 }
 
 function xmlEntityDecode(value: string): string {
+  if (/&(?!#\d+;|#x[0-9a-fA-F]+;|amp;|lt;|gt;|quot;|apos;)/.test(value)) throw new Error("sitemap_xml_entity_unsupported");
   return value.replace(/&(#x[0-9a-fA-F]+|#\d+|amp|lt|gt|quot|apos);/g, (_full, token: string) => {
     if (token === "amp") return "&";
     if (token === "lt") return "<";
@@ -153,7 +155,7 @@ function xmlEntityDecode(value: string): string {
     const codePoint = token.startsWith("#x") ? Number.parseInt(token.slice(2), 16) : Number.parseInt(token.slice(1), 10);
     if (!Number.isInteger(codePoint) || codePoint < 0 || codePoint > 0x10ffff) throw new Error("sitemap_xml_entity_invalid");
     return String.fromCodePoint(codePoint);
-  }).replace(/&[A-Za-z#][^;\s<]*;/g, () => { throw new Error("sitemap_xml_entity_unsupported"); });
+  });
 }
 
 function localName(name: string): string {
@@ -172,6 +174,15 @@ function normalizeLastmod(value: string | null): string | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
+function validateAttributes(raw: string): void {
+  let remaining = raw.trim();
+  while (remaining) {
+    const match = remaining.match(/^([A-Za-z_][\w:.-]*)\s*=\s*("[^"]*"|'[^']*')/);
+    if (!match) throw new Error("sitemap_xml_malformed_tag");
+    remaining = remaining.slice(match[0].length).trimStart();
+  }
+}
+
 function parseSitemapXml(xmlInput: string): ParsedSitemapDocument {
   const xml = xmlInput.replace(/^\uFEFF/, "");
   if (/<!DOCTYPE\b/i.test(xml) || /<!ENTITY\b/i.test(xml)) throw new Error("sitemap_xml_dtd_or_entity_not_allowed");
@@ -181,6 +192,8 @@ function parseSitemapXml(xmlInput: string): ParsedSitemapDocument {
   let rootClosed = false;
   let locText = "";
   let lastmodText = "";
+  let locCaptureDepth: number | null = null;
+  let lastmodCaptureDepth: number | null = null;
   let currentRecord: "url" | "sitemap" | null = null;
   const sitemapLocations: string[] = [];
   const urlLocations: Array<{ loc: string; lastmod: string | null }> = [];
@@ -196,13 +209,13 @@ function parseSitemapXml(xmlInput: string): ParsedSitemapDocument {
     if (token.startsWith("<!--") || token.startsWith("<?")) continue;
     if (token.startsWith("<![CDATA[")) {
       const text = token.slice(9, -3);
-      if (stack.at(-1) === "loc") locText += text;
-      if (stack.at(-1) === "lastmod") lastmodText += text;
+      if (locCaptureDepth === stack.length && stack.at(-1) === "loc") locText += text;
+      if (lastmodCaptureDepth === stack.length && stack.at(-1) === "lastmod") lastmodText += text;
       continue;
     }
     if (!token.startsWith("<")) {
-      if (stack.at(-1) === "loc") locText += token;
-      else if (stack.at(-1) === "lastmod") lastmodText += token;
+      if (locCaptureDepth === stack.length && stack.at(-1) === "loc") locText += token;
+      else if (lastmodCaptureDepth === stack.length && stack.at(-1) === "lastmod") lastmodText += token;
       else if (!stack.length && token.trim()) throw new Error("sitemap_xml_text_outside_root");
       continue;
     }
@@ -211,15 +224,17 @@ function parseSitemapXml(xmlInput: string): ParsedSitemapDocument {
     if (end) {
       const name = localName(end[1]!);
       if (stack.at(-1) !== name) throw new Error("sitemap_xml_malformed_nesting");
-      if (name === "loc") {
+      if (name === "loc" && locCaptureDepth === stack.length) {
         const decoded = xmlEntityDecode(locText.trim());
         if (!decoded) throw new Error("sitemap_loc_required");
         if (currentRecord === "url") currentUrlLoc = decoded;
         else if (currentRecord === "sitemap") sitemapLocations.push(decoded);
         locText = "";
-      } else if (name === "lastmod") {
+        locCaptureDepth = null;
+      } else if (name === "lastmod" && lastmodCaptureDepth === stack.length) {
         if (currentRecord === "url") currentUrlLastmod = normalizeLastmod(xmlEntityDecode(lastmodText.trim()));
         lastmodText = "";
+        lastmodCaptureDepth = null;
       } else if (name === "url") {
         if (root !== "urlset" || currentRecord !== "url" || !currentUrlLoc) throw new Error("sitemap_url_entry_invalid");
         urlLocations.push({ loc: currentUrlLoc, lastmod: currentUrlLastmod });
@@ -235,38 +250,51 @@ function parseSitemapXml(xmlInput: string): ParsedSitemapDocument {
       continue;
     }
 
-    const start = token.match(/^<\s*([A-Za-z_][\w:.-]*)(?:\s[^<>]*?)?\s*(\/?)>$/);
+    const start = token.match(/^<\s*([A-Za-z_][\w:.-]*)([\s\S]*?)>$/);
     if (!start) throw new Error("sitemap_xml_malformed_tag");
     const name = localName(start[1]!);
-    const selfClosing = start[2] === "/";
+    let rawTail = start[2]!.trim();
+    const selfClosing = rawTail.endsWith("/");
+    if (selfClosing) rawTail = rawTail.slice(0, -1).trimEnd();
+    validateAttributes(rawTail);
+    const parent = stack.at(-1) ?? null;
+
     if (!stack.length) {
       if (rootClosed) throw new Error("sitemap_xml_multiple_roots");
       if (name !== "sitemapindex" && name !== "urlset") throw new Error("sitemap_xml_unsupported_root");
       root = name;
     }
     stack.push(name);
+
     if (name === "url") {
-      if (root !== "urlset" || currentRecord) throw new Error("sitemap_url_entry_invalid");
+      if (root !== "urlset" || parent !== "urlset" || currentRecord) throw new Error("sitemap_url_entry_invalid");
       currentRecord = "url";
       currentUrlLoc = null;
       currentUrlLastmod = null;
     } else if (name === "sitemap") {
-      if (root !== "sitemapindex" || currentRecord) throw new Error("sitemap_index_entry_invalid");
+      if (root !== "sitemapindex" || parent !== "sitemapindex" || currentRecord) throw new Error("sitemap_index_entry_invalid");
       currentRecord = "sitemap";
-    } else if (name === "loc") {
+    } else if (name === "loc" && parent === currentRecord) {
       locText = "";
-    } else if (name === "lastmod") {
+      locCaptureDepth = stack.length;
+    } else if (name === "lastmod" && currentRecord === "url" && parent === "url") {
       lastmodText = "";
+      lastmodCaptureDepth = stack.length;
     }
+
     if (selfClosing) {
-      if (name === "loc") throw new Error("sitemap_loc_required");
+      if (name === "loc" && locCaptureDepth === stack.length) throw new Error("sitemap_loc_required");
       if (name === "url" || name === "sitemap") throw new Error("sitemap_entry_loc_required");
+      if (locCaptureDepth === stack.length) locCaptureDepth = null;
+      if (lastmodCaptureDepth === stack.length) lastmodCaptureDepth = null;
       stack.pop();
       if (!stack.length) rootClosed = true;
     }
   }
 
-  if (consumed !== xml.length || stack.length || !root || !rootClosed || currentRecord) throw new Error("sitemap_xml_malformed");
+  if (consumed !== xml.length || stack.length || !root || !rootClosed || currentRecord || locCaptureDepth !== null || lastmodCaptureDepth !== null) {
+    throw new Error("sitemap_xml_malformed");
+  }
   return { root, sitemapLocations, urlLocations };
 }
 
@@ -364,11 +392,6 @@ export function buildSitemapInventory(input: SitemapInventoryInput): SitemapInve
     queue.sort((a, b) => a.depth - b.depth || a.url.localeCompare(b.url));
     const current = queue.shift()!;
     if (processed.has(current.url)) continue;
-    if (processed.size >= policy.maxDocuments) {
-      hardLimitReached = true;
-      completenessReasons.add("sitemap_document_limit_reached");
-      break;
-    }
     if (current.depth > policy.maxDepth) {
       hardLimitReached = true;
       completenessReasons.add("sitemap_depth_limit_reached");
@@ -400,6 +423,12 @@ export function buildSitemapInventory(input: SitemapInventoryInput): SitemapInve
           continue;
         }
         if (!queued.has(normalized.url) && !processed.has(normalized.url)) {
+          if (queued.size >= policy.maxDocuments) {
+            hardLimitReached = true;
+            completenessReasons.add("sitemap_document_limit_reached");
+            reject("sitemap_reference", current.url, "sitemap_document_limit_reached");
+            continue;
+          }
           queued.add(normalized.url);
           queue.push({ url: normalized.url, depth: current.depth + 1 });
         }
@@ -413,9 +442,9 @@ export function buildSitemapInventory(input: SitemapInventoryInput): SitemapInve
         reject("url_entry", current.url, normalized.reason);
         continue;
       }
-      acceptedOccurrences++;
       const existing = entries.get(normalized.url);
       if (existing) {
+        acceptedOccurrences++;
         duplicateOccurrences++;
         existing.sources.add(current.url);
         if (rawEntry.lastmod) existing.lastmods.add(rawEntry.lastmod);
@@ -427,16 +456,12 @@ export function buildSitemapInventory(input: SitemapInventoryInput): SitemapInve
         reject("url_entry", current.url, "inventory_url_limit_reached");
         continue;
       }
+      acceptedOccurrences++;
       entries.set(normalized.url, {
         sources: new Set([current.url]),
         lastmods: new Set(rawEntry.lastmod ? [rawEntry.lastmod] : []),
       });
     }
-  }
-
-  if (!processed.has(rootSitemapUrl) && !missing.has(rootSitemapUrl)) {
-    missing.add(rootSitemapUrl);
-    completenessReasons.add("missing_supplied_sitemap_document");
   }
 
   const inventoryEntries: SitemapInventoryEntry[] = [...entries.entries()]
