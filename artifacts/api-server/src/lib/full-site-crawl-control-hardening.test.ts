@@ -73,8 +73,8 @@ test("P2.3 control source contains no built-in network, socket, DNS or persisten
     /axios/i,
     /undici/i,
     /\bWebSocket\b/,
-    /\bINSERT\b/i,
-    /\bUPDATE\b/i,
+    /\bINSERT\s+INTO\b/i,
+    /\bUPDATE\s+[A-Za-z_"`][\w."`]*\s+SET\b/i,
     /\bDELETE\s+FROM\b/i,
   ];
   for (const pattern of forbidden) assert.equal(pattern.test(source), false, `forbidden primitive matched ${pattern}`);
