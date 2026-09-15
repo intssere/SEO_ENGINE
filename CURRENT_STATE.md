@@ -13,47 +13,49 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75 and roadmap P2.1/P2.2/P2.3/P2.4 have **not** been published. Git-only Replit synchronization does not change the separately attested production application source.
+Tasks #74, #75 and roadmap P2.1/P2.2/P2.3/P2.4/P2.5 have **not** been published as application releases. Git-only Replit synchronization does not change the separately attested production application source.
 
-## Current engineering state — P2.4 implementation complete
+## Current engineering state — P2.5 implementation complete
 
-Roadmap **P2.4 — Crawl Completion Ledger and Whole-Site Certification Foundation** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified, and Git-only synchronized to Replit at the implementation merge.
+Roadmap **P2.5 — Crawl History, Comparison, and Change Detection v1** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified, and Git-only synchronized to Replit at the implementation merge.
 
 Authoritative issue:
-- issue #157
+- issue #160
 
 Implementation lineage:
-- implementation PR #158
-- exact tested head: `9db5ec1bdd3337c0dd20ff3015e2143ddbfe7528`
-- PR CI #267 / run `34996859850`: success
-- implementation merge: `977ea26dc823bc21e8371ddac0d35e3b702907f0`
-- implementation tree: `65566cbc1f91c6e8c2e6413853760c9cecfdc34b`
-- post-merge main CI #268 / run `34997071122`: success
+- implementation PR #161
+- exact tested head: `646719a4bc0afd30fa6fc5b1049e25862f80eaed`
+- PR CI #271 / run `35001858253`: success
+- implementation merge: `a177c4590273da29113af75b431d6ae20c7e3b4c`
+- implementation tree: `2d4a2103c9036f5e90032d5f569d01f7e8ecb78f`
+- post-merge main CI #272 / run `35002068558`: success
 
-Both green certification runs passed the task gate, full current workspace tests, typecheck, and build.
+Both green certification runs passed the task gate, legacy PostgreSQL core-schema validation, full current workspace tests, typecheck, and build.
 
 Detailed engineering record:
-- `.agents/memory/p2-4-crawl-completion-certification-closeout.md`
+- `.agents/memory/p2-5-crawl-history-closeout.md`
 
 ## Replit engineering workspace
 
-After post-merge CI #268, Replit was Git-only synchronized and read-only verified at the exact P2.4 implementation merge:
+After post-merge CI #272, Replit was Git-only synchronized and read-only verified at the exact P2.5 implementation merge:
 - branch: `main`
-- HEAD: `977ea26dc823bc21e8371ddac0d35e3b702907f0`
-- tree: `65566cbc1f91c6e8c2e6413853760c9cecfdc34b`
-- cached origin/main: same SHA/tree
+- HEAD: `a177c4590273da29113af75b431d6ae20c7e3b4c`
+- tree: `2d4a2103c9036f5e90032d5f569d01f7e8ecb78f`
+- cached origin/main: same SHA
 - ahead/behind: `0/0`
 - tracked/untracked: `0/0`
 - working tree clean: true
 - extra local commit: false
 
-No publication/redeployment, app run, runtime/config/environment mutation, DB/schema/data action, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker/batch/retry activation, persistence action, provider/public-site write, or other non-Git mutation occurred.
+A first docs-only closeout attempt was created locally in Replit at commit `d2f5d94f7d23b08fcb9de47ba91f12f490dc5732` / tree `340150a6f4de6c27a2120385dc46fed51901a3e4`, but its push failed because the Replit Git environment lacked GitHub authentication. That local documentation commit is not canonical. The canonical closeout is the GitHub-first docs branch/PR created after that failure.
 
-A docs-only closeout merge may advance GitHub/Replit `main` beyond this implementation SHA without changing application behavior. Always independently resolve current `main` before acting.
+No publication/redeployment, app run, runtime/config/environment mutation, DB/schema/data action, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker/batch/retry activation, persistence action, provider/public-site write, or other non-Git product mutation occurred.
+
+A docs-only closeout merge may advance GitHub/Replit `main` beyond the implementation SHA without changing application behavior. Always independently resolve current `main` before acting.
 
 ## Current first-party crawler reality
 
-The active production/pilot crawl runtime is still the historical bounded pilot implementation. P2.1–P2.4 are engineering foundations and do not replace or activate that runtime.
+The active production/pilot crawl runtime is still the historical bounded pilot implementation. P2.1–P2.5 are engineering foundations and do not replace or activate that runtime.
 
 Current production/pilot behavior remains approximately:
 - 30-page bound
@@ -84,7 +86,7 @@ All P2.1 execution/persistence/scheduler/worker/competitor/provider/public-write
 
 P2.2 is the network-free supplied-sitemap inventory layer for P2.1 `full_site`.
 
-It provides bounded `sitemapindex`/`urlset` parsing, exact first-party URL policy, deterministic canonical normalization/dedupe, supplied-child completeness accounting, explicit hard-limit state, rejection accounting and deterministic sanitized fingerprinting.
+It provides bounded `sitemapindex`/`urlset` parsing, exact first-party URL policy, deterministic canonical normalization/dedupe, supplied-child completeness accounting, explicit hard-limit state, rejection accounting, sitemap `lastmod` metadata where supplied, and deterministic sanitized fingerprinting.
 
 It does not fetch sitemaps. Network fetching, crawl execution, persistence, scheduler/batch/worker/retry, competitor collection/persistence, provider writes and public-site writes remain false.
 
@@ -92,80 +94,52 @@ It does not fetch sitemaps. Network fetching, crawl execution, persistence, sche
 
 P2.3 composes a valid P2.1 `full_site` plan with a matching complete P2.2 inventory and remains network-free/default-off.
 
-It provides:
-- deterministic canonical-inventory-derived batches;
-- finite batch/concurrency/request-rate/timeout/redirect/retry/trap ceilings;
-- same-origin HTTPS GET-only request and redirect revalidation;
-- query/fragment/credential/cross-origin/trap rejection;
-- deterministic plan/batch fingerprints;
-- deterministic checkpoint/resume state;
-- exact supplied-outcome advancement;
-- stale/replay/out-of-order/missing/duplicate/foreign outcome rejection;
-- bounded transient retry classification with terminal exhaustion;
-- semantic integrity checks independent of fingerprint-only trust.
+It provides deterministic batches, finite batch/concurrency/request-rate/timeout/redirect/retry/trap ceilings, same-origin HTTPS GET-only controls, checkpoint/resume state, supplied-outcome advancement, stale/replay/out-of-order/missing/duplicate/foreign outcome rejection, bounded transient retry classification and semantic integrity checks.
 
 P2.3 does not perform network execution and cannot itself claim whole-site certification.
 
 ## P2.4 completion-ledger/certification contract
 
-P2.4 consumes exact valid P2.1/P2.2/P2.3 lineage and creates a deterministic `first_party_full_site_crawl_certification_v1` artifact.
+P2.4 consumes exact valid P2.1/P2.2/P2.3 lineage and creates deterministic `first_party_full_site_crawl_certification_v1` artifacts.
 
-### Upstream validation
-P2.4 revalidates rather than blindly trusting fingerprints:
-- P2.1 full-site plan is reconstructed semantically;
-- P2.2 inventory counts, ordering, rejection accounting, completeness, authorization and fingerprint are independently checked;
-- P2.3 execution-plan/checkpoint integrity validators are run;
-- P2.3 execution plan is reconstructed from P2.1 + P2.2 + policy;
-- exact site/origin/limits/fingerprint lineage is required.
+The ledger records discovered, eligible, fetched-successful, redirect, dedupe, robots/exclusion, noindex, failure, finalized, pending, deterministic coverage and hard-limit state. `wholeSiteCertified=true` is a **completeness/accounting assertion**, not a claim that every page is SEO healthy.
 
-### Ledger fields
-The certification artifact records:
-- `discovered`
-- `eligible`
-- `fetchedSuccessful`
-- `redirects`
-- `canonicalizedDeduplicated`
-- `robotsExcluded`
-- `inventoryExcluded`
-- `robotsOrExcluded`
-- `noindex`
-- `failed`
-- `finalized`
-- `pending`
-- deterministic `coveragePercent`
-- hard-limit state
-- whole-site certification boolean/reason/blockers.
+P2.4 revalidates upstream semantics and exact lineage rather than trusting fingerprints alone. Terminal failures block certification. Known redirects, robots exclusions and noindex states may coexist with complete accounting. Incomplete/hard-limit-truncated inventory, invalid lineage, inconsistent accounting or unexpectedly open authorization fails closed.
 
-`noindex` is a subset of fetched success and is never double-counted in finalized coverage. Sitemap-reference rejections do not inflate discovered page URL count.
+P2.4 contains no network client, API route, persistence path, DDL, scheduler, worker, live retry loop, competitor transport, provider action or public-site mutation path.
 
-### Certification meaning
-`wholeSiteCertified=true` means the **approved canonical inventory has complete, reconciled accounting**. It is not a statement that every page is healthy or free of SEO issues.
+## P2.5 crawl-history/comparison contract
 
-Known classified terminal states may coexist with certification:
-- redirects
-- robots exclusions
-- noindex pages.
+P2.5 adds deterministic `first_party_crawl_history_comparison_v1` artifacts over supplied P2.2 inventory + P2.4 certification sources.
 
-Terminal failures block certification even when mathematical finalized coverage is 100%.
+### Proven comparison dimensions
+P2.5 can prove and report:
+- inventory membership changes: canonical URLs added and removed;
+- sitemap `lastmod` changes when those values are supplied upstream;
+- aggregate completion-ledger numeric deltas;
+- whole-site certification transitions;
+- certification blockers added and removed;
+- inventory/execution-plan/checkpoint lineage changes;
+- checkpoint-sequence deltas;
+- page-hard-limit, absolute-ceiling and hard-limit-blocked transitions;
+- deterministic summary/change state and SHA-256 fingerprint.
 
-Empty eligible inventory is mathematically represented as 100% coverage but remains explicitly non-certified with `empty_eligible_inventory` in this foundation.
+Comparisons require the same first-party site ID and canonical origin. Cross-site/cross-origin comparisons fail closed. Upstream inventory/certification integrity is revalidated before comparison, and tampered artifacts or inconsistent lineage fail closed.
 
-Stable blockers include:
-- `checkpoint_incomplete`
-- `coverage_below_100`
-- `empty_eligible_inventory`
-- `terminal_failures_present`
-- `unfinished_batches_remaining`
-- `pending_urls_remaining`.
+### Explicit evidence boundary
+P2.1–P2.4 do **not** retain enough per-URL outcome evidence for P2.5 to prove per-URL changes in:
+- HTTP status;
+- fetch result;
+- canonical target;
+- indexability;
+- content fingerprint.
 
-Incomplete/hard-limit-truncated inventory is rejected before certification. Invalid/tampered lineage, accounting inconsistency or open authorization fails closed.
+P2.5 therefore exposes `perUrlOutcomeComparisonAvailable=false` with the reason `upstream_p2_1_to_p2_4_do_not_retain_per_url_fetch_or_content_outcomes` rather than inventing those changes.
 
-### Integrity and safety
-P2.4 artifacts are deterministic SHA-256 fingerprinted and also have independent semantic reconciliation checks, preventing a caller from legitimizing inconsistent state merely by recomputing a fingerprint.
+This boundary is important for P2.6: incremental recrawl planning may use only supported P2.5 signals unless a later evidence/observation layer supplies additional verified per-URL evidence.
 
-No raw XML, raw HTML, response body, token, client secret, credential or provider payload is retained.
-
-P2.4 adds no network client, API route, persistence path, DDL, scheduler, worker, live retry loop, competitor transport, provider action or public-site mutation path.
+### Safety
+P2.5 is pure/default-off and adds no built-in network transport, persistence mutation, DDL, scheduler, worker, retry executor, provider client, public-site write path, or raw/secret-bearing artifact field. All network/execution/persistence/scheduler/worker/provider/public-write authorization remains closed.
 
 ## Competitor isolation remains mandatory
 
@@ -185,7 +159,7 @@ Exact GSC identity:
 - supported property: `sc-domain:<domain>`
 - accepted permissions: `siteRestrictedUser`, `siteFullUser`.
 
-No real GSC OAuth client/secret, OAuth consent, delegated token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence has been authorized by P2.4.
+No real GSC OAuth client/secret, OAuth consent, delegated token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence has been authorized by P2.5.
 
 ## Current safety boundary
 
@@ -215,29 +189,32 @@ Completed engineering foundations now include:
 - P2.1 — first-party baseline/full-site crawl-controller planning
 - P2.2 — network-free supplied-sitemap inventory + canonical dedupe
 - P2.3 — network-free bounded crawl execution-control + checkpoint/resume
-- P2.4 — deterministic completion ledger + whole-site completeness certification.
+- P2.4 — deterministic completion ledger + whole-site completeness certification
+- P2.5 — deterministic crawl-history/comparison and change-detection foundation.
 
-P1 live-provider activation remains separately authorized. P2.1–P2.4 do not imply live crawl execution, sitemap fetching, persistence, scheduler/autonomous operation or publication.
+P1 live-provider activation remains separately authorized. P2.1–P2.5 do not imply live crawl execution, sitemap fetching, persistence, scheduler/autonomous operation or publication.
 
 ## Next safe engineering milestone
 
-**P2.5 — Crawl History / Comparison and Change Detection.**
+**P2.6 — Incremental Recrawl Planner.**
 
-Initial P2.5 should remain pure/default-off and network-free. It should compare supplied valid P2.4 certification snapshots deterministically without persistence. The first implementation should define and test:
-- exact first-party identity and compatible-lineage rules;
-- ordered before/after snapshot comparison;
-- inventory URL additions/removals where comparable source identity exists;
-- ledger/classification transitions;
-- coverage and whole-site-certification transitions;
-- regression/improvement/change categories;
-- deterministic change-event ordering and fingerprints;
-- duplicate/replay/tamper resistance;
-- explicit incomparable-snapshot reasons;
-- sanitized history/change artifacts with all execution/persistence/write authorizations closed.
+Initial P2.6 should remain pure/default-off and network-free. It should consume verified P2.5 comparison signals plus current inventory/certification lineage and deterministically plan a finite recrawl candidate set without executing requests or persisting jobs.
 
-P2.5 must not silently activate live crawling, sitemap fetching, persistence/DDL, scheduler/worker/batch/retry execution, competitor collection, Task #75 live-provider stages, provider/public-site writes or publication.
+At minimum P2.6 should define and test:
+- exact same-site/source-lineage preconditions;
+- deterministic candidate reasons and priority ordering;
+- newly added URLs as strong recrawl candidates;
+- sitemap `lastmod` changes as recrawl signals when supplied;
+- unresolved aggregate failure/certification regression signals without fabricating per-URL attribution;
+- stale/freshness inputs only when supplied by an explicit trusted input contract;
+- bounded maximum candidate count and hard safety ceilings;
+- dedupe/stable ordering/fingerprinting;
+- explicit reason when aggregate evidence cannot safely identify a concrete per-URL candidate;
+- closed execution/network/persistence/scheduler/provider/public-write authorization.
 
-Generic `continue` may advance the pure/default-off P2.5 engineering workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync and docs closeout. It does **not** authorize live crawl/provider activity, persistence, DDL, scheduler/worker activation, competitor execution, provider/public-site writes or publication.
+P2.6 must not infer HTTP/content/canonical/indexability changes that P2.5 cannot prove. It must not silently activate live crawling, sitemap fetching, persistence/DDL, scheduler/worker/batch/retry execution, competitor collection, Task #75 live-provider stages, provider/public-site writes or publication.
+
+Generic `continue` may advance the pure/default-off P2.6 engineering workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync and docs closeout. It does **not** authorize live crawl/provider activity, persistence, DDL, scheduler/worker activation, competitor execution, provider/public-site writes or publication.
 
 ## Resume rule
 
@@ -248,7 +225,7 @@ At every new session:
 4. read `MASTER_COMPLETION_ROADMAP.md`;
 5. read `ARCHITECTURE.md` and `PROJECT_HANDOFF.md`;
 6. read `.agents/skills/seo-engine-project/SKILL.md`;
-7. read `.agents/memory/MEMORY.md` plus Task #75 and P2.1/P2.2/P2.3/P2.4 closeouts;
+7. read `.agents/memory/MEMORY.md` plus Task #75 and P2.1/P2.2/P2.3/P2.4/P2.5 closeouts;
 8. read program issue #139 and the active task issue/PR;
 9. inspect Replit branch/HEAD/tree/ahead-behind/clean state and sanitized gates before sync/publish.
 
