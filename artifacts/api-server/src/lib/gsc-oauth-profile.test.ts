@@ -41,7 +41,7 @@ function discovery(): GscDiscoveryResult {
 }
 
 test("GSC callback orchestration keeps exact profile identity and uses only injected dependencies", async () => {
-  const state = createGscReadonlyState({ now: new Date("2026-09-15T00:00:00.000Z") });
+  const state = createGscReadonlyState();
   const calls: string[] = [];
   const persisted: GscReadonlyPersistenceInput[] = [];
 
@@ -112,7 +112,7 @@ test("GSC callback rejects Analytics or any extra granted scope before discovery
 });
 
 test("GSC callback validates signed-purpose state before token exchange", async () => {
-  const state = createGscReadonlyState({ now: new Date("2026-09-15T00:00:00.000Z") });
+  const state = createGscReadonlyState();
   let exchangeCalled = false;
 
   await assert.rejects(
