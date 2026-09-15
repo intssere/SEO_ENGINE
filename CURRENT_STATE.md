@@ -13,165 +13,131 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75 and roadmap P2.1/P2.2/P2.3/P2.4 have **not** been published. Git-only Replit synchronization does not change the separately attested production application source.
+Tasks #74, #75 and roadmap P2.1–P2.6 have **not** been published as application releases. Git merge or Git-only Replit reconciliation does not change the separately attested production source.
 
-## Current engineering state — P2.4 implementation complete
+## Current canonical engineering state — P2.6 implementation complete
 
-Roadmap **P2.4 — Crawl Completion Ledger and Whole-Site Certification Foundation** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified, and Git-only synchronized to Replit at the implementation merge.
+Roadmap **P2.6 — Incremental Recrawl Planner v1** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, and post-merge CI-certified.
 
 Authoritative issue:
-- issue #157
+- issue #162
 
 Implementation lineage:
-- implementation PR #158
-- exact tested head: `9db5ec1bdd3337c0dd20ff3015e2143ddbfe7528`
-- PR CI #267 / run `34996859850`: success
-- implementation merge: `977ea26dc823bc21e8371ddac0d35e3b702907f0`
-- implementation tree: `65566cbc1f91c6e8c2e6413853760c9cecfdc34b`
-- post-merge main CI #268 / run `34997071122`: success
+- implementation PR #163
+- exact tested head: `1553430a96bec277009a458d704dcdf5f5f4795f`
+- PR CI #273 / run `35005645661`: success
+- implementation merge: `cdc272ea33b5e937662f85543fde9928175777bf`
+- implementation tree: `227da28f22bc0047a71227f4fd01925a2011f717`
+- post-merge main CI #274 / run `35005842971`: success
 
-Both green certification runs passed the task gate, full current workspace tests, typecheck, and build.
+Both green certification runs passed task tests, the full current workspace suite, typecheck and build.
 
-Detailed engineering record:
-- `.agents/memory/p2-4-crawl-completion-certification-closeout.md`
+Detailed records:
+- `.agents/memory/p2-5-crawl-history-closeout.md`
+- `.agents/memory/p2-6-incremental-recrawl-planner-closeout.md`
 
-## Replit engineering workspace
+## Replit engineering workspace — reconciliation required
 
-After post-merge CI #268, Replit was Git-only synchronized and read-only verified at the exact P2.4 implementation merge:
-- branch: `main`
-- HEAD: `977ea26dc823bc21e8371ddac0d35e3b702907f0`
-- tree: `65566cbc1f91c6e8c2e6413853760c9cecfdc34b`
-- cached origin/main: same SHA/tree
-- ahead/behind: `0/0`
-- tracked/untracked: `0/0`
+Before the P2.6 merge, read-only inspection found Replit clean on local branch `p2-5-crawl-history-closeout-docs` at docs-only commit:
+- local HEAD: `d2f5d94f7d23b08fcb9de47ba91f12f490dc5732`
+- parent: P2.5 implementation merge `a177c4590273da29113af75b431d6ae20c7e3b4c`
+- cached `origin/main`: `a177c4590273da29113af75b431d6ae20c7e3b4c`
+- ahead/behind: `1/0`
 - working tree clean: true
-- extra local commit: false
+- changed files in that local commit: continuity/docs only.
 
-No publication/redeployment, app run, runtime/config/environment mutation, DB/schema/data action, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker/batch/retry activation, persistence action, provider/public-site write, or other non-Git mutation occurred.
+That local commit was never present on GitHub and must not be treated as canonical. Its P2.5 closeout semantics are now reconstructed on the GitHub-authoritative P2.6 closeout branch. Replit must be reconciled to the final certified GitHub `main` only after this docs closeout is merged and certified. Do not discard or overwrite unexpected Replit work blindly; verify exact branch/HEAD/tree/ahead-behind before reconciliation.
 
-A docs-only closeout merge may advance GitHub/Replit `main` beyond this implementation SHA without changing application behavior. Always independently resolve current `main` before acting.
+No application publication/redeployment or live runtime/provider/database activity is authorized by this reconciliation.
 
-## Current first-party crawler reality
+## First-party crawler reality
 
-The active production/pilot crawl runtime is still the historical bounded pilot implementation. P2.1–P2.4 are engineering foundations and do not replace or activate that runtime.
-
-Current production/pilot behavior remains approximately:
-- 30-page bound
-- depth 2
-- GET-only
-- sequential breadth-first crawl
-- robots-aware
-- no retries
-- 10-second request timeout
-- maximum HTML response 750,000 bytes
-- same-site normalization
-- query stripping
+The active published production/pilot crawler is still the historical bounded pilot implementation, approximately:
+- 30-page bound;
+- depth 2;
+- GET-only;
+- sequential breadth-first crawl;
+- robots-aware;
+- no retries;
+- 10-second request timeout;
+- maximum HTML response around 750,000 bytes;
+- same-site normalization;
+- query stripping;
 - existing runtime redirect handling.
 
-The 30-page behavior remains **baseline** mode. It is not the intended whole-site production ceiling.
+The 30-page behavior remains **baseline** mode. P2.1–P2.6 are engineering foundations and do not silently replace or activate the published runtime.
 
-## P2.1 crawl-controller contract
+## P2.1–P2.4 foundation summary
 
-P2.1 defines `baseline` and `full_site` planning.
+P2.1 defines immutable `baseline` planning and finite first-party `full_site` planning with an explicit hard page fuse under an independent absolute ceiling. All execution/persistence/scheduler/worker/competitor/provider/public-write flags remain false.
 
-`baseline` is immutable at 30 pages/depth 2, sequential, same-origin GET-only, robots-required and never unlimited.
+P2.2 defines network-free supplied-sitemap inventory: bounded sitemap parsing, first-party URL policy, canonical normalization/dedupe, completeness/rejection accounting and deterministic fingerprints. It does not fetch sitemaps.
 
-`full_site` is inventory-driven and finite. It requires explicit first-party site identity, canonical HTTPS origin, a positive page hard fuse, an independent positive absolute page ceiling, and page fuse <= absolute ceiling. Before execution it requires sitemap-first inventory, canonical dedupe, trap controls, bounded batching/concurrency/rate limits, checkpoint/resume and completion accounting.
+P2.3 defines network-free execution control over P2.1/P2.2: deterministic batches, finite concurrency/rate/timeout/redirect/retry/trap ceilings, exact supplied-outcome advancement, checkpoints/resume, replay/order guards and semantic integrity checks. It contains no live transport.
 
-All P2.1 execution/persistence/scheduler/worker/competitor/provider/public-write authorization flags remain false.
+P2.4 defines deterministic completion ledger / whole-site completeness certification over exact P2.1/P2.2/P2.3 lineage. Whole-site certification means complete reconciled accounting over the approved canonical inventory, not zero SEO issues. Terminal crawl failures block certification; known redirects/robots exclusions/noindex can be classified terminal states.
 
-## P2.2 sitemap inventory contract
+## P2.5 crawl-history comparison contract — DONE
 
-P2.2 is the network-free supplied-sitemap inventory layer for P2.1 `full_site`.
+P2.5 issue #160 / PR #161 merged at:
+- merge: `a177c4590273da29113af75b431d6ae20c7e3b4c`
+- tree: `2d4a2103c9036f5e90032d5f569d01f7e8ecb78f`
+- PR CI #271 / run `35001858253`: success
+- post-merge CI #272 / run `35002068558`: success.
 
-It provides bounded `sitemapindex`/`urlset` parsing, exact first-party URL policy, deterministic canonical normalization/dedupe, supplied-child completeness accounting, explicit hard-limit state, rejection accounting and deterministic sanitized fingerprinting.
+P2.5 provides deterministic `first_party_crawl_history_comparison_v1` over supplied valid before/after crawl artifacts. It proves:
+- inventory URL additions/removals;
+- sitemap `lastmod` changes;
+- aggregate completion-ledger deltas;
+- certification/blocker transitions;
+- crawl-lineage/configuration changes;
+- deterministic comparison fingerprints and semantic integrity.
 
-It does not fetch sitemaps. Network fetching, crawl execution, persistence, scheduler/batch/worker/retry, competitor collection/persistence, provider writes and public-site writes remain false.
+P2.5 explicitly does **not** claim unavailable per-URL historical facts. P2.1–P2.4 do not retain enough per-URL history to prove HTTP-status, fetch-result, canonical-target, indexability or content-fingerprint changes. Those remain declared unavailable rather than inferred.
 
-## P2.3 crawl execution-control contract
+## P2.6 incremental-recrawl planning contract — DONE
 
-P2.3 composes a valid P2.1 `full_site` plan with a matching complete P2.2 inventory and remains network-free/default-off.
+P2.6 adds deterministic `first_party_incremental_recrawl_plan_v1` over exact P2.5 history and supplied upstream lineage.
 
 It provides:
-- deterministic canonical-inventory-derived batches;
-- finite batch/concurrency/request-rate/timeout/redirect/retry/trap ceilings;
-- same-origin HTTPS GET-only request and redirect revalidation;
-- query/fragment/credential/cross-origin/trap rejection;
-- deterministic plan/batch fingerprints;
-- deterministic checkpoint/resume state;
-- exact supplied-outcome advancement;
-- stale/replay/out-of-order/missing/duplicate/foreign outcome rejection;
-- bounded transient retry classification with terminal exhaustion;
-- semantic integrity checks independent of fingerprint-only trust.
+- `inventory_added` targeting;
+- `sitemap_lastmod_changed` targeting;
+- explicitly supplied trusted first-party signals: `high_value`, `stale`, `unresolved_issue`, `gsc_opportunity`, `recent_execution`;
+- deterministic reason merging and priority classes;
+- deterministic selection/order/batching;
+- finite `maxPlanUrls` and `batchSize` ceilings bounded by the upstream full-site hard fuse and absolute ceiling;
+- selected/deferred/excluded accounting;
+- explicit bounded full-reconciliation recommendation when aggregate regression or lineage change cannot safely be localized;
+- SHA-256 artifact fingerprinting and independent semantic integrity checks.
 
-P2.3 does not perform network execution and cannot itself claim whole-site certification.
+### P2.6 tamper resistance
 
-## P2.4 completion-ledger/certification contract
+The planner does not trust a P2.5 artifact only because its fingerprint is internally valid. It reconstructs P2.5 from the supplied before/after snapshots and requires the reconstructed fingerprint to match the supplied comparison. A caller cannot fabricate change rows and legitimize them merely by recomputing a fingerprint.
 
-P2.4 consumes exact valid P2.1/P2.2/P2.3 lineage and creates a deterministic `first_party_full_site_crawl_certification_v1` artifact.
+### P2.6 evidence boundary
 
-### Upstream validation
-P2.4 revalidates rather than blindly trusting fingerprints:
-- P2.1 full-site plan is reconstructed semantically;
-- P2.2 inventory counts, ordering, rejection accounting, completeness, authorization and fingerprint are independently checked;
-- P2.3 execution-plan/checkpoint integrity validators are run;
-- P2.3 execution plan is reconstructed from P2.1 + P2.2 + policy;
-- exact site/origin/limits/fingerprint lineage is required.
+P2.6 preserves P2.5's unavailable per-URL dimensions. It cannot fabricate HTTP/fetch/canonical/indexability/content-fingerprint reasons from aggregate evidence.
 
-### Ledger fields
-The certification artifact records:
-- `discovered`
-- `eligible`
-- `fetchedSuccessful`
-- `redirects`
-- `canonicalizedDeduplicated`
-- `robotsExcluded`
-- `inventoryExcluded`
-- `robotsOrExcluded`
-- `noindex`
-- `failed`
-- `finalized`
-- `pending`
-- deterministic `coveragePercent`
-- hard-limit state
-- whole-site certification boolean/reason/blockers.
+### P2.6 authorization boundary
 
-`noindex` is a subset of fetched success and is never double-counted in finalized coverage. Sitemap-reference rejections do not inflate discovered page URL count.
+The planner remains pure/default-off:
+- network execution=false;
+- crawl execution authorization=false;
+- sitemap network fetching=false;
+- persistence=false;
+- scheduler=false;
+- batch executor=false;
+- autonomous worker=false;
+- retry loop=false;
+- competitor collection/persistence=false;
+- provider writes=false;
+- public-site writes=false.
 
-### Certification meaning
-`wholeSiteCertified=true` means the **approved canonical inventory has complete, reconciled accounting**. It is not a statement that every page is healthy or free of SEO issues.
-
-Known classified terminal states may coexist with certification:
-- redirects
-- robots exclusions
-- noindex pages.
-
-Terminal failures block certification even when mathematical finalized coverage is 100%.
-
-Empty eligible inventory is mathematically represented as 100% coverage but remains explicitly non-certified with `empty_eligible_inventory` in this foundation.
-
-Stable blockers include:
-- `checkpoint_incomplete`
-- `coverage_below_100`
-- `empty_eligible_inventory`
-- `terminal_failures_present`
-- `unfinished_batches_remaining`
-- `pending_urls_remaining`.
-
-Incomplete/hard-limit-truncated inventory is rejected before certification. Invalid/tampered lineage, accounting inconsistency or open authorization fails closed.
-
-### Integrity and safety
-P2.4 artifacts are deterministic SHA-256 fingerprinted and also have independent semantic reconciliation checks, preventing a caller from legitimizing inconsistent state merely by recomputing a fingerprint.
-
-No raw XML, raw HTML, response body, token, client secret, credential or provider payload is retained.
-
-P2.4 adds no network client, API route, persistence path, DDL, scheduler, worker, live retry loop, competitor transport, provider action or public-site mutation path.
+Static hardening tests prohibit built-in networking, persistence mutation primitives, raw payload fields and secret-bearing fields.
 
 ## Competitor isolation remains mandatory
 
-Competitor crawling/acquisition remains a separate subsystem with separate target identity, secure transport, gates, replay controls and persistence authorization. P2 first-party full-site foundations do not grant or widen competitor permissions.
-
-First-party whole-site permission must never be represented by a generic network/crawler flag that a competitor path can inherit.
+Competitor crawling/acquisition remains a separate subsystem with separate target identity, secure transport, gates, replay controls and persistence authorization. First-party whole-site or incremental-recrawl capability must never be represented by a generic crawler/network permission that a competitor path can inherit.
 
 ## GSC live-provider boundary remains closed
 
@@ -185,7 +151,7 @@ Exact GSC identity:
 - supported property: `sc-domain:<domain>`
 - accepted permissions: `siteRestrictedUser`, `siteFullUser`.
 
-No real GSC OAuth client/secret, OAuth consent, delegated token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence has been authorized by P2.4.
+No real GSC OAuth client/secret, consent, delegated token, `sites.list`, Search Analytics call, property binding, Task #70 live execution or GSC evidence persistence is authorized by P2.1–P2.6.
 
 ## Current safety boundary
 
@@ -196,7 +162,7 @@ Unless a later task explicitly authorizes otherwise, keep closed/default-off:
 - `GSC_READONLY_OAUTH_RUNTIME_ENABLED=false`
 - first-party `full_site` live network execution=false
 - first-party sitemap network fetching=false
-- first-party full-site persistence=false
+- first-party full-site/incremental persistence=false
 - first-party batch executor=false
 - first-party retry loop=false
 - competitor execution/collection/evidence persistence=false
@@ -211,33 +177,38 @@ Unless a later task explicitly authorizes otherwise, keep closed/default-off:
 Program tracker: issue #139. Keep it open until final production completion certification.
 
 Completed engineering foundations now include:
-- P1.1 / P1.2 — Task #75 GSC profile isolation
-- P2.1 — first-party baseline/full-site crawl-controller planning
-- P2.2 — network-free supplied-sitemap inventory + canonical dedupe
-- P2.3 — network-free bounded crawl execution-control + checkpoint/resume
-- P2.4 — deterministic completion ledger + whole-site completeness certification.
+- P1.1 / P1.2 — Task #75 GSC profile isolation;
+- P2.1 — baseline/full-site crawl-controller planning;
+- P2.2 — supplied-sitemap inventory + canonical dedupe;
+- P2.3 — bounded crawl execution control + checkpoint/resume;
+- P2.4 — completion ledger + whole-site completeness certification;
+- P2.5 — crawl history/comparison + change detection;
+- P2.6 — bounded incremental recrawl planner.
 
-P1 live-provider activation remains separately authorized. P2.1–P2.4 do not imply live crawl execution, sitemap fetching, persistence, scheduler/autonomous operation or publication.
+P1 live-provider activation remains separately authorized. P2.1–P2.6 do not imply live crawl execution, sitemap fetching, persistence, scheduler/autonomous operation or publication.
 
 ## Next safe engineering milestone
 
-**P2.5 — Crawl History / Comparison and Change Detection.**
+**P2.7 — URL Explorer API / Query Model Foundation.**
 
-Initial P2.5 should remain pure/default-off and network-free. It should compare supplied valid P2.4 certification snapshots deterministically without persistence. The first implementation should define and test:
-- exact first-party identity and compatible-lineage rules;
-- ordered before/after snapshot comparison;
-- inventory URL additions/removals where comparable source identity exists;
-- ledger/classification transitions;
-- coverage and whole-site-certification transitions;
-- regression/improvement/change categories;
-- deterministic change-event ordering and fingerprints;
-- duplicate/replay/tamper resistance;
-- explicit incomparable-snapshot reasons;
-- sanitized history/change artifacts with all execution/persistence/write authorizations closed.
+Initial P2.7 should remain pure/default-off and should not require live crawling or persistence. It should define a deterministic read/query model over supplied authorized first-party crawl artifacts suitable for the future Audit → URL Explorer workspace.
 
-P2.5 must not silently activate live crawling, sitemap fetching, persistence/DDL, scheduler/worker/batch/retry execution, competitor collection, Task #75 live-provider stages, provider/public-site writes or publication.
+Initial design/acceptance should cover:
+- exact first-party site/origin and artifact-lineage validation;
+- sanitized URL-row projection from approved inventory/certification/history/recrawl artifacts only;
+- deterministic sorting and stable pagination/cursor semantics;
+- bounded filters for URL/path, inventory state, available crawl classification, history/change state and recrawl reason where evidence exists;
+- explicit `unknown`/`unavailable` representation for dimensions not retained upstream;
+- count/facet accounting derived from the same filtered result set;
+- no raw XML/HTML/response-body/token/secret exposure;
+- no arbitrary SQL/filter language or user-controlled code execution;
+- finite page-size/filter ceilings;
+- deterministic query/result fingerprints and tamper resistance;
+- all network/execution/persistence/write authorization flags closed.
 
-Generic `continue` may advance the pure/default-off P2.5 engineering workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync and docs closeout. It does **not** authorize live crawl/provider activity, persistence, DDL, scheduler/worker activation, competitor execution, provider/public-site writes or publication.
+P2.7 must not silently activate live crawling, sitemap fetching, persistence/DDL, scheduler/worker/batch/retry execution, competitor collection, Task #75 live-provider stages, provider/public-site writes or publication.
+
+Generic `continue` may advance the pure/default-off P2.7 engineering workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit reconciliation and docs closeout. It does **not** authorize live crawl/provider activity, persistence, DDL, scheduler/worker activation, competitor execution, provider/public-site writes or publication.
 
 ## Resume rule
 
@@ -248,8 +219,8 @@ At every new session:
 4. read `MASTER_COMPLETION_ROADMAP.md`;
 5. read `ARCHITECTURE.md` and `PROJECT_HANDOFF.md`;
 6. read `.agents/skills/seo-engine-project/SKILL.md`;
-7. read `.agents/memory/MEMORY.md` plus Task #75 and P2.1/P2.2/P2.3/P2.4 closeouts;
-8. read program issue #139 and the active task issue/PR;
-9. inspect Replit branch/HEAD/tree/ahead-behind/clean state and sanitized gates before sync/publish.
+7. read `.agents/memory/MEMORY.md` plus Task #75 and P2.1–P2.6 closeouts;
+8. read program issue #139 and active task issue/PR;
+9. inspect Replit branch/HEAD/tree/ahead-behind/clean state and sanitized gates before any reconciliation or publication.
 
 Stop and diagnose read-only rather than improvising on GitHub drift, Replit drift, open execution/write gates, unexpected credential/readiness state, schema mismatch, failed CI, unexpected jobs/persistence, or external/provider/public-site activity.
