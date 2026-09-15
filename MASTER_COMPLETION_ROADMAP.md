@@ -26,11 +26,11 @@ If any mutable SHA, deployment state, gate state or task status differs between 
 
 ## 1. Current program checkpoint
 
-Current engineering checkpoint at the P2.1 implementation merge:
+Current engineering checkpoint at the P2.4 implementation merge:
 
 - repository: `intssere/SEO_ENGINE`
-- GitHub `main` implementation merge: `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d`
-- tree: `614a71a4a41bafc2423cd922ee1f730f50c1a137`
+- GitHub `main` implementation merge: `977ea26dc823bc21e8371ddac0d35e3b702907f0`
+- tree: `65566cbc1f91c6e8c2e6413853760c9cecfdc34b`
 - Replit app: `SEO_ENGINE`
 - Replit replId: `4f36f99c-0492-43c4-80e7-a7f7660fc3f7`
 - production URL: `https://dsseoengine.replit.app`
@@ -44,11 +44,11 @@ Current published production application source remains:
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - deployment status: success
 
-Task #74 is architecture/planning only. Task #75 and P2.1 are engineering-complete but have not been published as application releases.
+Task #74 is architecture/planning only. Task #75 and P2.1–P2.4 are engineering-complete but have not been published as application releases.
 
-Completed high-level foundations include authentication/RBAC, guarded proposal/execution primitives, bounded competitor acquisition, market/category intelligence architecture, source registry/normalization/job authorization, controlled signal execution, GSC read-runner foundation, GSC OAuth/property readiness, first-live-read readiness, OAuth client/config binding architecture, GSC profile-isolated runtime binding, and first-party `baseline` vs `full_site` crawl-controller planning.
+Completed high-level foundations include authentication/RBAC, guarded proposal/execution primitives, bounded competitor acquisition, market/category intelligence architecture, source registry/normalization/job authorization, controlled signal execution, GSC read-runner foundation, GSC OAuth/property readiness, first-live-read readiness, OAuth client/config binding architecture, GSC profile-isolated runtime binding, first-party `baseline` vs `full_site` crawl-controller planning, network-free sitemap inventory/canonical dedupe, bounded crawl execution controls/checkpoint-resume, and deterministic completion-ledger/whole-site completeness certification.
 
-**Next safe engineering milestone:** P2.2 — Sitemap Inventory / Discovery + Canonical Dedupe Foundation.
+**Next safe engineering milestone:** P2.5 — Crawl History / Comparison and Change Detection.
 
 ---
 
@@ -314,6 +314,8 @@ Must report at minimum:
 - hard-limit state;
 - whole-site-certified boolean/reason.
 
+P2.4 defines whole-site certification as a completeness/accounting assertion over the approved canonical inventory, not a zero-issues health claim. Known redirects, robots exclusions and noindex pages may be fully classified terminal states; terminal crawl failures still block certification.
+
 ### Post-baseline operating mode
 After a successful initial full crawl, schedule incremental recrawls from:
 - new URLs;
@@ -361,10 +363,10 @@ Use the stable roadmap IDs below even if GitHub Task numbers change. Every futur
 | ID | Work item | Status |
 |---|---|---|
 | P2.1 | Crawl controller architecture: baseline vs full_site | DONE — issue #145 / PR #146 / merge `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d` |
-| P2.2 | Sitemap inventory/discovery + canonical dedupe | **NEXT** |
-| P2.3 | Batched crawler, rate limits, trap guards, checkpoints/resume | PLANNED |
-| P2.4 | Crawl completion ledger and whole-site certification | PLANNED |
-| P2.5 | Crawl history/comparison and change detection | PLANNED |
+| P2.2 | Sitemap inventory/discovery + canonical dedupe | DONE — issue #151 / PR #152 / merge `7822504b1d5cf6bbd9f1a5f797320526830978b4` |
+| P2.3 | Batched crawler, rate limits, trap guards, checkpoints/resume | DONE — issue #154 / PR #155 / merge `60cd0b60ce20fffac5d33ddb19aae50d6514deab` |
+| P2.4 | Crawl completion ledger and whole-site certification | DONE — issue #157 / PR #158 / merge `977ea26dc823bc21e8371ddac0d35e3b702907f0` |
+| P2.5 | Crawl history/comparison and change detection | **NEXT** |
 | P2.6 | Incremental recrawl planner | PLANNED |
 | P2.7 | URL Explorer API/query model | PLANNED |
 | P2.8 | Technical issue taxonomy and evidence model expansion | PLANNED |
@@ -541,21 +543,26 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 
 1. **DONE — Task #75 / P1.1–P1.2:** GSC OAuth Profile-Isolated Runtime Binding Foundation v1.
 2. **DONE — P2.1:** Full-Site Crawl Controller Architecture + baseline/full_site mode contract.
-3. **NEXT — P2.2:** Sitemap inventory/discovery + canonical dedupe foundation, network-free first.
-4. **P2.3 —** resumable bounded full-site crawler, rate limits, trap guards and checkpoints.
-5. **P4.1/P4.2/P4.3 —** Product IA v2 + design system + data workbench foundation.
-6. **P3.1–P3.5 —** durable observation/evidence model and persistence engineering; keep DDL separately authorized.
-7. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
-8. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
-9. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
-10. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
-11. **P6 —** unified opportunity/prioritization/explanation engine.
-12. **P7 —** AI/GEO visibility.
-13. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-14. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-15. **P10 —** impact attribution, experimentation and learning loop.
-16. **P11 —** enterprise hardening and certification.
-17. **P12 —** final production completion certification and program closeout.
+3. **DONE — P2.2:** Sitemap inventory/discovery + canonical dedupe foundation.
+4. **DONE — P2.3:** bounded crawl execution-control, rate limits, trap guards and checkpoint/resume foundation.
+5. **DONE — P2.4:** deterministic completion ledger and whole-site completeness certification foundation.
+6. **NEXT — P2.5:** crawl history/comparison and change detection, pure/network-free first.
+7. **P2.6 —** incremental recrawl planner.
+8. **P2.7 —** URL Explorer API/query model.
+9. **P2.8 —** technical issue taxonomy/evidence expansion.
+10. **P4.1/P4.2/P4.3 —** Product IA v2 + design system + data workbench foundation.
+11. **P3.1–P3.5 —** durable observation/evidence model and persistence engineering; keep DDL separately authorized.
+12. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
+13. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
+14. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
+15. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
+16. **P6 —** unified opportunity/prioritization/explanation engine.
+17. **P7 —** AI/GEO visibility.
+18. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+19. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+20. **P10 —** impact attribution, experimentation and learning loop.
+21. **P11 —** enterprise hardening and certification.
+22. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
@@ -608,7 +615,7 @@ This scorecard is deliberately conservative and should be updated from evidence,
 |---|---|---|
 | Core backend/security | strong foundation | production hardened + observable |
 | Provider/read control plane | strong architecture, limited live activation | live first-party + external reads certified |
-| Whole-site crawling | controller architecture complete; live full-site crawler not implemented | full_site + incremental + history certified |
+| Whole-site crawling | P2.1–P2.4 pure foundations complete; live full-site execution/history/incremental operation not yet activated | full_site + incremental + history certified |
 | Durable evidence | architecture foundations | persisted/provenanced/queryable at scale |
 | Search/competitor intelligence | architecture/pilot foundations | operational external + first-party synthesis |
 | Opportunity engine | partial foundations | unified evidence-backed prioritization |
