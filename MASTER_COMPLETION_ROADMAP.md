@@ -26,14 +26,16 @@ If any mutable SHA, deployment state, gate state or task status differs between 
 
 ## 1. Current program checkpoint
 
-Starting canonical repository state for this roadmap:
+Current engineering checkpoint at the P2.1 implementation merge:
 
 - repository: `intssere/SEO_ENGINE`
-- GitHub `main`: `5fea8e63cb36ef2b0e2f11764383d565c826f54a`
-- tree: `9f0d9715e373f3d78cc392b9b5d630fc58e67a74`
+- GitHub `main` implementation merge: `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d`
+- tree: `614a71a4a41bafc2423cd922ee1f730f50c1a137`
 - Replit app: `SEO_ENGINE`
 - Replit replId: `4f36f99c-0492-43c4-80e7-a7f7660fc3f7`
 - production URL: `https://dsseoengine.replit.app`
+
+`CURRENT_STATE.md` owns the exact mutable `main` checkpoint after later docs-only merges; always independently resolve it before acting.
 
 Current published production application source remains:
 
@@ -42,11 +44,11 @@ Current published production application source remains:
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - deployment status: success
 
-Task #74 is architecture/planning only and is not the published application release.
+Task #74 is architecture/planning only. Task #75 and P2.1 are engineering-complete but have not been published as application releases.
 
-Completed high-level foundations include authentication/RBAC, guarded proposal/execution primitives, bounded competitor acquisition, market/category intelligence architecture, source registry/normalization/job authorization, controlled signal execution, GSC read-runner foundation, GSC OAuth/property readiness, first-live-read readiness, and OAuth client/config binding architecture.
+Completed high-level foundations include authentication/RBAC, guarded proposal/execution primitives, bounded competitor acquisition, market/category intelligence architecture, source registry/normalization/job authorization, controlled signal execution, GSC read-runner foundation, GSC OAuth/property readiness, first-live-read readiness, OAuth client/config binding architecture, GSC profile-isolated runtime binding, and first-party `baseline` vs `full_site` crawl-controller planning.
 
-**Next safe engineering milestone:** Task #75 — GSC OAuth Profile-Isolated Runtime Binding Foundation v1.
+**Next safe engineering milestone:** P2.2 — Sitemap Inventory / Discovery + Canonical Dedupe Foundation.
 
 ---
 
@@ -343,9 +345,9 @@ Use the stable roadmap IDs below even if GitHub Task numbers change. Every futur
 
 | ID | Work item | Status / dependency |
 |---|---|---|
-| P1.1 | Task #75 GSC OAuth Profile-Isolated Runtime Binding Foundation | **NEXT** |
-| P1.2 | GSC-specific config slots, sealed purpose dispatch, no legacy GA4 fallback | part of P1.1 |
-| P1.3 | Static no-network GSC readiness surface | after P1.1 |
+| P1.1 | Task #75 GSC OAuth Profile-Isolated Runtime Binding Foundation | DONE — issue #142 / PR #143 / merge `b6ae18db99baf022cdb7368f3e17c4bb1fa1a687` |
+| P1.2 | GSC-specific config slots, sealed purpose dispatch, no legacy GA4 fallback | DONE in Task #75 |
+| P1.3 | Static no-network GSC readiness surface | PLANNED; live-provider/publication boundary remains separate |
 | P1.4 | Real Google OAuth client creation/config binding | explicit authorization required |
 | P1.5 | Real client-secret placement and readiness check | explicit authorization required |
 | P1.6 | Admin Google consent and encrypted delegated token persistence | explicit authorization required |
@@ -358,8 +360,8 @@ Use the stable roadmap IDs below even if GitHub Task numbers change. Every futur
 
 | ID | Work item | Status |
 |---|---|---|
-| P2.1 | Crawl controller architecture: baseline vs full_site | READY after P1.1 or as next safe engineering task |
-| P2.2 | Sitemap inventory/discovery + canonical dedupe | PLANNED |
+| P2.1 | Crawl controller architecture: baseline vs full_site | DONE — issue #145 / PR #146 / merge `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d` |
+| P2.2 | Sitemap inventory/discovery + canonical dedupe | **NEXT** |
 | P2.3 | Batched crawler, rate limits, trap guards, checkpoints/resume | PLANNED |
 | P2.4 | Crawl completion ledger and whole-site certification | PLANNED |
 | P2.5 | Crawl history/comparison and change detection | PLANNED |
@@ -506,7 +508,7 @@ Existing Tasks #51–#54 remain the safety foundation.
 
 ### Critical path
 
-`P1.1 GSC isolation`
+`P1.1 GSC isolation [DONE]`
 → `P1 real first-party read activation`
 → `P3 durable evidence`
 → `P6 opportunity engine`
@@ -514,11 +516,13 @@ Existing Tasks #51–#54 remain the safety foundation.
 → `P10 measurement/learning`
 → `P12 final certification`
 
+P2 full-site crawl work is a parallel-safe engineering lane while live-provider authorization remains pending, and is required before whole-site production certification.
+
 ### Safe engineering lane while live-provider authorization is pending
 
 The project may continue, one governed task at a time, with default-off/network-fake engineering such as:
 
-- P2 crawl controller architecture and implementation;
+- P2 sitemap inventory, crawl-controller and bounded-crawler engineering;
 - P4 design system/IA/data-grid/evidence-drawer work;
 - P3 persistence design before DDL;
 - P5 provider research/adapter contracts using fake transports;
@@ -535,22 +539,23 @@ Never use “safe parallel lane” to bypass the repository rule that each activ
 
 Unless a newly discovered dependency forces a reviewed change, the recommended next sequence is:
 
-1. **Task #75 / P1.1 — GSC OAuth Profile-Isolated Runtime Binding Foundation v1.**
-2. **P2.1 — Full-Site Crawl Controller Architecture + baseline/full_site mode contract.**
-3. **P2.2/P2.3 — Sitemap inventory + resumable bounded full-site crawler.**
-4. **P4.1/P4.2/P4.3 — Product IA v2 + design system + data workbench foundation.**
-5. **P3.1–P3.5 — durable observation/evidence model and persistence engineering; keep DDL separately authorized.**
-6. **P1.4–P1.8 — separately authorized real GSC client/secret/consent/property/first-read sequence when ready.**
-7. **P4.5/P4.6 — Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.**
-8. **P1.9/P1.10 — isolated GA4 and catalog completeness/refresh.**
-9. **P5 — external SERP/keyword/trend/backlink/competitor intelligence.**
-10. **P6 — unified opportunity/prioritization/explanation engine.**
-11. **P7 — AI/GEO visibility.**
-12. **P8 — integrated action/approval/deployment UX and expanded bounded execution classes.**
-13. **P9 — scheduled read automation and incremental crawling; mutation automation remains later.**
-14. **P10 — impact attribution, experimentation and learning loop.**
-15. **P11 — enterprise hardening and certification.**
-16. **P12 — final production completion certification and program closeout.**
+1. **DONE — Task #75 / P1.1–P1.2:** GSC OAuth Profile-Isolated Runtime Binding Foundation v1.
+2. **DONE — P2.1:** Full-Site Crawl Controller Architecture + baseline/full_site mode contract.
+3. **NEXT — P2.2:** Sitemap inventory/discovery + canonical dedupe foundation, network-free first.
+4. **P2.3 —** resumable bounded full-site crawler, rate limits, trap guards and checkpoints.
+5. **P4.1/P4.2/P4.3 —** Product IA v2 + design system + data workbench foundation.
+6. **P3.1–P3.5 —** durable observation/evidence model and persistence engineering; keep DDL separately authorized.
+7. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
+8. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
+9. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
+10. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
+11. **P6 —** unified opportunity/prioritization/explanation engine.
+12. **P7 —** AI/GEO visibility.
+13. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+14. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+15. **P10 —** impact attribution, experimentation and learning loop.
+16. **P11 —** enterprise hardening and certification.
+17. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
@@ -603,7 +608,7 @@ This scorecard is deliberately conservative and should be updated from evidence,
 |---|---|---|
 | Core backend/security | strong foundation | production hardened + observable |
 | Provider/read control plane | strong architecture, limited live activation | live first-party + external reads certified |
-| Whole-site crawling | bounded pilot | full_site + incremental + history certified |
+| Whole-site crawling | controller architecture complete; live full-site crawler not implemented | full_site + incremental + history certified |
 | Durable evidence | architecture foundations | persisted/provenanced/queryable at scale |
 | Search/competitor intelligence | architecture/pilot foundations | operational external + first-party synthesis |
 | Opportunity engine | partial foundations | unified evidence-backed prioritization |
