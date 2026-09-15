@@ -13,71 +13,58 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75 and roadmap P2.1 have **not** been published. Git-only Replit synchronization does not change the separately attested production application source.
+Tasks #74, #75, P2.1 and P2.2 have **not** been published. Git-only Replit synchronization does not change the separately attested production application source.
 
-## Current engineering state — P2.1 complete
+## Current engineering state — P2.2 implementation complete
 
-Roadmap **P2.1 — Full-Site Crawl Controller Architecture: `baseline` vs `full_site`** is engineering-complete, CI-certified, merged and Git-only synchronized to Replit.
+Roadmap **P2.2 — Sitemap Inventory / Discovery + Canonical Dedupe Foundation** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified and Git-only synchronized to Replit.
 
 Authoritative issue:
-- issue #145
+- issue #151
 
-Implementation lineage:
-- implementation PR #146
-- exact tested head: `e382edba7da43aaae630d819213feaa5af7a7daf`
-- PR CI #249 / run `34893786940`: success
-- implementation merge: `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d`
-- implementation tree: `614a71a4a41bafc2423cd922ee1f730f50c1a137`
-- post-merge CI #250 / run `34893997324`: success
+Implementation PR:
+- PR #152
+- exact tested head: `b30e0b16bcf198a0e484b77712682ede13e6ab85`
+- PR CI #258 / run `34989940853`: success
+- implementation merge: `7822504b1d5cf6bbd9f1a5f797320526830978b4`
+- implementation tree: `f7bab25db2d3b0ab0e2c45ecc52b1a961cb82d6e`
+- post-merge main CI #259 / run `34990146084`: success
 
-Closeout/docs lineage:
-- closeout PR #147
-- exact tested docs head: `8c0503b9d35d6cc6e7d56f44916a216816562eb1`
-- PR CI #251 / run `34894846944`: success
-- closeout docs merge: `902ec2b254e99793bd2a994203a611b8b9353daf`
-- tree: `a052002fff2679f275b76ffdbf7f99b4a65dc1ab`
-
-### CI #252 stabilization incident
-Post-merge CI #252 / run `34944221138` failed one full-workspace Task #75 test with `OAuth state expired.` The P2.1 docs merge was documentation-only; the failure was a latent test-clock defect in `gsc-oauth-profile.test.ts` where state was manufactured at a fixed `2026-09-15T00:00:00.000Z` while callback expiry validation correctly used the real wall clock.
-
-Blocker issue #148 / PR #149 fixed only the test clock coupling:
-- exact tested fix head: `cd1290b02e3a38b5b4006bd7820de598cd95ea55`
-- diff: one test file, 2 additions / 2 deletions
-- PR CI #253 / run `34944593824`: success
-- fix merge: `8cbcd43a6f9a1a8ae8f7df8ab98928b6c0779795`
-- tree: `105dc4d87c0c1c1f22c12593b2b78985bec5f545`
-- post-merge CI #254 / run `34944774214`: success
-
-Production OAuth state TTL/expiry validation was **not** weakened or changed. CI #253 and #254 both passed task tests, full workspace tests, typecheck and build.
+Both green certification runs passed task tests, full workspace tests, typecheck and build.
 
 Detailed engineering record:
-- `.agents/memory/p2-1-crawl-controller-closeout.md`
+- `.agents/memory/p2-2-sitemap-inventory-closeout.md`
+
+### CI #257 fixture incident
+PR CI #257 / run `34989513456` passed P2.2 task tests but failed one full-workspace assertion. The implementation was not merged.
+
+The failing fixture treated `&amp;unknown;` as an undefined XML entity. That is not correct XML semantics: `&amp;` decodes once to a literal `&`, so the content represents literal text `&unknown;`. The test was corrected to use raw `&unknown;`, which is the actual unsupported entity-reference case. Parser/runtime behavior was not weakened. The corrected exact head then passed CI #258 fully.
 
 ## Replit engineering workspace
 
-After CI #254, Replit was Git-only synchronized and read-only verified at the final certified code/test checkpoint:
+After post-merge CI #259, Replit was Git-only synchronized and read-only verified at the exact P2.2 implementation merge:
 - branch: `main`
-- HEAD: `8cbcd43a6f9a1a8ae8f7df8ab98928b6c0779795`
-- tree: `105dc4d87c0c1c1f22c12593b2b78985bec5f545`
+- HEAD: `7822504b1d5cf6bbd9f1a5f797320526830978b4`
+- tree: `f7bab25db2d3b0ab0e2c45ecc52b1a961cb82d6e`
 - cached origin/main: same SHA/tree
 - ahead/behind: `0/0`
 - tracked/untracked: `0/0`
 - working tree clean: true
 - extra local commit: false
 
-No publication/redeployment, live crawl/external request, runtime/config/environment mutation, DB/schema/data operation, persistence activation, credential/OAuth/provider mutation, safety-gate change, competitor execution/gate change, scheduler/worker/retry action, provider/public-site write, or other non-Git mutation occurred.
+No publication/redeployment, application run, live sitemap/crawl/provider/public-site request, runtime/config/environment mutation, DB/schema/data action, persistence activation, credential/OAuth/provider mutation, safety-gate change, competitor action, scheduler/worker/batch/retry action, provider/public-site write, or other non-Git mutation occurred.
 
-A later docs-only closeout merge may advance GitHub/Replit `main` beyond this code/test checkpoint without changing application behavior. Always resolve current `main` independently before acting.
+A docs-only closeout merge may advance GitHub/Replit `main` beyond this implementation SHA without changing application behavior. Always independently resolve current `main` before acting.
 
 ## Current first-party crawler reality
 
-The original historical Task #4 standalone crawler package is no longer in the current tree. The active first-party crawler is embedded inside the pilot runner.
+The historical Task #4 standalone crawler package is no longer in the current tree. The active first-party crawler remains embedded in the pilot runner and is unchanged by P2.1/P2.2.
 
-Current active pilot crawl behavior remains unchanged by P2.1:
+Current active pilot behavior remains:
 - production bound: 30 pages
 - maximum depth: 2
 - GET-only
-- sequential breadth-first crawling
+- sequential breadth-first crawl
 - robots-aware
 - no retries
 - 10-second request timeout
@@ -85,89 +72,117 @@ Current active pilot crawl behavior remains unchanged by P2.1:
 - same-site normalization for Diamond Shelf
 - query strings stripped
 - redirects delegated to `fetch(..., redirect: "follow")`
-- canonical extracted as evidence only, not yet a dedupe identity
-- noindex observed but does not stop link expansion
-- `crawlSite()` itself is in-memory, while the enclosing guarded pilot can persist successful crawl observations.
+- canonical extracted as evidence only in the pilot runtime
+- noindex observed but does not stop pilot link expansion
+- `crawlSite()` itself is in-memory, while the enclosing guarded pilot may persist successful crawl observations under its separate controls.
 
-The 30-page behavior is explicitly the **baseline** mode. It is not the production whole-site ceiling.
+The 30-page behavior is the **baseline** mode. It is not the intended whole-site production ceiling.
 
-## P2.1 controller contract
+## P2.1 crawl-controller contract
 
-P2.1 added a pure planning layer only. It does not add or enable a crawler endpoint.
+P2.1 is complete and remains the governing first-party planning contract.
 
 ### `baseline`
-Locked to the current pilot policy:
-- page hard limit: 30
-- depth limit: 2
+- immutable page hard limit: 30
+- immutable depth limit: 2
 - `unlimited=false`
 - bounded link BFS
-- same-origin only
-- GET-only
+- same-origin GET-only
 - robots required
 - sequential
-- caller cannot override the hard page limit.
-
-An integration test locks these values to current `PILOT_LIMITS` so baseline drift fails CI.
+- caller cannot widen limits.
 
 ### `full_site`
-Inventory-driven rather than unlimited. Every plan requires:
+Inventory-driven, never unlimited. It requires:
 - explicit first-party `siteId`
 - normalized HTTPS canonical origin
-- explicit finite positive integer hard page fuse
-- independent finite positive integer absolute page ceiling
-- hard page fuse <= absolute ceiling.
+- finite positive integer `hardPageLimit`
+- independent finite positive integer `absolutePageCeiling`
+- hard page limit <= absolute ceiling.
 
-Fail closed on missing/invalid/unbounded limits, competitor/external targets, missing site identity, and non-HTTPS/invalid canonical origins.
+It records required-before-execution controls for sitemap-first inventory, canonical dedupe, query/trap controls, bounded batching, concurrency, per-origin rate limiting, checkpoint/resume and deterministic completion accounting.
 
-A valid full-site plan records requirements for:
-- sitemap-first inventory
-- internal-link supplementation
-- same-origin GET-only policy
-- robots enforcement
-- canonical deduplication
-- query/trap controls
-- bounded batching
-- concurrency control
-- per-origin rate limiting
-- checkpoint/resume
-- deterministic completion ledger.
+Every P2.1 plan keeps controller execution, persistence, scheduler, autonomous worker, retry loop, competitor collection/persistence, provider writes and public-site writes false.
 
-Completion-ledger fields are fixed to:
-- discovered
-- eligible
-- fetchedSuccessful
-- redirects
-- canonicalizedDeduplicated
-- robotsExcluded
-- noindex
-- failed
-- pending
-- coveragePercent
-- hardLimitState
-- wholeSiteCertified
-- wholeSiteReason.
+## P2.2 sitemap inventory contract
 
-Every P2.1 plan hard-codes false for controller execution, persistence authorization, scheduler, autonomous worker, retry loop, competitor collection/persistence, provider writes and public-site writes.
+P2.2 supplies the deterministic inventory layer required by P2.1 `full_site`. It is **network-free** and accepts supplied sitemap documents only.
+
+### Binding and finite controls
+A P2.2 inventory build requires a valid P2.1 `first_party_crawl_controller_v1` plan in `full_site` mode. Baseline/non-first-party contexts fail closed.
+
+Explicit planning ceilings are required for:
+- sitemap document count
+- sitemap nesting depth
+- UTF-8 bytes per document
+- unique inventory URLs
+- path segments.
+
+Code absolute ceilings are:
+- 1,024 sitemap documents
+- depth 8
+- 50,000,000 bytes/document
+- 25,000 inventory URLs
+- 64 path segments.
+
+The configured inventory URL limit must not exceed the P2.1 crawl plan page hard fuse. Infinity, NaN, fractional, negative and above-absolute values fail closed.
+
+### XML/parser boundary
+The narrow dependency-free sitemap parser:
+- supports `sitemapindex` and `urlset` roots only
+- rejects DTD/entity declarations
+- rejects malformed/multiple roots and bad nesting/attribute syntax
+- supports namespace-prefixed sitemap elements by local name
+- decodes built-in/numeric XML entities once
+- captures only direct sitemap/page `loc` and page `lastmod`
+- prevents nested extension locs such as `image:loc` from replacing page identity
+- never includes raw XML in normalized result/fingerprint state.
+
+### First-party URL and trap policy
+Inventory/document URLs enforce:
+- HTTPS only
+- no embedded credentials
+- exact canonical origin
+- no fragments
+- no query strings at this foundation stage
+- exclusion of utility/trap paths `/cart`, `/checkout`, `/account`, `/apps`
+- configured path-segment ceiling
+- deterministic slash/trailing-slash normalization.
+
+Explicit rejection reasons include invalid URL, unsupported scheme, credentials, cross-origin, fragment, query, excluded path, path-depth excess, sitemap-depth excess and inventory-limit reached.
+
+### Determinism and completeness
+P2.2:
+- traverses only supplied sitemap documents
+- records missing supplied children rather than fetching them
+- deduplicates by normalized canonical URL identity
+- merges/sorts source sitemap provenance
+- retains latest valid normalized `lastmod`
+- records supplied/processed/referenced documents, accepted/duplicate/unique URLs, sorted rejections and per-reason counts
+- records completeness reasons and hard-limit state
+- produces deterministic SHA-256 fingerprinting over sanitized normalized state.
+
+Every result hard-codes false for network fetching, crawl execution, persistence, scheduler, batch executor, autonomous worker, retry loop, competitor collection/persistence, provider writes and public-site writes.
 
 ## Competitor isolation remains mandatory
 
-Competitor crawling/acquisition remains a separate subsystem with separate target identity, gates, authorization/replay controls, secure transport, robots policy, persistence authorization and execution boundaries. P2.1 first-party full-site planning does not import, enable or widen competitor acquisition.
+Competitor crawling/acquisition remains a separate subsystem with separate target identity, gates, authorization/replay controls, secure transport, robots policy, persistence authorization and execution boundaries.
 
-First-party whole-site permission must never be represented by a generic crawler/network flag that a competitor path can inherit.
+P2.1/P2.2 first-party whole-site capabilities do not import, enable or widen competitor acquisition. A generic crawler/network flag must never grant competitor permissions.
 
 ## GSC live-provider boundary remains closed
 
 Task #75 remains engineering-complete but unpublished. Its GSC transport remains intentionally unbound/default-off.
 
-Exact GSC identity:
+Exact GSC identity remains:
 - profile: `gsc_read_only_v1`
 - provider: `google`
 - external account ID: `google#gsc-read-only-v1`
 - exact scope: `https://www.googleapis.com/auth/webmasters.readonly`
-- supported property identity: `sc-domain:<domain>`
+- supported property: `sc-domain:<domain>`
 - accepted permissions: `siteRestrictedUser`, `siteFullUser`.
 
-No real GSC OAuth client/secret, OAuth consent, token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence has been authorized by P2.1.
+No real GSC OAuth client/secret, OAuth consent, delegated token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence has been authorized by P2.2.
 
 ## Current safety boundary
 
@@ -176,43 +191,48 @@ Unless a later task explicitly authorizes otherwise, keep closed/default-off:
 - `AI_PROPOSAL_GENERATION_ENABLED=false`
 - `SIGNAL_COLLECTION_JOB_EXECUTION_ENABLED=false`
 - `GSC_READONLY_OAUTH_RUNTIME_ENABLED=false`
-- first-party `full_site` crawl execution=false
+- first-party `full_site` live network execution=false
+- first-party sitemap network fetching=false
 - first-party full-site persistence=false
 - competitor execution/collection/evidence persistence=false
 - Task #72 credential/scope/property/network/live-read readiness=false
 - Task #73 first-live-read readiness=false
 - provider/public writes=false
 - observation/evidence persistence=false
-- scheduler/batch/autonomous-worker/retry=false.
+- scheduler/batch/autonomous-worker/retry execution=false.
 
 ## Master roadmap status
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Completed engineering foundations include:
+Completed engineering foundations now include:
 - P1.1 / P1.2 — Task #75 GSC profile isolation
-- P2.1 — first-party baseline/full-site crawl controller planning foundation.
+- P2.1 — first-party baseline/full-site crawl-controller planning
+- P2.2 — supplied-sitemap inventory/discovery normalization + canonical dedupe foundation.
 
-P1 live-provider activation remains separately authorized. P2.1 does not imply crawl execution.
+P1 live-provider activation remains separately authorized. P2.1/P2.2 do not imply live crawl execution or sitemap fetching.
+
+`MASTER_COMPLETION_ROADMAP.md` may still show the previous P2.2 `NEXT` label until the next roadmap-status maintenance edit; this `CURRENT_STATE.md` checkpoint and independently verified GitHub state take precedence for mutable task status.
 
 ## Next safe engineering milestone
 
-**P2.2 — Sitemap Inventory / Discovery + Canonical Dedupe Foundation.**
+**P2.3 — Batched crawler, rate limits, trap guards, checkpoints/resume.**
 
-Initial P2.2 must remain network-free and deterministic:
-- accept supplied sitemap XML/text rather than fetch external URLs;
-- model bounded sitemap index and URL-set normalization;
-- enforce exact first-party site/canonical-origin identity;
-- define finite sitemap nesting/document/URL/response-size ceilings;
-- normalize and canonicalize inventory URLs deterministically;
-- dedupe by canonical URL identity;
-- reject unsupported schemes, credential-bearing URLs, cross-origin entries and trap-risk URLs with explicit reason codes;
-- model query-parameter/trap policy without broadening current live crawl behavior;
-- produce deterministic inventory entries and exclusion/rejection accounting;
-- integrate only with the P2.1 planning layer;
-- leave live sitemap fetching, live crawling, persistence, DDL, scheduler/worker, competitor widening, provider/public writes and publication disabled.
+Initial P2.3 should remain first-party-only and default-off. It should compose P2.1 + P2.2 into a bounded execution architecture that defines and tests:
+- finite batch sizing and page-budget consumption
+- bounded concurrency
+- explicit per-origin rate/request budgets
+- secure redirect handling and same-origin revalidation
+- query/filter/session/calendar/facet/trap guards beyond the P2.2 inventory exclusions
+- deterministic checkpoint/resume state
+- replay/idempotency expectations
+- bounded retry classification/backoff policy for safe transient reads
+- halt/fuse behavior and resumable terminal states
+- handoff fields required by P2.4 completion-ledger/whole-site certification.
 
-Generic `continue` may advance this pure/default-off P2.2 workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync. It does **not** authorize live sitemap/crawl requests, persistence, DDL, scheduler/worker activation, competitor execution, provider/public-site writes, Task #75 live-provider stages, or publication.
+P2.3 must not silently activate live crawling, sitemap network fetching, persistence, DDL, scheduler/autonomous worker, competitor execution, provider/public-site writes or publication. Any real first-party network execution remains a separate explicit authorization boundary.
+
+Generic `continue` may advance the pure/default-off P2.3 engineering workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync. It does **not** authorize live sitemap/crawl requests, persistence, DDL, scheduler/worker activation, competitor execution, provider/public-site writes, Task #75 live-provider stages, or publication.
 
 ## Resume rule
 
@@ -223,7 +243,7 @@ At every new session:
 4. read `MASTER_COMPLETION_ROADMAP.md`;
 5. read `ARCHITECTURE.md` and `PROJECT_HANDOFF.md`;
 6. read `.agents/skills/seo-engine-project/SKILL.md`;
-7. read `.agents/memory/MEMORY.md` and relevant closeouts, especially Task #75 and P2.1;
+7. read `.agents/memory/MEMORY.md` plus Task #75, P2.1 and P2.2 closeouts;
 8. read program issue #139 and the active task issue/PR;
 9. inspect Replit branch/HEAD/tree/ahead-behind/clean state and sanitized gates before sync/publish.
 
