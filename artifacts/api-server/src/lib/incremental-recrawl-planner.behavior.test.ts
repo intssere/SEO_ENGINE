@@ -129,3 +129,59 @@ test("unchanged history with no trusted candidates produces an empty safe plan",
   assert.equal(result.fallback.reason, "none");
   assertIncrementalRecrawlPlanIntegrity(result);
 });
+
+test("trusted candidate outside inventory is excluded and cross-origin input fails closed", () => {
+  const source = buildIncrementalRecrawlTestSource({ entries: [{ path: "/a" }] });
+  const comparison = compareFullSiteCrawlHistory({ before: source, after: source });
+  const result = buildIncrementalRecrawlPlan({
+    comparison,
+    before: source,
+    after: source,
+    policy: { maxPlanUrls: 10, batchSize: 5 },
+    trustedCandidates: [{ canonicalUrl: "https://diamondshelf.us/missing", signals: ["high_value"] }],
+  });
+  assert.deepEqual(result.excluded, [
+    { canonicalUrl: "https://diamondshelf.us/missing", reason: "trusted_candidate_not_in_current_inventory" },
+  ]);
+  assertIncrementalRecrawlPlanIntegrity(result);
+
+  assert.throws(
+    () => buildIncrementalRecrawlPlan({
+      comparison,
+      before: source,
+      after: source,
+      policy: { maxPlanUrls: 10, batchSize: 5 },
+      trustedCandidates: [{ canonicalUrl: "https://example.com/a", signals: ["high_value"] }],
+    }),
+    /incremental_recrawl_candidate_cross_origin_denied/,
+  );
+});
+
+test("duplicate candidate URLs collapse reasons while duplicate signals fail closed", () => {
+  const source = buildIncrementalRecrawlTestSource({ entries: [{ path: "/a" }] });
+  const comparison = compareFullSiteCrawlHistory({ before: source, after: source });
+  const result = buildIncrementalRecrawlPlan({
+    comparison,
+    before: source,
+    after: source,
+    policy: { maxPlanUrls: 10, batchSize: 5 },
+    trustedCandidates: [
+      { canonicalUrl: "https://diamondshelf.us/a", signals: ["stale"] },
+      { canonicalUrl: "https://diamondshelf.us/a", signals: ["high_value"] },
+    ],
+  });
+  assert.equal(result.items.length, 1);
+  assert.deepEqual(result.items[0].reasons, ["high_value", "stale"]);
+  assertIncrementalRecrawlPlanIntegrity(result);
+
+  assert.throws(
+    () => buildIncrementalRecrawlPlan({
+      comparison,
+      before: source,
+      after: source,
+      policy: { maxPlanUrls: 10, batchSize: 5 },
+      trustedCandidates: [{ canonicalUrl: "https://diamondshelf.us/a", signals: ["stale", "stale"] }],
+    }),
+    /incremental_recrawl_trusted_candidate_signal_duplicate/,
+  );
+});
