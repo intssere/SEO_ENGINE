@@ -17,37 +17,57 @@ Tasks #74, #75 and roadmap P2.1 have **not** been published. Git-only Replit syn
 
 ## Current engineering state — P2.1 complete
 
-Roadmap **P2.1 — Full-Site Crawl Controller Architecture: `baseline` vs `full_site`** — is engineering-complete, CI-certified, merged, and Git-only synchronized to Replit.
+Roadmap **P2.1 — Full-Site Crawl Controller Architecture: `baseline` vs `full_site`** is engineering-complete, CI-certified, merged and Git-only synchronized to Replit.
 
 Authoritative issue:
 - issue #145
 
-Implementation PR:
-- PR #146
+Implementation lineage:
+- implementation PR #146
 - exact tested head: `e382edba7da43aaae630d819213feaa5af7a7daf`
 - PR CI #249 / run `34893786940`: success
-- merge: `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d`
-- tree: `614a71a4a41bafc2423cd922ee1f730f50c1a137`
-- post-merge main CI #250 / run `34893997324`: success
+- implementation merge: `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d`
+- implementation tree: `614a71a4a41bafc2423cd922ee1f730f50c1a137`
+- post-merge CI #250 / run `34893997324`: success
 
-Both CI gates passed task tests, full workspace tests, typecheck and build.
+Closeout/docs lineage:
+- closeout PR #147
+- exact tested docs head: `8c0503b9d35d6cc6e7d56f44916a216816562eb1`
+- PR CI #251 / run `34894846944`: success
+- closeout docs merge: `902ec2b254e99793bd2a994203a611b8b9353daf`
+- tree: `a052002fff2679f275b76ffdbf7f99b4a65dc1ab`
+
+### CI #252 stabilization incident
+Post-merge CI #252 / run `34944221138` failed one full-workspace Task #75 test with `OAuth state expired.` The P2.1 docs merge was documentation-only; the failure was a latent test-clock defect in `gsc-oauth-profile.test.ts` where state was manufactured at a fixed `2026-09-15T00:00:00.000Z` while callback expiry validation correctly used the real wall clock.
+
+Blocker issue #148 / PR #149 fixed only the test clock coupling:
+- exact tested fix head: `cd1290b02e3a38b5b4006bd7820de598cd95ea55`
+- diff: one test file, 2 additions / 2 deletions
+- PR CI #253 / run `34944593824`: success
+- fix merge: `8cbcd43a6f9a1a8ae8f7df8ab98928b6c0779795`
+- tree: `105dc4d87c0c1c1f22c12593b2b78985bec5f545`
+- post-merge CI #254 / run `34944774214`: success
+
+Production OAuth state TTL/expiry validation was **not** weakened or changed. CI #253 and #254 both passed task tests, full workspace tests, typecheck and build.
 
 Detailed engineering record:
 - `.agents/memory/p2-1-crawl-controller-closeout.md`
 
 ## Replit engineering workspace
 
-After post-merge CI #250, Replit was Git-only synchronized and read-only verified at the exact P2.1 implementation merge:
+After CI #254, Replit was Git-only synchronized and read-only verified at the final certified code/test checkpoint:
 - branch: `main`
-- HEAD: `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d`
-- tree: `614a71a4a41bafc2423cd922ee1f730f50c1a137`
-- cached origin/main: same
+- HEAD: `8cbcd43a6f9a1a8ae8f7df8ab98928b6c0779795`
+- tree: `105dc4d87c0c1c1f22c12593b2b78985bec5f545`
+- cached origin/main: same SHA/tree
 - ahead/behind: `0/0`
 - tracked/untracked: `0/0`
 - working tree clean: true
 - extra local commit: false
 
 No publication/redeployment, live crawl/external request, runtime/config/environment mutation, DB/schema/data operation, persistence activation, credential/OAuth/provider mutation, safety-gate change, competitor execution/gate change, scheduler/worker/retry action, provider/public-site write, or other non-Git mutation occurred.
+
+A later docs-only closeout merge may advance GitHub/Replit `main` beyond this code/test checkpoint without changing application behavior. Always resolve current `main` independently before acting.
 
 ## Current first-party crawler reality
 
@@ -64,12 +84,12 @@ Current active pilot crawl behavior remains unchanged by P2.1:
 - maximum HTML response: 750,000 bytes
 - same-site normalization for Diamond Shelf
 - query strings stripped
-- redirects currently delegated to `fetch(..., redirect: "follow")`
+- redirects delegated to `fetch(..., redirect: "follow")`
 - canonical extracted as evidence only, not yet a dedupe identity
 - noindex observed but does not stop link expansion
 - `crawlSite()` itself is in-memory, while the enclosing guarded pilot can persist successful crawl observations.
 
-The 30-page behavior is now explicitly the **baseline** mode. It is not the intended production whole-site ceiling.
+The 30-page behavior is explicitly the **baseline** mode. It is not the production whole-site ceiling.
 
 ## P2.1 controller contract
 
@@ -87,7 +107,7 @@ Locked to the current pilot policy:
 - sequential
 - caller cannot override the hard page limit.
 
-An integration test locks these values to the current `PILOT_LIMITS` so baseline drift fails CI.
+An integration test locks these values to current `PILOT_LIMITS` so baseline drift fails CI.
 
 ### `full_site`
 Inventory-driven rather than unlimited. Every plan requires:
@@ -97,29 +117,20 @@ Inventory-driven rather than unlimited. Every plan requires:
 - independent finite positive integer absolute page ceiling
 - hard page fuse <= absolute ceiling.
 
-Fail closed on:
-- missing hard fuse or ceiling
-- `Infinity`
-- `NaN`
-- zero/negative values
-- fractional values
-- fuse above ceiling
-- competitor/external target
-- missing site identity
-- non-HTTPS/invalid canonical origin.
+Fail closed on missing/invalid/unbounded limits, competitor/external targets, missing site identity, and non-HTTPS/invalid canonical origins.
 
-A valid full-site plan records:
+A valid full-site plan records requirements for:
 - sitemap-first inventory
 - internal-link supplementation
 - same-origin GET-only policy
 - robots enforcement
-- canonical deduplication required before execution
-- query/trap controls required before execution
-- bounded batching required before execution
-- concurrency control required before execution
-- per-origin rate limiting required before execution
-- checkpoint/resume required before execution
-- deterministic completion-ledger contract.
+- canonical deduplication
+- query/trap controls
+- bounded batching
+- concurrency control
+- per-origin rate limiting
+- checkpoint/resume
+- deterministic completion ledger.
 
 Completion-ledger fields are fixed to:
 - discovered
@@ -140,41 +151,21 @@ Every P2.1 plan hard-codes false for controller execution, persistence authoriza
 
 ## Competitor isolation remains mandatory
 
-Competitor crawling/acquisition remains a separate subsystem with separate:
-- target identity
-- gates
-- authorization/replay controls
-- secure transport
-- robots policy
-- persistence authorization
-- dry-run/live-execution boundaries.
+Competitor crawling/acquisition remains a separate subsystem with separate target identity, gates, authorization/replay controls, secure transport, robots policy, persistence authorization and execution boundaries. P2.1 first-party full-site planning does not import, enable or widen competitor acquisition.
 
-P2.1 first-party full-site planning does not import, enable or widen competitor acquisition. First-party whole-site permission must never be represented by a generic crawler/network flag that a competitor path can inherit.
+First-party whole-site permission must never be represented by a generic crawler/network flag that a competitor path can inherit.
 
-## GSC control chain remains closed at live-provider boundary
-
-The controlled chain remains:
-
-`Task #66 market/category identity`
-→ `Task #67 reviewed signal-source registry + refresh planning`
-→ `Task #68 exact adapter request + normalization`
-→ `Task #69 exact expiring collection-job packet + authorization`
-→ `Task #70 durable default-off single-job execution + replay lock`
-→ `Task #71 GSC Search Analytics runner foundation`
-→ `Task #72 GSC delegated OAuth/property readiness`
-→ `Task #73 first-live-read pilot packet/readiness composition`
-→ `Task #74 GSC OAuth client/config binding architecture`
-→ `Task #75 profile-isolated GSC runtime binding foundation`.
+## GSC live-provider boundary remains closed
 
 Task #75 remains engineering-complete but unpublished. Its GSC transport remains intentionally unbound/default-off.
 
-Exact GSC identity remains:
+Exact GSC identity:
 - profile: `gsc_read_only_v1`
 - provider: `google`
 - external account ID: `google#gsc-read-only-v1`
 - exact scope: `https://www.googleapis.com/auth/webmasters.readonly`
 - supported property identity: `sc-domain:<domain>`
-- accepted permission levels: `siteRestrictedUser`, `siteFullUser`.
+- accepted permissions: `siteRestrictedUser`, `siteFullUser`.
 
 No real GSC OAuth client/secret, OAuth consent, token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence has been authorized by P2.1.
 
@@ -187,9 +178,9 @@ Unless a later task explicitly authorizes otherwise, keep closed/default-off:
 - `GSC_READONLY_OAUTH_RUNTIME_ENABLED=false`
 - first-party `full_site` crawl execution=false
 - first-party full-site persistence=false
-- competitor one-target execution/collection/evidence persistence=false
-- Task #72 configured/credential/scope/property/network/live-read readiness=false
-- Task #73 packet/lineage/Task #69/Task #70/first-live-read readiness=false
+- competitor execution/collection/evidence persistence=false
+- Task #72 credential/scope/property/network/live-read readiness=false
+- Task #73 first-live-read readiness=false
 - provider/public writes=false
 - observation/evidence persistence=false
 - scheduler/batch/autonomous-worker/retry=false.
@@ -198,32 +189,30 @@ Unless a later task explicitly authorizes otherwise, keep closed/default-off:
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Completed engineering foundations now include:
+Completed engineering foundations include:
 - P1.1 / P1.2 — Task #75 GSC profile isolation
 - P2.1 — first-party baseline/full-site crawl controller planning foundation.
 
-P1 live-provider activation items remain separately authorized. P2.1 does not imply crawl execution.
+P1 live-provider activation remains separately authorized. P2.1 does not imply crawl execution.
 
 ## Next safe engineering milestone
 
-The next safe/default-off engineering milestone is:
-
 **P2.2 — Sitemap Inventory / Discovery + Canonical Dedupe Foundation.**
 
-Initial P2.2 should remain network-free and deterministic. It should:
-- accept supplied sitemap XML/text rather than fetch external URLs itself;
+Initial P2.2 must remain network-free and deterministic:
+- accept supplied sitemap XML/text rather than fetch external URLs;
 - model bounded sitemap index and URL-set normalization;
-- enforce first-party site/canonical-origin identity;
-- define finite sitemap nesting, document, URL and response-size ceilings;
+- enforce exact first-party site/canonical-origin identity;
+- define finite sitemap nesting/document/URL/response-size ceilings;
 - normalize and canonicalize inventory URLs deterministically;
 - dedupe by canonical URL identity;
 - reject unsupported schemes, credential-bearing URLs, cross-origin entries and trap-risk URLs with explicit reason codes;
-- model useful query-parameter/trap policy without broadening current live crawl behavior;
+- model query-parameter/trap policy without broadening current live crawl behavior;
 - produce deterministic inventory entries and exclusion/rejection accounting;
 - integrate only with the P2.1 planning layer;
 - leave live sitemap fetching, live crawling, persistence, DDL, scheduler/worker, competitor widening, provider/public writes and publication disabled.
 
-Generic `continue` may advance this pure/default-off P2.2 engineering workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync. It does **not** authorize live sitemap/crawl requests, persistence, DDL, scheduler/worker activation, competitor execution, provider/public-site writes, Task #75 live-provider stages, or publication.
+Generic `continue` may advance this pure/default-off P2.2 workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync. It does **not** authorize live sitemap/crawl requests, persistence, DDL, scheduler/worker activation, competitor execution, provider/public-site writes, Task #75 live-provider stages, or publication.
 
 ## Resume rule
 

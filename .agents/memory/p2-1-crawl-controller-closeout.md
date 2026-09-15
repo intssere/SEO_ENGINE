@@ -6,23 +6,46 @@ Engineering-complete, CI-certified, merged to canonical GitHub `main`, and Git-o
 Authoritative issue: #145  
 Implementation PR: #146
 
-## Certified lineage
+## Certified implementation lineage
 - starting `main`: `e0f868767a94ddf6b68f576bdcb8e3e46b1cd704`
 - starting tree: `05295cd1997e246087dc3deb6c3771dfb5870a0f`
 - exact tested PR head: `e382edba7da43aaae630d819213feaa5af7a7daf`
 - PR CI #249 / run `34893786940`: success
-- merge: `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d`
-- merge tree: `614a71a4a41bafc2423cd922ee1f730f50c1a137`
+- implementation merge: `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d`
+- implementation tree: `614a71a4a41bafc2423cd922ee1f730f50c1a137`
 - post-merge main CI #250 / run `34893997324`: success
 
-PR CI and post-merge CI both passed task tests, full workspace tests, typecheck, and build.
+PR CI and implementation post-merge CI both passed task tests, full workspace tests, typecheck, and build.
 
-## Replit reconciliation
-After post-merge CI #250, Replit was Git-only synchronized and read-only verified at the exact merge:
+## Closeout docs and final CI stabilization
+The P2.1 closeout/docs PR #147 was exact-head certified by CI #251 and merged at:
+- closeout docs merge: `902ec2b254e99793bd2a994203a611b8b9353daf`
+- tree: `a052002fff2679f275b76ffdbf7f99b4a65dc1ab`
+
+Post-merge CI #252 / run `34944221138` then exposed one latent time-dependent Task #75 test failure:
+- file: `artifacts/api-server/src/lib/gsc-oauth-profile.test.ts`
+- test: `GSC callback orchestration keeps exact profile identity and uses only injected dependencies`
+- error: `OAuth state expired.`
+
+The failure was not caused by P2.1 runtime behavior. PR #147 was documentation-only. Root cause was a test-created GSC OAuth state pinned to `2026-09-15T00:00:00.000Z` while production callback validation correctly used the actual wall clock. Once the short-lived state aged beyond its TTL, the success test became stale.
+
+Blocker issue #148 and PR #149 corrected only the test clock coupling:
+- exact fix head: `cd1290b02e3a38b5b4006bd7820de598cd95ea55`
+- diff: one test file, 2 additions / 2 deletions
+- production OAuth TTL/expiry validation unchanged
+- PR CI #253 / run `34944593824`: success
+- fix merge: `8cbcd43a6f9a1a8ae8f7df8ab98928b6c0779795`
+- fix merge tree: `105dc4d87c0c1c1f22c12593b2b78985bec5f545`
+- post-merge main CI #254 / run `34944774214`: success
+
+CI #253 and #254 both passed task tests, full workspace tests, typecheck, and build. The incident must be preserved as a test-stability lesson; production OAuth expiry validation was not weakened.
+
+## Final Replit reconciliation
+After CI #254, Replit was Git-only synchronized and read-only verified at the final certified main:
 - branch: `main`
-- HEAD: `aa564d68b1b92fc673ff1a5fa8113aa0321a1a6d`
-- tree: `614a71a4a41bafc2423cd922ee1f730f50c1a137`
-- cached origin/main: same
+- HEAD: `8cbcd43a6f9a1a8ae8f7df8ab98928b6c0779795`
+- tree: `105dc4d87c0c1c1f22c12593b2b78985bec5f545`
+- cached origin/main: same SHA/tree
 - ahead/behind: `0/0`
 - tracked/untracked: `0/0`
 - clean: true
@@ -52,7 +75,7 @@ Current active pilot crawl characteristics:
 Competitor acquisition remains a separate subsystem with separate gates, identity, authorization/replay controls, secure transport, robots policy, persistence authorization, and execution routes. P2.1 does not import or widen competitor acquisition.
 
 ## P2.1 implementation
-Exactly three new files were added; existing runtime files were not modified:
+Exactly three implementation files were added; existing runtime files were not modified by P2.1:
 - `artifacts/api-server/src/lib/crawl-controller.ts`
 - `artifacts/api-server/src/lib/crawl-controller.test.ts`
 - `artifacts/api-server/src/lib/crawl-controller-integration.test.ts`
