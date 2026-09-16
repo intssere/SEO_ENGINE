@@ -13,46 +13,96 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75 and roadmap P2 engineering foundations have **not** been published as application releases. Git-only Replit synchronization does not change the separately attested production source.
+Tasks #74, #75, roadmap P2 engineering foundations and P3.1 have **not** been published as application releases. Git-only Replit synchronization does not change the separately attested production source.
 
-## Current engineering state — P2.8 complete
+## Current engineering state — P3.1 complete
 
-Roadmap **P2.8 — Technical issue taxonomy and evidence model expansion v1** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified and Git-only synchronized to Replit.
+Roadmap **P3.1 — Observation/Evidence Persistence Design Foundation** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified and Git-only synchronized to Replit.
 
 Authoritative task:
-- issue #170 — P2.8 Technical issue taxonomy and evidence model expansion v1
-- implementation PR #171
+- issue #173 — P3.1 Observation/Evidence Persistence Design Foundation
+- implementation PR #174
 
 Certification lineage:
-- P2.8 baseline main: `785e5042a6c6a1b4546d7be36fd44ded0568fdd3`
-- exact tested P2.8 head: `198965f52e428af99f2af4cc6fcab64c0373243c`
-- PR CI #287 / run `35025006982`: success
-- implementation merge: `d15551b2ec841856e88c872ddd476ddbadbf6c4c`
-- implementation tree: `5ce4e67ada0e7a078d3bf6b8fa4deecfaad85afe`
-- post-merge main CI #288 / run `35025174780`: success
+- P3.1 baseline main: `40aeb600cb8da486031023bab5d8d1c024711d0f`
+- exact tested P3.1 head: `add9a5a59b15ef8880dd8e398739bedd66babc0e`
+- PR CI #291 / run `35064641066`: success
+- implementation merge: `e94a38427b23cbd6d74f6a9ef722e16d84c88635`
+- implementation tree: `52c45dccd332877222e132a35aea1f4309f45b9f`
+- post-merge main CI #292 / run `35064873440`: success
 
-Both P2.8 certification runs passed legacy schema validation, task tests, full workspace tests, typecheck and build.
+Both P3.1 certification runs passed legacy schema validation, task tests, full workspace tests, typecheck and build.
 
 Detailed record:
-- `.agents/memory/p2-8-technical-issue-evidence-closeout.md`
+- `.agents/memory/p3-1-observation-evidence-persistence-design-closeout.md`
 
 ## Replit engineering workspace
 
-After P2.8 post-merge CI #288, Replit was reconciled Git-only and read-only verified at:
+After P3.1 post-merge CI #292, Replit was reconciled Git-only and read-only verified at:
 - branch: `main`
-- HEAD: `d15551b2ec841856e88c872ddd476ddbadbf6c4c`
-- tree: `5ce4e67ada0e7a078d3bf6b8fa4deecfaad85afe`
+- HEAD: `e94a38427b23cbd6d74f6a9ef722e16d84c88635`
+- tree: `52c45dccd332877222e132a35aea1f4309f45b9f`
 - cached origin/main: same SHA/tree
 - ahead/behind: `0/0`
 - tracked/untracked: `0/0`
 - working tree clean: true
 - extra local commit on `main`: false
 
-No publish/redeploy, app run, runtime/config/environment mutation, DB/schema/data action, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker/batch/retry activation, persistence action or public-site/provider write occurred during P2.8 engineering or Git reconciliation.
+No publish/redeploy, runtime/config/environment mutation, DB/schema/data action, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker activation, persistence action or public-site/provider write occurred during P3.1 engineering or Git reconciliation.
+
+### Replit smoke caveat
+
+A Replit automatic `smoke` workflow ran approximately 79 seconds after the Git fast-forward and failed its first proxied health check at `http://localhost:80/api/healthz` with HTTP 502.
+
+Read-only diagnosis found:
+- the API workflow was listening on port 8080;
+- recorded API requests were successful;
+- web and component-preview Vite workflows were running;
+- P3.1 is not wired into runtime;
+- the running processes predated the P3.1 Git sync and therefore did not runtime-certify the new checkout;
+- available evidence points to the Replit-facing development proxy/runtime condition rather than a P3.1 compile/test/runtime exception.
+
+No restart, new request, configuration change or other mutation was performed to diagnose further because P3.1 does not authorize runtime mutation or publication.
+
+## P2 engineering foundations completed
+
+P2.1 through P2.8 are engineering-complete foundations and remain non-published/non-live unless separately authorized:
+
+- **P2.1 — Crawl controller:** immutable 30-page/depth-2 `baseline` planning plus separately bounded `full_site` planning with finite safety ceilings.
+- **P2.2 — Sitemap inventory:** network-free supplied-sitemap parsing, strict first-party URL policy, canonical normalization/dedupe and deterministic completeness accounting.
+- **P2.3 — Crawl execution control:** deterministic bounded batches, rate/concurrency/timeout/redirect/retry/trap controls, checkpoint/resume and supplied-outcome advancement; no network executor.
+- **P2.4 — Completion ledger:** deterministic whole-site accounting certification over exact P2 lineage; certification means reconciled approved inventory accounting, not zero SEO issues.
+- **P2.5 — Crawl history:** deterministic retained-artifact comparison and change detection without inventing unavailable per-URL facts.
+- **P2.6 — Incremental recrawl planner:** bounded recrawl plans from proven changes/trusted supplied signals; insufficient evidence falls back to bounded reconciliation.
+- **P2.7 — URL Explorer:** deterministic bounded read-only URL query model over retained P2 inventory/recrawl evidence.
+- **P2.8 — Technical issue/evidence model:** deterministic technical SEO taxonomy/evidence contract with strict provenance, stable fingerprints and explicit unavailable-fact honesty.
+
+P2.7 still does not magically provide HTTP status, fetch outcome, redirect target, canonical target, indexability or content fingerprint when those facts were not retained by an authorized source. P2.8 issue instances cannot treat unavailable markers as substantiating evidence.
+
+## P3.1 foundation completed
+
+P3.1 provides a **storage-agnostic domain contract**, not active persistence.
+
+It defines and tests:
+- site- and URL-scoped normalized observation identity;
+- deterministic semantic/value/evidence/provenance/record fingerprints;
+- bounded scalar material state instead of arbitrary raw payload persistence;
+- structured evidence references without retaining P2.8 free-form summaries, labels, details or raw evidence values;
+- explicit caller-supplied `observedAt` at the P2.8 adapter boundary because P2.8 does not itself carry observation time;
+- deterministic supplied-time freshness windows;
+- exact duplicate, supersession, conflict, corroboration and independent transition semantics;
+- deterministic history relations and integrity validation;
+- bounded read/query contracts across site, URL, observation kind, provenance source, lifecycle and freshness;
+- secret-like material, credential-bearing URL, malformed timestamp/fingerprint and unbounded-input rejection;
+- hardening proof that the P3.1 production module contains no network transport, DB/ORM client, SQL DDL/DML, filesystem-write primitive, environment binding, scheduler/worker primitive or enabled mutation/persistence gate.
+
+### P3.1 honesty rule
+
+Do not fabricate source time or collapse independent provenance using arbitrary last-write-wins behavior. If an upstream record lacks `observedAt`, a trusted adapter boundary must supply it explicitly. Source lineage, observation semantics, material value and evidence identity remain distinct concepts.
 
 ## Current first-party crawler reality
 
-The active published production/pilot crawler remains the historical bounded pilot implementation. P2.1–P2.8 are engineering foundations and do not activate a new runtime.
+The active published production/pilot crawler remains the historical bounded pilot implementation. P2 and P3.1 engineering foundations do not activate a new runtime.
 
 Published production/pilot behavior remains approximately:
 - 30-page bound;
@@ -69,70 +119,9 @@ Published production/pilot behavior remains approximately:
 
 The 30-page behavior remains **baseline** mode. It is not the intended whole-site production ceiling.
 
-## P2 engineering foundations completed
-
-### P2.1 — Crawl controller
-Defines immutable 30-page/depth-2 `baseline` planning and separately bounded `full_site` planning. Full-site mode requires first-party identity, finite hard ceilings, sitemap-first inventory, dedupe, trap controls, bounded batching, checkpoint/resume and completion accounting. Execution and persistence remain disabled.
-
-### P2.2 — Sitemap inventory
-Provides network-free supplied-sitemap inventory parsing, strict first-party URL policy, canonical normalization/dedupe, completeness/rejection accounting and deterministic fingerprinting. It does not fetch sitemaps.
-
-### P2.3 — Crawl execution control
-Provides deterministic inventory-derived batches, finite concurrency/rate/timeout/redirect/retry/trap limits, same-origin request/redirect validation, deterministic checkpoint/resume, supplied-outcome advancement, replay/order guards and semantic integrity validation. It contains no network executor.
-
-### P2.4 — Completion ledger and whole-site certification
-Provides deterministic completeness/accounting certification over exact P2.1/P2.2/P2.3 lineage. Certification means reconciled accounting of approved canonical inventory; it is not a zero-SEO-issues claim.
-
-### P2.5 — Crawl history/comparison
-Provides deterministic same-site comparison over retained P2.2 inventories and P2.4 certifications, including inventory/lastmod/ledger/certification changes. It explicitly leaves unavailable per-URL facts unavailable rather than inferring them.
-
-### P2.6 — Incremental recrawl planner
-Produces bounded deterministic recrawl plans from P2.5 changes plus explicitly supplied trusted first-party signals. Budgets remain finite; insufficient evidence triggers bounded full reconciliation rather than invented targeting.
-
-### P2.7 — URL Explorer query model
-Provides a deterministic, bounded, read-only URL-level exploration contract over supplied P2.2 inventory and optional P2.6 recrawl plans.
-
-Retained/provable URL-level dimensions include canonical URL/stable URL identity, pathname, sitemap-source membership, sitemap `lastmod` where supplied, and P2.6 recrawl context where proven by a valid current-inventory-bound plan.
-
-Per-URL HTTP status, fetch outcome, redirect target, canonical target, indexability and content fingerprint remain explicitly unavailable in P2.7.
-
-### P2.8 — Technical issue taxonomy and evidence model
-Provides a deterministic technical-SEO issue/evidence contract across:
-- crawlability/indexability;
-- canonicalization;
-- metadata;
-- structured data;
-- internal links;
-- performance;
-- images;
-- content quality;
-- AI accessibility;
-- crawl completeness.
-
-P2.8 reuses the existing severity vocabulary exactly: `info | low | medium | high | critical`.
-
-Evidence is explicitly typed as:
-- retained fact;
-- aggregate fact;
-- supplied first-party observation;
-- unavailable marker.
-
-It binds issues to first-party site/origin identity and upstream fingerprints, uses stable P2.7 URL identity for affected URLs, creates deterministic evidence IDs/issue keys/evidence-set/issue/query fingerprints, supplies deterministic filtering/sorting/bounded pagination, sanitizes bounded output, and maps active URL-scoped issues to the existing `TechnicalFindingSignal` shape.
-
-### P2.8 honesty rule
-Taxonomy metadata may describe issue types that need facts not retained by P2.7, but an issue instance cannot be substantiated by an unavailable marker. The following P2.7-unavailable per-URL dimensions require a later explicitly supplied and provenance-valid observation before they can support an issue:
-- HTTP status;
-- fetch outcome;
-- redirect target;
-- canonical target;
-- indexability;
-- content fingerprint.
-
-P2.8 therefore expands the issue/evidence vocabulary without fabricating crawl facts.
-
 ## Competitor isolation remains mandatory
 
-Competitor crawling/acquisition remains a separate subsystem with separate target identity, secure transport, gates, replay controls and persistence authorization. P2 first-party foundations do not grant or widen competitor permissions.
+Competitor crawling/acquisition remains a separate subsystem with separate target identity, secure transport, gates, replay controls and persistence authorization. First-party P2/P3 foundations do not grant or widen competitor permissions.
 
 ## GSC live-provider boundary remains closed
 
@@ -146,7 +135,7 @@ Exact GSC identity:
 - supported property: `sc-domain:<domain>`
 - accepted permissions: `siteRestrictedUser`, `siteFullUser`.
 
-No real GSC OAuth client/secret, OAuth consent, delegated token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence has been authorized by P2.8.
+No real GSC OAuth client/secret, OAuth consent, delegated token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence is authorized by P3.1.
 
 ## Current safety boundary
 
@@ -164,9 +153,11 @@ Unless a later task explicitly authorizes otherwise, keep closed/default-off:
 - Task #72 credential/scope/property/network/live-read readiness=false
 - Task #73 first-live-read readiness=false
 - provider/public writes=false
-- observation/evidence persistence=false
+- observation/evidence production persistence=false
 - production DDL/schema migration=false
-- scheduler/autonomous-worker execution=false.
+- filesystem writer=false
+- scheduler/autonomous-worker execution=false
+- autonomous mutation=false.
 
 ## Master roadmap status
 
@@ -174,45 +165,45 @@ Program tracker: issue #139. Keep it open until final production completion cert
 
 Completed engineering foundations now include:
 - P1.1 / P1.2 — Task #75 GSC profile isolation;
-- P2.1 — baseline/full-site crawl-controller planning;
-- P2.2 — supplied-sitemap inventory + canonical dedupe;
-- P2.3 — bounded crawl execution-control + checkpoint/resume;
-- P2.4 — completion ledger + whole-site completeness certification;
-- P2.5 — crawl history/comparison + change detection;
-- P2.6 — incremental recrawl planning;
-- P2.7 — URL Explorer API/query model;
-- P2.8 — technical issue taxonomy + evidence model.
+- P2.1 through P2.8 — crawl planning, inventory, control, certification, history, recrawl, URL Explorer and technical evidence;
+- P3.1 — normalized observation/evidence persistence design.
 
-P1 live-provider activation remains separately authorized. P2.1–P2.8 do not imply live full-site crawl execution, sitemap network fetching, persistence, scheduled crawling, autonomous operation or publication.
+P1 live-provider activation remains separately authorized. P2/P3.1 do not imply live full-site crawl execution, sitemap fetching, database persistence, scheduled crawling, autonomous operation or publication.
 
-`MASTER_COMPLETION_ROADMAP.md` is the durable plan; if a table status there lags this checkpoint, this file and the independently verified repository/CI state govern mutable status until the roadmap table is updated.
+`MASTER_COMPLETION_ROADMAP.md` is the durable plan; if a table status there lags this checkpoint, this file and independently verified repository/CI state govern mutable status until the roadmap is updated.
 
 ## Next safe engineering milestone
 
-**P3.1 — Observation/evidence persistence design.**
+**P3.2 — Dedupe/Fingerprint/Freshness/Provenance Persistence Foundation.**
 
-P3.1 is a **design/domain-contract** milestone, not production persistence activation.
+P3.2 should remain a **pure/default-off persistence-facing contract**, not production migration activation.
 
-Initial P3.1 should define and test:
-- a unified durable observation/evidence record contract spanning existing normalized signal observations and P2.8 technical evidence;
-- stable observation/evidence IDs and semantic dedupe/fingerprint keys;
-- site/entity/page/query/category/competitor scope references without weakening tenant/site isolation;
-- source/provider/profile/resource provenance and upstream lineage fields;
-- observed-at, collected-at, freshness/staleness and validity semantics;
-- evidence quality/confidence fields compatible with P2.8;
-- immutable source facts vs derived/normalized fields;
-- supersession/history hooks needed by P3.3 without prematurely implementing retention policy;
-- compatibility/read-model hooks for later P3.4 page/query/category/competitor/entity evidence views;
-- a proposed storage/migration shape and indexes documented as a plan only;
-- strict sanitization and raw-payload/secret boundaries;
-- deterministic validation/fingerprinting tests;
-- all persistence/DDL/network/execution/write authorization flags closed.
+Initial P3.2 may safely define and test:
+- storage-facing persistence keys derived from P3.1 observation/semantic/value/provenance fingerprints;
+- deterministic idempotent write-plan decisions such as insert, duplicate/no-op, supersede, preserve-conflict and corroboration linkage;
+- freshness/provenance-aware uniqueness/index intent as a storage-neutral schema contract;
+- bounded transaction/write-plan interfaces driven only by injected fake/in-memory stores in tests;
+- deterministic replay/idempotency behavior;
+- provenance isolation and conflict preservation;
+- persistence-facing query/index requirements needed by later P3.3/P3.4;
+- all production database/network/DDL/write activation flags closed.
 
-P3.1 must not execute production DDL, create/alter/drop production schema, persist real production observations, activate a writer, scheduler or worker, make provider/crawl requests, perform competitor collection, mutate a public site or publish/redeploy the application.
+P3.2 must **not**:
+- import/connect to a production database client;
+- run SQL DDL or production DML;
+- create/alter/drop production tables/indexes;
+- start migrations;
+- bind environment secrets;
+- persist real production observations;
+- make provider/crawl/network calls;
+- activate schedulers/workers;
+- perform competitor collection;
+- mutate a public site/provider;
+- publish/redeploy the application.
 
 **P3.6 remains the separately reviewed and explicitly authorized production migration/DDL boundary.**
 
-Generic `continue` may advance the pure P3.1 design/domain-model workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync and docs closeout. It does **not** authorize production persistence, DDL, live provider/crawl activity, scheduler/worker activation, competitor execution, provider/public-site writes or publication.
+Generic `continue` may advance the pure P3.2 engineering workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync and docs closeout. It does not authorize production persistence, DDL, live provider/crawl activity, scheduler/worker activation, competitor execution, provider/public-site writes or publication.
 
 ## Resume rule
 
