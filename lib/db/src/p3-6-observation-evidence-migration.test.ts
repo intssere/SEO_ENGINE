@@ -186,7 +186,9 @@ test("P3.6 migration applies to the certified runtime baseline and matches the f
   `;
   assert.deepEqual(constraints.map((row) => row.constraint_name), [...EXPECTED_CONSTRAINTS].sort());
   const byConstraint = new Map(constraints.map((row) => [row.constraint_name, row.definition] as const));
-  assert.match(byConstraint.get("seo_observation_fresh_for_ms_bounds") ?? "", /fresh_for_ms >= 60000.*fresh_for_ms <= 2592000000/i);
+  const freshnessBounds = byConstraint.get("seo_observation_fresh_for_ms_bounds") ?? "";
+  assert.match(freshnessBounds, /fresh_for_ms\s*>=\s*60000/i);
+  assert.match(freshnessBounds, /fresh_for_ms\s*<=\s*(?:2592000000|'2592000000'::bigint)/i);
   assert.match(byConstraint.get("seo_observation_freshness_consistency") ?? "", /stale_after.*observed_at.*fresh_for_ms/i);
   assert.match(byConstraint.get("seo_observation_subject_url_pair") ?? "", /subject_kind.*site.*url_id IS NULL.*canonical_url IS NULL.*subject_kind.*url.*url_id IS NOT NULL.*canonical_url IS NOT NULL/i);
   assert.match(byConstraint.get("seo_observation_evidence_observation_fk") ?? "", /REFERENCES seo_observation\(observation_id\).*ON DELETE RESTRICT/i);
