@@ -67,6 +67,13 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT to_regclass('public.auth_sessions') IS NOT NULL AND to_regclass('public.auth_audit_events') IS NOT NULL" | grep -q '^t$'
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT domain FROM sites WHERE domain='diamondshelf.us' AND is_active=true" | grep -q '^diamondshelf.us$'
 
+      - name: Test P3.6 observation/evidence schema migration
+        env:
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
+        run: |
+          pnpm --filter @workspace/db test:p3-6
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^34$'
+
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
 
