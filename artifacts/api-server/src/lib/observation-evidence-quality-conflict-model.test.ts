@@ -167,7 +167,7 @@ test("P3.5 preserves independent corroboration and may conservatively prefer uni
   assert.equal(group.preferredValueFingerprint, candidate.valueFingerprint);
   const preferred = group.valueSupports.find((support) => support.valueFingerprint === candidate.valueFingerprint);
   assert.ok(preferred);
-  assert.deepEqual(preferred.supportingObservationIds.sort(), [candidate.observationId, corroboratingTarget.observationId].sort());
+  assert.deepEqual([...preferred.supportingObservationIds].sort(), [candidate.observationId, corroboratingTarget.observationId].sort());
   assert.equal(preferred.provenanceFingerprints.length, 2);
   assert.ok(group.reasoningCodes.includes("unique_independent_corroborated_support"));
 });
