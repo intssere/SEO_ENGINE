@@ -138,7 +138,7 @@ test("P3.6 migration applies to the certified runtime baseline and matches the f
       AND table_name IN ('seo_observation', 'seo_evidence', 'seo_observation_evidence')
     ORDER BY table_name
   `;
-  assert.deepEqual(before, [], "target relations must not pre-exist in the migration test baseline");
+  assert.equal(before.length, 0, "target relations must not pre-exist in the migration test baseline");
 
   const migration = await readFile(migrationPath(), "utf8");
   await sql.unsafe(migration);
@@ -214,7 +214,7 @@ test("P3.6 migration applies to the certified runtime baseline and matches the f
     SELECT 'seo_observation_evidence', COUNT(*)::int FROM seo_observation_evidence
     ORDER BY table_name
   `;
-  assert.deepEqual(rowCounts, [
+  assert.deepEqual(rowCounts.map((row) => ({ table_name: row.table_name, row_count: row.row_count })), [
     { table_name: "seo_evidence", row_count: 0 },
     { table_name: "seo_observation", row_count: 0 },
     { table_name: "seo_observation_evidence", row_count: 0 },
