@@ -368,18 +368,18 @@ Use the stable roadmap IDs below even if GitHub Task numbers change. Every futur
 | P2.4 | Crawl completion ledger and whole-site certification | DONE — issue #157 / PR #158 / merge `977ea26dc823bc21e8371ddac0d35e3b702907f0` |
 | P2.5 | Crawl history/comparison and change detection | DONE — issue #160 / PR #161 / merge `a177c4590273da29113af75b431d6ae20c7e3b4c` |
 | P2.6 | Incremental recrawl planner | DONE — issue #162 / PR #163 / merge `cdc272ea33b5e937662f85543fde9928175777bf` |
-| P2.7 | URL Explorer API/query model | **NEXT** |
-| P2.8 | Technical issue taxonomy and evidence model expansion | PLANNED |
+| P2.7 | URL Explorer API/query model | DONE |
+| P2.8 | Technical issue taxonomy and evidence model expansion | DONE |
 
 ### Phase P3 — Durable evidence and unified search data model
 
 | ID | Work item | Status |
 |---|---|---|
-| P3.1 | Observation/evidence persistence design | PLANNED |
-| P3.2 | Dedupe/fingerprint/freshness/provenance persistence | PLANNED |
-| P3.3 | Retention/history/supersession model | PLANNED |
-| P3.4 | Read models for page/query/category/competitor/entity evidence | PLANNED |
-| P3.5 | Evidence quality/conflict handling | PLANNED |
+| P3.1 | Observation/evidence persistence design | DONE |
+| P3.2 | Dedupe/fingerprint/freshness/provenance persistence | DONE |
+| P3.3 | Retention/history/supersession model | DONE |
+| P3.4 | Read models for page/query/category/competitor/entity evidence | DONE |
+| P3.5 | Evidence quality/conflict handling | DONE — issue #185 / PR #186 / merge `73e5c1fab4d76d931f5308c7e197f09a36deb5ef` |
 | P3.6 | Production migration/DDL | only after separately reviewed and explicitly authorized |
 
 ### Phase P4 — Product experience foundation
