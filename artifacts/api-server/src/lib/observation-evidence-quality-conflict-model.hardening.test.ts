@@ -11,7 +11,7 @@ import {
   EVIDENCE_QUALITY_CONFLICT_INDEX_INTENTS,
   P3_5_LIMITS,
   buildEvidenceQualityConflictModel,
-} from "./observation-evidence-quality-conflict-model.js";
+} from "./observation-evidence-quality-model.js";
 
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 
@@ -59,7 +59,7 @@ function context() {
 }
 
 test("P3.5 production source contains no network, DB/ORM/read, SQL mutation, filesystem-write, secret-binding, worker or ambient-clock primitives", () => {
-  const source = readFileSync(new URL("./observation-evidence-quality-conflict-model.ts", import.meta.url), "utf8");
+  const source = readFileSync(new URL("./observation-evidence-quality-model.ts", import.meta.url), "utf8");
   const forbidden: Array<[RegExp, string]> = [
     [/\bfetch\s*\(/, "fetch"],
     [/\baxios\b/i, "axios"],
