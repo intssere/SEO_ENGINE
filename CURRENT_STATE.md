@@ -13,46 +13,46 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations and P3.1–P3.4 have **not** been published as application releases. Git-only Replit synchronization does not change the separately attested production source.
+Tasks #74, #75, roadmap P2 engineering foundations and P3.1–P3.5 have **not** been published as application releases. Git-only Replit synchronization does not change the separately attested production source.
 
-## Current engineering state — P3.4 complete
+## Current engineering state — P3.5 complete
 
-Roadmap **P3.4 — Retention / History Read Models** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified and Git-only synchronized to Replit.
+Roadmap **P3.5 — Evidence Quality / Conflict Handling** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified and Git-only synchronized to Replit.
 
 Authoritative task:
-- issue #182 — P3.4 Retention / History Read Models
-- implementation PR #183
+- issue #185 — P3.5 Evidence Quality / Conflict Handling
+- implementation PR #186
 
 Certification lineage:
-- P3.4 baseline main: `aea6edfbe9f57f207dd88bcac8c771bf919b1999`
-- baseline tree: `e0f0357b0177fca2b9a2d2313f8c481d0d608c55`
-- exact tested P3.4 implementation head: `58450fd6063515dd369bb4b9ec579bdb31eb8bc7`
-- exact tested tree: `ff9856fbaa69c2135a087fefa866ea662d8bee00`
-- PR CI #303 / run `35071947145`: success
-- implementation merge: `af17c36b53b3659fa1a4b69fc1eb253a3f8804e5`
-- implementation tree: `ff9856fbaa69c2135a087fefa866ea662d8bee00`
-- post-merge main CI #304 / run `35072135792`: success
+- P3.5 baseline main: `6b9b0d4e272c0f8433d5ddaf546cf6f43d6528af`
+- baseline tree: `ae0d57352e3dc66881609e4b72092b0cd0336176`
+- exact fully tested P3.5 implementation head: `db9f9edc90bc418869c77cd607482089d264d449`
+- exact tested tree: `1a9e1ffefa3a8f960fed7742f0723f2ca7590479`
+- PR CI #318 / run `35110103110`, job `104841275146`: success
+- implementation merge: `73e5c1fab4d76d931f5308c7e197f09a36deb5ef`
+- implementation tree: `1a9e1ffefa3a8f960fed7742f0723f2ca7590479`
+- post-merge main CI #319 / run `35110324556`, job `104842044784`: success
 
-Both P3.4 certification runs passed legacy schema validation, task/bootstrap checks, all current workspace tests, typecheck and build.
+Both P3.5 certification runs passed legacy PostgreSQL schema validation, the focused P3.5 suite, all current workspace tests, typecheck and build.
+
+The earlier quarantined head `7f43aa23598fbfc845e802a882d36e260dbec464` was not merged. Its full-workspace failure was recovered exactly as a test-fixture defect: the integrity test replaced an already-empty `conflictGroups` array and therefore did not actually tamper the result. The certified one-line correction changed the forged field to the non-empty `assessments` array; no production implementation or global policy was weakened.
 
 Detailed record:
-- `.agents/memory/p3-4-retention-history-read-model-closeout.md`
+- `.agents/memory/p3-5-evidence-quality-conflict-closeout.md`
 
 ## Replit engineering workspace
 
-After P3.4 post-merge CI #304, Replit was reconciled Git-only and read-only verified at:
+After P3.5 post-merge CI #319, Replit was reconciled Git-only and read-only verified at:
 - branch: `main`
-- HEAD: `af17c36b53b3659fa1a4b69fc1eb253a3f8804e5`
-- tree: `ff9856fbaa69c2135a087fefa866ea662d8bee00`
-- cached origin/main: same SHA/tree
+- HEAD: `73e5c1fab4d76d931f5308c7e197f09a36deb5ef`
+- tree: `1a9e1ffefa3a8f960fed7742f0723f2ca7590479`
+- cached origin/main: same SHA
 - ahead/behind: `0/0`
-- tracked/untracked: `0/0`
 - working tree clean: true
-- extra local commit on `main`: false
 
-No publish/redeploy, runtime/config/environment mutation, DB/schema/data action, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker activation, real persistence/archive/prune/delete action or public-site/provider write occurred during P3.4 engineering or Git reconciliation.
+No publish/redeploy, runtime/config/environment mutation, DB/schema/data action, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker activation, real persistence/archive/prune/delete action or public-site/provider write occurred during P3.5 engineering or Git reconciliation.
 
-A docs-only closeout merge may advance canonical GitHub `main` beyond the implementation merge above. After any such merge, independently resolve the newer exact `main`, require its CI to be green, and Git-only reconcile Replit to that exact docs checkpoint without publication.
+This docs-only closeout branch/PR may advance canonical GitHub `main` beyond the implementation merge above. After the docs merge, independently resolve the exact final `main`, require its CI to be green, and Git-only reconcile Replit to that exact docs checkpoint without publication.
 
 ## Completed engineering foundations
 
@@ -64,38 +64,41 @@ Completed non-published engineering foundations include:
 - **P3.2 — Persistence planning:** deterministic storage-neutral persistence keys, index intent, replay/idempotency, provenance-aware insert/supersede/conflict/corroboration plans, exact snapshot binding and immutable in-memory test application.
 - **P3.3 — Retention/history/supersession model:** explicit-time deterministic retention decisions, replay-safe history relations, protected lineage, bounded archive/prune planning only and storage-neutral lookup/index intent.
 - **P3.4 — Retention/history read models:** deterministic current-head and retained-history projections, supersession-chain/conflict/corroboration views, descriptive retention state, bounded filters/sorting/cursors, explicit unavailable evidence semantics and storage-neutral read/index intent.
+- **P3.5 — Evidence quality/conflict handling:** deterministic evidence availability, caller-time freshness, bounded support levels, provenance-aware corroboration, complete/partial conflict coverage and advisory-only resolution states over validated P3.1–P3.4 artifacts.
 
 None of these engineering foundations activates new production crawling, provider reads, database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
-## P3.4 contract completed
+## P3.5 contract completed
 
-P3.4 production module:
-- `artifacts/api-server/src/lib/observation-evidence-retention-history-read-model.ts`
+P3.5 canonical modules:
+- `artifacts/api-server/src/lib/observation-evidence-quality-model.ts`
+- `artifacts/api-server/src/lib/observation-evidence-quality-conflict-model.ts`
 
-P3.4 defines and tests:
-- current-head selection over exact validated retained history without destructive collapse;
-- retained timeline rows preserving superseded observations;
-- explicit current/superseded/conflicting lifecycle projection;
-- bounded deterministic supersession-chain traversal with cycle/missing-target/branch fail-closed handling;
-- unresolved-conflict projections that preserve independent provenance rather than arbitrary last-write-wins selection;
-- corroboration projections that keep independent supporting provenance traceable;
-- descriptive retention/disposition visibility without archive/prune/delete execution;
-- explicit evidence availability and unavailable-dimension semantics rather than invented facts;
-- bounded site/origin-scoped filters across semantic key, observation kind, source kind, retention class, disposition, lifecycle and relation kind;
-- bounded deterministic sorting and cursor pagination;
-- snapshot-bound and query-bound replay-safe cursor fingerprints;
-- exact P3.3 plan integrity reconstruction, P3.1 observation integrity validation and deterministic P3.2 in-memory reconstruction only;
-- deterministic row, chain, snapshot, query, index-intent and result fingerprints;
-- declarative storage-neutral index/query intent for timeline, current-head, provenance, retention and relation access patterns;
-- result-integrity rebuilding and tamper rejection;
-- source hardening against network transport, DB/ORM clients, SQL DDL/DML, filesystem writes, environment-secret binding, scheduler/worker/process primitives and ambient clock reads;
-- hard-coded false authorization for production read runtime, DB reads, persistence, archive/prune/delete execution, DDL/DML/migrations, provider/crawl/competitor activity, scheduler/worker/autonomous mutation, public writes and publication.
+P3.5 canonical tests:
+- `artifacts/api-server/src/lib/observation-evidence-quality-model.test.ts`
+- `artifacts/api-server/src/lib/observation-evidence-quality-model.hardening.test.ts`
 
-### P3.4 honesty rule
+P3.5 defines and tests:
+- explicit evidence availability rather than invented missing facts;
+- freshness only from caller-provided validated reference time, with `fresh` / `stale` state;
+- support tiers `insufficient`, `limited`, `supported`, `strong`, `corroborated`;
+- independent provenance/corroboration tracking;
+- conflict coverage `complete` and `partial_page`;
+- advisory-only resolutions `retain_unresolved`, `prefer_supported`, `require_review`, `insufficient_evidence`;
+- conservative `prefer_supported` only for uniquely stronger independent support;
+- provenance preservation and no mutation of source observations;
+- deterministic fingerprints and group identities;
+- exact P3.4 read-model integrity reconstruction;
+- bounded filters/projections and storage-neutral query/index intent;
+- exact result-integrity rebuilding and tamper rejection;
+- source hardening against network transport, DB/ORM clients, SQL read/DDL/DML, filesystem writes, environment-secret binding, scheduler/worker/process primitives and ambient clock reads;
+- hard-coded false authorization for production quality/runtime execution, production read runtime, DB reads, persistence, archive/prune/delete execution, DDL/DML, provider/network execution, scheduler/worker execution, public writes and publication.
 
-P3.4 does **not** make a live database-backed read service real. Storage-neutral read/index intent is not a migration. In-memory reconstruction is deterministic modeling/testing only. A `prune_candidate` remains readable because P3.4 does not execute pruning. Cursor pagination is a read-model contract, not authorization to expose a live production endpoint. Conflict/corroboration projections do not resolve or persist relations.
+### P3.5 honesty rule
 
-Production database binding, durable storage/read execution and schema/migration work remain closed. **P3.6 remains the separately reviewed and explicitly authorized production migration/DDL boundary.**
+P3.5 models evidence support quality and conflict state; it does **not** determine objective truth, persist a resolution, mutate source observations, make a live database-backed service real, or authorize any provider/network/runtime action. `prefer_supported` is advisory only. Storage-neutral index/query intent is not a migration. In-memory reconstruction is deterministic modeling/testing only. Partial-page conflict coverage fails closed rather than inventing unseen participant quality.
+
+Production database binding, durable storage/read execution, schema/migration work and production DDL/DML remain closed.
 
 ## Current first-party crawler reality
 
@@ -132,7 +135,7 @@ Exact GSC identity:
 - supported property: `sc-domain:<domain>`
 - accepted permissions: `siteRestrictedUser`, `siteFullUser`.
 
-No real GSC OAuth client/secret, OAuth consent, delegated token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence is authorized by P3.4.
+No real GSC OAuth client/secret, OAuth consent, delegated token, `sites.list`, Search Analytics call, real property binding, Task #70 live execution or GSC evidence persistence is authorized by P3.5.
 
 ## Current safety boundary
 
@@ -149,7 +152,9 @@ Unless a later task explicitly authorizes otherwise, keep closed/default-off:
 - competitor execution/collection/evidence persistence=false
 - provider/public writes=false
 - observation/evidence production persistence=false
+- observation/evidence production read runtime=false
 - production DB client/read binding=false
+- production DB reads=false
 - production DDL/schema migration=false
 - production DML=false
 - production archive execution=false
@@ -166,44 +171,29 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8 and P3.1–P3.4. P1 live-provider activation remains separately authorized. P2/P3 do not imply live full-site crawl execution, sitemap fetching, database persistence/reads, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8 and P3.1–P3.5. P1 live-provider activation remains separately authorized. P2/P3 do not imply live full-site crawl execution, sitemap fetching, database persistence/reads, scheduled crawling, autonomous operation or publication.
 
-`MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. If its mutable status table lags this checkpoint, this file, program issue #139 and independently verified repository/CI state govern current status until that table is refreshed.
+`MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3 status table must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next safe engineering milestone
+## Next boundary — P3.6 requires separate production DDL authorization
 
-**P3.5 — Evidence Quality / Conflict Handling.**
+**P3.6 — Production migration/DDL** is the next roadmap milestone, but it is a hard authorization boundary.
 
-P3.5 should remain a **pure, deterministic, storage-neutral, default-off contract**, not production database/provider/runtime activation.
+A generic `continue` does **not** authorize P3.6 production DDL. Before any P3.6 production migration is executed, explicit authorization must identify:
+- the target production environment;
+- the migration/schema scope;
+- the rollback/safety plan.
 
-Initial P3.5 may safely define and test:
-- deterministic evidence-quality dimensions over validated P3.1–P3.4 observations/read models;
-- provenance-quality and evidence-availability assessment without inventing unavailable facts;
-- deterministic conflict-state classification and conflict-group identity;
-- corroboration-aware confidence/quality modeling while preserving independent provenance;
-- stale/partial/unavailable evidence treatment;
-- deterministic conflict-resolution *recommendation/state modeling only*, without destructive mutation or silent last-write-wins;
-- bounded quality/conflict filters and projections;
-- exact lineage/snapshot/fingerprint integrity checks;
-- fake/in-memory fixtures in tests only;
-- storage-neutral query/index requirements only;
-- every production database/network/write/runtime/publication authorization flag closed.
+DDL authorization does **not** automatically authorize:
+- production DB runtime reads;
+- production DB runtime writes;
+- backfill/DML;
+- provider calls;
+- scheduler/worker activation;
+- publication/deployment;
+- autonomous mutation.
 
-P3.5 must **not**:
-- import/connect to a production database client;
-- execute production SQL DDL/DML or migrations;
-- persist/archive/prune/delete real production observations;
-- silently resolve or delete conflicting evidence;
-- make provider/crawl/network calls;
-- activate schedulers/workers;
-- perform competitor collection;
-- mutate a public site/provider;
-- bind real OAuth credentials/consent;
-- publish/redeploy the application.
-
-**P3.6 remains the separately reviewed and explicitly authorized production migration/DDL boundary.**
-
-Generic `continue` may advance the pure P3.5 engineering workflow through issue/branch/tests/PR/CI/merge/post-merge CI/Git-only Replit sync and docs closeout. It does not authorize production persistence/reads, DDL/DML, live provider/crawl activity, scheduler/worker activation, competitor execution, provider/public-site writes or publication.
+Those remain separate gates. Until the required P3.6 authorization exists, safe work is limited to inspection, planning/specification, synthetic/fake tests, documentation and other actions allowed by `AGENTS.md` that do not cross the production database/runtime boundary.
 
 ## Resume rule
 
