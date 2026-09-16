@@ -4,7 +4,6 @@ import {
   assertObservationIntegrity,
   classifyObservationTransition,
   type ObservationRecord,
-  type ObservationTransitionAction,
 } from "./observation-evidence-persistence-design.js";
 
 export const P3_2_SCHEMA_VERSION = "p3_2_v1" as const;
@@ -227,28 +226,42 @@ function uniqueSorted(values: readonly string[]): readonly string[] {
   return Object.freeze([...new Set(values)].sort());
 }
 
-function actionFor(input: {
-  duplicateObservationId: string | null;
-  sameProvenanceCurrentId: string | null;
-  conflictIds: readonly string[];
-  corroborationIds: readonly string[];
-  hasSemanticMatch: boolean;
-}): ObservationWriteAction {
-  if (input.duplicateObservationId) return "duplicate_noop";
-  if (input.sameProvenanceCurrentId) return "supersede_and_insert";
-  if (input.conflictIds.length > 0) return "preserve_conflict_insert";
-  if (input.corroborationIds.length > 0) return "corroborate_insert";
-  if (input.hasSemanticMatch) {
-    throw new Error("persistence_plan_semantic_match_unclassified");
-  }
-  return "insert_observation";
-}
-
-function assertTransitionExpected(
-  transition: ObservationTransitionAction,
-  expected: "supersede_existing" | "conflict" | "corroborate",
-): void {
-  if (transition !== expected) throw new Error("persistence_plan_transition_semantics_mismatch");
+function buildPlan(input: {
+  candidate: ObservationRecord;
+  action: ObservationWriteAction;
+  existingSnapshotFingerprint: string;
+  matchedCurrentObservationIds?: readonly string[];
+  supersedeObservationIds?: readonly string[];
+  conflictObservationIds?: readonly string[];
+  corroborationObservationIds?: readonly string[];
+}): ObservationWritePlan {
+  const persistenceKey = persistenceKeyFor(input.candidate);
+  const matchedCurrentObservationIds = uniqueSorted(input.matchedCurrentObservationIds ?? []);
+  const supersedeObservationIds = uniqueSorted(input.supersedeObservationIds ?? []);
+  const conflictObservationIds = uniqueSorted(input.conflictObservationIds ?? []);
+  const corroborationObservationIds = uniqueSorted(input.corroborationObservationIds ?? []);
+  const indexIntentFingerprint = sha256(PERSISTENCE_INDEX_INTENTS);
+  const idempotencyKey = sha256({
+    schemaVersion: P3_2_SCHEMA_VERSION,
+    observationId: input.candidate.observationId,
+    recordFingerprint: input.candidate.recordFingerprint,
+  });
+  const base = {
+    recordType: "observation_write_plan" as const,
+    schemaVersion: P3_2_SCHEMA_VERSION,
+    candidate: input.candidate,
+    persistenceKey,
+    action: input.action,
+    existingSnapshotFingerprint: input.existingSnapshotFingerprint,
+    matchedCurrentObservationIds,
+    supersedeObservationIds,
+    conflictObservationIds,
+    corroborationObservationIds,
+    idempotencyKey,
+    indexIntentFingerprint,
+    authorization: PERSISTENCE_PLAN_AUTHORIZATION,
+  };
+  return Object.freeze({ ...base, planFingerprint: sha256(base) });
 }
 
 export function observationPersistenceKey(record: ObservationRecord): ObservationPersistenceKey {
@@ -263,9 +276,18 @@ export function planObservationWrite(
   const existing = normalizeSnapshot(existingRecords, candidate);
   const existingSnapshotFingerprint = snapshotFingerprint(existing);
   const duplicate = existing.find((record) => record.observationId === candidate.observationId) ?? null;
+
+  if (duplicate) {
+    return buildPlan({
+      candidate,
+      action: "duplicate_noop",
+      existingSnapshotFingerprint,
+      matchedCurrentObservationIds: [duplicate.observationId],
+    });
+  }
+
   const semanticMatches = existing.filter((record) => record.semanticKey === candidate.semanticKey);
   const currentMatches = latestByProvenance(semanticMatches);
-
   if (currentMatches.length > P3_2_LIMITS.relationTargets) {
     throw new Error("persistence_plan_relation_target_limit_exceeded");
   }
@@ -274,7 +296,7 @@ export function planObservationWrite(
     (record) => record.provenance.provenanceFingerprint === candidate.provenance.provenanceFingerprint,
   ) ?? null;
 
-  if (sameProvenance && !duplicate) {
+  if (sameProvenance) {
     const candidateTime = timestampMillis(candidate.freshnessPolicy.observedAt);
     const currentTime = timestampMillis(sameProvenance.freshnessPolicy.observedAt);
     if (candidateTime < currentTime) throw new Error("observation_transition_out_of_order");
@@ -283,65 +305,38 @@ export function planObservationWrite(
   const conflictIds: string[] = [];
   const corroborationIds: string[] = [];
   for (const record of currentMatches) {
-    if (duplicate && record.observationId === duplicate.observationId) continue;
     if (record.provenance.provenanceFingerprint === candidate.provenance.provenanceFingerprint) continue;
     const transition = classifyObservationTransition(record, candidate);
-    if (transition.action === "conflict") {
-      assertTransitionExpected(transition.action, "conflict");
-      conflictIds.push(record.observationId);
-    } else if (transition.action === "corroborate") {
-      assertTransitionExpected(transition.action, "corroborate");
-      corroborationIds.push(record.observationId);
-    } else {
-      throw new Error("persistence_plan_cross_provenance_transition_invalid");
-    }
+    if (transition.action === "conflict") conflictIds.push(record.observationId);
+    else if (transition.action === "corroborate") corroborationIds.push(record.observationId);
+    else throw new Error("persistence_plan_cross_provenance_transition_invalid");
   }
 
-  let supersedeObservationIds: readonly string[] = Object.freeze([]);
-  if (sameProvenance && !duplicate) {
+  const supersedeIds: string[] = [];
+  if (sameProvenance) {
     const transition = classifyObservationTransition(sameProvenance, candidate);
-    assertTransitionExpected(transition.action, "supersede_existing");
-    supersedeObservationIds = Object.freeze([sameProvenance.observationId]);
+    if (transition.action !== "supersede_existing") throw new Error("persistence_plan_same_provenance_transition_invalid");
+    supersedeIds.push(sameProvenance.observationId);
   }
 
   const normalizedConflicts = uniqueSorted(conflictIds);
   const normalizedCorroborations = uniqueSorted(corroborationIds);
-  const matchedCurrentObservationIds = uniqueSorted(currentMatches.map((record) => record.observationId));
-  const action = actionFor({
-    duplicateObservationId: duplicate?.observationId ?? null,
-    sameProvenanceCurrentId: sameProvenance && !duplicate ? sameProvenance.observationId : null,
-    conflictIds: normalizedConflicts,
-    corroborationIds: normalizedCorroborations,
-    hasSemanticMatch: semanticMatches.length > 0,
-  });
+  let action: ObservationWriteAction;
+  if (sameProvenance) action = "supersede_and_insert";
+  else if (normalizedConflicts.length > 0) action = "preserve_conflict_insert";
+  else if (normalizedCorroborations.length > 0) action = "corroborate_insert";
+  else if (semanticMatches.length === 0) action = "insert_observation";
+  else throw new Error("persistence_plan_semantic_match_unclassified");
 
-  if (action === "duplicate_noop") {
-    supersedeObservationIds = Object.freeze([]);
-  }
-
-  const persistenceKey = persistenceKeyFor(candidate);
-  const indexIntentFingerprint = sha256(PERSISTENCE_INDEX_INTENTS);
-  const idempotencyKey = sha256({
-    schemaVersion: P3_2_SCHEMA_VERSION,
-    observationId: candidate.observationId,
-    recordFingerprint: candidate.recordFingerprint,
-  });
-  const base = {
-    recordType: "observation_write_plan" as const,
-    schemaVersion: P3_2_SCHEMA_VERSION,
+  return buildPlan({
     candidate,
-    persistenceKey,
     action,
     existingSnapshotFingerprint,
-    matchedCurrentObservationIds,
-    supersedeObservationIds,
+    matchedCurrentObservationIds: currentMatches.map((record) => record.observationId),
+    supersedeObservationIds: supersedeIds,
     conflictObservationIds: normalizedConflicts,
     corroborationObservationIds: normalizedCorroborations,
-    idempotencyKey,
-    indexIntentFingerprint,
-    authorization: PERSISTENCE_PLAN_AUTHORIZATION,
-  };
-  return Object.freeze({ ...base, planFingerprint: sha256(base) });
+  });
 }
 
 export function assertObservationWritePlanIntegrity(
