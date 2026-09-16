@@ -269,6 +269,6 @@ test("P3.5 model integrity detects result tampering", () => {
   const context = qualityContext({ existingRecords: [], candidate });
   const model = buildEvidenceQualityConflictModel(context);
   assert.doesNotThrow(() => assertEvidenceQualityConflictModelIntegrity(model, context));
-  const forged = { ...model, conflictGroups: [] };
+  const forged = { ...model, assessments: [] };
   assert.throws(() => assertEvidenceQualityConflictModelIntegrity(forged, context), /evidence_quality_model_fingerprint_mismatch/);
 });
