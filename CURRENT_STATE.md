@@ -37,13 +37,13 @@ Production recovery and identity gate:
 - database: `neondb`
 - timeline: `07b8ce1a7a41f71ba395a1bab2b03de3`
 - PITR: ON, last 7 days
-- the migration was executed once through an authorized Shell psql session only after project, branch, database and timeline identity matched Production; endpoint identity was treated as connection-specific rather than sufficient branch identity
+- the migration was executed once through an authorized Shell `psql` session only after project, branch, database and timeline identity matched Production; endpoint identity was treated as connection-specific rather than sufficient branch identity
 - execution used `ON_ERROR_STOP` and the canonical transaction-wrapped migration; no application code, runtime configuration, deployment or publication was used to apply it
 
 Independent post-migration Production verification confirmed:
 - public base-table count moved from 31 to 34
 - `public.seo_observation`, `public.seo_evidence` and `public.seo_observation_evidence` all exist with zero rows
-- 21 CHECK constraints, 3 primary keys, 2 foreign keys with `ON DELETE RESTRICT`, and 15 indexes including exact column order match migration 0003
+- 21 CHECK constraints, 3 primary keys, 2 foreign keys with `ON DELETE RESTRICT`, and 15 indexes including exact column order match migration `0003`
 - catalog mismatches: zero
 
 Detailed record:
@@ -51,7 +51,7 @@ Detailed record:
 
 ## Replit engineering workspace
 
-This docs-only closeout branch was created from canonical main at:
+This docs-only closeout branch was created from canonical `main` at:
 - branch base: `a8020a2e73b8dcf24be12abf262693c630f1cfb9`
 - tree: `e7b521f8d994e333e141b54cb6aca31c78b19018`
 
@@ -185,7 +185,7 @@ Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.
 
 The next safe engineering boundary is **P4.1 — Information Architecture / Navigation v2**. It must remain application engineering only unless its task separately authorizes publication or runtime changes.
 
-A separately authorized P1 live-provider task may be chosen deliberately instead, but a generic `continue` does **not** authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
+A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 
 P3.6 completion does not authorize production observation/evidence application reads, persistence, backfill/DML, archive/prune/delete execution, provider activity, scheduling, autonomous mutation, publication, or further production DDL. Each remains a separate explicit gate.
 
