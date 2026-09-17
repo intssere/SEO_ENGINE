@@ -90,12 +90,15 @@ Production authentication has been certified end-to-end: anonymous denial, Googl
 
 ## 6. Database discipline
 
-Current intended schema is 31 public base tables, including:
+Current intended Production schema is 34 public base tables, including:
 
 - `auth_sessions`
 - `auth_audit_events`
+- `seo_observation`
+- `seo_evidence`
+- `seo_observation_evidence`
 
-with the six Task #55 auth indexes.
+with the six Task #55 auth indexes and the P3.6 observation/evidence constraints, keys and indexes defined by canonical migration `lib/db/migrations/0003_observation_evidence_schema.sql`.
 
 Before any Replit publish, development and production schemas must be aligned. A prior manual publish demonstrated that Replit may synchronize the development schema toward production; publishing while development was 29 tables and production 31 removed the production auth tables. That incident was recovered by applying the approved auth migration to both environments.
 
@@ -103,7 +106,7 @@ Rules:
 
 - Compare development and production schema shape before publish.
 - Never identify a Neon target only by database/user names; use the bound environment and read-only data/schema fingerprints.
-- Do not run production DDL unless specifically authorized.
+- Do not run future production DDL unless specifically authorized; completion of P3.6 is not standing authorization for another schema change.
 - Capture a read-only production fingerprint before authorized DDL/recovery.
 - Use `ON_ERROR_STOP` for manual migration execution and certify resulting tables/indexes/constraints afterward.
 - Never republish solely because a manual DB migration succeeded.
