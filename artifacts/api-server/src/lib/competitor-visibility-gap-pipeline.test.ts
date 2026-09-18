@@ -181,7 +181,8 @@ function competitorPage(input: {
     },
     "owned.test",
   );
-  if (!normalized.ok) throw new Error(`competitor_fixture_normalization_failed:${normalized.reason}`);\n  return normalized.record;
+  if (!normalized.ok) throw new Error(`competitor_fixture_normalization_failed:${normalized.reason}`);
+  return normalized.record;
 }
 
 function relation() {
