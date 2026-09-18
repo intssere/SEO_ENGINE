@@ -414,8 +414,8 @@ P3.6 Production checkpoint:
 | P5.3 | keyword volume/difficulty/opportunity adapter(s) | DONE — issue #224 / PR #225 / merge `2c8dc3c8d46fbe0563a8083548b6b2bbf87e1e76` |
 | P5.4 | trends/source adapter(s) | DONE — issue #227 / PR #228 / merge `1680969b64f767552262494f1586fac26b77475b` |
 | P5.5 | backlink authority/link-gap adapter(s) | DONE — issue #231 / PR #232 / merge `605cf9133da8a26ddf9989cab005ec91161c033f` |
-| P5.6 | competitor visibility/page/topic-gap operational pipeline | NEXT SAFE DEFAULT — network-free/default-off operational engineering over Tasks #58–#70 + P5.2–P5.5; no live provider execution |
-| P5.7 | category/market competitor intelligence UI | PLANNED |
+| P5.6 | competitor visibility/page/topic-gap operational pipeline | DONE — issue #234 / PR #235 / merge `e0cf3758be1dff24f443a0a42fa19d2a4110b82b` |
+| P5.7 | category/market competitor intelligence UI | NEXT SAFE DEFAULT — read-only/default-off UI over deterministic P5.6 report fixtures; no live provider execution |
 | P5.8 | source quality/cost/rate-limit telemetry | PLANNED |
 
 ### Phase P6 — Opportunity and recommendation engine
