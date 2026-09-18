@@ -13,22 +13,23 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P5.2 DataForSEO SERP/ranking adapter foundation is complete and certified.
+**Current checkpoint:** P5.3 provider-neutral keyword metrics + DataForSEO Keyword Overview adapter foundation is complete and certified.
 
-- P5.2 issue #221 / PR #222.
-- Exact tested implementation head: `184706ae549be75a19d22e15acbc1f280962785b`.
-- PR CI run `35365076296` / CI #417: success.
-- Implementation merge: `873aebeae798e61b2c313dfbe5e618c09c6a7f75`.
-- Merge tree: `9136828ed85cbcd3b548a8532e0e452c2bb2f9f7`.
-- Post-merge push CI run `35365310166` / CI #418: success.
-- Replit was exact-synced to that merge/tree, `0/0`, clean, zero untracked, with recursive workspace tests, full typecheck, full build and `git diff --check` passing.
-- P5.2 provides a network-free DataForSEO Google Organic standard-task request contract plus supplied-result ranking normalization and exact Task #68-compatible result mapping.
-- Exact P5.1 review/freshness and Task #68 source/request/market/category lineage are enforced.
-- The expected source key `dataforseo-google-organic-serp` is an adapter contract only; no Task #67 source admission occurred.
-- Organic `rank_group` is bounded to requested depth while `rank_absolute` is preserved as absolute rank across all SERP elements.
-- Raw provider titles/snippets/XPath/status messages/arbitrary fields are discarded; only bounded rank/page/domain/URL ranking data survives.
-- P5.2 remains unpublished and performed no provider enrollment, credentials, provider/API request, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, Task #53/#54/#64 execution, provider/public-site write, config/secret change or publication.
-- Default next safe engineering boundary: **P5.3 — keyword volume/difficulty/opportunity adapter(s)**, default-off/network-free using deterministic supplied fixtures only.
+- P5.3 issue #224 / PR #225.
+- Exact tested implementation head: `5b6698085806ae0c7cd8426c5c1815db0fa7884f`.
+- PR CI run `35369123343` / CI #421: success.
+- Implementation merge: `2c8dc3c8d46fbe0563a8083548b6b2bbf87e1e76`.
+- Merge tree: `e7bcd45b306eca161f50e2f5d0292f4a5b1b17bf`.
+- Post-merge push CI run `35369360893` / CI #422: success.
+- Replit exact-synced to the implementation merge/tree, `0/0`, clean, zero untracked, with recursive workspace tests, full typecheck, full build and `git diff --check` passing.
+- Provider-neutral keyword semantics now distinguish search volume, organic difficulty, CPC and paid competition, preserve null vs zero, forbid false cross-provider KD equivalence, and forbid implicit FX/CPC fabrication.
+- Keyword metric opportunity v1 is cohort-relative only: minimum 10 eligible unique keywords, exact homogeneous measurement basis, deterministic mid-rank percentiles, weights 45% demand / 35% attainability / 20% commercial, with confidence kept separate.
+- DataForSEO Keyword Overview is represented only as inert provider-contract metadata plus supplied-result normalization; its provider Live endpoint is not executable from P5.3.
+- Internal request bounds are <=50 keywords, <=80 characters / <=10 words each, exact location/language, Google/all-device scope, clickstream off and SERP expansion off.
+- Provider-omitted requested keywords remain explicit missing-data projections, never zero.
+- Rich per-keyword normalized projections remain outside the bounded Task #68 aggregate observation so Task #68 is not falsely given a per-keyword stream dimension.
+- P5.3 remains unpublished and performed no provider enrollment, credentials, provider/API request, Task #67 source admission, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, provider/public-site write, config/secret change or publication.
+- Default next safe engineering boundary: **P5.4 — trends/source adapter(s)**, default-off/network-free using deterministic supplied fixtures only.
 - Real external-provider enrollment/credentials/requests remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
