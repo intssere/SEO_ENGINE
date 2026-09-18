@@ -101,7 +101,7 @@
   --secondary: 218 27% 92%;
   --secondary-foreground: 221 38% 15%;
   --muted: 218 27% 92%;
-  --muted-foreground: 216 14% 54%;
+  --muted-foreground: 216 15% 42%;
   --accent: 219 49% 18%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
@@ -323,7 +323,7 @@
 .navDomainLabel {
   margin: 0;
   padding: 0 11px;
-  color: #607390;
+  color: #93a4bf;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.09em;
@@ -413,7 +413,7 @@
   z-index: 4;
 }
 .muted {
-  color: #77839a;
+  color: #647087;
 }
 .filters {
   display: flex;
@@ -493,7 +493,7 @@
   font-size: 22px;
 }
 .pilotGrid span {
-  color: #77839a;
+  color: #647087;
   font-size: 11px;
   margin-top: 3px;
 }
@@ -598,7 +598,7 @@
 }
 .opportunityIdentity small,
 .opportunityPlan small {
-  color: #8792a4;
+  color: #647087;
   font-size: 10px;
   overflow-wrap: anywhere;
 }
@@ -625,7 +625,7 @@
   line-height: 1.45;
 }
 .proposalChange small {
-  color: #8792a4;
+  color: #647087;
   font-size: 10px;
   line-height: 1.4;
   overflow-wrap: anywhere;
@@ -684,7 +684,7 @@
   font-size: 20px;
 }
 .approvalCardHead small {
-  color: #8792a4;
+  color: #647087;
   overflow-wrap: anywhere;
 }
 .approvalBadges {
@@ -715,7 +715,7 @@
   font-size: 20px;
 }
 .approvalScore span {
-  color: #77839a;
+  color: #647087;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -794,7 +794,7 @@
   cursor: not-allowed;
 }
 .approvalLabel {
-  color: #7c889b;
+  color: #647087;
   font-size: 10px;
   font-weight: 750;
   text-transform: uppercase;
@@ -1091,7 +1091,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  color: #77839a;
+  color: #647087;
   text-align: center;
   border: 1px solid #e1e6ed;
   border-radius: 14px;
@@ -1294,7 +1294,7 @@
   font-size: 11px;
   letter-spacing: 0.1em;
   font-weight: 750;
-  color: #76839a;
+  color: #5f6d83;
   margin: 0 0 6px;
 }
 .titleRow h1 {
@@ -1352,7 +1352,7 @@
 }
 .metric span {
   font-size: 12px;
-  color: #6f7c92;
+  color: #647087;
   font-weight: 500;
 }
 .metric strong {
@@ -1443,7 +1443,7 @@ h2 {
 }
 .engineStats span {
   font-size: 11px;
-  color: #7b879a;
+  color: #647087;
   margin-top: 3px;
   font-weight: 500;
 }
@@ -1490,7 +1490,7 @@ h2 {
   min-width: 0;
 }
 .dataWorkbenchMeta {
-  color: #6f7b8f;
+  color: #647087;
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
@@ -1537,7 +1537,7 @@ h2 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #6f7b8f;
+  color: #647087;
   font-size: 11px;
   font-weight: 600;
 }
@@ -1583,7 +1583,7 @@ h2 {
   font-size: 10px;
 }
 .dataGridRange {
-  color: #6f7b8f;
+  color: #647087;
   font-size: 11px;
   font-weight: 600;
 }
@@ -1617,7 +1617,7 @@ table {
 }
 th {
   text-align: left;
-  color: #7d899c;
+  color: #647087;
   font-weight: 600;
   border-bottom: 1px solid #e8ecf2;
   padding: 9px 8px;
@@ -1637,7 +1637,7 @@ td:first-child {
 }
 .emptyCell {
   text-align: center !important;
-  color: #7d899c !important;
+  color: #647087 !important;
   font-weight: 500 !important;
   padding: 24px !important;
 }
@@ -1667,7 +1667,7 @@ td:first-child {
   color: #4f5c71;
 }
 .activityItem small {
-  color: #7d899c;
+  color: #647087;
 }
 .activityItem strong {
   color: #172033;
@@ -1704,7 +1704,7 @@ td:first-child {
 .bigStat span {
   font-size: 13px;
   font-weight: 500;
-  color: #7b879a;
+  color: #647087;
 }
 .progress {
   height: 6px;
@@ -1736,7 +1736,7 @@ td:first-child {
 }
 .splitStats span {
   font-size: 10px;
-  color: #7c889b;
+  color: #647087;
   margin-top: 4px;
   font-weight: 500;
 }
@@ -1829,7 +1829,7 @@ td:first-child {
   font-size: 20px;
 }
 .evidenceDrawerHeader > p {
-  color: #6f7b8f;
+  color: #647087;
   overflow-wrap: anywhere;
 }
 .evidenceDrawerEyebrow {
@@ -2017,7 +2017,7 @@ td:first-child {
   justify-content: center;
   gap: 12px;
   background: #f5f7fb;
-  color: #77839a;
+  color: #647087;
   font-size: 13px;
   font-weight: 600;
 }
@@ -2084,7 +2084,7 @@ td:first-child {
   gap: 10px;
 }
 .commandCenterStatusHead > span {
-  color: #758197;
+  color: #5f6d83;
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.07em;
@@ -2178,7 +2178,7 @@ td:first-child {
 }
 .commandCenterCoverageFacts small {
   margin-top: 4px;
-  color: #8590a2;
+  color: #647087;
   font-size: 9px;
   line-height: 1.35;
 }
@@ -2290,7 +2290,7 @@ td:first-child {
 }
 .commandCenterOpportunity small {
   margin-top: 3px;
-  color: #8792a4;
+  color: #647087;
   font-size: 9px;
   overflow-wrap: anywhere;
 }
@@ -2325,7 +2325,7 @@ td:first-child {
   line-height: 1.45;
 }
 .commandCenterActivity small {
-  color: #8792a4;
+  color: #647087;
   font-size: 9px;
 }
 .commandCenterSectionIcon {
@@ -2333,7 +2333,7 @@ td:first-child {
 }
 .commandCenterEmpty {
   margin: 14px 0 0;
-  color: #7c889b;
+  color: #647087;
   font-size: 11px;
 }
 .commandCenterOutcomeGrid {
@@ -2594,7 +2594,7 @@ td:first-child {
   justify-content: center;
   gap: 12px;
   background: #f5f7fb;
-  color: #77839a;
+  color: #647087;
   font-size: 13px;
   font-weight: 600;
 }
@@ -2696,7 +2696,7 @@ td:first-child {
 }
 .auditSummaryCard > span,
 .auditCapabilityCard > span {
-  color: #758197;
+  color: #5f6d83;
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.07em;
@@ -2744,7 +2744,7 @@ td:first-child {
 }
 .auditCoverageFacts span {
   margin-top: 3px;
-  color: #728096;
+  color: #647087;
   font-size: 10px;
   font-weight: 650;
 }
@@ -2778,7 +2778,7 @@ td:first-child {
 }
 .auditFindingIdentity small {
   margin-top: 4px;
-  color: #7c889b;
+  color: #647087;
   font-size: 9px;
   line-height: 1.4;
 }
@@ -3289,5 +3289,91 @@ td:first-child {
   }
   .dataGridPagination button {
     flex: 1 1 calc(50% - 4px);
+  }
+}
+
+/* P4.8 accessibility baseline */
+.skipLink {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  z-index: 100;
+  transform: translateY(-160%);
+  border: 2px solid #1d4ed8;
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.skipLink:focus {
+  transform: translateY(0);
+}
+.workspace:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: -3px;
+}
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: 0;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 5px #1d4ed8;
+}
+.dataGridWrap:focus-visible {
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 2px #fff,
+    inset 0 0 0 5px #1d4ed8;
+}
+.askModalSubmit {
+  min-height: 44px;
+}
+.askModalContent {
+  width: min(94vw, 672px);
+}
+.askModalInput::placeholder {
+  color: #647087;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .skipLink,
+  :where(
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [tabindex]:not([tabindex="-1"])
+  ):focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+  .statusBadge {
+    border: 1px solid CanvasText;
   }
 }
