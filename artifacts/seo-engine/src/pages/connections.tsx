@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { Badge } from "../components/layout";
+import { StatusBadge } from "../components/status-badge";
+import { connectionTone } from "@/lib/status-grammar";
 import { useSearch } from "wouter";
 
 type ConnectionsStatus = {
@@ -144,9 +145,9 @@ export default function ConnectionsPage() {
                   <p className="text-xs text-[#77839a]">Storefront & Products</p>
                 </div>
               </div>
-              <Badge tone={status?.shopify.connected ? "verified" : "neutral"}>
+              <StatusBadge tone={connectionTone(status?.shopify.connected === true)}>
                 {status?.shopify.connected ? "CONNECTED" : "DISCONNECTED"}
-              </Badge>
+              </StatusBadge>
             </div>
 
             {loading ? (
@@ -217,9 +218,9 @@ export default function ConnectionsPage() {
                   <p className="text-xs text-[#77839a]">Search Performance Data</p>
                 </div>
               </div>
-              <Badge tone={status?.google.connected ? "verified" : status?.google.authorized ? "approval" : "neutral"}>
+              <StatusBadge tone={connectionTone(status?.google.connected === true, status?.google.authorized === true)}>
                 {status?.google.connected ? "CONNECTED" : status?.google.authorized ? "AUTHORIZED" : "DISCONNECTED"}
-              </Badge>
+              </StatusBadge>
             </div>
 
             {loading ? (
