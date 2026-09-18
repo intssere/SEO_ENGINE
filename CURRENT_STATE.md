@@ -13,9 +13,44 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.2 are external-intelligence research/adapter engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.3 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.3 are external-intelligence research/adapter engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P5.2 complete
+## Current engineering state — P5.3 complete
+
+Roadmap **P5.3 — keyword volume/difficulty/opportunity adapter(s)** is complete under issue #224 / PR #225.
+
+P5.3 adds provider-neutral keyword measurement semantics plus a deterministic DataForSEO Google Keyword Overview supplied-result adapter without activating any provider/runtime capability:
+- strict null-vs-zero semantics for search volume, organic difficulty, CPC, paid competition and bid fields;
+- provider-native organic difficulty remains method-bound and explicitly non-comparable across providers without later calibration;
+- paid competition remains advertiser pressure only and is never treated as organic ranking difficulty;
+- CPC retains USD/provider derivation provenance with no invented midpoint or implicit FX conversion;
+- deterministic cohort-relative keyword metric opportunity requires volume + organic difficulty + at least one commercial signal, exact homogeneous measurement basis and at least 10 eligible unique keywords;
+- opportunity uses mid-rank percentiles with demand 45%, attainability 35%, commercial 20%; confidence stays separate;
+- DataForSEO Keyword Overview endpoint is retained as inert reference metadata only; no Live execution path exists;
+- request contract is internally capped at 50 keywords, 80 characters / 10 words each, exact location/language, Google/all-device scope, clickstream off and SERP expansion off;
+- provider-omitted requested keywords become explicit missing-data projections rather than zero;
+- rich per-keyword projections remain separate from the bounded Task #68 aggregate observation;
+- exact Task #68 round-trip compatibility and anti-network/static safety are covered by deterministic tests.
+
+Certification:
+- base SHA/tree: `d965bffe07ee3d26f6c8ff139bbe13c9327fd205` / `e0a546ab39519fd455137c769ddefe6bf0843c1b`;
+- exact tested PR head: `5b6698085806ae0c7cd8426c5c1815db0fa7884f`;
+- PR CI run `35369123343` / CI #421: success across schema/task/workspace tests, Playwright Chromium + P4.10 browser suite, typecheck and build;
+- implementation merge: `2c8dc3c8d46fbe0563a8083548b6b2bbf87e1e76`;
+- merge tree: `e7bcd45b306eca161f50e2f5d0292f4a5b1b17bf`;
+- post-merge push CI run `35369360893` / CI #422: success across the same full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed.
+
+P5.3 is **unpublished**. It did not authorize or perform DataForSEO signup/enrollment/purchase, credential creation/use, provider requests, Task #67 source admission, Task #70 execution, observation/evidence persistence, Production DB reads/DDL/DML, scheduler/worker activation, provider/public-site writes, secret/config changes or publication.
+
+Detailed record:
+- `.agents/memory/p5-3-keyword-metrics-adapter-closeout.md`
+- `docs/p5-3-keyword-metrics-dataforseo-adapter.md`
+
+Default next safe milestone: **P5.4 — trends/source adapter(s)**, default-off/network-free engineering using deterministic supplied fixtures only. Live provider enrollment/credentials/requests remain separately unauthorized.
+
+## Previous engineering state — P5.2 complete
 
 Roadmap **P5.2 — SERP/ranking adapter(s)** is complete under issue #221 / PR #222.
 
