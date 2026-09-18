@@ -13,9 +13,46 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.6 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.6 are external-intelligence research/adapter/operational-report engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.7 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.7 are external-intelligence research/adapter/operational-report/frontend engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P5.6 complete
+## Current engineering state — P5.7 complete
+
+Roadmap **P5.7 — category/market competitor intelligence UI** is complete under issue #237 / PR #238.
+
+P5.7 replaces the existing `/search-intelligence` placeholder with a deterministic, read-only/default-off frontend workspace over a synthetic P5.6-shaped report fixture:
+- preserves the existing Discover → Search Intelligence navigation and route;
+- exposes market/category/owned-target/reference-time/report-lineage context;
+- provides searchable/sortable competitor visibility, exact-topic gap, page structural semantic-difference and P5.5 link-gap DataGrids;
+- preserves provider-native authority nullability and cross-provider non-comparability;
+- preserves P5.4 request-frame trend non-comparability;
+- explicitly states observed-topic visibility is not market share;
+- explicitly states page differences do not prove a missing owned page;
+- keeps topic/link gaps descriptive rather than recommendations;
+- emits no opportunity score; P6 retains cross-signal prioritization;
+- adds responsive desktop/tablet/mobile styling plus Search Intelligence keyboard, browser-network and serious/critical axe coverage;
+- adds no competitor API endpoint, generated runtime hook or Production data binding.
+
+Certification:
+- base SHA/tree: `4395d7d52c0956524f547122bdf34ba6081d2824` / `372e0afcba07d36a466a47c0a421f22bf5a71eca`;
+- initial PR head `4d0d292c24575f7f681512d15190945b2da5926a`, CI #441 / run `35393246928`: legacy schema/Task/P3.6/workspace tests and P5.7 browser interaction passed, but the new axe scan correctly rejected insufficient scoped secondary-text contrast; no merge occurred;
+- exact tested implementation head: `78cbe084166936674c1793018bf0bf6cfc6c6259`;
+- the corrective change darkened only scoped P5.7 secondary text; global design tokens and runtime semantics were unchanged;
+- PR CI #442 / run `35393447051`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests, Playwright Chromium/P4.10 including P5.7 interaction + axe, typecheck and build;
+- implementation merge: `64947e7662af1fadb389d9dd94f98a2e803d8911`;
+- implementation tree: `229e2152db2128853a70fd3b39e7cfabdab47291`;
+- post-merge CI #443 / run `35393653860`: success across the same full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal build chunk-size warning only.
+
+P5.7 is **unpublished**. It performed no provider enrollment/credential use/request, public-site read/write, Task #67 Production source admission, competitor target mutation, Task #64/#70 execution, observation/evidence persistence, Production DB read/write/DDL/DML, scheduler/worker activation, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p5-7-competitor-intelligence-ui-closeout.md`
+- `docs/p5-7-category-market-competitor-intelligence-ui.md`
+
+Default next safe milestone: **P5.8 — source quality/cost/rate-limit telemetry**, default-off/network-free over deterministic supplied/provider-metadata fixtures.
+
+## Previous engineering state — P5.6 complete
 
 Roadmap **P5.6 — competitor visibility/page/topic-gap operational pipeline** is complete under issue #234 / PR #235.
 
@@ -50,7 +87,7 @@ Detailed record:
 - `.agents/memory/p5-6-competitor-visibility-gap-closeout.md`
 - `docs/p5-6-competitor-visibility-page-topic-gap-pipeline.md`
 
-Default next safe milestone: **P5.7 — category/market competitor intelligence UI**, read-only/default-off over deterministic P5.6 report fixtures.
+At the P5.6 checkpoint, the default next safe milestone was **P5.7 — category/market competitor intelligence UI**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P5.5 complete
 
