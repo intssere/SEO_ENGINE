@@ -1,3 +1,4 @@
+import "./search-intelligence.css";
 import { Database, Eye, Link2, ShieldCheck, TrendingUp } from "lucide-react";
 import { DataGrid, type DataGridColumn } from "../components/data-grid";
 import { StatusBadge } from "../components/status-badge";
