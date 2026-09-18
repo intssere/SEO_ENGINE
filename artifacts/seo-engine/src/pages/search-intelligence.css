@@ -1,0 +1,286 @@
+.competitorWorkspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.competitorTopbarBadges,
+.competitorPanelHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.competitorHero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 22px;
+  padding: 24px;
+  border: 1px solid #dfe6f0;
+  border-radius: 14px;
+  background: linear-gradient(120deg, #ffffff 0%, #f7faff 100%);
+}
+
+.competitorHero h1 {
+  margin: 0 0 8px;
+  color: #172033;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.competitorHero p {
+  max-width: 780px;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.competitorHeroState {
+  width: min(390px, 100%);
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--status-info-border);
+  border-radius: 11px;
+  background: var(--status-info-bg);
+  color: var(--status-info-fg);
+}
+
+.competitorHeroState svg {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  margin-top: 1px;
+}
+
+.competitorHeroState strong,
+.competitorHeroState span {
+  display: block;
+}
+
+.competitorHeroState strong {
+  font-size: 12px;
+}
+
+.competitorHeroState span {
+  margin-top: 4px;
+  color: #536782;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.competitorScopeStrip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid #e2e7ef;
+  border-radius: 12px;
+  background: #e2e7ef;
+}
+
+.competitorScopeStrip > div {
+  min-width: 0;
+  padding: 13px 14px;
+  background: #fff;
+}
+
+.competitorScopeStrip span,
+.competitorScopeStrip strong {
+  display: block;
+}
+
+.competitorScopeStrip span {
+  color: #748096;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.competitorScopeStrip strong {
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: #263249;
+  font-size: 12px;
+}
+
+.competitorSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.competitorSummaryCard {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 16px;
+}
+
+.competitorSummaryCard svg {
+  width: 17px;
+  height: 17px;
+  color: #4077ca;
+}
+
+.competitorSummaryCard span {
+  color: #647087;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.competitorSummaryCard strong {
+  color: #172033;
+  font-size: 22px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.competitorSummaryCard small {
+  color: #778397;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.competitorPanel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.competitorPanelHead {
+  justify-content: space-between;
+  padding: 18px 20px 15px;
+  border-bottom: 1px solid #e8ecf2;
+}
+
+.competitorPanelHead p {
+  max-width: 760px;
+  margin: 5px 0 0;
+  color: #647087;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.competitorIdentity,
+.competitorMetricCell,
+.competitorPageIdentity,
+.topicPresenceList,
+.topicTrendCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 120px;
+}
+
+.competitorIdentity strong,
+.competitorMetricCell strong,
+.competitorPageIdentity strong {
+  color: #263249;
+  font-size: 12px;
+}
+
+.competitorIdentity small,
+.competitorMetricCell small,
+.competitorPageIdentity small,
+.topicTrendCell small {
+  color: #6c788c;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.competitorPageIdentity {
+  min-width: 220px;
+  max-width: 420px;
+}
+
+.competitorPageIdentity small {
+  overflow-wrap: anywhere;
+}
+
+.topicPresenceList span {
+  white-space: nowrap;
+  color: #455168;
+  font-size: 11px;
+}
+
+.topicTrendCell {
+  align-items: flex-start;
+}
+
+.competitorBottomGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+  gap: 14px;
+}
+
+.competitorSemanticsPanel ul,
+.competitorDiagnosticsPanel ul {
+  margin: 16px 0 0;
+  padding-left: 18px;
+  color: #536078;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.competitorDiagnosticsPanel p {
+  margin: 16px 0 0;
+  color: #536078;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.competitorPanel .dataGridWrap {
+  max-height: 520px;
+}
+
+@media (max-width: 1180px) {
+  .competitorSummaryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .competitorScopeStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .competitorHero {
+    flex-direction: column;
+  }
+
+  .competitorBottomGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .competitorScopeStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .competitorHero {
+    padding: 18px;
+  }
+
+  .competitorHero h1 {
+    font-size: 24px;
+  }
+
+  .competitorSummaryGrid,
+  .competitorScopeStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .competitorPanelHead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .competitorSummaryCard strong {
+    font-size: 19px;
+  }
+}
