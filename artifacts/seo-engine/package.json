@@ -8,7 +8,7 @@
     "build": "PORT=4174 BASE_PATH=/ vite build --config vite.config.ts",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test src/navigation.test.mjs src/design-system.test.mjs && tsx --test src/lib/status-grammar.test.ts"
+    "test": "node --test src/navigation.test.mjs src/design-system.test.mjs src/data-grid-contract.test.mjs && tsx --test src/lib/status-grammar.test.ts src/lib/data-grid-model.test.ts"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",

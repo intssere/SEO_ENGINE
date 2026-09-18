@@ -13,26 +13,29 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.2 change engineering-source product navigation/design-system code only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.3 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.3 change engineering-source product navigation/design-system/workbench code only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P4.2 complete
+## Current engineering state — P4.3 complete
 
-Roadmap **P4.2 — Design tokens / components / status grammar** is complete under issue #202 / PR #203. P4.1 remains the preceding navigation foundation.
+Roadmap **P4.3 — Enterprise data-grid / workbench primitives** is complete under issue #204 / PR #205. P4.1–P4.2 remain the preceding navigation/design-system foundations.
 
-P4.2 establishes a shared product-status design system without activating new runtime capability:
-- typed status tones are limited to `neutral`, `info`, `success`, `warning` and `danger`;
-- a reusable typed `StatusBadge` replaces the untyped custom Badge formerly embedded in `layout.tsx`;
-- centralized status grammar covers risk, lifecycle, quality, availability, readiness, connection and decision states;
-- blocked/high/critical risk, rejected/invalidated and unavailable states fail visibly to `danger`; approval/setup/stale states use `warning`; verified/live/pass states use `success`; read-only/planned states remain honest rather than being presented as success;
-- repeated product-status green/amber/danger literals are consolidated into semantic CSS custom properties;
-- Dashboard, Opportunities, Approvals, Actions, Connections, Settings and shared status components now consume the common grammar;
-- deterministic grammar tests and source-contract tests prevent reintroduction of legacy `verified` / `approval` / `experiment` tone names, layout-owned product Badge code, or duplicated legacy status color literals;
-- existing P4.1 route/navigation behavior remains unchanged.
+P4.3 establishes a reusable read-only operational workbench foundation without activating new runtime capability:
+- a pure deterministic grid query model provides trimmed case-insensitive search, stable single-column sorting, bounded page sizes, page clamping and source-order preservation;
+- missing sort values remain last in both directions and unknown/unsortable columns fail closed to source order;
+- typed `DataGridColumn<T>` / `DataGrid<T>` primitives separate data/query behavior from rendering;
+- reusable `DataWorkbench` provides shared toolbar, result metadata, body and footer regions;
+- original source row indexes are retained through filtering/sorting/pagination so row-key identity remains deterministic after transforms;
+- accessible query controls include a labeled search input, `aria-sort` sortable headers, bounded rows-per-page selection and disabled-at-bounds Previous/Next pagination;
+- existing `OperationalTable` is now a source-compatible adapter over `DataGrid`, so current operational table consumers inherit the foundation without API/backend changes;
+- responsive controls and sticky data-grid headers are included;
+- the foundation deliberately includes **no row selection, checkbox selection, bulk approval, bulk execution, deployment dispatch or mutation semantics**;
+- deterministic model tests and source-contract tests enforce query behavior, immutability, accessibility contracts, adapter delegation and the read-only/no-bulk boundary;
+- existing P4.1 navigation and P4.2 status grammar remain unchanged.
 
-P4.2 is engineering-only and remains **unpublished**. It did not authorize or perform provider/public-site requests, observation/evidence persistence or Production reads, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
+P4.3 is engineering-only and remains **unpublished**. It did not authorize or perform provider/public-site requests, observation/evidence persistence or Production reads, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
 
 Detailed record:
-- `.agents/memory/p4-2-design-tokens-status-grammar-closeout.md`
+- `.agents/memory/p4-3-enterprise-data-grid-workbench-closeout.md`
 
 ## Current database state — P3.6 complete
 
@@ -70,13 +73,13 @@ Detailed record:
 
 ## Replit engineering workspace
 
-P4.2 branch `p4-2-design-tokens-status-grammar` was created from the P4.1-certified canonical `main`:
-- base SHA: `d87566f40bd61814183f07cf2decb8fb94a22d47`
-- base tree: `30d5ba65875df4576105dd696b7aa9d9b81faf4c`
+P4.3 branch `p4-3-enterprise-data-grid-workbench` was created from the P4.2-certified canonical `main`:
+- base SHA: `f92c91b3f119dcf2f9958a15dd43d0fc77113e08`
+- base tree: `bdfd9f3f1f4f989336d8472dc57d6c95217388fa`
 
-Before P4.2 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. P4.2 validation uses GitHub CI as the authoritative executable gate; no publication, runtime start/restart, database/schema work, provider/public-site activity or secret/config changes are part of this engineering task.
+Before P4.3 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. Replit validation caught only task-local source-contract assertion/typing defects; the corrected implementation head `3c9fcb7c19cab70f40c7ab743edbd3a5ef7fcd4b` then passed exact-head GitHub CI run `35321154037`. No publication, runtime start/restart, database/schema work, provider/public-site activity or secret/config changes are part of P4.3.
 
-After PR #203 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.2 without separate explicit authorization.
+After PR #205 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.3 without separate explicit authorization.
 
 ## Completed engineering foundations
 
@@ -92,6 +95,7 @@ Completed non-published engineering foundations include:
 - **P3.6 — Production migration/DDL:** canonical observation/evidence schema now exists in Production with three empty tables, exact constraints/keys/indexes and independently verified zero catalog mismatches.
 - **P4.1 — Information Architecture / Navigation v2:** six-domain product navigation, preserved 16-route surface, honest planned Learning placement, active-route accessibility and usable mobile navigation with deterministic contract coverage.
 - **P4.2 — Design tokens / components / status grammar:** typed semantic status tokens, reusable StatusBadge, shared status grammar, semantic color variables and deterministic anti-regression contracts across product surfaces.
+- **P4.3 — Enterprise data-grid / workbench primitives:** typed read-only data grid, deterministic search/sort/page model, stable row identity, accessible workbench controls, OperationalTable compatibility adapter and explicit no-bulk/no-execution boundary.
 
 The completed P3.6 schema migration does not activate application persistence or reads. None of these foundations activates new production crawling, provider reads, application database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
@@ -198,13 +202,13 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.2. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.2 establish product navigation/design-system foundations only. None implies live full-site crawl execution, sitemap fetching, application database persistence/reads, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.3. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.3 establish product navigation/design-system/workbench foundations only. None implies live full-site crawl execution, sitemap fetching, application database persistence/reads, scheduled crawling, autonomous operation or publication.
 
 `MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3/P4 status tables must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next boundary — P4.3 by default; P1 live-provider only if deliberately authorized
+## Next boundary — P4.4 by default; P1 live-provider only if deliberately authorized
 
-The next safe engineering boundary is **P4.3 — Enterprise data-grid / workbench primitives**. It must remain application engineering only unless its task separately authorizes publication or runtime changes.
+The next safe engineering boundary is **P4.4 — Evidence drawer**. It must remain application engineering only unless its task separately authorizes publication or runtime changes.
 
 A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 

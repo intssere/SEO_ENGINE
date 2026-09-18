@@ -451,21 +451,23 @@ It does **not** authorize:
 
 ---
 
-## 12. Current project stage after P4.2
+## 12. Current project stage after P4.3
 
-P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2** and **P4.2 — Design tokens / components / status grammar** are complete engineering foundations and remain unpublished.
+P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2**, **P4.2 — Design tokens / components / status grammar**, and **P4.3 — Enterprise data-grid / workbench primitives** are complete engineering foundations and remain unpublished.
 
-P4.2 product-system checkpoint:
-- semantic tones: **neutral, info, success, warning, danger**;
-- reusable typed `StatusBadge`;
-- shared grammar for risk, lifecycle, quality, availability, readiness, connection and decision states;
-- dangerous/blocked/rejected/unavailable states are not represented as success;
-- repeated product-status colors route through semantic CSS variables;
-- Dashboard, Opportunities, Approvals, Actions, Connections, Settings and shared status surfaces consume the common grammar;
-- deterministic grammar and design-system contract tests enforce the vocabulary and tokenization;
-- P4.1 navigation/routes remain unchanged.
+P4.3 product-workbench checkpoint:
+- typed read-only `DataGrid` / `DataGridColumn<T>` primitives;
+- pure deterministic search/sort/page query model with stable sorting, null-last behavior, bounded page sizes and page clamping;
+- retained source indexes plus explicit row-key contract for deterministic identity after transforms;
+- reusable `DataWorkbench` toolbar/body/footer shell;
+- accessible search, `aria-sort` headers, result metadata and bounded pagination controls;
+- existing `OperationalTable` delegates to the new grid so current consumers remain source-compatible;
+- responsive workbench controls and sticky headers;
+- no row selection, checkbox selection, bulk approval, bulk execution, deployment dispatch or mutation semantics;
+- deterministic model and source-contract tests enforce the read-only boundary;
+- P4.1 navigation and P4.2 status grammar remain unchanged.
 
-Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.2. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
+Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.3. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
 
 The historical Task #51–#56 execution/auth foundations remain in force, but they do not authorize a new live action by themselves.
 
@@ -475,9 +477,9 @@ Do not jump directly to unrestricted autonomous provider mutation, provider read
 
 ## 13. Safe next-step choices
 
-### Default safe engineering path — P4.3
+### Default safe engineering path — P4.4
 
-Proceed next with **P4.3 — Enterprise data-grid / workbench primitives** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. This path must not activate provider requests, observation/evidence persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
+Proceed next with **P4.4 — Evidence drawer** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. This path must not activate provider requests, observation/evidence persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
 
 ### Separately authorized live-provider path
 
@@ -504,6 +506,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P4.2 closeout, the default safe engineering milestone is P4.3 unless a different path is explicitly authorized
+10. current selected milestone and its exact authorization boundary; after the P4.3 closeout, the default safe engineering milestone is P4.4 unless a different path is explicitly authorized
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
