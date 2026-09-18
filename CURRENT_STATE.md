@@ -13,9 +13,50 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.4 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.4 are external-intelligence research/adapter engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.5 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.5 are external-intelligence research/adapter engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P5.4 complete
+## Current engineering state — P5.5 complete
+
+Roadmap **P5.5 — backlink authority/link-gap adapter(s)** is complete under issue #231 / PR #232.
+
+P5.5 adds a dedicated `backlink` signal plus deterministic provider-neutral backlink supplied-fixture normalization and a Task #68-compatible manual-import adapter without activating any provider/runtime capability:
+- canonical domain identity uses normalized hostnames without silently collapsing `www` or subdomains;
+- absolute HTTP(S) URLs are canonicalized deterministically while preserving path/scheme semantics and retaining sorted query parameters;
+- `observedAt` and caller-supplied `referenceTime` are explicit, with UTC timestamp normalization and no `Date.now()` dependency;
+- freshness is derived deterministically as fresh/recent/aging/stale/unavailable from `lastSeenAt`;
+- authority is provider/method/metric/scale-bound, null remains distinct from zero, and cross-provider comparability is explicitly false;
+- anchor rows normalize deterministically, duplicate equivalent identities merge, and classification conflicts fail closed;
+- complete supplied profiles must exactly reconcile normalized referring-domain/backlink/dofollow/nofollow/sponsored/UGC totals;
+- new/lost 30-day totals require explicit row-level change evidence and are never inferred from provider timestamps;
+- deterministic synthetic fixtures cover baseline, null-vs-zero, anchor, freshness/churn, and owned + three-competitor link-gap cases;
+- one-owned + 1–10 competitor bundles derive only descriptive owned/shared/single/shared-gap/universal-gap classifications;
+- input order cannot change normalized profile/bundle fingerprints;
+- rich backlink/gap evidence remains outside the bounded Task #68 aggregate stream;
+- no backlink opportunity score is created; P6 remains responsible for cross-signal prioritization.
+
+Public DataForSEO Backlinks Summary, Referring Domains, Anchors and Domain Intersection documentation was reviewed as a future mapping candidate only. Their current Live/billable endpoints were not implemented or called.
+
+Certification:
+- base SHA/tree: `edfffa86a52b5fea591b303e8568bf908e6026b3` / `b3c7bf68f2200149819ebd6adcb98ef8f8c4882b`;
+- initial PR head `f09db6719d0c9b857dd4ed7d63ceca8dd5d3128d` reached CI #430 / run `35378061427`: all schema/task/workspace/browser tests passed, but typecheck correctly rejected one stale test assertion; no merge occurred;
+- corrective commit removed only that invalid test assertion;
+- exact tested implementation head: `99c5938aa6dcfa01b01e7bd71e75101b027707a7`;
+- PR CI run `35378394021` / CI #431: success across schema/task/workspace tests, Playwright Chromium + P4.10 browser suite, typecheck and build;
+- implementation merge: `605cf9133da8a26ddf9989cab005ec91161c033f`;
+- merge tree: `e45536adbe78a7ef7b379c5805e77aeb8bd345f4`;
+- post-merge push CI run `35378641628` / CI #432: success across the same full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed.
+
+P5.5 is **unpublished**. It did not authorize or perform provider enrollment/purchase, credential creation/use, DataForSEO/provider requests, Task #67 Production source admission, Task #70 execution, observation/evidence persistence, Production DB reads/DDL/DML, scheduler/worker activation, Task #53/#54/#64 execution, provider/public-site writes, secret/config changes or publication.
+
+Detailed record:
+- `.agents/memory/p5-5-backlink-fixture-closeout.md`
+- `docs/p5-5-backlink-authority-link-gap-adapter.md`
+
+Default next safe milestone: **P5.6 — competitor visibility/page/topic-gap operational pipeline**, default-off/network-free engineering using deterministic supplied artifacts and the existing Tasks #58–#70 plus P5.2–P5.5 foundations.
+
+## Previous engineering state — P5.4 complete
 
 Roadmap **P5.4 — trends/source adapter(s)** is complete under issue #227 / PR #228.
 
@@ -49,7 +90,7 @@ Detailed record:
 - `.agents/memory/p5-4-trends-adapter-closeout.md`
 - `docs/p5-4-provider-neutral-trends-dataforseo-adapter.md`
 
-Default next safe milestone: **P5.5 — backlink authority/link-gap adapter(s)**, default-off/network-free engineering using deterministic supplied fixtures only. Live provider enrollment/credentials/requests remain separately unauthorized.
+At the P5.4 checkpoint, the default next safe milestone was **P5.5 — backlink authority/link-gap adapter(s)**; that milestone is now complete as recorded above. Live provider enrollment/credentials/requests remain separately unauthorized.
 
 ## Previous engineering state — P5.3 complete
 
