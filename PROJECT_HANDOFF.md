@@ -13,25 +13,27 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P5.4 provider-neutral trends + DataForSEO Google Trends Explore Standard adapter foundation is complete and certified.
+**Current checkpoint:** P5.5 deterministic backlink authority/link-gap supplied-fixture adapter foundation is complete and certified.
 
-- P5.4 issue #227 / PR #228.
-- Exact tested implementation head: `f291b15a060c6dc784ad485ea72d3baf18a6c991`.
-- PR CI run `35373732089` / CI #425: success.
-- Implementation merge: `1680969b64f767552262494f1586fac26b77475b`.
-- Merge tree: `32d5bc8a19ff7ccefde8cf7f32c113e1a347b6ac`.
-- Post-merge push CI run `35373952663` / CI #426: success.
+- P5.5 issue #231 / PR #232.
+- Initial implementation head `f09db6719d0c9b857dd4ed7d63ceca8dd5d3128d` reached CI #430 / run `35378061427`: all tests/browser checks passed but typecheck rejected one stale test-only `SignalSourceDescriptor.safety` assertion; no merge occurred.
+- Corrected exact tested implementation head: `99c5938aa6dcfa01b01e7bd71e75101b027707a7`.
+- PR CI run `35378394021` / CI #431: success.
+- Implementation merge: `605cf9133da8a26ddf9989cab005ec91161c033f`.
+- Merge tree: `e45536adbe78a7ef7b379c5805e77aeb8bd345f4`.
+- Post-merge push CI run `35378641628` / CI #432: success.
 - Replit exact-synced to the implementation merge/tree, `0/0`, clean, zero untracked, with recursive workspace tests, full typecheck, full build and `git diff --check` passing.
-- Explore-style trend values are modeled as exact request-frame-relative `0..100` evidence; they are not absolute search volume and are not comparable across changed term/date/location/language/property/category/method frames.
-- Relative index `0` is retained as insufficient-data evidence, distinct from explicit missing graph points.
-- Per-keyword descriptive summaries include latest/mean/peak relative index, early/recent means, signed velocity, positive momentum, volatility, coverage and direction; they remain descriptive and do not predict traffic or demand.
-- DataForSEO Google Trends Explore is represented only as a Standard task contract plus supplied-result normalization; POST/GET paths are inert metadata and no provider transport exists.
-- Internal request bounds are 1–5 keywords, <=80 characters / <=10 words each, exact location/language, Google/all-device scope, web property, provider category code 0 and explicit 30–366-day date frame.
-- Live execution, callbacks/pingbacks/postbacks, polling, related topics/queries/map expansion and official Google Trends alpha enrollment are all excluded.
-- Rich frame-bound trend projections remain outside the bounded Task #68 aggregate observation so Task #68 is not falsely given a per-keyword stream dimension.
-- P5.4 remains unpublished and performed no provider enrollment, credentials, provider/API request, official Google Trends alpha access, Task #67 source admission, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, provider/public-site write, config/secret change or publication.
-- Default next safe engineering boundary: **P5.5 — backlink authority/link-gap adapter(s)**, default-off/network-free using deterministic supplied fixtures only.
-- Real external-provider enrollment/credentials/requests remain separately unauthorized.
+- A dedicated `backlink` signal now exists in the typed Task #66/Task #67 control plane; no real Production source was admitted.
+- P5.5 uses a contract-only `supplied-backlink-fixture` external/manual-import source and deterministic supplied fixtures only.
+- Domain/URL/timestamp/authority/anchor/freshness/summary-total semantics are canonical and fail closed on contradictions.
+- Null authority remains distinct from explicit zero, and authority is explicitly provider/method/metric/scale-bound with no cross-provider equivalence.
+- Deterministic fixtures cover baseline, null-vs-zero, anchor, freshness/churn and owned + three-competitor link-gap cases.
+- Link-gap classification is descriptive only: owned-exclusive, shared coverage, unlinked observed domain, single/shared/universal competitor gaps. P5.5 does not calculate a proprietary opportunity score.
+- Public DataForSEO Backlinks Summary/Referring Domains/Anchors/Domain Intersection docs were reviewed only as a future mapping reference; no Live/billable provider endpoint was implemented or called.
+- Rich backlink/gap evidence remains outside the bounded Task #68 aggregate stream.
+- P5.5 remains unpublished and performed no provider enrollment, credentials, provider/API request, Task #67 Production source admission, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, Task #53/#54/#64 execution, provider/public-site write, config/secret change or publication.
+- Default next safe engineering boundary: **P5.6 — competitor visibility/page/topic-gap operational pipeline**, default-off/network-free over deterministic supplied artifacts plus Tasks #58–#70 and P5.2–P5.5.
+- Real provider/public-site reads/writes, persistence and execution remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
@@ -527,6 +529,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P5.4 closeout, the default safe engineering milestone is P5.5 network-free backlink authority/link-gap adapter engineering; optional P4.9 remains deliberately selectable and all live first-party/external-provider work still requires explicit bounded authorization
+10. current selected milestone and its exact authorization boundary; after the P5.5 closeout, the default safe engineering milestone is P5.6 network-free competitor visibility/page/topic-gap operational engineering; optional P4.9 remains deliberately selectable and all live first-party/external-provider work still requires explicit bounded authorization
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
