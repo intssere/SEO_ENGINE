@@ -13,18 +13,22 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P5.1 provider selection/cost/reliability review is complete and certified.
+**Current checkpoint:** P5.2 DataForSEO SERP/ranking adapter foundation is complete and certified.
 
-- P5.1 issue #218 / PR #219.
-- Exact tested implementation head: `193c517bcefbfac2b1726e59fb33521cd0d45b18`.
-- PR CI run `35361361888` / CI #413: success.
-- Implementation merge: `1d1ee1b5284b62fe9cb446a7ad6d79a35db53259`.
-- Merge tree: `573d1ec33cd1c5d84868fe29c8f1cbab6f24636a`.
-- Post-merge push CI run `35361587686` / CI #414: success.
+- P5.2 issue #221 / PR #222.
+- Exact tested implementation head: `184706ae549be75a19d22e15acbc1f280962785b`.
+- PR CI run `35365076296` / CI #417: success.
+- Implementation merge: `873aebeae798e61b2c313dfbe5e618c09c6a7f75`.
+- Merge tree: `9136828ed85cbcd3b548a8532e0e452c2bb2f9f7`.
+- Post-merge push CI run `35365310166` / CI #418: success.
 - Replit was exact-synced to that merge/tree, `0/0`, clean, zero untracked, with recursive workspace tests, full typecheck, full build and `git diff --check` passing.
-- P5.1 engineering roles: DataForSEO initial dual-purpose SERP+keyword adapter engineering target; SerpApi independent SERP benchmark/fallback; Google Ads Keyword Planning official keyword-reference candidate; Ahrefs/Semrush deferred broad-suite candidates.
-- P5.1 is research/planning only and remains unpublished. No provider enrollment, credentials, provider/API request, Task #67 source admission, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, Task #53/#54/#64 execution, provider/public-site write, config/secret change or publication occurred.
-- Default next safe engineering boundary: **P5.2 — SERP/ranking adapter(s)**, default-off/network-free using deterministic fake/supplied transport only.
+- P5.2 provides a network-free DataForSEO Google Organic standard-task request contract plus supplied-result ranking normalization and exact Task #68-compatible result mapping.
+- Exact P5.1 review/freshness and Task #68 source/request/market/category lineage are enforced.
+- The expected source key `dataforseo-google-organic-serp` is an adapter contract only; no Task #67 source admission occurred.
+- Organic `rank_group` is bounded to requested depth while `rank_absolute` is preserved as absolute rank across all SERP elements.
+- Raw provider titles/snippets/XPath/status messages/arbitrary fields are discarded; only bounded rank/page/domain/URL ranking data survives.
+- P5.2 remains unpublished and performed no provider enrollment, credentials, provider/API request, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, Task #53/#54/#64 execution, provider/public-site write, config/secret change or publication.
+- Default next safe engineering boundary: **P5.3 — keyword volume/difficulty/opportunity adapter(s)**, default-off/network-free using deterministic supplied fixtures only.
 - Real external-provider enrollment/credentials/requests remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
@@ -456,37 +460,41 @@ It does **not** authorize:
 
 ---
 
-## 12. Current project stage after P5.1
+## 12. Current project stage after P5.2
 
-P3.6 remains the certified Production schema checkpoint. P4.1–P4.8 plus selected P4.10 are complete unpublished product/browser engineering foundations. P5.1 is now also complete and unpublished.
+P3.6 remains the certified Production schema checkpoint. P4.1–P4.8 plus selected P4.10 are complete unpublished product/browser foundations. P5.1 provider-selection review and P5.2 SERP/ranking adapter engineering are now complete and unpublished.
 
-P5.1 established a dated deterministic external SERP/keyword provider review:
-- DataForSEO: initial dual-purpose P5.2/P5.3 engineering target;
-- SerpApi: independent SERP benchmark/fallback candidate;
-- Google Ads Keyword Planning: official keyword-reference candidate under a separate future Google Ads credential/account boundary;
-- Ahrefs and Semrush: deferred broad-suite candidates;
-- 90-day bounded re-review window plus earlier re-review triggers for material pricing/API/terms/reliability changes;
-- explicit capability/evidence gates and source provenance rather than an opaque ranking score;
-- no Task #67 source admission and no executable provider transport.
+P5.2 establishes:
+- exact P5.1 DataForSEO engineering-selection/freshness lineage;
+- exact Task #68 request/source/market/category lineage;
+- deterministic Google Organic standard-task request metadata;
+- location/language/device/depth bounds with normal priority only;
+- no live endpoint/callback/pingback/postback/polling path;
+- bounded supplied-result projection of organic rank/page/domain/URL only;
+- tracked-domain best/top-10/top-20 ranking metrics;
+- correct rank_group vs rank_absolute semantics;
+- strict Task #68 adapter-result compatibility;
+- no raw provider-data retention beyond the bounded projection;
+- no executable provider transport.
 
-P5.1 certification lineage:
-- PR #219 exact tested head `193c517bcefbfac2b1726e59fb33521cd0d45b18`;
-- PR CI #413 / run `35361361888`: success;
-- merge `1d1ee1b5284b62fe9cb446a7ad6d79a35db53259`, tree `573d1ec33cd1c5d84868fe29c8f1cbab6f24636a`;
-- post-merge CI #414 / run `35361587686`: success;
+Certification lineage:
+- PR #222 exact tested head `184706ae549be75a19d22e15acbc1f280962785b`;
+- PR CI #417 / run `35365076296`: success;
+- merge `873aebeae798e61b2c313dfbe5e618c09c6a7f75`, tree `9136828ed85cbcd3b548a8532e0e452c2bb2f9f7`;
+- post-merge CI #418 / run `35365310166`: success;
 - Replit exact-sync and non-browser validation: passed, `0/0`, clean.
 
-Production remains on the separately certified Task #73 application release. Do not infer provider enrollment, live provider reads, source admission, persistence, scheduler/worker execution, publication, mutation, or further Production DDL from P5.1.
+Production remains on the separately certified Task #73 application release. Do not infer provider enrollment, live provider reads, source admission, persistence, scheduler/worker execution, publication, mutation, or further Production DDL from P5.2.
 
 ---
 
 ## 13. Safe next-step choices
 
-### Default safe engineering path — P5.2
+### Default safe engineering path — P5.3
 
-Proceed next, on a generic `continue`, with **P5.2 — SERP/ranking adapter(s)** through the normal issue → branch → implementation/tests/docs → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow.
+Proceed next, on a generic `continue`, with **P5.3 — keyword volume/difficulty/opportunity adapter(s)** through the normal issue → branch → implementation/tests/docs → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow.
 
-Based on P5.1, DataForSEO may be the first adapter engineering target, but P5.2 must remain default-off and network-free: deterministic request/result contracts, hard bounds, normalization integration and fake/supplied transport only. Generic `continue` does **not** authorize provider signup/purchase, API credentials, a live provider request, Task #67 external-source admission, Task #70 execution, observation/evidence persistence, scheduler/worker activation, Production DDL/DML, provider/public-site writes, secret/config changes, or publication.
+Based on P5.1, DataForSEO may be the first keyword adapter engineering target, but P5.3 must remain default-off and network-free: deterministic request/result contracts, strict bounds, normalization integration and supplied fixtures only. Generic `continue` does **not** authorize provider signup/purchase, API credentials, a live provider request, Task #67 external-source admission, Task #70 execution, observation/evidence persistence, scheduler/worker activation, Production DDL/DML, provider/public-site writes, secret/config changes, or publication.
 
 ### Optional P4.9
 
@@ -517,6 +525,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P5.1 closeout, the default safe engineering milestone is P5.2 network-free SERP-adapter engineering; optional P4.9 remains deliberately selectable and all live first-party/external-provider work still requires explicit bounded authorization
+10. current selected milestone and its exact authorization boundary; after the P5.2 closeout, the default safe engineering milestone is P5.3 network-free keyword-adapter engineering; optional P4.9 remains deliberately selectable and all live first-party/external-provider work still requires explicit bounded authorization
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
