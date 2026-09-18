@@ -1153,6 +1153,23 @@
   }
 }
 @media (max-width: 640px) {
+  .dataWorkbenchToolbar,
+  .dataWorkbenchFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .dataWorkbenchControls {
+    flex-wrap: wrap;
+  }
+  .dataGridSearch {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  .dataGridPagination {
+    justify-content: space-between;
+    width: 100%;
+  }
+
   .approvalIntro,
   .approvalCardHead {
     align-items: flex-start;
@@ -1409,6 +1426,145 @@ h2 {
 .tableWrap {
   overflow: auto;
   margin-top: 15px;
+}
+.dataWorkbench {
+  width: 100%;
+}
+.dataWorkbenchToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e8ecf2;
+  background: #fbfcfe;
+}
+.dataWorkbenchControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.dataWorkbenchMeta {
+  color: #6f7b8f;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.dataWorkbenchBody {
+  min-width: 0;
+}
+.dataWorkbenchFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-top: 1px solid #e8ecf2;
+  background: #fbfcfe;
+}
+.dataGridSearchLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.dataGridSearch {
+  width: min(320px, 42vw);
+  min-width: 160px;
+  border: 1px solid #dce2eb;
+  border-radius: 7px;
+  background: #fff;
+  color: #455168;
+  padding: 7px 10px;
+  font-size: 12px;
+  outline: none;
+}
+.dataGridSearch:focus {
+  border-color: #3c82f6;
+  box-shadow: 0 0 0 2px rgb(60 130 246 / 12%);
+}
+.dataGridPageSizeLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6f7b8f;
+  font-size: 11px;
+  font-weight: 600;
+}
+.dataGridPageSize {
+  border: 1px solid #dce2eb;
+  border-radius: 7px;
+  background: #fff;
+  color: #455168;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.dataGridWrap {
+  margin-top: 0;
+  max-height: min(68vh, 760px);
+}
+.dataGridWrap th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+}
+.dataGridSortButton {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.dataGridSortButton:focus-visible {
+  outline: 2px solid #3c82f6;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.dataGridSortIndicator {
+  color: #9aa5b7;
+  font-size: 10px;
+}
+.dataGridRange {
+  color: #6f7b8f;
+  font-size: 11px;
+  font-weight: 600;
+}
+.dataGridPagination {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #536078;
+  font-size: 11px;
+  font-weight: 600;
+}
+.dataGridPagination button {
+  border: 1px solid #dce2eb;
+  border-radius: 7px;
+  background: #fff;
+  color: #356fd3;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.dataGridPagination button:disabled {
+  color: #aab3c6;
+  cursor: not-allowed;
+  background: #f6f8fb;
 }
 table {
   border-collapse: collapse;
