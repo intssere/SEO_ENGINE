@@ -451,33 +451,32 @@ It does **not** authorize:
 
 ---
 
-## 12. Current project stage after P3.6
+## 12. Current project stage after P4.1
 
-P3.6 is complete. The default next safe engineering boundary is **P4.1 — Information Architecture / Navigation v2**.
+P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2** is complete under issue #200 / PR #201 and remains unpublished.
 
-Completed/proven foundations now also include:
+P4.1 product-navigation checkpoint:
+- six primary domains: **Command Center, Discover, Audit, Execute, Measure, System**;
+- all 16 existing routes preserved;
+- `Learning` moved from a primary peer into **Measure** and visibly marked `Planned`;
+- active destination exposes `aria-current="page"`;
+- mobile navigation is available below 640px through an `aria-expanded` / `aria-controls` menu;
+- navigation contracts are covered by deterministic package tests;
+- no backend/API/provider/database execution behavior changed.
 
-- P2.7 URL Explorer API/query model
-- P2.8 technical issue taxonomy/evidence expansion
-- P3.1–P3.5 durable observation/evidence model engineering
-- P3.6 explicitly authorized Production migration/DDL
-- Production checkpoint of 34 public base tables including `seo_observation`, `seo_evidence`, and `seo_observation_evidence`
-- all three P3.6 tables empty immediately after migration, with zero catalog mismatches
-- application observation/evidence persistence and Production reads still disabled
+Completed/proven foundations also include P2.1–P2.8, P3.1–P3.6 and P4.1. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
 
 The historical Task #51–#56 execution/auth foundations remain in force, but they do not authorize a new live action by themselves.
 
-Still ahead includes P4 product-experience work, live first-party provider activation, external intelligence, opportunity/recommendation integration, measurement/learning, and later governed automation.
-
-Do not jump directly to unrestricted autonomous provider mutation, provider reads, persistence execution, or further Production DDL.
+Do not jump directly to unrestricted autonomous provider mutation, provider reads, persistence execution, publication or further Production DDL.
 
 ---
 
 ## 13. Safe next-step choices
 
-### Default safe engineering path — P4.1
+### Default safe engineering path — P4.2
 
-Proceed with **P4.1 — Information Architecture / Navigation v2** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. This path must not activate provider requests, observation/evidence persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
+Proceed next with **P4.2 — Design tokens / components / status grammar** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. This path must not activate provider requests, observation/evidence persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
 
 ### Separately authorized live-provider path
 
@@ -504,6 +503,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after this #196 closeout, the default safe engineering milestone is P4.1 unless a different path is explicitly authorized
+10. current selected milestone and its exact authorization boundary; after the P4.1 closeout, the default safe engineering milestone is P4.2 unless a different path is explicitly authorized
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
