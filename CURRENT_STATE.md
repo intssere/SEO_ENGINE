@@ -13,30 +13,29 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.6 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.6 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer code only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.7 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.7 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive-polish code only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P4.6 complete
+## Current engineering state — P4.7 complete
 
-Roadmap **P4.6 — Full-Site Audit / Crawl Explorer UI** is complete under issue #210 / PR #211. P4.1–P4.5 remain the preceding navigation/design-system/workbench/evidence-inspection/Command-Center foundations.
+Roadmap **P4.7 — responsive/mobile/tablet professional polish** is complete under issue #212 / PR #213. P4.1–P4.6 remain the preceding product/navigation/workbench/evidence/Command-Center/audit-explorer foundations.
 
-P4.6 upgrades the existing `/technical-seo` route into a read-only Full-Site Audit / Crawl Explorer workspace without activating a new crawl/read runtime:
-- a pure typed `AuditWorkspaceModel` defensively normalizes the current generic technical-finding rows and derives conservative readiness, severity and coverage states;
-- persisted technical findings render through the shared P4.3 `DataGrid` with stable row identity and searchable finding/category/status/URL fields;
-- the workspace uses only existing GET surfaces: current technical findings plus the already exposed dashboard certification snapshot;
-- bounded certification remains warning/bounded and explicitly states that it is not whole-site coverage; only an explicit `wholeSiteCertified=true` state can render whole-site success;
-- findings counts do not imply URL-inventory completeness;
-- the P2.7 URL Explorer surface mirrors the retained contract fields `canonicalUrl`, `pathname`, `sourceSitemaps`, `lastmod`, `recrawlStatus`, `recrawlPriority` and `recrawlReasons`;
-- P2.7 unavailable per-URL dimensions remain explicit: HTTP status, fetch outcome, redirect target, canonical target, indexability and content fingerprint;
-- because no frontend GET endpoint currently binds the P2.7 read model, URL Explorer renders **zero synthetic rows** and an explicit `read model not bound` state;
-- P2.5 crawl-history and P2.6 incremental-recrawl surfaces likewise render unavailable rather than zero/fabricated data;
-- all full-site network execution, sitemap fetching, Production evidence reads, persistence, scheduler, worker and public-write authorizations remain false in the presentation contract;
-- deterministic model tests and source-contract tests enforce bounded/whole-site honesty, defensive row normalization, no synthetic URL inventory, retained/unavailable P2.7 vocabulary and zero direct network/database/runtime/mutation primitives;
-- the existing `/technical-seo` route and Audit navigation remain unchanged.
+P4.7 adds a shared presentation-only responsive layer across the completed P4 product surfaces without changing data, API, or runtime semantics:
+- compact tablets and phones switch to the mobile-navigation shell at `<=820px` rather than retaining the cramped desktop sidebar until phone width;
+- compact-mode page topbars become non-sticky so they do not compete with the sticky mobile navigation bar;
+- shared shell/workspace/content/card min-width and overflow rules prevent page-level horizontal expansion;
+- DataGrid tables retain a deliberate 720px internal table width with contained momentum/touch horizontal scrolling inside the workbench rather than widening the page;
+- DataWorkbench search/page-size/pagination controls stack at tablet widths and become full-width/phone-safe as space decreases;
+- core shared mobile-navigation, grid, drawer, review and draft controls receive a `44px` minimum touch target;
+- title rows, section heads, badges, action groups, long URLs and long text wrap safely;
+- EvidenceDrawer uses viewport-safe tablet sizing, phone full-width sizing, dynamic viewport height and contained scrolling;
+- Command Center and Full-Site Audit grids/headings/card layouts collapse consistently across 1180/900/820/640/420 breakpoints;
+- generic flex-based cards/forms inherit wrap-safe compact behavior, improving Settings/Connections and other operational surfaces without changing their action semantics;
+- deterministic source-contract tests enforce compact-tablet shell switching, internal table scrolling, workbench stacking, touch-target sizing, wrap-safe status/header behavior, EvidenceDrawer viewport sizing and the presentation-only boundary.
 
-P4.6 is engineering-only and remains **unpublished**. It did not authorize or perform live full-site network execution, sitemap fetching, Production observation/evidence reads or persistence, provider/public-site requests, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
+P4.7 is engineering-only and remains **unpublished**. It did not authorize or perform provider/public-site activity, live crawl/sitemap execution, Production observation/evidence reads or persistence, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
 
 Detailed record:
-- `.agents/memory/p4-6-full-site-audit-crawl-explorer-ui-closeout.md`
+- `.agents/memory/p4-7-responsive-professional-polish-closeout.md`
 
 ## Current database state — P3.6 complete
 
@@ -74,13 +73,13 @@ Detailed record:
 
 ## Replit engineering workspace
 
-P4.6 branch `p4-6-full-site-audit-crawl-explorer-ui` was created from the P4.5-certified canonical `main`:
-- base SHA: `c2c08460d72f958ad59a1f22e939b616c202e3ba`
-- base tree: `a126995219c43b2f2b8335b94c884a703fbf2129`
+P4.7 branch `p4-7-responsive-professional-polish` was created from the P4.6-certified canonical `main`:
+- base SHA: `32d01343c82a6deec5a3028aa719883f7d4d18e5`
+- base tree: `6f570e28bf8e570e7ce2a7a46fb4a92160b7c673`
 
-Before P4.6 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. Exact branch validation on implementation head `0bac69bfd5a3b55a2c93e2bc39a135b6672323c5` / tree `ae65775bee692dd7e15dd0df1eb1793975cc96fc` passed 65 SEO Engine tests, recursive workspace tests, full typecheck, full build and `git diff --check`; exact-head GitHub CI run `35330165670` also passed. No publication, runtime start/restart, database/schema work, full-site crawl/sitemap execution, provider/public-site activity or secret/config changes are part of P4.6.
+Before P4.7 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. Exact branch validation on implementation head `4b2b7af2b7919a9373f6514f3a7762ad96c08b8a` / tree `f7d9396845073aaa9552b7f583c880c000e0f68d` passed 72 SEO Engine tests, recursive workspace tests including 570 API Server tests, full typecheck, full build and `git diff --check`; exact-head GitHub CI run `35337414946` also passed. No publication, runtime start/restart, database/schema work, crawl/sitemap execution, provider/public-site activity or secret/config changes are part of P4.7.
 
-After PR #211 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.6 without separate explicit authorization.
+After PR #213 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.7 without separate explicit authorization.
 
 ## Completed engineering foundations
 
@@ -100,6 +99,7 @@ Completed non-published engineering foundations include:
 - **P4.4 — Evidence drawer:** typed read-only evidence presentation model, accessible Sheet-based drawer, proposal/opportunity adapters, explicit unavailable P3 detail states, count/ID honesty and zero data-fetch/mutation capability.
 - **P4.5 — Command Center v2:** read-only root operational cockpit over the existing dashboard snapshot, conservative health/coverage/decision/verification/measurement/intelligence states, bounded-certification honesty, and no baseline/mutation controls.
 - **P4.6 — Full-Site Audit / Crawl Explorer UI:** read-only Technical SEO workspace over current GET data, defensive finding normalization, bounded-certification truth, production-shaped P2.7 URL Explorer with zero synthetic rows, and explicit unavailable history/recrawl bindings.
+- **P4.7 — Responsive/mobile/tablet professional polish:** unified compact-tablet/mobile shell behavior, internal table scrolling, earlier workbench stacking, 44px shared touch targets, wrap-safe headers/status/text, viewport-safe evidence drawer sizing and consistent compact layouts across P4.1–P4.6.
 
 The completed P3.6 schema migration does not activate application persistence or reads. None of these foundations activates new production crawling, provider reads, application database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
@@ -206,13 +206,13 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.6. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.6 establish product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer foundations only. None implies live full-site crawl execution, sitemap fetching, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.7. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.7 establish product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive foundations only. None implies live full-site crawl execution, sitemap fetching, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
 
 `MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3/P4 status tables must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next boundary — P4.7 by default; P1 live-provider only if deliberately authorized
+## Next boundary — P4.8 by default; P1 live-provider only if deliberately authorized
 
-The next safe engineering boundary is **P4.7 — responsive/mobile/tablet professional polish**. It must remain product/UI engineering only unless its task separately authorizes publication or runtime changes. It may refine the completed P4.1–P4.6 surfaces without activating providers, crawl execution, Production observation/evidence reads/persistence, mutation, scheduling or publication.
+The next safe engineering boundary is **P4.8 — accessibility test baseline and WCAG 2.2 AA remediation**. It must remain product/UI/accessibility engineering only unless its task separately authorizes publication or runtime changes. It may add deterministic accessibility contracts and remediate keyboard/focus/semantic/contrast issues across P4.1–P4.7 without activating providers, crawl execution, Production observation/evidence reads/persistence, mutation, scheduling or publication.
 
 A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 
