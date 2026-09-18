@@ -128,8 +128,8 @@ test("Search Intelligence stays synthetic, searchable, sortable, and network-clo
 
   const competitorSearch = page.getByPlaceholder("Search competitor domain");
   await competitorSearch.fill("competitor-b");
-  await expect(page.getByText("competitor-b.test").first()).toBeVisible();
-  await expect(page.getByText("competitor-a.test").first()).toHaveCount(0);
+  await expect(competitorRegion.getByText("competitor-b.test").first()).toBeVisible();
+  await expect(competitorRegion.getByText("competitor-a.test").first()).toHaveCount(0);
   await competitorSearch.fill("");
 
   const visibleSort = page.getByRole("button", { name: "Sort by Visible / measured" });
@@ -138,10 +138,13 @@ test("Search Intelligence stays synthetic, searchable, sortable, and network-clo
     page.getByRole("columnheader", { name: /Visible \/ measured/ }).first(),
   ).toHaveAttribute("aria-sort", "ascending");
 
+  const topicRegion = page.getByRole("region", {
+    name: /Topic gap evidence table\. Scroll horizontally/,
+  });
   const topicSearch = page.getByPlaceholder("Search topic or state");
   await topicSearch.fill("oud perfume");
-  await expect(page.getByText("oud perfume").first()).toBeVisible();
-  await expect(page.getByText("vanilla perfume").first()).toHaveCount(0);
+  await expect(topicRegion.getByText("oud perfume").first()).toBeVisible();
+  await expect(topicRegion.getByText("vanilla perfume").first()).toHaveCount(0);
 
   await expect(
     page.getByText(/Observed-topic visibility is limited to this supplied cohort and is not market share/),
