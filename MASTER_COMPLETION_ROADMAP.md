@@ -574,13 +574,13 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 23. **DONE — P5.1:** provider selection/cost/reliability review for SERP + keyword data under issue #218 / PR #219; DataForSEO selected as the initial dual-purpose engineering target, SerpApi as the SERP benchmark/fallback, Google Ads Keyword Planning as the official keyword-reference candidate, and Ahrefs/Semrush deferred as broad-suite candidates; no live provider calls or enrollment.
 24. **NEXT SAFE DEFAULT — P5.2:** SERP/ranking adapter engineering, default-off and network-free with fake/supplied transport only; no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
 25. **P5.3–P5.8 —** keyword/trend/backlink/competitor intelligence engineering.
-25. **P6 —** unified opportunity/prioritization/explanation engine.
-26. **P7 —** AI/GEO visibility.
-27. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-28. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-29. **P10 —** impact attribution, experimentation and learning loop.
-30. **P11 —** enterprise hardening and certification.
-31. **P12 —** final production completion certification and program closeout.
+26. **P6 —** unified opportunity/prioritization/explanation engine.
+27. **P7 —** AI/GEO visibility.
+28. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+29. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+30. **P10 —** impact attribution, experimentation and learning loop.
+31. **P11 —** enterprise hardening and certification.
+32. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
