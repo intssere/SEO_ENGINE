@@ -2,6 +2,7 @@ import {
   useGetDashboard,
   GetDashboardDays,
   GetDashboardDevice,
+  getGetDashboardQueryKey,
 } from "@workspace/api-client-react";
 import {
   Activity,
@@ -40,6 +41,7 @@ export default function DashboardPage() {
 
   const { data, isLoading, isError } = useGetDashboard(dashboardParams, {
     query: {
+      queryKey: getGetDashboardQueryKey(dashboardParams),
       refetchInterval: (query) =>
         ["queued", "running"].includes(query.state.data?.pilot.status ?? "")
           ? 2000
