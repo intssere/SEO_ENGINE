@@ -13,28 +13,30 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.4 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.4 change engineering-source product navigation/design-system/workbench/evidence-inspection code only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.5 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.5 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center code only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P4.4 complete
+## Current engineering state — P4.5 complete
 
-Roadmap **P4.4 — Evidence drawer** is complete under issue #206 / PR #207. P4.1–P4.3 remain the preceding navigation/design-system/workbench foundations.
+Roadmap **P4.5 — Command Center v2** is complete under issue #208 / PR #209. P4.1–P4.4 remain the preceding navigation/design-system/workbench/evidence-inspection foundations.
 
-P4.4 establishes a reusable read-only evidence inspection surface without activating new runtime capability:
-- typed `EvidenceDrawerModel` presentation contracts and pure proposal/opportunity builders are grounded only in fields already exposed by current frontend API rows;
-- an accessible right-side `EvidenceDrawer` uses the existing Radix-backed `Sheet` primitive with a real button trigger, title, description, independent scrolling and focus behavior inherited from the dialog primitive;
-- proposal evidence exposes current-row evidence IDs/counts, confidence, evidence sufficiency, quality status/checks, quality evidence IDs, warnings/blocking reasons, semantic provenance, rationale/benefit and coverage metadata;
-- opportunity evidence exposes count/rationale/qualification summary only and explicitly marks underlying evidence IDs unavailable because the current opportunity contract does not expose them;
-- freshness, support tier, retention/history, conflict and corroboration are explicitly **unavailable** because the detailed P3 read models are not bound to frontend runtime reads;
-- count/ID mismatch is presented as partial rather than complete; missing IDs are never synthesized;
-- bounded-pilot coverage is not presented as whole-site coverage;
-- existing P4.2 status grammar preserves warning/blocked quality semantics;
-- proposal-table and Opportunities evidence cells open the shared drawer;
-- deterministic model tests and source-contract tests enforce evidence honesty, immutability, Sheet accessibility, shared integration and the absence of query/mutation/network/runtime primitives.
+P4.5 rebuilds the root `/` route as a read-only operational cockpit over the existing `DashboardSnapshot` contract without activating new runtime capability:
+- a pure typed `CommandCenterModel` derives conservative states for data health, coverage, decisions, verification, measurement, and AI/learning availability;
+- live-fresh, live-stale and unavailable data remain distinct and map to success/warning/danger semantics;
+- whole-site certification is the only successful coverage state; bounded pilot coverage remains visibly bounded/warning and is never relabeled whole-site;
+- pending approvals surface as human-review warnings and remain route navigation only;
+- verification/impact regressions fail visibly to danger;
+- zero or missing AI/learning observations remain neutral/unavailable rather than success;
+- current reporting filters remain URL-driven and the page continues to use the existing GET-only dashboard query/refetch behavior;
+- the Command Center no longer imports or invokes `getPilotAuthorization` / `startPilotRun`, and the former Run Baseline / Refresh Data control is removed from this surface;
+- the Command Center Ask action is also removed so dashboard interactions are limited to reporting filters and route navigation;
+- generic operational telemetry is labeled as operations workload/log rather than implying AI-specific execution;
+- decision queue, operations log, verification, persisted impact and AI/learning availability are presented as compact read-only summaries linked to governed workspaces;
+- deterministic model tests and source-contract tests enforce stale/unavailable/bounded honesty and the absence of pilot/mutation/direct network/database/runtime primitives.
 
-P4.4 is engineering-only and remains **unpublished**. It did not authorize or perform provider/public-site requests, observation/evidence persistence or Production reads, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
+P4.5 is engineering-only and remains **unpublished**. It did not authorize or perform provider/public-site requests, observation/evidence persistence or Production reads, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
 
 Detailed record:
-- `.agents/memory/p4-4-evidence-drawer-closeout.md`
+- `.agents/memory/p4-5-command-center-v2-closeout.md`
 
 ## Current database state — P3.6 complete
 
@@ -72,13 +74,13 @@ Detailed record:
 
 ## Replit engineering workspace
 
-P4.4 branch `p4-4-evidence-drawer` was created from the P4.3-certified canonical `main`:
-- base SHA: `3507e8bfe0e5a7062fcefef93741027e01bb74ff`
-- base tree: `c4468b40da6487da6702f3079552513f303e88ce`
+P4.5 branch `p4-5-command-center-v2` was created from the P4.4-certified canonical `main`:
+- base SHA: `8817df1b2dde05d2b59b5d48ed28cb88240aeb48`
+- base tree: `d5e66eeccce74c4e4da6b8e874a70e70537ac766`
 
-Before P4.4 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. Exact branch validation on implementation head `95b2524cc3b29d3cb16d7417387ad19408b8a012` passed 38 SEO Engine tests, recursive workspace tests, full typecheck, full build and `git diff --check`; exact-head GitHub CI run `35325409172` also passed. No publication, runtime start/restart, database/schema work, provider/public-site activity or secret/config changes are part of P4.4.
+Before P4.5 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. Initial branch validation caught one task-local generated-query typing requirement: custom refetch options required an explicit `getGetDashboardQueryKey(...)`. The corrected implementation head `c964ab92201bebf6cec6dcd505feb7e33989b184` then passed 51 SEO Engine tests, recursive workspace tests, full typecheck, full build and `git diff --check`; exact-head GitHub CI run `35327459615` also passed. No publication, runtime start/restart, database/schema work, provider/public-site activity or secret/config changes are part of P4.5.
 
-After PR #207 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.4 without separate explicit authorization.
+After PR #209 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.5 without separate explicit authorization.
 
 ## Completed engineering foundations
 
@@ -96,6 +98,7 @@ Completed non-published engineering foundations include:
 - **P4.2 — Design tokens / components / status grammar:** typed semantic status tokens, reusable StatusBadge, shared status grammar, semantic color variables and deterministic anti-regression contracts across product surfaces.
 - **P4.3 — Enterprise data-grid / workbench primitives:** typed read-only data grid, deterministic search/sort/page model, stable row identity, accessible workbench controls, OperationalTable compatibility adapter and explicit no-bulk/no-execution boundary.
 - **P4.4 — Evidence drawer:** typed read-only evidence presentation model, accessible Sheet-based drawer, proposal/opportunity adapters, explicit unavailable P3 detail states, count/ID honesty and zero data-fetch/mutation capability.
+- **P4.5 — Command Center v2:** read-only root operational cockpit over the existing dashboard snapshot, conservative health/coverage/decision/verification/measurement/intelligence states, bounded-certification honesty, and no baseline/mutation controls.
 
 The completed P3.6 schema migration does not activate application persistence or reads. None of these foundations activates new production crawling, provider reads, application database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
@@ -202,13 +205,13 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.4. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.4 establish product navigation/design-system/workbench/evidence-inspection foundations only. None implies live full-site crawl execution, sitemap fetching, application database persistence/reads, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.5. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.5 establish product navigation/design-system/workbench/evidence-inspection/Command-Center foundations only. None implies live full-site crawl execution, sitemap fetching, application database persistence/reads, scheduled crawling, autonomous operation or publication.
 
 `MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3/P4 status tables must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next boundary — P4.5 by default; P1 live-provider only if deliberately authorized
+## Next boundary — P4.6 by default; P1 live-provider only if deliberately authorized
 
-The next safe engineering boundary is **P4.5 — Command Center v2**. It must remain application engineering only unless its task separately authorizes publication or runtime changes. It may compose current read-only foundations but must not imply that unavailable live provider/evidence data exists.
+The next safe engineering boundary is **P4.6 — Full-Site Audit / Crawl Explorer UI**. It must remain application engineering only unless its task separately authorizes publication or runtime changes. It may consume existing P2/P3 engineering read models/contracts, but it must not activate first-party full-site network execution, sitemap fetching, Production observation/evidence reads, or persistence.
 
 A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 
