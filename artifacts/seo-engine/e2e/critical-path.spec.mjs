@@ -33,7 +33,9 @@ test("desktop Command Center navigates without live network and hands route focu
   await expect(
     page.getByRole("heading", { name: "SEO operations overview" }),
   ).toBeVisible();
-  await expect(page.getByText("Synthetic fixture · 5 minutes")).toBeVisible();
+  await expect(
+    page.getByText("Freshness marker: Synthetic fixture · 5 minutes").first(),
+  ).toBeVisible();
   await expect(page.getByRole("main")).toHaveAttribute("id", "main-content");
 
   const technicalLink = page.getByRole("link", { name: "Technical SEO" });
