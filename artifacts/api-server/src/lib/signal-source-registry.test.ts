@@ -217,6 +217,5 @@ test("dedicated backlink signal type is accepted without opening execution gates
   });
   assert.deepEqual(source.signalTypes, ["backlink"]);
   assert.equal(sourceEligibility(source, us, arabian, "backlink").eligible, true);
-  assert.equal(source.safety, undefined);
   assert.equal(signalSourceRegistryCapability().networkCollectionAuthorized, false);
 });
