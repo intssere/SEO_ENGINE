@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState, createContext, useContext } from "react";
+import { type ReactNode, useEffect, useRef, useState, createContext, useContext } from "react";
 import { Link, useLocation } from "wouter";
 import { AskModal } from "./ask-modal";
 import { useGetDashboard } from "@workspace/api-client-react";
@@ -40,7 +40,7 @@ function NavigationGroups({
       {NAV_DOMAINS.map((domain) => {
         const domainId = navigationDomainId(domain.domain);
         return (
-          <div className="navDomain" key={domain.domain} aria-labelledby={domainId}>
+          <div className="navDomain" key={domain.domain} role="group" aria-labelledby={domainId}>
             <p className="navDomainLabel" id={domainId}>{domain.domain}</p>
             <div className="navDomainItems">
               {domain.items.map((item) => {
@@ -74,6 +74,9 @@ export function Layout({ children }: { children: ReactNode }) {
   const { data, isLoading } = useGetDashboard();
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const mobileNavToggleRef = useRef<HTMLButtonElement>(null);
+  const mainContentRef = useRef<HTMLElement>(null);
+  const previousLocationRef = useRef(location);
   const auth = useAuth();
 
   useEffect(() => {
@@ -81,14 +84,26 @@ export function Layout({ children }: { children: ReactNode }) {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setIsAskModalOpen(true);
+        return;
+      }
+      if (e.key === "Escape" && isMobileNavOpen) {
+        setIsMobileNavOpen(false);
+        window.requestAnimationFrame(() => mobileNavToggleRef.current?.focus());
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [isMobileNavOpen]);
 
   useEffect(() => {
     setIsMobileNavOpen(false);
+    const locationChanged = previousLocationRef.current !== location;
+    previousLocationRef.current = location;
+    if (locationChanged) {
+      window.requestAnimationFrame(() => {
+        mainContentRef.current?.focus({ preventScroll: true });
+      });
+    }
     const activeItem = NAV_ITEMS.find((item) => item.path === location);
     if (activeItem) {
       document.title = `${activeItem.label} | SEO Engine`;
@@ -101,10 +116,11 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <AskModalContext.Provider value={setIsAskModalOpen}>
-      <main className="shell">
+      <div className="shell">
+        <a className="skipLink" href="#main-content">Skip to main content</a>
         <aside className="sidebar">
           <div className="brand">
-            <span className="brandMark">S</span>
+            <span className="brandMark" aria-hidden="true">S</span>
             <div>
               <strong>SEO ENGINE</strong>
               <small>AI SEO Command Center</small>
@@ -135,7 +151,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <span className="text-[#7f91af]">Loading state...</span>
             ) : data ? (
               <>
-                <span className={`statusDot ${data.state === "live" ? "" : "offline"}`} />
+                <span aria-hidden="true" className={`statusDot ${data.state === "live" ? "" : "offline"}`} />
                 {data.state === "live" ? "Engine online" : "Data unavailable"}
                 <br />
                 <small>Guarded autonomy</small>
@@ -149,13 +165,14 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="mobileNav">
           <div className="mobileNavBar">
             <div className="mobileBrand">
-              <span className="brandMark">S</span>
+              <span className="brandMark" aria-hidden="true">S</span>
               <div>
                 <strong>SEO ENGINE</strong>
                 <small>Navigation</small>
               </div>
             </div>
             <button
+              ref={mobileNavToggleRef}
               type="button"
               className="mobileNavToggle"
               aria-expanded={isMobileNavOpen}
@@ -179,12 +196,17 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <section className="workspace relative">
+        <main
+          id="main-content"
+          ref={mainContentRef}
+          tabIndex={-1}
+          className="workspace relative"
+        >
           {children}
-        </section>
+        </main>
 
         <AskModal open={isAskModalOpen} onOpenChange={setIsAskModalOpen} />
-      </main>
+      </div>
     </AskModalContext.Provider>
   );
 }
