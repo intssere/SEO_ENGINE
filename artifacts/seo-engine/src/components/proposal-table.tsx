@@ -2,6 +2,7 @@ import type { ProposalRecord } from "@workspace/api-client-react";
 import { StatusBadge } from "./status-badge";
 import { lifecycleTone } from "@/lib/status-grammar";
 import type { Column } from "./operational-table";
+import { ProposalEvidenceDrawer } from "./evidence-drawer";
 
 const titleize = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
@@ -35,7 +36,10 @@ export const proposalColumns: Column[] = [
         <strong>{row.evidence_count} persisted refs · {(row.confidence * 100).toFixed(0)}% confidence</strong>
         <span><b>Rationale:</b> {row.rationale}</span>
         <span>{row.expected_benefit}</span>
-        <small>{row.evidence_ids.join(", ") || "No evidence IDs"}</small>
+        <ProposalEvidenceDrawer
+          proposal={row}
+          triggerLabel={`Inspect ${row.evidence_count} evidence ref${row.evidence_count === 1 ? "" : "s"}`}
+        />
       </div>
     ),
   },
