@@ -39,7 +39,7 @@ export interface DataGridProps<T> {
 function readColumnValue<T>(column: DataGridColumn<T>, row: T) {
   if (column.getValue) return column.getValue(row);
   if (column.accessorKey) {
-    return (row as Record<string, unknown>)[String(column.accessorKey)];
+    return (row as unknown as Record<string, unknown>)[String(column.accessorKey)];
   }
   return undefined;
 }
