@@ -44,7 +44,10 @@ export default function PerformancePage() {
           <span className="muted"> Performance</span>
         </div>
         <div className="filters">
-          <select 
+          <label className="sr-only" htmlFor="performance-days">Reporting window</label>
+          <select
+            id="performance-days"
+            aria-label="Reporting window"
             className="border border-[#dce2eb] rounded-md px-2 py-1 text-sm bg-white text-[#536078]"
             value={days}
             onChange={(e) => updateParam("days", e.target.value)}
@@ -53,7 +56,10 @@ export default function PerformancePage() {
             <option value={28}>Last 28 days</option>
             <option value={90}>Last 90 days</option>
           </select>
-          <select 
+          <label className="sr-only" htmlFor="performance-country">Country</label>
+          <select
+            id="performance-country"
+            aria-label="Country"
             className="border border-[#dce2eb] rounded-md px-2 py-1 text-sm bg-white text-[#536078]"
             value={country}
             onChange={(e) => updateParam("country", e.target.value)}
@@ -63,7 +69,10 @@ export default function PerformancePage() {
             <option value="GB">GB</option>
             <option value="CA">Canada</option>
           </select>
-          <select 
+          <label className="sr-only" htmlFor="performance-device">Device</label>
+          <select
+            id="performance-device"
+            aria-label="Device"
             className="border border-[#dce2eb] rounded-md px-2 py-1 text-sm bg-white text-[#536078]"
             value={device}
             onChange={(e) => updateParam("device", e.target.value)}
@@ -86,13 +95,13 @@ export default function PerformancePage() {
 
         <section className="card">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-12 text-[#77839a]">
-              <Loader2 className="w-8 h-8 animate-spin text-[#3c82f6] mb-4" />
+            <div className="flex flex-col items-center justify-center p-12 text-[#647087]" role="status" aria-live="polite">
+              <Loader2 className="w-8 h-8 animate-spin text-[#3c82f6] mb-4" aria-hidden="true" />
               <p className="font-medium text-sm">Loading performance data...</p>
             </div>
           ) : isError || !data ? (
-            <div className="flex flex-col items-center justify-center p-12 text-destructive">
-              <AlertCircle className="w-10 h-10 mb-4" />
+            <div className="flex flex-col items-center justify-center p-12 text-destructive" role="alert">
+              <AlertCircle className="w-10 h-10 mb-4" aria-hidden="true" />
               <p className="font-medium">Failed to load performance data.</p>
             </div>
           ) : (
