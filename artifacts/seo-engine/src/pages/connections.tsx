@@ -122,14 +122,14 @@ export default function ConnectionsPage() {
         </div>
 
         {successMessage && (
-          <div className="mb-6 p-4 bg-[#e7f8ef] border border-[#bfead2] text-[#14764a] rounded-md text-sm font-medium flex items-center gap-2">
+          <div className="mb-6 p-4 bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-[var(--status-success-fg)] rounded-md text-sm font-medium flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" />
             {successMessage}
           </div>
         )}
 
         {errorMessage && (
-          <div className="mb-6 p-4 bg-[#fff3dc] border border-[#f1d49b] text-[#8d5c0d] rounded-md text-sm font-medium flex items-center gap-2">
+          <div className="mb-6 p-4 bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-[var(--status-danger-fg)] rounded-md text-sm font-medium flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
             {errorMessage}
           </div>
@@ -164,7 +164,7 @@ export default function ConnectionsPage() {
                 <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
                   <p className="text-xs font-semibold text-[#455168] mb-2">Task #53 isolated write credential</p>
                   {task53WriteConnected ? (
-                    <div className="text-xs text-[#14764a] flex items-start gap-2">
+                    <div className="text-xs text-[var(--status-success-fg)] flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
                       <span>write_products is connected for the bounded production pilot. This credential does not enable public-site writes by itself.</span>
                     </div>
@@ -180,7 +180,7 @@ export default function ConnectionsPage() {
                       </button>
                     </form>
                   ) : (
-                    <p className="text-xs text-[#8d5c0d]">
+                    <p className="text-xs text-[var(--status-warning-fg)]">
                       Task #53 write-scope authorization is unavailable unless the approved Diamond Shelf store is connected in read-only mode.
                     </p>
                   )}
@@ -204,7 +204,7 @@ export default function ConnectionsPage() {
                     Connect
                   </button>
                 </form>
-                {oauthDisabled && <p className="text-xs text-[#8d5c0d] mt-2">Connecting disabled in current autonomy mode.</p>}
+                {oauthDisabled && <p className="text-xs text-[var(--status-warning-fg)] mt-2">Connecting disabled in current autonomy mode.</p>}
               </div>
             )}
           </section>
@@ -263,8 +263,8 @@ export default function ConnectionsPage() {
               </div>
             ) : status?.google.authorized ? (
               <div className="space-y-4">
-                <div className="bg-[#fff8e8] p-4 rounded-md border border-[#f1d49b]">
-                  <p className="font-bold text-[#8d5c0d]">Authorization needs attention</p>
+                <div className="bg-[var(--status-warning-bg)] p-4 rounded-md border border-[var(--status-warning-border)]">
+                  <p className="font-bold text-[var(--status-warning-fg)]">Authorization needs attention</p>
                   <dl className="mt-3 space-y-2 text-xs text-[#455168]">
                     <div className="flex justify-between gap-4">
                       <dt>Refresh access</dt>
@@ -304,7 +304,7 @@ export default function ConnectionsPage() {
                     Authorize Google
                   </a>
                 )}
-                {oauthDisabled && <p className="text-xs text-[#8d5c0d] mt-2 text-center">Connecting disabled in current autonomy mode.</p>}
+                {oauthDisabled && <p className="text-xs text-[var(--status-warning-fg)] mt-2 text-center">Connecting disabled in current autonomy mode.</p>}
               </div>
             )}
           </section>
