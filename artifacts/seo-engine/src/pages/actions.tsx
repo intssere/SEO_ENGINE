@@ -24,7 +24,8 @@ import {
 } from "lucide-react";
 import { OperationalTable, PageHeader } from "../components/operational-table";
 import { proposalColumns } from "../components/proposal-table";
-import { Badge } from "../components/layout";
+import { StatusBadge } from "../components/status-badge";
+import { lifecycleTone } from "@/lib/status-grammar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -300,9 +301,9 @@ export default function ActionsPage() {
                 When the global public-write gate is off, this surface supports bounded proposal approval and Task #51 internal authorization. When the global gate is on, it only exposes a stale existing executable action whose short-lived envelope must be renewed. Renewal performs a read-only Shopify state check and never runs Task #53 preflight/execute or a Shopify mutation.
               </p>
             </div>
-            <Badge tone="approval">
+            <StatusBadge tone="warning">
               <ShieldCheck className="w-3 h-3 mr-1 inline" /> EXPLICIT GATE
-            </Badge>
+            </StatusBadge>
           </div>
 
           {lastRenewedPlanId && (
@@ -346,10 +347,10 @@ export default function ActionsPage() {
                     <div className="approvalCardHead">
                       <div>
                         <div className="approvalBadges">
-                          <Badge tone="verified">QUALITY PASS · {row.quality_score}/100</Badge>
-                          <Badge tone={canAuthorize || canRenewExecutableAction ? "verified" : "approval"}>
+                          <StatusBadge tone="success">QUALITY PASS · {row.quality_score}/100</StatusBadge>
+                          <StatusBadge tone={canRenewExecutableAction ? "warning" : lifecycleTone(row.lifecycle)}>
                             {canRenewExecutableAction ? "Expired Executable Action" : titleize(row.lifecycle)}
-                          </Badge>
+                          </StatusBadge>
                         </div>
                         <h2>{row.title}</h2>
                         <p className="approvalPath">{row.path || row.url || "No persisted page path"}</p>
@@ -445,7 +446,7 @@ export default function ActionsPage() {
               <h2>Action planner</h2>
               <p className="muted">Before/after values, supporting evidence, expected benefit, and deterministic reversion instructions are shown for every proposal.</p>
             </div>
-            <Badge tone="verified"><ShieldCheck className="w-3 h-3 mr-1 inline" /> READ-ONLY LIST</Badge>
+            <StatusBadge tone="info"><ShieldCheck className="w-3 h-3 mr-1 inline" /> READ-ONLY LIST</StatusBadge>
           </div>
           {isLoading ? (
             <div className="flex flex-col items-center justify-center p-12 text-[#77839a]">
