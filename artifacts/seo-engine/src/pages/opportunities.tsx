@@ -3,6 +3,7 @@ import { Loader2, AlertCircle, ShieldCheck, History } from "lucide-react";
 import { OperationalTable, PageHeader } from "../components/operational-table";
 import { StatusBadge } from "../components/status-badge";
 import { riskTone } from "@/lib/status-grammar";
+import { OpportunityEvidenceDrawer } from "../components/evidence-drawer";
 
 const label = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 const activeColumns = [
@@ -34,6 +35,10 @@ const activeColumns = [
       <div className="opportunityEvidence">
         <strong>{value} traceable refs</strong>
         <span>{row.why_qualifies}</span>
+        <OpportunityEvidenceDrawer
+          opportunity={row}
+          triggerLabel="Inspect evidence summary"
+        />
       </div>
     ),
   },
