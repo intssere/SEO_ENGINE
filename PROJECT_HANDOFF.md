@@ -13,7 +13,19 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Task #56 — Risk Semantics Alignment & Effective-Risk Diagnostics v1 is fully merged, published, production-certified, and closed.**
+**Current checkpoint:** P3.6 Production migration/DDL is complete and certified.
+
+- P3.6 issue #188 / PR #192 / merge `e3295531fd3cb50ac8d2801ccc0a9fe996d0c8bc`.
+- Production has **34 public base tables**, including `seo_observation`, `seo_evidence`, and `seo_observation_evidence`.
+- Those three P3.6 tables were independently verified empty immediately after migration; catalog verification reported zero mismatches.
+- Application observation/evidence persistence and Production reads remain disabled.
+- P3.6 directly migrated the identity-gated Production database and did **not** republish the application.
+- Default next safe engineering boundary: **P4.1 — Information Architecture / Navigation v2**.
+- Live first-party provider activation remains a separately authorized alternative path; no provider request, public-site mutation, scheduler/worker activation, persistence execution, publication, or further Production DDL is implied by this checkpoint.
+
+The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
+
+**Task #56 — Risk Semantics Alignment & Effective-Risk Diagnostics v1 was fully merged, published, production-certified, and closed.**
 
 ### Task #56 application history
 
@@ -215,12 +227,18 @@ Never expose allowlisted identities, secrets, token hashes, session hashes, CSRF
 
 ## 4. Database state and Replit publication lesson
 
-Current intended/certified public schema:
+`CURRENT_STATE.md` owns the authoritative mutable database checkpoint. Re-verify database shape before any publication or DDL rather than treating historical counts in this handoff as permanent invariants.
 
-- Development: **31 base tables**
-- Production: **31 base tables**
+Current certified Production checkpoint after P3.6:
 
-Task #55 auth tables:
+- Production: **34 public base tables**
+- P3.6 tables: `seo_observation`, `seo_evidence`, `seo_observation_evidence`
+- all three P3.6 tables were independently verified empty immediately after migration
+- catalog verification reported zero mismatches
+- application observation/evidence persistence and Production reads remain disabled
+- P3.6 directly migrated the existing identity-gated Production database; it did not republish the application
+
+Task #55 auth tables remain part of the required protected schema:
 
 - `auth_sessions`
 - `auth_audit_events`
@@ -234,11 +252,11 @@ Required auth indexes:
 - `auth_audit_events_subject_idx`
 - `auth_audit_events_type_idx`
 
-A prior Replit publish once synchronized a 29-table development schema onto a correct 31-table production schema and removed production auth tables. Recovery applied the approved auth migration to both environments and restored 31/31.
+Historical incident context: a prior Replit publish once synchronized a 29-table development schema onto a correct 31-table production schema and removed production auth tables. Recovery applied the approved auth migration to both environments and restored 31/31 at that time. That 31/31 recovery is **historical**, not the current mutable Production schema checkpoint.
 
-**Permanent rule:** never publish while development and production schema shapes diverge. If Replit proposes dropping required production objects, cancel publication and align development safely first. Production DDL always requires explicit authorization.
+**Permanent rule:** never publish while development and Production schema shapes diverge in a way that would drop or rewrite required Production objects. If Replit proposes destructive schema synchronization, cancel publication and align development safely first. Production DDL always requires separate explicit authorization.
 
-Historical recovery fingerprints are context, not permanent invariants.
+Historical recovery fingerprints and historical table counts are context, not permanent invariants.
 
 ---
 
@@ -248,6 +266,7 @@ Unless exact bounded authorization says otherwise:
 
 - `PUBLIC_SITE_WRITES_ENABLED=false`
 - `AI_PROPOSAL_GENERATION_ENABLED=false`
+- application observation/evidence persistence and Production reads remain disabled
 - ordinary Shopify and Google operational connections remain read-only
 - isolated Task #53/#54 Shopify write credential may remain connected but is not permission to execute
 - no autonomous public-site/provider mutation worker
@@ -432,60 +451,41 @@ It does **not** authorize:
 
 ---
 
-## 12. Current project stage after Task #56
+## 12. Current project stage after P3.6
 
-The project is now at the **next-milestone selection / controlled persistent execution + measurement stage**.
+P3.6 is complete. The default next safe engineering boundary is **P4.1 — Information Architecture / Navigation v2**.
 
-Completed/proven foundations include:
+Completed/proven foundations now also include:
 
-- evidence ingestion and operational persistence foundations
-- opportunity/proposal workflow
-- dry-run planning/quality gates
-- Task #51 controlled internal authorization
-- Task #52 bounded connector/verify/rollback mechanics
-- Task #53 reversible production pilot
-- Task #54 persistent single-action execution foundation
-- Task #55 production authentication/RBAC
-- Task #56 risk-semantics alignment, now production-certified
+- P2.7 URL Explorer API/query model
+- P2.8 technical issue taxonomy/evidence expansion
+- P3.1–P3.5 durable observation/evidence model engineering
+- P3.6 explicitly authorized Production migration/DDL
+- Production checkpoint of 34 public base tables including `seo_observation`, `seo_evidence`, and `seo_observation_evidence`
+- all three P3.6 tables empty immediately after migration, with zero catalog mismatches
+- application observation/evidence persistence and Production reads still disabled
 
-Still ahead:
+The historical Task #51–#56 execution/auth foundations remain in force, but they do not authorize a new live action by themselves.
 
-- first persistent Task #54 live SEO change
-- post-change measurement/attribution loop
-- retain/replace/rollback decisioning
-- broader competitor evidence ingestion
-- SERP gap analysis
-- taxonomy/category comparison
-- content/entity/schema gap analysis
-- internal-link intelligence
-- backlink/citation evidence
-- AI/GEO visibility/citation monitoring
-- agentic-search optimization signals
-- controlled experiments and cooldown windows
-- autonomous prioritization
-- eventually recurring execution only after action-specific authorization, stale-state, verification, rollback, audit, and measurement controls are proven
+Still ahead includes P4 product-experience work, live first-party provider activation, external intelligence, opportunity/recommendation integration, measurement/learning, and later governed automation.
 
-Do not jump directly to unrestricted autonomous provider mutation.
+Do not jump directly to unrestricted autonomous provider mutation, provider reads, persistence execution, or further Production DDL.
 
 ---
 
 ## 13. Safe next-step choices
 
-After this Task #56 documentation closeout is merged and CI is green, the next work should be selected deliberately.
+### Default safe engineering path — P4.1
 
-### Option A — first persistent Task #54 pilot
+Proceed with **P4.1 — Information Architecture / Navigation v2** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. This path must not activate provider requests, observation/evidence persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
 
-Use the Unisex Fragrance candidate only through the exact multi-stage authorization sequence in section 8. A generic `continue` is insufficient.
+### Separately authorized live-provider path
 
-### Option B — non-mutating next engineering module
+P1 live first-party provider activation remains an alternative only when the user gives explicit bounded authorization for the exact provider/client/secret/consent/property/read step.
 
-Continue building the automation/measurement architecture without provider writes. Strong candidates include:
+### Existing Task #53/#54 mutation paths
 
-- measurement/attribution foundation for persistent SEO actions
-- competitor evidence ingestion
-- SERP/taxonomy/content/entity/schema gap intelligence
-- internal-link/backlink/citation intelligence
-- GEO/AIO visibility monitoring
+Any Task #53 live pilot or Task #54 preflight/apply remains separately gated. A generic `continue` is insufficient.
 
 Any engineering module still follows the normal branch/PR/CI/Replit validation/release workflow.
 
@@ -499,11 +499,11 @@ A new agent should begin by independently verifying:
 2. `CURRENT_STATE.md` current checkpoint
 3. Task #56 remains production-certified; do not re-publish it merely because this handoff mentions its historical release source
 4. Replit branch/HEAD/tree/ahead-behind/working tree against current GitHub main
-5. development and production schemas remain 31/31 with Task #55 auth tables/indexes
+5. Production retains the certified P3.6 **34-public-base-table** checkpoint, including `seo_observation`, `seo_evidence`, and `seo_observation_evidence`; re-verify Development separately before any publication, and confirm Task #55 auth tables/indexes remain intact
 6. auth remains enabled/configured
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary
+10. current selected milestone and its exact authorization boundary; after this #196 closeout, the default safe engineering milestone is P4.1 unless a different path is explicitly authorized
 
-If no new milestone has been explicitly selected, remain in read-only planning/engineering analysis rather than inferring provider-write authorization.
+Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
