@@ -13,23 +13,24 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P5.3 provider-neutral keyword metrics + DataForSEO Keyword Overview adapter foundation is complete and certified.
+**Current checkpoint:** P5.4 provider-neutral trends + DataForSEO Google Trends Explore Standard adapter foundation is complete and certified.
 
-- P5.3 issue #224 / PR #225.
-- Exact tested implementation head: `5b6698085806ae0c7cd8426c5c1815db0fa7884f`.
-- PR CI run `35369123343` / CI #421: success.
-- Implementation merge: `2c8dc3c8d46fbe0563a8083548b6b2bbf87e1e76`.
-- Merge tree: `e7bcd45b306eca161f50e2f5d0292f4a5b1b17bf`.
-- Post-merge push CI run `35369360893` / CI #422: success.
+- P5.4 issue #227 / PR #228.
+- Exact tested implementation head: `f291b15a060c6dc784ad485ea72d3baf18a6c991`.
+- PR CI run `35373732089` / CI #425: success.
+- Implementation merge: `1680969b64f767552262494f1586fac26b77475b`.
+- Merge tree: `32d5bc8a19ff7ccefde8cf7f32c113e1a347b6ac`.
+- Post-merge push CI run `35373952663` / CI #426: success.
 - Replit exact-synced to the implementation merge/tree, `0/0`, clean, zero untracked, with recursive workspace tests, full typecheck, full build and `git diff --check` passing.
-- Provider-neutral keyword semantics now distinguish search volume, organic difficulty, CPC and paid competition, preserve null vs zero, forbid false cross-provider KD equivalence, and forbid implicit FX/CPC fabrication.
-- Keyword metric opportunity v1 is cohort-relative only: minimum 10 eligible unique keywords, exact homogeneous measurement basis, deterministic mid-rank percentiles, weights 45% demand / 35% attainability / 20% commercial, with confidence kept separate.
-- DataForSEO Keyword Overview is represented only as inert provider-contract metadata plus supplied-result normalization; its provider Live endpoint is not executable from P5.3.
-- Internal request bounds are <=50 keywords, <=80 characters / <=10 words each, exact location/language, Google/all-device scope, clickstream off and SERP expansion off.
-- Provider-omitted requested keywords remain explicit missing-data projections, never zero.
-- Rich per-keyword normalized projections remain outside the bounded Task #68 aggregate observation so Task #68 is not falsely given a per-keyword stream dimension.
-- P5.3 remains unpublished and performed no provider enrollment, credentials, provider/API request, Task #67 source admission, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, provider/public-site write, config/secret change or publication.
-- Default next safe engineering boundary: **P5.4 — trends/source adapter(s)**, default-off/network-free using deterministic supplied fixtures only.
+- Explore-style trend values are modeled as exact request-frame-relative `0..100` evidence; they are not absolute search volume and are not comparable across changed term/date/location/language/property/category/method frames.
+- Relative index `0` is retained as insufficient-data evidence, distinct from explicit missing graph points.
+- Per-keyword descriptive summaries include latest/mean/peak relative index, early/recent means, signed velocity, positive momentum, volatility, coverage and direction; they remain descriptive and do not predict traffic or demand.
+- DataForSEO Google Trends Explore is represented only as a Standard task contract plus supplied-result normalization; POST/GET paths are inert metadata and no provider transport exists.
+- Internal request bounds are 1–5 keywords, <=80 characters / <=10 words each, exact location/language, Google/all-device scope, web property, provider category code 0 and explicit 30–366-day date frame.
+- Live execution, callbacks/pingbacks/postbacks, polling, related topics/queries/map expansion and official Google Trends alpha enrollment are all excluded.
+- Rich frame-bound trend projections remain outside the bounded Task #68 aggregate observation so Task #68 is not falsely given a per-keyword stream dimension.
+- P5.4 remains unpublished and performed no provider enrollment, credentials, provider/API request, official Google Trends alpha access, Task #67 source admission, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, provider/public-site write, config/secret change or publication.
+- Default next safe engineering boundary: **P5.5 — backlink authority/link-gap adapter(s)**, default-off/network-free using deterministic supplied fixtures only.
 - Real external-provider enrollment/credentials/requests remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
@@ -526,6 +527,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P5.2 closeout, the default safe engineering milestone is P5.3 network-free keyword-adapter engineering; optional P4.9 remains deliberately selectable and all live first-party/external-provider work still requires explicit bounded authorization
+10. current selected milestone and its exact authorization boundary; after the P5.4 closeout, the default safe engineering milestone is P5.5 network-free backlink authority/link-gap adapter engineering; optional P4.9 remains deliberately selectable and all live first-party/external-provider work still requires explicit bounded authorization
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
