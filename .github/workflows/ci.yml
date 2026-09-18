@@ -81,6 +81,8 @@ jobs:
         run: pnpm --filter @workspace/seo-engine exec playwright install --with-deps chromium
 
       - name: Test P4.10 browser critical paths
+        env:
+          P4_10_CAPTURE_VISUAL: "1"
         run: pnpm --filter @workspace/seo-engine test:e2e
 
       - name: Upload Playwright failure artifacts
