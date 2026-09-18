@@ -144,7 +144,7 @@ export function DataGrid<T>({
           ? "0 rows"
           : `${model.rangeStart}–${model.rangeEnd} of ${model.filteredRows}`}
       </span>
-      <div className="dataGridPagination" aria-label="Table pagination">
+      <div className="dataGridPagination" role="group" aria-label="Table pagination">
         <button
           type="button"
           onClick={() => setPage(Math.max(1, model.page - 1))}
@@ -173,7 +173,12 @@ export function DataGrid<T>({
       meta={resultMeta}
       footer={footer}
     >
-      <div className="tableWrap dataGridWrap">
+      <div
+        className="tableWrap dataGridWrap"
+        role="region"
+        tabIndex={0}
+        aria-label={`${label} table. Scroll horizontally for additional columns.`}
+      >
         <table aria-label={label}>
           <thead>
             <tr>
