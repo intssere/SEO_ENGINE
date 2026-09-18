@@ -415,8 +415,8 @@ P3.6 Production checkpoint:
 | P5.4 | trends/source adapter(s) | DONE — issue #227 / PR #228 / merge `1680969b64f767552262494f1586fac26b77475b` |
 | P5.5 | backlink authority/link-gap adapter(s) | DONE — issue #231 / PR #232 / merge `605cf9133da8a26ddf9989cab005ec91161c033f` |
 | P5.6 | competitor visibility/page/topic-gap operational pipeline | DONE — issue #234 / PR #235 / merge `e0cf3758be1dff24f443a0a42fa19d2a4110b82b` |
-| P5.7 | category/market competitor intelligence UI | NEXT SAFE DEFAULT — read-only/default-off UI over deterministic P5.6 report fixtures; no live provider execution |
-| P5.8 | source quality/cost/rate-limit telemetry | PLANNED |
+| P5.7 | category/market competitor intelligence UI | DONE — issue #237 / PR #238 / merge `64947e7662af1fadb389d9dd94f98a2e803d8911` |
+| P5.8 | source quality/cost/rate-limit telemetry | NEXT SAFE DEFAULT — default-off/network-free telemetry over deterministic supplied/provider-metadata fixtures; no live provider execution |
 
 ### Phase P6 — Opportunity and recommendation engine
 
@@ -576,14 +576,16 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 25. **DONE — P5.3:** provider-neutral keyword measurement semantics + DataForSEO Keyword Overview supplied-result adapter, issue #224 / PR #225 / merge `2c8dc3c8d46fbe0563a8083548b6b2bbf87e1e76`; no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
 26. **DONE — P5.4:** provider-neutral request-frame trend semantics + DataForSEO Google Trends Explore Standard supplied-result adapter, issue #227 / PR #228 / merge `1680969b64f767552262494f1586fac26b77475b`; no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
 27. **DONE — P5.5:** deterministic provider-neutral backlink authority/link-gap supplied-fixture adapter, issue #231 / PR #232 / merge `605cf9133da8a26ddf9989cab005ec91161c033f`; dedicated backlink signal, canonical domain/URL/time/authority/anchor/freshness/gap semantics, no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
-28. **NEXT SAFE DEFAULT — P5.6:** competitor visibility/page/topic-gap operational pipeline, default-off and network-free over deterministic supplied artifacts plus Tasks #58–#70 and P5.2–P5.5.
-29. **P6 —** unified opportunity/prioritization/explanation engine.
-30. **P7 —** AI/GEO visibility.
-31. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-32. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-33. **P10 —** impact attribution, experimentation and learning loop.
-34. **P11 —** enterprise hardening and certification.
-35. **P12 —** final production completion certification and program closeout.
+28. **DONE — P5.6:** deterministic competitor visibility/page/topic-gap operational pipeline, issue #234 / PR #235 / merge `e0cf3758be1dff24f443a0a42fa19d2a4110b82b`; descriptive supplied-artifact composition only, no live provider/runtime/persistence/publication activation.
+29. **DONE — P5.7:** read-only/default-off category/market competitor intelligence UI, issue #237 / PR #238 / merge `64947e7662af1fadb389d9dd94f98a2e803d8911`; deterministic synthetic P5.6-shaped frontend fixture, DataGrid workbenches, responsive/accessibility/browser certification, no runtime API/provider/database/publication binding.
+30. **NEXT SAFE DEFAULT — P5.8:** source quality/cost/rate-limit telemetry, default-off and network-free over deterministic supplied/provider-metadata fixtures.
+31. **P6 —** unified opportunity/prioritization/explanation engine.
+32. **P7 —** AI/GEO visibility.
+33. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+34. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+35. **P10 —** impact attribution, experimentation and learning loop.
+36. **P11 —** enterprise hardening and certification.
+37. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
