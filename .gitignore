@@ -47,3 +47,7 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# browser test artifacts
+artifacts/seo-engine/playwright-report/
+artifacts/seo-engine/test-results/
