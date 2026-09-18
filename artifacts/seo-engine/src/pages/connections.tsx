@@ -122,15 +122,15 @@ export default function ConnectionsPage() {
         </div>
 
         {successMessage && (
-          <div className="mb-6 p-4 bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-[var(--status-success-fg)] rounded-md text-sm font-medium flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
+          <div role="status" aria-live="polite" className="mb-6 p-4 bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-[var(--status-success-fg)] rounded-md text-sm font-medium flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
             {successMessage}
           </div>
         )}
 
         {errorMessage && (
-          <div className="mb-6 p-4 bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-[var(--status-danger-fg)] rounded-md text-sm font-medium flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" />
+          <div role="alert" className="mb-6 p-4 bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-[var(--status-danger-fg)] rounded-md text-sm font-medium flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" aria-hidden="true" />
             {errorMessage}
           </div>
         )}
@@ -142,7 +142,7 @@ export default function ConnectionsPage() {
                 <div className="w-10 h-10 bg-[#95bf47] rounded-md flex items-center justify-center text-white font-bold text-xl">S</div>
                 <div>
                   <h3 className="font-bold text-[#172033]">Shopify</h3>
-                  <p className="text-xs text-[#77839a]">Storefront & Products</p>
+                  <p className="text-xs text-[#647087]">Storefront & Products</p>
                 </div>
               </div>
               <StatusBadge tone={connectionTone(status?.shopify.connected === true)}>
@@ -151,15 +151,16 @@ export default function ConnectionsPage() {
             </div>
 
             {loading ? (
-              <div className="flex justify-center p-6 text-[#77839a]">
-                <Loader2 className="w-5 h-5 animate-spin text-[#3c82f6]" />
+              <div className="flex justify-center p-6 text-[#647087]" role="status" aria-live="polite">
+                <Loader2 className="w-5 h-5 animate-spin text-[#3c82f6]" aria-hidden="true" />
+                <span className="sr-only">Loading Shopify connection status</span>
               </div>
             ) : status?.shopify.connected ? (
               <div className="bg-[#f8fafc] p-4 rounded-md border border-[#e5e9f0]">
                 <p className="text-sm text-[#455168] mb-1">Authenticated store:</p>
                 <p className="font-bold text-[#172033]">{status.shopify.domain}</p>
                 <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
-                  <p className="text-xs text-[#77839a]">Read-only access granted. Engine cannot modify your live theme without explicit deployment.</p>
+                  <p className="text-xs text-[#647087]">Read-only access granted. Engine cannot modify your live theme without explicit deployment.</p>
                 </div>
                 <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
                   <p className="text-xs font-semibold text-[#455168] mb-2">Task #53 isolated write credential</p>
@@ -172,7 +173,7 @@ export default function ConnectionsPage() {
                     <form action="/api/connections/shopify/task53-write/start" method="POST" className="space-y-3">
                       <input type="hidden" name="shop" value="vcuxm7-76.myshopify.com" />
                       <input type="hidden" name="confirmation" value="AUTHORIZE_SHOPIFY_WRITE_SCOPE:write_products" />
-                      <p className="text-xs text-[#77839a]">
+                      <p className="text-xs text-[#647087]">
                         This requests only the isolated <b>write_products</b> credential. It does not authorize Task #53 execute, a Shopify mutation, or a public-site write.
                       </p>
                       <button type="submit" className="w-full bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]">
@@ -190,7 +191,9 @@ export default function ConnectionsPage() {
               <div>
                 <p className="text-sm text-[#455168] mb-4">Enter your `.myshopify.com` domain to begin authorization.</p>
                 <form action="/api/connections/shopify/start" method="GET" className="flex gap-2">
+                  <label htmlFor="shopify-domain" className="sr-only">Shopify store domain</label>
                   <input
+                    id="shopify-domain"
                     type="text"
                     name="shop"
                     placeholder="e.g. my-store.myshopify.com"
@@ -215,7 +218,7 @@ export default function ConnectionsPage() {
                 <div className="w-10 h-10 bg-[#ea4335] rounded-md flex items-center justify-center text-white font-bold text-xl">G</div>
                 <div>
                   <h3 className="font-bold text-[#172033]">Google Search Console</h3>
-                  <p className="text-xs text-[#77839a]">Search Performance Data</p>
+                  <p className="text-xs text-[#647087]">Search Performance Data</p>
                 </div>
               </div>
               <StatusBadge tone={connectionTone(status?.google.connected === true, status?.google.authorized === true)}>
@@ -224,8 +227,9 @@ export default function ConnectionsPage() {
             </div>
 
             {loading ? (
-              <div className="flex justify-center p-6 text-[#77839a]">
-                <Loader2 className="w-5 h-5 animate-spin text-[#3c82f6]" />
+              <div className="flex justify-center p-6 text-[#647087]" role="status" aria-live="polite">
+                <Loader2 className="w-5 h-5 animate-spin text-[#3c82f6]" aria-hidden="true" />
+                <span className="sr-only">Loading Google connection status</span>
               </div>
             ) : status?.google.needsConfirmation ? (
               <form action="/api/connections/google/select" method="POST" className="space-y-4">
@@ -258,7 +262,7 @@ export default function ConnectionsPage() {
               <div className="bg-[#f8fafc] p-4 rounded-md border border-[#e5e9f0]">
                 <p className="font-bold text-[#172033]">Google authorization stored securely</p>
                 <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
-                  <p className="text-xs text-[#77839a]">Read-only access granted. Engine relies on this for impact verification.</p>
+                  <p className="text-xs text-[#647087]">Read-only access granted. Engine relies on this for impact verification.</p>
                 </div>
               </div>
             ) : status?.google.authorized ? (
