@@ -220,8 +220,8 @@ export function DataGrid<T>({
           </thead>
           <tbody>
             {model.rows.length > 0 ? (
-              model.rows.map((row) => {
-                const sourceIndex = data.indexOf(row);
+              model.rows.map((row, pageIndex) => {
+                const sourceIndex = model.sourceIndexes[pageIndex];
                 return (
                   <tr key={getRowId(row, sourceIndex)}>
                     {columns.map((column) => {
