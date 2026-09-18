@@ -131,7 +131,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="content commandCenter">
+      <div className="content commandCenter">
         <div className="commandCenterHero">
           <div>
             <p className="eyebrow">COMMAND CENTER</p>
@@ -489,7 +489,7 @@ export default function DashboardPage() {
             </div>
           </article>
         </section>
-      </main>
+      </div>
     </>
   );
 }
