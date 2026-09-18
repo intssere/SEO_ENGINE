@@ -581,12 +581,12 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 30. **DONE — P5.8:** deterministic source quality/cost/rate-limit telemetry, issue #240 / PR #241 / merge `56b2f8e9dd4e6cc4934c2ab55c549ea6284d59d3`; supplied telemetry + P5.1 metadata only, no live provider/runtime/persistence/publication activation.
 31. **NEXT SAFE DEFAULT — P6.1:** unified opportunity types across technical/content/query/competitor/link/AI, deterministic/default-off engineering over existing evidence families.
 32. **P6 —** unified opportunity/prioritization/explanation engine.
-32. **P7 —** AI/GEO visibility.
-33. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-34. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-35. **P10 —** impact attribution, experimentation and learning loop.
-36. **P11 —** enterprise hardening and certification.
-37. **P12 —** final production completion certification and program closeout.
+33. **P7 —** AI/GEO visibility.
+34. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+35. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+36. **P10 —** impact attribution, experimentation and learning loop.
+37. **P11 —** enterprise hardening and certification.
+38. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
