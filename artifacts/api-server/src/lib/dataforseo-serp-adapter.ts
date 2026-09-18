@@ -533,7 +533,7 @@ export function normalizeSuppliedDataForSeoSerpResult(input: {
   for (const supplied of suppliedItems) {
     const organic = normalizeOrganicItem(supplied);
     if (!organic) continue;
-    if (organic.rankAbsolute > input.contract.depth) throw new Error("organic_rank_exceeds_requested_depth");
+    if (organic.rankGroup > input.contract.depth) throw new Error("organic_group_rank_exceeds_requested_depth");
     const existing = byAbsoluteRank.get(organic.rankAbsolute);
     if (existing) {
       if (JSON.stringify(existing) !== JSON.stringify(organic)) throw new Error("conflicting_organic_absolute_rank");
