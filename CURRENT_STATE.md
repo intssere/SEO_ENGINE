@@ -13,9 +13,45 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.3 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.3 are external-intelligence research/adapter engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.4 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.4 are external-intelligence research/adapter engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P5.3 complete
+## Current engineering state — P5.4 complete
+
+Roadmap **P5.4 — trends/source adapter(s)** is complete under issue #227 / PR #228.
+
+P5.4 adds provider-neutral request-frame trend semantics plus a deterministic DataForSEO Google Trends Explore Standard-task supplied-result adapter without activating any provider/runtime capability:
+- Explore-style trend values are modeled as `relative_0_100_request_frame`, not absolute search volume;
+- exact frame identity binds provider method/source/market/category/keywords/location/language/property/provider-category/date range/scale;
+- cross-frame comparability is explicitly false;
+- relative index `0` remains explicit insufficient-data evidence rather than literal zero search demand;
+- explicit missing graph points remain distinct from zero and are excluded from usable-point calculations;
+- per-keyword summaries include usable/missing/zero-insufficient counts, latest/mean/peak relative index, early/recent means, signed velocity, positive momentum, volatility, coverage and rising/falling/flat/unavailable direction;
+- signed-velocity direction threshold is ±0.05 and derived values remain descriptive rather than forecast/absolute-demand claims;
+- DataForSEO Standard task POST/GET paths are inert metadata only;
+- request contract is internally bounded to 1–5 keywords, <=80 chars / <=10 words each, exact location/language, Google/all-device scope, web property, provider category code 0 and explicit 30–366-day frame;
+- only the Google Trends graph item is modeled; Live execution, callbacks/pingbacks/postbacks, polling, related topics/queries and map expansion are excluded;
+- supplied completed-result normalization produces a rich frame-bound projection plus bounded Task #68 aggregate metrics with no fabricated per-keyword Task #68 stream;
+- official Google Trends API alpha remains a separate future source/method and its consistently-scaled model is not treated as equivalent to Explore-style 0–100 data.
+
+Certification:
+- base SHA/tree: `27ca612842e87ae0f34b9825783b2ecf030c6b1b` / `0456bea8ba09acbc5c05b617f3a6408c42181487`;
+- exact tested PR head: `f291b15a060c6dc784ad485ea72d3baf18a6c991`;
+- PR CI run `35373732089` / CI #425: success across schema/task/workspace tests, Playwright Chromium + P4.10 browser suite, typecheck and build;
+- implementation merge: `1680969b64f767552262494f1586fac26b77475b`;
+- merge tree: `32d5bc8a19ff7ccefde8cf7f32c113e1a347b6ac`;
+- post-merge push CI run `35373952663` / CI #426: success across the same full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed.
+
+P5.4 is **unpublished**. It did not authorize or perform DataForSEO signup/enrollment/purchase, credential creation/use, provider requests, official Google Trends alpha access, Task #67 source admission, Task #70 execution, observation/evidence persistence, Production DB reads/DDL/DML, scheduler/worker activation, provider/public-site writes, secret/config changes or publication.
+
+Detailed record:
+- `.agents/memory/p5-4-trends-adapter-closeout.md`
+- `docs/p5-4-provider-neutral-trends-dataforseo-adapter.md`
+
+Default next safe milestone: **P5.5 — backlink authority/link-gap adapter(s)**, default-off/network-free engineering using deterministic supplied fixtures only. Live provider enrollment/credentials/requests remain separately unauthorized.
+
+## Previous engineering state — P5.3 complete
 
 Roadmap **P5.3 — keyword volume/difficulty/opportunity adapter(s)** is complete under issue #224 / PR #225.
 
@@ -48,7 +84,7 @@ Detailed record:
 - `.agents/memory/p5-3-keyword-metrics-adapter-closeout.md`
 - `docs/p5-3-keyword-metrics-dataforseo-adapter.md`
 
-Default next safe milestone: **P5.4 — trends/source adapter(s)**, default-off/network-free engineering using deterministic supplied fixtures only. Live provider enrollment/credentials/requests remain separately unauthorized.
+At the P5.3 checkpoint, the default next safe milestone was **P5.4 — trends/source adapter(s)**; that milestone is now complete as recorded above. Live provider enrollment/credentials/requests remain separately unauthorized.
 
 ## Previous engineering state — P5.2 complete
 
