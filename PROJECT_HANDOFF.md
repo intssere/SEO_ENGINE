@@ -13,23 +13,22 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P5.7 category/market competitor intelligence UI is complete and certified.
+**Current checkpoint:** P5.8 source quality/cost/rate-limit telemetry is complete and certified.
 
-- P5.7 issue #237 / PR #238.
-- Base: `4395d7d52c0956524f547122bdf34ba6081d2824` / tree `372e0afcba07d36a466a47c0a421f22bf5a71eca`.
-- Initial PR head `4d0d292c24575f7f681512d15190945b2da5926a`, CI #441 / run `35393246928`: legacy schema/Task/P3.6/workspace tests and the P5.7 interaction path passed, while the new axe scan caught insufficient scoped secondary-text contrast; no merge occurred.
-- Exact tested implementation head: `78cbe084166936674c1793018bf0bf6cfc6c6259`.
-- PR CI #442 / run `35393447051`: success across schema/task/workspace tests, Playwright/P4.10 including P5.7 search/sort/focus + serious/critical axe, typecheck and build.
-- Implementation merge: `64947e7662af1fadb389d9dd94f98a2e803d8911`.
-- Implementation tree: `229e2152db2128853a70fd3b39e7cfabdab47291`.
-- Post-merge CI #443 / run `35393653860`: success.
+- P5.8 issue #240 / PR #241.
+- Exact tested implementation head: `24a28000e11bf9de67313904652a4fc65b48927b`.
+- PR CI #446 / run `35396675109`: success across legacy schema, Task/P3.6/workspace tests including P5.8, Playwright/P4.10, typecheck and build.
+- Implementation merge: `56b2f8e9dd4e6cc4934c2ab55c549ea6284d59d3`.
+- Implementation tree: `f3d749819741d502e42c4059798109bc05b0b770`.
+- Post-merge CI #447 / run `35396903363`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass.
-- The existing `/search-intelligence` route now renders a deterministic P5.6-shaped synthetic read-only workspace with reviewed-competitor visibility, exact-topic gaps, page structural differences and P5.5 link-gap evidence.
-- P5.7 adds no competitor API endpoint or generated runtime hook and performs no Production/provider/public-site read.
-- The UI explicitly rejects market-share, missing-page-proof, recommendation, outreach-suitability and cross-frame-trend interpretations; P6 retains scoring/prioritization ownership.
-- P5.7 remains unpublished and performed no provider/credential request, Task #67 source admission, target mutation, Task #64/#70 execution, persistence, Production DB activity, scheduler/worker activation, secret/config mutation or publication.
-- Default next safe engineering boundary: **P5.8 — source quality/cost/rate-limit telemetry**, default-off/network-free over deterministic supplied/provider-metadata fixtures.
-- Real provider/public-site reads/writes, runtime source execution, persistence, database activity and publication remain separately unauthorized.
+- P5.8 validates exact Task #67 source identity and emits deterministic per-source/signal quality, supplied-cost, P5.1 provider-metadata and supplied rate-limit telemetry.
+- Numeric cost is never inferred from provider pricing prose; null remains distinct from zero, no FX is performed, and mixed currency/unit aggregation fails closed.
+- Rate-limit states are descriptive only and do not throttle, retry, schedule, execute or reorder Task #67 work.
+- P5.8 changes no route, DB schema, source admission, Task #64/#70 execution path, provider credential/runtime integration or Production deployment.
+- P5.8 remains unpublished and performed no provider/public-site request, persistence, Production DB activity, scheduler/worker activation, config/secret mutation or publication.
+- Default next safe engineering boundary: **P6.1 — unified opportunity types across technical/content/query/competitor/link/AI**, deterministic/default-off engineering only.
+- Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
@@ -525,6 +524,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P5.7 closeout, the default safe engineering milestone is P5.8 default-off/network-free source quality/cost/rate-limit telemetry engineering; optional P4.9 remains deliberately selectable and all live first-party/external-provider work still requires explicit bounded authorization
+10. current selected milestone and its exact authorization boundary; after the P5.8 closeout, the default safe engineering milestone is P6.1 deterministic/default-off unified opportunity-type engineering; optional P4.9 remains deliberately selectable and all live first-party/external-provider work still requires explicit bounded authorization
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
