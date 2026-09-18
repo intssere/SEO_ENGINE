@@ -413,8 +413,8 @@ P3.6 Production checkpoint:
 | P5.2 | SERP/ranking adapter(s) | DONE — issue #221 / PR #222 / merge `873aebeae798e61b2c313dfbe5e618c09c6a7f75` |
 | P5.3 | keyword volume/difficulty/opportunity adapter(s) | DONE — issue #224 / PR #225 / merge `2c8dc3c8d46fbe0563a8083548b6b2bbf87e1e76` |
 | P5.4 | trends/source adapter(s) | DONE — issue #227 / PR #228 / merge `1680969b64f767552262494f1586fac26b77475b` |
-| P5.5 | backlink authority/link-gap adapter(s) | NEXT SAFE DEFAULT — network-free/default-off adapter engineering; no live provider execution |
-| P5.6 | competitor visibility/page/topic-gap operational pipeline | builds on Tasks #58–#70 |
+| P5.5 | backlink authority/link-gap adapter(s) | DONE — issue #231 / PR #232 / merge `605cf9133da8a26ddf9989cab005ec91161c033f` |
+| P5.6 | competitor visibility/page/topic-gap operational pipeline | NEXT SAFE DEFAULT — network-free/default-off operational engineering over Tasks #58–#70 + P5.2–P5.5; no live provider execution |
 | P5.7 | category/market competitor intelligence UI | PLANNED |
 | P5.8 | source quality/cost/rate-limit telemetry | PLANNED |
 
@@ -575,14 +575,15 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 24. **DONE — P5.2:** DataForSEO Google Organic SERP/ranking adapter foundation under issue #221 / PR #222; deterministic standard-task contract, bounded supplied-result ranking projection and Task #68 compatibility; no provider enrollment, credentials, network calls, source admission, Task #70 execution, persistence or publication.
 25. **DONE — P5.3:** provider-neutral keyword measurement semantics + DataForSEO Keyword Overview supplied-result adapter, issue #224 / PR #225 / merge `2c8dc3c8d46fbe0563a8083548b6b2bbf87e1e76`; no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
 26. **DONE — P5.4:** provider-neutral request-frame trend semantics + DataForSEO Google Trends Explore Standard supplied-result adapter, issue #227 / PR #228 / merge `1680969b64f767552262494f1586fac26b77475b`; no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
-27. **NEXT SAFE DEFAULT — P5.5:** backlink authority/link-gap adapter engineering, default-off and network-free with deterministic supplied fixtures only; P5.6–P5.8 remain planned.
-28. **P6 —** unified opportunity/prioritization/explanation engine.
-29. **P7 —** AI/GEO visibility.
-30. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-31. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-32. **P10 —** impact attribution, experimentation and learning loop.
-33. **P11 —** enterprise hardening and certification.
-34. **P12 —** final production completion certification and program closeout.
+27. **DONE — P5.5:** deterministic provider-neutral backlink authority/link-gap supplied-fixture adapter, issue #231 / PR #232 / merge `605cf9133da8a26ddf9989cab005ec91161c033f`; dedicated backlink signal, canonical domain/URL/time/authority/anchor/freshness/gap semantics, no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
+28. **NEXT SAFE DEFAULT — P5.6:** competitor visibility/page/topic-gap operational pipeline, default-off and network-free over deterministic supplied artifacts plus Tasks #58–#70 and P5.2–P5.5.
+29. **P6 —** unified opportunity/prioritization/explanation engine.
+30. **P7 —** AI/GEO visibility.
+31. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+32. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+33. **P10 —** impact attribution, experimentation and learning loop.
+34. **P11 —** enterprise hardening and certification.
+35. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
