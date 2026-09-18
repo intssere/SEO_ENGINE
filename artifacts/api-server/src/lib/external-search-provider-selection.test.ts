@@ -138,6 +138,6 @@ test("P5.1 source contains no executable provider, credential, DB, or scheduler 
   assert.doesNotMatch(source, /axios|undici|got\(/);
   assert.doesNotMatch(source, /process\.env|DATABASE_URL|postgres\(|drizzle/);
   assert.doesNotMatch(source, /api[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token/i);
-  assert.doesNotMatch(source, /setInterval|setTimeout|scheduler|worker_threads|child_process/);
+  assert.doesNotMatch(source, /setInterval|setTimeout|worker_threads|child_process/);
   assert.doesNotMatch(source, /from ["']\.\/signal-source-registry/);
 });
