@@ -13,27 +13,19 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P5.5 deterministic backlink authority/link-gap supplied-fixture adapter foundation is complete and certified.
+**Current checkpoint:** P5.6 competitor visibility/page/topic-gap operational pipeline is complete and certified.
 
-- P5.5 issue #231 / PR #232.
-- Initial implementation head `f09db6719d0c9b857dd4ed7d63ceca8dd5d3128d` reached CI #430 / run `35378061427`: all tests/browser checks passed but typecheck rejected one stale test-only `SignalSourceDescriptor.safety` assertion; no merge occurred.
-- Corrected exact tested implementation head: `99c5938aa6dcfa01b01e7bd71e75101b027707a7`.
-- PR CI run `35378394021` / CI #431: success.
-- Implementation merge: `605cf9133da8a26ddf9989cab005ec91161c033f`.
-- Merge tree: `e45536adbe78a7ef7b379c5805e77aeb8bd345f4`.
-- Post-merge push CI run `35378641628` / CI #432: success.
-- Replit exact-synced to the implementation merge/tree, `0/0`, clean, zero untracked, with recursive workspace tests, full typecheck, full build and `git diff --check` passing.
-- A dedicated `backlink` signal now exists in the typed Task #66/Task #67 control plane; no real Production source was admitted.
-- P5.5 uses a contract-only `supplied-backlink-fixture` external/manual-import source and deterministic supplied fixtures only.
-- Domain/URL/timestamp/authority/anchor/freshness/summary-total semantics are canonical and fail closed on contradictions.
-- Null authority remains distinct from explicit zero, and authority is explicitly provider/method/metric/scale-bound with no cross-provider equivalence.
-- Deterministic fixtures cover baseline, null-vs-zero, anchor, freshness/churn and owned + three-competitor link-gap cases.
-- Link-gap classification is descriptive only: owned-exclusive, shared coverage, unlinked observed domain, single/shared/universal competitor gaps. P5.5 does not calculate a proprietary opportunity score.
-- Public DataForSEO Backlinks Summary/Referring Domains/Anchors/Domain Intersection docs were reviewed only as a future mapping reference; no Live/billable provider endpoint was implemented or called.
-- Rich backlink/gap evidence remains outside the bounded Task #68 aggregate stream.
-- P5.5 remains unpublished and performed no provider enrollment, credentials, provider/API request, Task #67 Production source admission, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, Task #53/#54/#64 execution, provider/public-site write, config/secret change or publication.
-- Default next safe engineering boundary: **P5.6 — competitor visibility/page/topic-gap operational pipeline**, default-off/network-free over deterministic supplied artifacts plus Tasks #58–#70 and P5.2–P5.5.
-- Real provider/public-site reads/writes, persistence and execution remain separately unauthorized.
+- P5.6 issue #234 / PR #235.
+- Exact tested implementation head: `ccc101cd95ab3a6bc99fa61b91fa0f00261accee`.
+- PR CI #437 / run `35383388840`: success across schema/task/workspace tests, Playwright/P4.10 browser suite, typecheck and build.
+- Implementation merge: `e0cf3758be1dff24f443a0a42fa19d2a4110b82b`.
+- Implementation tree: `a2095f34919adebfa3839cf3449815fb0fb111af`.
+- Post-merge CI #438 / run `35383645713`: success.
+- Replit exact-synced to the implementation merge/tree, `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass.
+- P5.6 composes only supplied normalized Task #58/Task #66/P5.2/P5.3/P5.4/P5.5 artifacts into descriptive competitor visibility, page semantic-gap, exact-topic-gap and backlink-gap views.
+- It never ranks competitors, claims market share, generates a cross-signal opportunity score, recommends actions, admits sources/targets, executes Task #64/#70, persists evidence, uses providers/databases, or publishes.
+- Default next safe engineering boundary: **P5.7 — category/market competitor intelligence UI**, read-only/default-off over deterministic P5.6 report fixtures.
+- Real provider/public-site reads/writes, persistence/execution, database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
