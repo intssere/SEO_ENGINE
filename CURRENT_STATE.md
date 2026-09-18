@@ -13,44 +13,49 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations and P3.1–P3.5 have **not** been published as application releases. Git-only Replit synchronization does not change the separately attested production source.
+Tasks #74, #75, roadmap P2 engineering foundations and P3.1–P3.6 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; Git synchronization and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P3.5 complete
+## Current engineering state — P3.6 complete
 
-Roadmap **P3.5 — Evidence Quality / Conflict Handling** is engineering-complete, exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified and Git-only synchronized to Replit.
+Roadmap **P3.6 — Production migration/DDL** is complete. The canonical migration was exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified, then executed once against the explicitly authorized Production Neon branch after the P3.6B recovery/identity gate. Independent read-only Production catalog verification found zero mismatches.
 
 Authoritative task:
-- issue #185 — P3.5 Evidence Quality / Conflict Handling
-- implementation PR #186
+- issue #188 — P3.6 Production Migration / DDL
+- implementation PR #192
 
 Certification lineage:
-- P3.5 baseline main: `6b9b0d4e272c0f8433d5ddaf546cf6f43d6528af`
-- baseline tree: `ae0d57352e3dc66881609e4b72092b0cd0336176`
-- exact fully tested P3.5 implementation head: `db9f9edc90bc418869c77cd607482089d264d449`
-- exact tested tree: `1a9e1ffefa3a8f960fed7742f0723f2ca7590479`
-- PR CI #318 / run `35110103110`, job `104841275146`: success
-- implementation merge: `73e5c1fab4d76d931f5308c7e197f09a36deb5ef`
-- implementation tree: `1a9e1ffefa3a8f960fed7742f0723f2ca7590479`
-- post-merge main CI #319 / run `35110324556`, job `104842044784`: success
+- canonical migration: `lib/db/migrations/0003_observation_evidence_schema.sql`
+- migration blob: `ea13df6e9e0e0307e349f1502a4548b9e4de11ed`
+- implementation merge: `e3295531fd3cb50ac8d2801ccc0a9fe996d0c8bc`
+- implementation tree: `2733b8d3ab781834a10dcfbd2b833e786d3f2e1b`
+- exact-head CI #328: success
+- post-merge main CI #329: success
 
-Both P3.5 certification runs passed legacy PostgreSQL schema validation, the focused P3.5 suite, all current workspace tests, typecheck and build.
+Production recovery and identity gate:
+- Neon project: `late-sunset-42762033`
+- Neon branch: `br-super-frost-b341k9ms`
+- database: `neondb`
+- timeline: `07b8ce1a7a41f71ba395a1bab2b03de3`
+- PITR: ON, last 7 days
+- the migration was executed once through an authorized Shell `psql` session only after project, branch, database and timeline identity matched Production; endpoint identity was treated as connection-specific rather than sufficient branch identity
+- execution used `ON_ERROR_STOP` and the canonical transaction-wrapped migration; no application code, runtime configuration, deployment or publication was used to apply it
 
-The earlier quarantined head `7f43aa23598fbfc845e802a882d36e260dbec464` was not merged. Its full-workspace failure was recovered exactly as a test-fixture defect: the integrity test replaced an already-empty `conflictGroups` array and therefore did not actually tamper the result. The certified one-line correction changed the forged field to the non-empty `assessments` array; no production implementation or global policy was weakened.
+Independent post-migration Production verification confirmed:
+- public base-table count moved from 31 to 34
+- `public.seo_observation`, `public.seo_evidence` and `public.seo_observation_evidence` all exist with zero rows
+- 21 CHECK constraints, 3 primary keys, 2 foreign keys with `ON DELETE RESTRICT`, and 15 indexes including exact column order match migration `0003`
+- catalog mismatches: zero
 
 Detailed record:
-- `.agents/memory/p3-5-evidence-quality-conflict-closeout.md`
+- `.agents/memory/p3-6-production-schema-migration-closeout.md`
 
 ## Replit engineering workspace
 
-After P3.5 post-merge CI #319, Replit was reconciled Git-only and read-only verified at:
-- branch: `main`
-- HEAD: `73e5c1fab4d76d931f5308c7e197f09a36deb5ef`
-- tree: `1a9e1ffefa3a8f960fed7742f0723f2ca7590479`
-- cached origin/main: same SHA
-- ahead/behind: `0/0`
-- working tree clean: true
+This docs-only closeout branch was created from canonical `main` at:
+- branch base: `a8020a2e73b8dcf24be12abf262693c630f1cfb9`
+- tree: `e7b521f8d994e333e141b54cb6aca31c78b19018`
 
-No publish/redeploy, runtime/config/environment mutation, DB/schema/data action, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker activation, real persistence/archive/prune/delete action or public-site/provider write occurred during P3.5 engineering or Git reconciliation.
+The separately authorized one-time Production DDL changed only the Production database schema. No publish/redeploy, application runtime/config/environment mutation, DML/backfill, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker activation, application persistence/read activation, archive/prune/delete action or public-site/provider write occurred.
 
 This docs-only closeout branch/PR may advance canonical GitHub `main` beyond the implementation merge above. After the docs merge, independently resolve the exact final `main`, require its CI to be green, and Git-only reconcile Replit to that exact docs checkpoint without publication.
 
@@ -65,8 +70,9 @@ Completed non-published engineering foundations include:
 - **P3.3 — Retention/history/supersession model:** explicit-time deterministic retention decisions, replay-safe history relations, protected lineage, bounded archive/prune planning only and storage-neutral lookup/index intent.
 - **P3.4 — Retention/history read models:** deterministic current-head and retained-history projections, supersession-chain/conflict/corroboration views, descriptive retention state, bounded filters/sorting/cursors, explicit unavailable evidence semantics and storage-neutral read/index intent.
 - **P3.5 — Evidence quality/conflict handling:** deterministic evidence availability, caller-time freshness, bounded support levels, provenance-aware corroboration, complete/partial conflict coverage and advisory-only resolution states over validated P3.1–P3.4 artifacts.
+- **P3.6 — Production migration/DDL:** canonical observation/evidence schema now exists in Production with three empty tables, exact constraints/keys/indexes and independently verified zero catalog mismatches.
 
-None of these engineering foundations activates new production crawling, provider reads, database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
+The completed P3.6 schema migration does not activate application persistence or reads. None of these foundations activates new production crawling, provider reads, application database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
 ## P3.5 contract completed
 
@@ -98,7 +104,7 @@ P3.5 defines and tests:
 
 P3.5 models evidence support quality and conflict state; it does **not** determine objective truth, persist a resolution, mutate source observations, make a live database-backed service real, or authorize any provider/network/runtime action. `prefer_supported` is advisory only. Storage-neutral index/query intent is not a migration. In-memory reconstruction is deterministic modeling/testing only. Partial-page conflict coverage fails closed rather than inventing unseen participant quality.
 
-Production database binding, durable storage/read execution, schema/migration work and production DDL/DML remain closed.
+Production observation/evidence application binding, durable storage/read execution and DML remain closed. P3.6 completed the specifically authorized schema DDL only; any future production DDL requires new explicit authorization.
 
 ## Current first-party crawler reality
 
@@ -155,7 +161,7 @@ Unless a later task explicitly authorizes otherwise, keep closed/default-off:
 - observation/evidence production read runtime=false
 - production DB client/read binding=false
 - production DB reads=false
-- production DDL/schema migration=false
+- further production DDL/schema migration=false unless separately and explicitly authorized
 - production DML=false
 - production archive execution=false
 - production prune execution=false
@@ -171,29 +177,17 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8 and P3.1–P3.5. P1 live-provider activation remains separately authorized. P2/P3 do not imply live full-site crawl execution, sitemap fetching, database persistence/reads, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8 and P3.1–P3.6. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P2/P3 do not imply live full-site crawl execution, sitemap fetching, application database persistence/reads, scheduled crawling, autonomous operation or publication.
 
 `MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3 status table must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next boundary — P3.6 requires separate production DDL authorization
+## Next boundary — P4.1 by default; P1 live-provider only if deliberately authorized
 
-**P3.6 — Production migration/DDL** is the next roadmap milestone, but it is a hard authorization boundary.
+The next safe engineering boundary is **P4.1 — Information Architecture / Navigation v2**. It must remain application engineering only unless its task separately authorizes publication or runtime changes.
 
-A generic `continue` does **not** authorize P3.6 production DDL. Before any P3.6 production migration is executed, explicit authorization must identify:
-- the target production environment;
-- the migration/schema scope;
-- the rollback/safety plan.
+A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 
-DDL authorization does **not** automatically authorize:
-- production DB runtime reads;
-- production DB runtime writes;
-- backfill/DML;
-- provider calls;
-- scheduler/worker activation;
-- publication/deployment;
-- autonomous mutation.
-
-Those remain separate gates. Until the required P3.6 authorization exists, safe work is limited to inspection, planning/specification, synthetic/fake tests, documentation and other actions allowed by `AGENTS.md` that do not cross the production database/runtime boundary.
+P3.6 completion does not authorize production observation/evidence application reads, persistence, backfill/DML, archive/prune/delete execution, provider activity, scheduling, autonomous mutation, publication, or further production DDL. Each remains a separate explicit gate.
 
 ## Resume rule
 

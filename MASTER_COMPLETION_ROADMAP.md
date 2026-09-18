@@ -380,7 +380,15 @@ Use the stable roadmap IDs below even if GitHub Task numbers change. Every futur
 | P3.3 | Retention/history/supersession model | DONE |
 | P3.4 | Read models for page/query/category/competitor/entity evidence | DONE |
 | P3.5 | Evidence quality/conflict handling | DONE — issue #185 / PR #186 / merge `73e5c1fab4d76d931f5308c7e197f09a36deb5ef` |
-| P3.6 | Production migration/DDL | only after separately reviewed and explicitly authorized |
+| P3.6 | Production migration/DDL | DONE — issue #188 / PR #192 / merge `e3295531fd3cb50ac8d2801ccc0a9fe996d0c8bc` |
+
+P3.6 Production checkpoint:
+
+- Production has **34 public base tables**.
+- P3.6 added `seo_observation`, `seo_evidence`, and `seo_observation_evidence`.
+- All three P3.6 tables were independently verified empty immediately after migration; catalog verification reported zero mismatches.
+- Application observation/evidence persistence and Production reads remain disabled.
+- P3.6 did not authorize provider/competitor requests, observation/evidence persistence, scheduler/worker activation, public-site mutation, publication, or any further Production DDL.
 
 ### Phase P4 — Product experience foundation
 
@@ -548,21 +556,22 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 5. **DONE — P2.4:** deterministic completion ledger and whole-site completeness certification foundation.
 6. **DONE — P2.5:** deterministic crawl history/comparison and change detection over retained inventory/certification artifacts.
 7. **DONE — P2.6:** bounded incremental recrawl planning with explicit full-reconciliation fallback where per-URL evidence is unavailable.
-8. **NEXT — P2.7:** URL Explorer API/query model.
-9. **P2.8 —** technical issue taxonomy/evidence expansion.
-10. **P4.1/P4.2/P4.3 —** Product IA v2 + design system + data workbench foundation.
-11. **P3.1–P3.5 —** durable observation/evidence model and persistence engineering; keep DDL separately authorized.
-12. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
-13. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
-14. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
-15. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
-16. **P6 —** unified opportunity/prioritization/explanation engine.
-17. **P7 —** AI/GEO visibility.
-18. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-19. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-20. **P10 —** impact attribution, experimentation and learning loop.
-21. **P11 —** enterprise hardening and certification.
-22. **P12 —** final production completion certification and program closeout.
+8. **DONE — P2.7:** URL Explorer API/query model.
+9. **DONE — P2.8:** technical issue taxonomy/evidence expansion.
+10. **DONE — P3.1–P3.6:** durable observation/evidence model through the explicitly authorized Production migration; application persistence/reads remain disabled.
+11. **NEXT — P4.1:** Information Architecture / Navigation v2.
+12. **P4.2/P4.3 —** design system + data workbench foundation.
+13. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
+14. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
+15. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
+16. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
+17. **P6 —** unified opportunity/prioritization/explanation engine.
+18. **P7 —** AI/GEO visibility.
+19. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+20. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+21. **P10 —** impact attribution, experimentation and learning loop.
+22. **P11 —** enterprise hardening and certification.
+23. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
