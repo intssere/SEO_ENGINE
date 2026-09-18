@@ -55,7 +55,7 @@ export function OperationalTable({
   searchPlaceholder = "Search rows",
   rowKey = defaultOperationalRowKey,
 }: OperationalTableProps) {
-  const cols = columns || (
+  const cols: Column[] = columns || (
     data.length > 0
       ? Object.keys(data[0]).map((key) => ({
           header: key
