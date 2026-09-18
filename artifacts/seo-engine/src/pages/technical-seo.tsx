@@ -111,7 +111,7 @@ export default function TechnicalSeoPage() {
         </div>
       </header>
 
-      <main className="content auditWorkspace">
+      <div className="content auditWorkspace">
         <section className="auditHero">
           <div>
             <p className="eyebrow">FULL-SITE AUDIT</p>
@@ -326,7 +326,7 @@ export default function TechnicalSeoPage() {
             <StatusBadge tone="success">READ-ONLY UI</StatusBadge>
           </article>
         </section>
-      </main>
+      </div>
     </>
   );
 }
