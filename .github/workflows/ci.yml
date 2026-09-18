@@ -12,7 +12,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:17-alpine
@@ -76,6 +76,23 @@ jobs:
 
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @workspace/seo-engine exec playwright install --with-deps chromium
+
+      - name: Test P4.10 browser critical paths
+        run: pnpm --filter @workspace/seo-engine test:e2e
+
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p4-10-playwright-artifacts
+          path: |
+            artifacts/seo-engine/playwright-report
+            artifacts/seo-engine/test-results
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Typecheck
         run: pnpm typecheck
