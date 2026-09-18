@@ -58,8 +58,8 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="commandCenterLoading">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="commandCenterLoading" role="status" aria-live="polite">
+        <Loader2 className="w-8 h-8 animate-spin" aria-hidden="true" />
         <p>Loading Command Center snapshot…</p>
       </div>
     );
@@ -67,8 +67,8 @@ export default function DashboardPage() {
 
   if (isError || !data) {
     return (
-      <div className="commandCenterLoading commandCenterLoading--error">
-        <AlertCircle className="w-9 h-9" />
+      <div className="commandCenterLoading commandCenterLoading--error" role="alert">
+        <AlertCircle className="w-9 h-9" aria-hidden="true" />
         <p>Command Center data could not be loaded.</p>
       </div>
     );
