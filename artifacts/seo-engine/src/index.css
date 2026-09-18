@@ -1304,7 +1304,7 @@
   font-weight: 700;
 }
 .positive {
-  color: #158a56;
+  color: var(--status-success-fg);
 }
 .statusBadge {
   display: inline-flex;
