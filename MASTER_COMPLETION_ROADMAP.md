@@ -422,8 +422,8 @@ P3.6 Production checkpoint:
 
 | ID | Work item | Status |
 |---|---|---|
-| P6.1 | Unified opportunity types across technical/content/query/competitor/link/AI | NEXT SAFE DEFAULT — deterministic/default-off type system over existing evidence/opportunity families; no live execution |
-| P6.2 | impact × confidence × risk × effort × freshness scoring | PLANNED |
+| P6.1 | Unified opportunity types across technical/content/query/competitor/link/AI | DONE — issue #243 / PR #244 / merge `6d979eba38a56b629c9fe96d7921eac4449b8f60` |
+| P6.2 | impact × confidence × risk × effort × freshness scoring | NEXT SAFE DEFAULT — deterministic/default-off transparent scoring over P6.1 records; no live execution |
 | P6.3 | conflict/dedupe/suppression/prioritization | PLANNED |
 | P6.4 | explanation/evidence generation | PLANNED |
 | P6.5 | actionability classifier: informational / recommend / approval / blocked | PLANNED |

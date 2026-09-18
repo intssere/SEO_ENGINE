@@ -13,9 +13,42 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.8 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P5.8 complete
+## Current engineering state — P6.1 complete
+
+Roadmap **P6.1 — unified opportunity types across technical/content/query/competitor/link/AI** is complete under issue #243 / PR #244.
+
+P6.1 adds a pure deterministic classification/provenance layer over existing evidence families without changing the legacy opportunity engine:
+- defines six canonical families: `technical`, `content`, `query`, `competitor`, `link`, and `ai`;
+- assigns every P6.1 opportunity kind to exactly one family;
+- maps the existing legacy `organic_ctr`, `striking_distance`, `technical_remediation`, `internal_link`, and `content_alignment` types without changing their score, confidence, risk, generation, persistence, OpenAPI or UI semantics;
+- preserves caller-owned subject identity instead of silently recanonicalizing URL/domain/query/page identities from earlier modules;
+- carries bounded evidence references across crawl/page, GSC query, technical issue, P5.2 SERP, P5.3 keyword, P5.4 trend, P5.5 backlink, P5.6 competitor, P5.8 telemetry and future AI visibility evidence;
+- keeps exact duplicate evidence deterministic while conflicting metadata for one fingerprint fails closed;
+- rejects contradictory non-null market/category scope and future/malformed evidence lineage;
+- emits explicit semantic guards for P5 provider-specific/non-comparable and descriptive-only semantics, null-vs-zero and missing-evidence honesty;
+- contains no impact/confidence/risk/effort/freshness score, combined priority, ranking or recommendation generation; P6.2 owns that next layer.
+
+Certification:
+- base SHA/tree: `5b5390220fb2ba2c4779d560f1066e3e028aca54` / `7b78237af4bf721245a66a94fab1656c14fc1555`;
+- exact tested implementation head: `0a8befd87412bc50ec24658809402c79adf404cd`;
+- PR CI #450 / run `35401511588`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P6.1, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `6d979eba38a56b629c9fe96d7921eac4449b8f60`;
+- implementation tree: `af4be14b0d8827865ee3051dcb33c5c8596636eb`;
+- post-merge CI #451 / run `35401722129`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal build chunk-size warning only.
+
+P6.1 is **unpublished**. It performed no provider enrollment/purchase/credential use/request, public-site read/write, Task #67 Production source admission or refresh-plan mutation, Task #64/#70 execution, observation/evidence persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p6-1-unified-opportunity-types-closeout.md`
+- `docs/p6-1-unified-opportunity-types.md`
+
+Default next safe milestone: **P6.2 — impact × confidence × risk × effort × freshness scoring**, deterministic/default-off engineering only; no live execution.
+
+## Previous engineering state — P5.8 complete
 
 Roadmap **P5.8 — source quality/cost/rate-limit telemetry** is complete under issue #240 / PR #241.
 
@@ -49,7 +82,7 @@ Detailed record:
 - `.agents/memory/p5-8-source-telemetry-closeout.md`
 - `docs/p5-8-source-quality-cost-rate-limit-telemetry.md`
 
-Default next safe milestone: **P6.1 — unified opportunity types across technical/content/query/competitor/link/AI**, deterministic/default-off engineering only.
+At the P5.8 checkpoint, the default next safe milestone was **P6.1 — unified opportunity types across technical/content/query/competitor/link/AI**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P5.7 complete
 

@@ -13,21 +13,21 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P5.8 source quality/cost/rate-limit telemetry is complete and certified.
+**Current checkpoint:** P6.1 unified opportunity types across technical/content/query/competitor/link/AI is complete and certified.
 
-- P5.8 issue #240 / PR #241.
-- Exact tested implementation head: `24a28000e11bf9de67313904652a4fc65b48927b`.
-- PR CI #446 / run `35396675109`: success across legacy schema, Task/P3.6/workspace tests including P5.8, Playwright/P4.10, typecheck and build.
-- Implementation merge: `56b2f8e9dd4e6cc4934c2ab55c549ea6284d59d3`.
-- Implementation tree: `f3d749819741d502e42c4059798109bc05b0b770`.
-- Post-merge CI #447 / run `35396903363`: success.
+- P6.1 issue #243 / PR #244.
+- Exact tested implementation head: `0a8befd87412bc50ec24658809402c79adf404cd`.
+- PR CI #450 / run `35401511588`: success across legacy schema, Task/P3.6/workspace tests including P6.1, Playwright/P4.10, typecheck and build.
+- Implementation merge: `6d979eba38a56b629c9fe96d7921eac4449b8f60`.
+- Implementation tree: `af4be14b0d8827865ee3051dcb33c5c8596636eb`.
+- Post-merge CI #451 / run `35401722129`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass.
-- P5.8 validates exact Task #67 source identity and emits deterministic per-source/signal quality, supplied-cost, P5.1 provider-metadata and supplied rate-limit telemetry.
-- Numeric cost is never inferred from provider pricing prose; null remains distinct from zero, no FX is performed, and mixed currency/unit aggregation fails closed.
-- Rate-limit states are descriptive only and do not throttle, retry, schedule, execute or reorder Task #67 work.
-- P5.8 changes no route, DB schema, source admission, Task #64/#70 execution path, provider credential/runtime integration or Production deployment.
-- P5.8 remains unpublished and performed no provider/public-site request, persistence, Production DB activity, scheduler/worker activation, config/secret mutation or publication.
-- Default next safe engineering boundary: **P6.1 — unified opportunity types across technical/content/query/competitor/link/AI**, deterministic/default-off engineering only.
+- P6.1 defines six canonical opportunity families with exact kind→family mapping and preserves the existing five legacy opportunity types without changing their current engine/API semantics.
+- P6.1 carries bounded evidence lineage and semantic guard codes across first-party/P5 evidence while failing closed on conflicting fingerprints, contradictory scope and future/malformed timestamps.
+- P6.1 deliberately contains no impact/confidence/risk/effort/freshness scoring, combined priority/ranking or recommendation generation; P6.2 owns that boundary.
+- P6.1 changes no route, OpenAPI contract, DB schema, legacy opportunity generation/scoring, Task #67 planning, Task #64/#70 execution path, provider credential/runtime integration or Production deployment.
+- P6.1 remains unpublished and performed no provider/public-site request, persistence, Production DB activity, scheduler/worker activation, config/secret mutation or publication.
+- Default next safe engineering boundary: **P6.2 — impact × confidence × risk × effort × freshness scoring**, deterministic/default-off engineering only.
 - Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
