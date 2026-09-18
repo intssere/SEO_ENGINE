@@ -109,6 +109,51 @@ test("Audit DataGrid is keyboard-scrollable and search/sort behavior is determin
   assertBrowserClean(errors);
 });
 
+test("Search Intelligence stays synthetic, searchable, sortable, and network-closed", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/search-intelligence");
+
+  await expect(
+    page.getByRole("heading", { name: "Competitor intelligence workspace" }),
+  ).toBeVisible();
+  await expect(page.getByText("SYNTHETIC READ-ONLY")).toBeVisible();
+  await expect(page.getByText("DEFAULT-OFF")).toBeVisible();
+
+  const competitorRegion = page.getByRole("region", {
+    name: /Competitor visibility table\. Scroll horizontally/,
+  });
+  await competitorRegion.focus();
+  await expect(competitorRegion).toBeFocused();
+
+  const competitorSearch = page.getByPlaceholder("Search competitor domain");
+  await competitorSearch.fill("competitor-b");
+  await expect(competitorRegion.getByText("competitor-b.test").first()).toBeVisible();
+  await expect(competitorRegion.getByText("competitor-a.test").first()).toHaveCount(0);
+  await competitorSearch.fill("");
+
+  const visibleSort = page.getByRole("button", { name: "Sort by Visible / measured" });
+  await visibleSort.click();
+  await expect(
+    page.getByRole("columnheader", { name: /Visible \/ measured/ }).first(),
+  ).toHaveAttribute("aria-sort", "ascending");
+
+  const topicRegion = page.getByRole("region", {
+    name: /Topic gap evidence table\. Scroll horizontally/,
+  });
+  const topicSearch = page.getByPlaceholder("Search topic or state");
+  await topicSearch.fill("oud perfume");
+  await expect(topicRegion.getByText("oud perfume").first()).toBeVisible();
+  await expect(topicRegion.getByText("vanilla perfume").first()).toHaveCount(0);
+
+  await expect(
+    page.getByText(/Observed-topic visibility is limited to this supplied cohort and is not market share/),
+  ).toBeVisible();
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
 test("Ask dialog traps focus, answers from fixture, closes with Escape, and restores focus", async ({
   page,
 }) => {
@@ -157,7 +202,7 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
   assertBrowserClean(errors);
 });
 
-for (const route of ["/", "/technical-seo", "/connections"]) {
+for (const route of ["/", "/technical-seo", "/search-intelligence", "/connections"]) {
   test(`axe serious/critical scan passes on ${route}`, async ({ page }) => {
     const { boundary, errors } = await openSyntheticPage(page, route);
 
