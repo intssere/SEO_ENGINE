@@ -603,7 +603,7 @@
   overflow-wrap: anywhere;
 }
 .opportunityPlan strong {
-  color: #14764a;
+  color: var(--status-success-fg);
   letter-spacing: 0.04em;
 }
 .proposalChange {
