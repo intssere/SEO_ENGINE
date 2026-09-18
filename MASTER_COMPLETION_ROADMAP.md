@@ -398,8 +398,8 @@ P3.6 Production checkpoint:
 | P4.2 | Design tokens/components/status grammar | DONE — issue #202 / PR #203 |
 | P4.3 | Enterprise data-grid/workbench primitives | DONE — issue #204 / PR #205 |
 | P4.4 | Evidence drawer | DONE — issue #206 / PR #207 |
-| P4.5 | Command Center v2 | PLANNED |
-| P4.6 | Full-Site Audit/Crawl Explorer UI | depends on P2 |
+| P4.5 | Command Center v2 | DONE — issue #208 / PR #209 |
+| P4.6 | Full-Site Audit/Crawl Explorer UI | NEXT — P2 engineering foundation complete; runtime activation remains gated |
 | P4.7 | responsive/mobile/tablet professional polish | PLANNED |
 | P4.8 | accessibility test baseline and WCAG 2.2 AA remediation | PLANNED |
 | P4.9 | Storybook/component documentation if selected | PLANNED |
@@ -563,9 +563,9 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 12. **DONE — P4.2:** Design tokens/components/status grammar.
 13. **DONE — P4.3:** Enterprise data-grid/workbench primitives.
 14. **DONE — P4.4:** Evidence drawer.
-15. **NEXT — P4.5:** Command Center v2 using current read-only foundations and explicit unavailable-state honesty.
-16. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
-17. **P4.6 —** Full-Site Audit/Crawl Explorer UI using P2/P3 read models without implying unavailable live runtime data.
+15. **DONE — P4.5:** Command Center v2.
+16. **NEXT — P4.6:** Full-Site Audit / Crawl Explorer UI using existing P2/P3 engineering contracts without activating live full-site network execution or Production evidence reads.
+17. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
 18. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
 19. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
 20. **P6 —** unified opportunity/prioritization/explanation engine.
