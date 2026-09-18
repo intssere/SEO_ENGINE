@@ -1,10 +1,9 @@
 import type { ProposalRecord } from "@workspace/api-client-react";
-import { Badge } from "./layout";
+import { StatusBadge } from "./status-badge";
+import { lifecycleTone } from "@/lib/status-grammar";
 import type { Column } from "./operational-table";
 
 const titleize = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-const riskTone = (risk: string) => risk === "high" ? "approval" : risk === "low" ? "verified" : "experiment";
-const lifecycleTone = (stage: ProposalRecord["lifecycle"]) => stage === "approval_ready" ? "approval" : stage === "invalidated" ? "experiment" : "verified";
 
 export const proposalColumns: Column[] = [
   {
@@ -45,7 +44,7 @@ export const proposalColumns: Column[] = [
     accessorKey: "lifecycle",
     cell: (value: ProposalRecord["lifecycle"], row: ProposalRecord) => (
       <div className="proposalChange">
-        <Badge tone={lifecycleTone(value)}>{titleize(value)}</Badge>
+        <StatusBadge tone={lifecycleTone(value)}>{titleize(value)}</StatusBadge>
         <span>Evaluator risk: <b>{row.evaluatorRisk}</b></span>
         <span>Plan control: <b>{row.planControlRisk}</b></span>
         <span>Effective execution risk: <b>{row.effectiveExecutionRisk}</b></span>
