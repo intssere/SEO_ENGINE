@@ -87,7 +87,7 @@ export type RefreshPlan = {
   safety: ReturnType<typeof signalSourceRegistryCapability>;
 };
 
-const SIGNAL_TYPES: SignalType[] = ["analytics", "catalog", "competitor", "entity", "geo_aio", "keyword", "serp", "trend"];
+const SIGNAL_TYPES: SignalType[] = ["analytics", "backlink", "catalog", "competitor", "entity", "geo_aio", "keyword", "serp", "trend"];
 const SIGNAL_TYPE_SET = new Set<string>(SIGNAL_TYPES);
 const VOLATILITY_BOOST: Record<VolatilityClass, number> = { low: 0, medium: 5, high: 10, very_high: 15 };
 const FRESHNESS_URGENCY: Record<FreshnessState, number> = { fresh: 0, stale: 40, critical: 70, missing: 80 };
