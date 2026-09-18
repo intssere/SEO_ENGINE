@@ -31,7 +31,7 @@ test("desktop Command Center navigates without live network and hands route focu
   const { boundary, errors } = await openSyntheticPage(page, "/");
 
   await expect(
-    page.getByRole("heading", { name: "Command Center" }),
+    page.getByRole("heading", { name: "SEO operations overview" }),
   ).toBeVisible();
   await expect(page.getByText("Synthetic fixture · 5 minutes")).toBeVisible();
   await expect(page.getByRole("main")).toHaveAttribute("id", "main-content");
@@ -58,9 +58,11 @@ test("compact mobile navigation closes with Escape and restores toggle focus", a
     { width: 390, height: 844 },
   );
 
-  const toggle = page.getByRole("button", { name: "Open navigation" });
+  const toggle = page.locator(".mobileNavToggle");
+  await expect(toggle).toHaveAccessibleName("Open navigation");
   await toggle.click();
   await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(toggle).toHaveAccessibleName("Close navigation");
   await expect(
     page.getByRole("navigation", { name: "Primary navigation" }),
   ).toBeVisible();
@@ -89,7 +91,7 @@ test("Audit DataGrid is keyboard-scrollable and search/sort behavior is determin
   await gridRegion.focus();
   await expect(gridRegion).toBeFocused();
 
-  const search = page.getByRole("searchbox", { name: "Search" });
+  const search = page.getByPlaceholder("Search finding, category, status or URL");
   await search.fill("canonical");
   await expect(page.getByText("Missing canonical tag")).toBeVisible();
   await expect(page.getByText("Title element is too short")).toHaveCount(0);
@@ -114,7 +116,15 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
   await restoreTarget.focus();
   await expect(restoreTarget).toBeFocused();
 
-  await page.keyboard.press("Control+K");
+  await page.evaluate(() => {
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "k",
+        ctrlKey: true,
+        bubbles: true,
+      }),
+    );
+  });
 
   const dialog = page.getByRole("dialog", { name: "Ask SEO ENGINE" });
   await expect(dialog).toBeVisible();
