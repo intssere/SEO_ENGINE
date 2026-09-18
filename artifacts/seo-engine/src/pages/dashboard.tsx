@@ -3,7 +3,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useGetDashboard, GetDashboardDays, GetDashboardDevice, getPilotAuthorization, startPilotRun, getGetDashboardQueryKey } from "@workspace/api-client-react";
 import { Loader2, AlertCircle, RefreshCw, Play } from "lucide-react";
 import { Link, useSearch, useLocation } from "wouter";
-import { Badge, riskTone, useAskModal } from "../components/layout";
+import { useAskModal } from "../components/layout";
+import { StatusBadge } from "../components/status-badge";
+import { readinessTone, riskTone } from "@/lib/status-grammar";
 
 export default function DashboardPage() {
   const queryClient = useQueryClient();
@@ -127,11 +129,11 @@ export default function DashboardPage() {
             <option value="mobile">Mobile</option>
             <option value="tablet">Tablet</option>
           </select>
-          <Badge tone={data.state === "live" ? "verified" : "approval"}>
+          <StatusBadge tone={readinessTone(data.state === "live" ? "live" : "unavailable")}>
             {data.state === "live" ? "LIVE DATA" : "DATA UNAVAILABLE"}
-          </Badge>
+          </StatusBadge>
           {data.approvalsPending > 0 && (
-            <Badge tone="approval">{data.approvalsPending} approvals</Badge>
+            <StatusBadge tone="warning">{data.approvalsPending} approvals</StatusBadge>
           )}
         </div>
       </header>
@@ -153,9 +155,9 @@ export default function DashboardPage() {
               <h2>Ingestion and baseline readiness</h2>
             </div>
             <div className="pilotActions">
-              <Badge tone={data.pilot.readiness === "ready" ? "verified" : ["failed", "partial"].includes(data.pilot.status) ? "approval" : "ready"}>
+              <StatusBadge tone={readinessTone(data.pilot.readiness === "ready" ? "ready" : data.pilot.status === "failed" ? "failed" : "pending")}>
                 {data.pilot.status.replaceAll("_", " ").toUpperCase()}
-              </Badge>
+              </StatusBadge>
               <button
                 className="pilotRunButton"
                 type="button"
@@ -220,9 +222,9 @@ export default function DashboardPage() {
                 <p className="eyebrow">PRODUCTION BASELINE CERTIFICATION</p>
                 <h3>{data.pilot.certification.status === "pilot_ready" ? "PILOT_READY" : data.pilot.certification.status.replaceAll("_", " ").toUpperCase()}</h3>
               </div>
-              <Badge tone={data.pilot.certification.status === "pilot_ready" ? "verified" : "approval"}>
+              <StatusBadge tone={readinessTone(data.pilot.certification.status === "pilot_ready" ? "pilot_ready" : "pending")}>
                 {data.pilot.certification.wholeSiteCertified ? "WHOLE SITE CERTIFIED" : "BOUNDED PILOT ONLY"}
-              </Badge>
+              </StatusBadge>
             </div>
             <div className="certificationGrid">
               <div>
@@ -273,9 +275,9 @@ export default function DashboardPage() {
               <p className="eyebrow">AI SEO ENGINE · LAST 24 HOURS</p>
               <h2>Engine activity</h2>
             </div>
-            <Badge tone={data.state === "live" ? "verified" : "approval"}>
+            <StatusBadge tone={readinessTone(data.state === "live" ? "live" : "unavailable")}>
               {data.state === "live" ? "DATABASE-BACKED" : "NO LIVE DATA"}
-            </Badge>
+            </StatusBadge>
           </div>
           <div className="engineStats">
             <div>
@@ -341,7 +343,7 @@ export default function DashboardPage() {
                         </td>
                         <td>{row.score}</td>
                         <td>{row.evidence}</td>
-                        <td><Badge tone={riskTone(row.risk)}>{row.risk}</Badge></td>
+                        <td><StatusBadge tone={riskTone(row.risk)}>{row.risk}</StatusBadge></td>
                         <td>{row.state}</td>
                       </tr>
                     ))
@@ -421,7 +423,7 @@ export default function DashboardPage() {
             <h2>Evidence becoming signal</h2>
             <div className="learning">
               <strong>{data.learning.signalCount} persisted signals</strong>
-              <Badge tone="verified">{data.learning.averageConfidence} avg confidence</Badge>
+              <StatusBadge tone="success">{data.learning.averageConfidence} avg confidence</StatusBadge>
             </div>
             <p className="muted mt-4">Learning adjusts prioritization only; official policy and safety remain authoritative.</p>
           </section>

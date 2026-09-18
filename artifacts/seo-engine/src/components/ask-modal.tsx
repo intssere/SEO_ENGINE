@@ -102,7 +102,7 @@ export function AskModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
                 <span className="text-sm font-medium">Consulting intelligence...</span>
               </div>
             ) : errorMsg ? (
-              <div className="p-4 bg-[#fff3dc] text-[#8d5c0d] rounded-md border border-[#f1d49b] text-sm font-medium">
+              <div className="p-4 bg-[var(--status-danger-bg)] text-[var(--status-danger-fg)] rounded-md border border-[var(--status-danger-border)] text-sm font-medium">
                 {errorMsg}
               </div>
             ) : answer ? (

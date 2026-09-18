@@ -395,7 +395,7 @@ P3.6 Production checkpoint:
 | ID | Work item | Status |
 |---|---|---|
 | P4.1 | Information architecture/navigation v2 | DONE — issue #200 / PR #201 |
-| P4.2 | Design tokens/components/status grammar | PLANNED |
+| P4.2 | Design tokens/components/status grammar | DONE — issue #202 / PR #203 |
 | P4.3 | Enterprise data-grid/workbench primitives | PLANNED |
 | P4.4 | Evidence drawer | PLANNED |
 | P4.5 | Command Center v2 | PLANNED |
@@ -560,8 +560,8 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 9. **DONE — P2.8:** technical issue taxonomy/evidence expansion.
 10. **DONE — P3.1–P3.6:** durable observation/evidence model through the explicitly authorized Production migration; application persistence/reads remain disabled.
 11. **DONE — P4.1:** Information Architecture / Navigation v2.
-12. **NEXT — P4.2:** Design tokens/components/status grammar.
-13. **P4.3 —** enterprise data-grid/workbench primitives.
+12. **DONE — P4.2:** Design tokens/components/status grammar.
+13. **NEXT — P4.3:** Enterprise data-grid/workbench primitives.
 14. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
 15. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
 16. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.

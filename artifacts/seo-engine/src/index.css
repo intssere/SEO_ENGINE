@@ -107,6 +107,23 @@
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
+  /* P4.2 semantic product-status tokens */
+  --status-neutral-bg: #eef1f5;
+  --status-neutral-fg: #5d6879;
+  --status-neutral-border: #dce2eb;
+  --status-info-bg: #e8f1ff;
+  --status-info-fg: #245ea8;
+  --status-info-border: #c9dcfa;
+  --status-success-bg: #e7f8ef;
+  --status-success-fg: #14764a;
+  --status-success-border: #bfead2;
+  --status-warning-bg: #fff3dc;
+  --status-warning-fg: #8d5c0d;
+  --status-warning-border: #f1d49b;
+  --status-danger-bg: #fdeaea;
+  --status-danger-fg: #a43131;
+  --status-danger-border: #f2c6c6;
+
   --input: 218 27% 92%;
   --ring: 217 91% 60%;
   --chart-1: 12 76% 61%;
@@ -436,19 +453,19 @@
   font-size: 12px;
 }
 .dataBanner.live {
-  background: #e7f8ef;
-  border-color: #bfead2;
-  color: #14764a;
+  background: var(--status-success-bg);
+  border-color: var(--status-success-border);
+  color: var(--status-success-fg);
 }
 .dataBanner.stale {
-  background: #fff3dc;
-  border-color: #f1d49b;
-  color: #8d5c0d;
+  background: var(--status-warning-bg);
+  border-color: var(--status-warning-border);
+  color: var(--status-warning-fg);
 }
 .dataBanner.unavailable {
-  background: #fff3dc;
-  border-color: #f1d49b;
-  color: #8d5c0d;
+  background: var(--status-danger-bg);
+  border-color: var(--status-danger-border);
+  color: var(--status-danger-fg);
 }
 .dataBanner span {
   font-weight: 500;
@@ -490,8 +507,8 @@
   margin-top: 10px;
   padding: 9px 11px;
   border-radius: 7px;
-  background: #fff3dc;
-  color: #8d5c0d;
+  background: var(--status-warning-bg);
+  color: var(--status-warning-fg);
   font-size: 12px;
 }
 .certificationPanel {
@@ -586,7 +603,7 @@
   overflow-wrap: anywhere;
 }
 .opportunityPlan strong {
-  color: #14764a;
+  color: var(--status-success-fg);
   letter-spacing: 0.04em;
 }
 .proposalChange {
@@ -1287,29 +1304,47 @@
   font-weight: 700;
 }
 .positive {
-  color: #158a56;
+  color: var(--status-success-fg);
 }
-.badge {
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid var(--status-neutral-border);
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-fg);
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.03em;
-  padding: 5px 8px;
-  border-radius: 999px;
+  line-height: 1;
   white-space: nowrap;
-  background: #eef1f5;
-  color: #5d6879;
 }
-.badge.verified {
-  background: #e7f8ef;
-  color: #14764a;
+.statusBadge--neutral {
+  border-color: var(--status-neutral-border);
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-fg);
 }
-.badge.approval {
-  background: #fff3dc;
-  color: #9a6410;
+.statusBadge--info {
+  border-color: var(--status-info-border);
+  background: var(--status-info-bg);
+  color: var(--status-info-fg);
 }
-.badge.experiment {
-  background: #eeeaff;
-  color: #6350ad;
+.statusBadge--success {
+  border-color: var(--status-success-border);
+  background: var(--status-success-bg);
+  color: var(--status-success-fg);
+}
+.statusBadge--warning {
+  border-color: var(--status-warning-border);
+  background: var(--status-warning-bg);
+  color: var(--status-warning-fg);
+}
+.statusBadge--danger {
+  border-color: var(--status-danger-border);
+  background: var(--status-danger-bg);
+  color: var(--status-danger-fg);
 }
 .engine {
   margin-bottom: 14px;

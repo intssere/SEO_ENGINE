@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { Badge } from "../components/layout";
+import { StatusBadge } from "./status-badge";
+import { readinessTone } from "@/lib/status-grammar";
 
 export interface Column {
   header: string;
@@ -83,11 +84,11 @@ export function PageHeader({
       </div>
       {readiness && (
         <div className="flex items-center gap-2">
-          <Badge tone={isReady ? "verified" : "approval"}>
+          <StatusBadge tone={readinessTone(isReady ? "live" : "setup_required")}>
             {isReady ? "SYSTEM READY" : "SETUP REQUIRED"}
-          </Badge>
+          </StatusBadge>
           {!isReady && reason && (
-            <span className="text-sm text-[#8d5c0d] font-medium px-2 py-1 bg-[#fff3dc] rounded">
+            <span className="text-sm text-[var(--status-warning-fg)] font-medium px-2 py-1 bg-[var(--status-warning-bg)] rounded">
               {reason}
             </span>
           )}

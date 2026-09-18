@@ -1,4 +1,5 @@
-import { Badge } from "../components/layout";
+import { StatusBadge } from "./status-badge";
+import { availabilityTone } from "@/lib/status-grammar";
 
 interface InformationalPageProps {
   category: string;
@@ -25,9 +26,9 @@ export function InformationalPage({ category, title, description, status }: Info
             <p className="muted">{description}</p>
           </div>
           <div>
-            <Badge tone={status === "read_only" ? "verified" : "approval"}>
+            <StatusBadge tone={availabilityTone(status)}>
               {status === "read_only" ? "READ-ONLY" : status === "coming_soon" ? "COMING SOON" : "UNAVAILABLE"}
-            </Badge>
+            </StatusBadge>
           </div>
         </div>
 
