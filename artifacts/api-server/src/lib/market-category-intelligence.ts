@@ -39,7 +39,7 @@ export type CategoryContext = {
 };
 
 export type SignalSourceClass = "first_party" | "external";
-export type SignalType = "keyword" | "trend" | "serp" | "entity" | "competitor" | "analytics" | "catalog" | "geo_aio";
+export type SignalType = "keyword" | "trend" | "serp" | "backlink" | "entity" | "competitor" | "analytics" | "catalog" | "geo_aio";
 
 export type SignalSnapshotInput = {
   sourceClass: SignalSourceClass;

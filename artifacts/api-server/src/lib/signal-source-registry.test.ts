@@ -198,3 +198,24 @@ test("invalid timestamp, quality, and budget fail closed", () => {
     budget: { maxSources: 0, maxSignalTypesPerSource: 1, maxTotalRefreshItems: 1 },
   }), /invalid_max_sources/);
 });
+
+
+test("dedicated backlink signal type is accepted without opening execution gates", () => {
+  const source = normalizeSignalSourceDescriptor({
+    key: "supplied-backlink-fixture",
+    name: "Supplied Backlink Fixture",
+    sourceClass: "external",
+    signalTypes: ["backlink"],
+    marketFingerprints: [us.fingerprint],
+    categoryFingerprints: [arabian.fingerprint],
+    trustClass: "reviewed_external",
+    quality: 0.8,
+    provenanceComplete: true,
+    freshness: { freshForMinutes: 1440, staleAfterMinutes: 10080, criticalAfterMinutes: 43200, volatility: "medium" },
+    collectionMode: "manual_import",
+    manuallyReviewed: true,
+  });
+  assert.deepEqual(source.signalTypes, ["backlink"]);
+  assert.equal(sourceEligibility(source, us, arabian, "backlink").eligible, true);
+  assert.equal(signalSourceRegistryCapability().networkCollectionAuthorized, false);
+});
