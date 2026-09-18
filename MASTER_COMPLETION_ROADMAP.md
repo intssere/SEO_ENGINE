@@ -401,9 +401,9 @@ P3.6 Production checkpoint:
 | P4.5 | Command Center v2 | DONE — issue #208 / PR #209 |
 | P4.6 | Full-Site Audit/Crawl Explorer UI | DONE — issue #210 / PR #211 |
 | P4.7 | responsive/mobile/tablet professional polish | DONE — issue #212 / PR #213 |
-| P4.8 | accessibility test baseline and WCAG 2.2 AA remediation | NEXT |
-| P4.9 | Storybook/component documentation if selected | PLANNED |
-| P4.10 | Playwright/axe/visual regression critical-path suite | PLANNED |
+| P4.8 | accessibility test baseline and WCAG 2.2 AA remediation | DONE — issue #214 / PR #215 |
+| P4.9 | Storybook/component documentation if selected | PLANNED — optional; not auto-selected |
+| P4.10 | Playwright/axe/visual regression critical-path suite | NEXT |
 
 ### Phase P5 — External market/search intelligence
 
@@ -566,17 +566,19 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 15. **DONE — P4.5:** Command Center v2.
 16. **DONE — P4.6:** Full-Site Audit / Crawl Explorer UI with explicit unbound P2 read-model states and no runtime activation.
 17. **DONE — P4.7:** responsive/mobile/tablet professional polish across completed P4.1–P4.6 surfaces.
-18. **NEXT — P4.8:** accessibility test baseline and WCAG 2.2 AA remediation across P4.1–P4.7.
-19. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
-20. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
-21. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
-22. **P6 —** unified opportunity/prioritization/explanation engine.
-23. **P7 —** AI/GEO visibility.
-24. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-25. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-26. **P10 —** impact attribution, experimentation and learning loop.
-27. **P11 —** enterprise hardening and certification.
-28. **P12 —** final production completion certification and program closeout.
+18. **DONE — P4.8:** accessibility source/unit/build baseline and WCAG 2.2 AA remediation across P4.1–P4.7.
+19. **NEXT — P4.10:** Playwright/axe/visual regression critical-path suite for browser-level accessibility/interaction/viewport coverage.
+20. **P4.9 — optional:** Storybook/component documentation only if deliberately selected.
+21. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
+22. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
+23. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
+24. **P6 —** unified opportunity/prioritization/explanation engine.
+25. **P7 —** AI/GEO visibility.
+26. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+27. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+28. **P10 —** impact attribution, experimentation and learning loop.
+29. **P11 —** enterprise hardening and certification.
+30. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
