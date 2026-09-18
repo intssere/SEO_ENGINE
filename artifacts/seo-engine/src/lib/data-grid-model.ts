@@ -23,6 +23,7 @@ export type DataGridQuery = {
 
 export type DataGridModel<T> = {
   rows: T[];
+  sourceIndexes: number[];
   totalRows: number;
   filteredRows: number;
   page: number;
@@ -164,12 +165,13 @@ export function buildDataGridModel<T>(
     : 1;
   const page = Math.min(pageCount, Math.max(1, requestedPage));
   const startIndex = (page - 1) * pageSize;
-  const rows = sortedEntries
-    .slice(startIndex, startIndex + pageSize)
-    .map(({ row }) => row);
+  const pageEntries = sortedEntries.slice(startIndex, startIndex + pageSize);
+  const rows = pageEntries.map(({ row }) => row);
+  const sourceIndexes = pageEntries.map(({ sourceIndex }) => sourceIndex);
 
   return {
     rows,
+    sourceIndexes,
     totalRows,
     filteredRows,
     page,
