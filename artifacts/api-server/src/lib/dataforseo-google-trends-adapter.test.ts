@@ -110,9 +110,9 @@ const MONTHS = [
 
 function graphPoints() {
   const values = [
-    [20, 80, 50],
+    [20, 80, 0],
     [30, 70, 50],
-    [40, 60, 0],
+    [40, 60, 100],
     [50, 50, 50],
     [60, 40, 50],
     [70, 30, 50],
@@ -452,8 +452,9 @@ test("missing supplied graph point yields partial Task #68 observation with exac
   const base = fixture();
   const provided = successfulProviderResult();
   const graph = provided.tasks[0]!.result[0]!.items[0]!;
-  graph.data[2] = {
-    ...graph.data[2],
+  const graphData = graph.data as Array<Record<string, unknown>>;
+  graphData[2] = {
+    ...graphData[2],
     missing_data: true,
     values: [null, null, null],
   };
