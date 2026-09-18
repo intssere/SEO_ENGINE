@@ -13,15 +13,20 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P3.6 Production migration/DDL is complete and certified.
+**Current checkpoint:** P5.1 provider selection/cost/reliability review is complete and certified.
 
-- P3.6 issue #188 / PR #192 / merge `e3295531fd3cb50ac8d2801ccc0a9fe996d0c8bc`.
-- Production has **34 public base tables**, including `seo_observation`, `seo_evidence`, and `seo_observation_evidence`.
-- Those three P3.6 tables were independently verified empty immediately after migration; catalog verification reported zero mismatches.
-- Application observation/evidence persistence and Production reads remain disabled.
-- P3.6 directly migrated the identity-gated Production database and did **not** republish the application.
-- Default next safe engineering boundary: **P4.1 — Information Architecture / Navigation v2**.
-- Live first-party provider activation remains a separately authorized alternative path; no provider request, public-site mutation, scheduler/worker activation, persistence execution, publication, or further Production DDL is implied by this checkpoint.
+- P5.1 issue #218 / PR #219.
+- Exact tested implementation head: `193c517bcefbfac2b1726e59fb33521cd0d45b18`.
+- PR CI run `35361361888` / CI #413: success.
+- Implementation merge: `1d1ee1b5284b62fe9cb446a7ad6d79a35db53259`.
+- Merge tree: `573d1ec33cd1c5d84868fe29c8f1cbab6f24636a`.
+- Post-merge push CI run `35361587686` / CI #414: success.
+- Replit was exact-synced to that merge/tree, `0/0`, clean, zero untracked, with recursive workspace tests, full typecheck, full build and `git diff --check` passing.
+- P5.1 engineering roles: DataForSEO initial dual-purpose SERP+keyword adapter engineering target; SerpApi independent SERP benchmark/fallback; Google Ads Keyword Planning official keyword-reference candidate; Ahrefs/Semrush deferred broad-suite candidates.
+- P5.1 is research/planning only and remains unpublished. No provider enrollment, credentials, provider/API request, Task #67 source admission, Task #70 execution, observation/evidence persistence, Production read/DDL/DML, scheduler/worker activation, Task #53/#54/#64 execution, provider/public-site write, config/secret change or publication occurred.
+- Default next safe engineering boundary: **P5.2 — SERP/ranking adapter(s)**, default-off/network-free using deterministic fake/supplied transport only.
+- Real external-provider enrollment/credentials/requests remain separately unauthorized.
+- P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
 
@@ -451,49 +456,45 @@ It does **not** authorize:
 
 ---
 
-## 12. Current project stage after P4.10
+## 12. Current project stage after P5.1
 
-P3.6 remains the certified Production schema checkpoint. **P4.1–P4.8** plus selected **P4.10 — Playwright/axe/visual regression critical-path suite** are complete engineering foundations and remain unpublished. P4.9 Storybook/component documentation remains optional and unselected.
+P3.6 remains the certified Production schema checkpoint. P4.1–P4.8 plus selected P4.10 are complete unpublished product/browser engineering foundations. P5.1 is now also complete and unpublished.
 
-P4.10 browser-regression checkpoint:
-- Chromium-only Playwright runs on a standalone local Vite frontend with synthetic non-PII fixtures;
-- every browser API request is intercepted; unknown API paths fail closed and all non-local/external origins are blocked;
-- no API server, DB, provider, OAuth, crawler, scheduler or worker participates in browser tests;
-- critical paths cover Command Center navigation/route focus, mobile navigation Escape/focus return, Technical SEO DataGrid keyboard/search/sort, Ask dialog focus/fixture answer/Escape/focus restoration;
-- axe serious/critical WCAG scans pass on Command Center, Technical SEO and Connections;
-- console/page errors fail tests;
-- text-only 512-bit perceptual visual hashes cover Command Center desktop/tablet/mobile and Audit desktop with 32/512 Hamming tolerance;
-- failure-only Playwright artifacts are retained in CI;
-- the initial browser run exposed and P4.10 fixed a real Command Center contrast regression;
-- browser packages are pinned in package + lockfile and contract-enforced;
-- GitHub Actions Ubuntu/Chromium is the canonical browser runner because Replit cannot launch Chromium on this host due missing `libglib-2.0.so.0`;
-- inherited global frozen-lock validation still has an unrelated pre-P4.10 API Server `tsx` importer omission; P4.10 browser deps themselves are locked.
+P5.1 established a dated deterministic external SERP/keyword provider review:
+- DataForSEO: initial dual-purpose P5.2/P5.3 engineering target;
+- SerpApi: independent SERP benchmark/fallback candidate;
+- Google Ads Keyword Planning: official keyword-reference candidate under a separate future Google Ads credential/account boundary;
+- Ahrefs and Semrush: deferred broad-suite candidates;
+- 90-day bounded re-review window plus earlier re-review triggers for material pricing/API/terms/reliability changes;
+- explicit capability/evidence gates and source provenance rather than an opaque ranking score;
+- no Task #67 source admission and no executable provider transport.
 
-Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.8/P4.10. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
+P5.1 certification lineage:
+- PR #219 exact tested head `193c517bcefbfac2b1726e59fb33521cd0d45b18`;
+- PR CI #413 / run `35361361888`: success;
+- merge `1d1ee1b5284b62fe9cb446a7ad6d79a35db53259`, tree `573d1ec33cd1c5d84868fe29c8f1cbab6f24636a`;
+- post-merge CI #414 / run `35361587686`: success;
+- Replit exact-sync and non-browser validation: passed, `0/0`, clean.
 
-The historical Task #51–#56 execution/auth foundations remain in force, but they do not authorize a new live action by themselves.
-
-Do not jump directly to unrestricted provider mutation, live provider reads, persistence execution, publication or further Production DDL.
+Production remains on the separately certified Task #73 application release. Do not infer provider enrollment, live provider reads, source admission, persistence, scheduler/worker execution, publication, mutation, or further Production DDL from P5.1.
 
 ---
 
 ## 13. Safe next-step choices
 
-### Default safe engineering path — P5.1
+### Default safe engineering path — P5.2
 
-Proceed next, on a generic `continue`, with **P5.1 — provider selection/cost/reliability review for SERP + keyword data** through the normal issue → branch → research/engineering docs/tests as applicable → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. P5.1 must remain research/planning only: no real provider requests, credentials, data collection, evidence persistence or runtime activation.
+Proceed next, on a generic `continue`, with **P5.2 — SERP/ranking adapter(s)** through the normal issue → branch → implementation/tests/docs → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow.
+
+Based on P5.1, DataForSEO may be the first adapter engineering target, but P5.2 must remain default-off and network-free: deterministic request/result contracts, hard bounds, normalization integration and fake/supplied transport only. Generic `continue` does **not** authorize provider signup/purchase, API credentials, a live provider request, Task #67 external-source admission, Task #70 execution, observation/evidence persistence, scheduler/worker activation, Production DDL/DML, provider/public-site writes, secret/config changes, or publication.
 
 ### Optional P4.9
 
 **P4.9 — Storybook/component documentation** remains optional and should be started only if deliberately selected.
 
-### Separately authorized live-provider path
+### Separately authorized live-provider paths
 
-P1.4–P1.8 real GSC activation remains an alternative only with explicit bounded authorization for the exact credential/consent/property/read step.
-
-### Separately authorized live-provider path
-
-P1 live first-party provider activation remains an alternative only when the user gives explicit bounded authorization for the exact provider/client/secret/consent/property/read step.
+P1.4–P1.8 real GSC activation and any future external P5 provider enrollment/credentials/live-read path require explicit bounded authorization for the exact step.
 
 ### Existing Task #53/#54 mutation paths
 
@@ -516,6 +517,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P4.10 closeout, the default safe engineering milestone is P5.1; optional P4.9 remains deliberately selectable and P1 live-provider work still requires explicit bounded authorization
+10. current selected milestone and its exact authorization boundary; after the P5.1 closeout, the default safe engineering milestone is P5.2 network-free SERP-adapter engineering; optional P4.9 remains deliberately selectable and all live first-party/external-provider work still requires explicit bounded authorization
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
