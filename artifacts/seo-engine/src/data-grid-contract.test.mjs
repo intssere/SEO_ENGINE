@@ -12,7 +12,9 @@ const grid = read("components/data-grid.tsx");
 const workbench = read("components/data-workbench.tsx");
 
 test("OperationalTable delegates rendering to the shared P4.3 DataGrid", () => {
-  assert.match(operational, /import \\{ DataGrid, type DataGridColumn \\} from "\\.\\/data-grid"/);
+  assert.ok(
+    operational.includes('import { DataGrid, type DataGridColumn } from "./data-grid";'),
+  );
   assert.match(operational, /<DataGrid/);
   assert.doesNotMatch(operational, /<table\\b/);
 });
@@ -28,7 +30,9 @@ test("DataGrid exposes accessible search, sort state, and pagination controls", 
 });
 
 test("DataGrid consumes the reusable DataWorkbench shell", () => {
-  assert.match(grid, /import \\{ DataWorkbench \\} from "\\.\\/data-workbench"/);
+  assert.ok(
+    grid.includes('import { DataWorkbench } from "./data-workbench";'),
+  );
   assert.match(grid, /<DataWorkbench/);
   assert.match(workbench, /className="dataWorkbenchToolbar"/);
   assert.match(workbench, /className="dataWorkbenchFooter"/);
