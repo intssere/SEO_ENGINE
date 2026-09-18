@@ -1,11 +1,10 @@
 import { useListOpportunities, type OpportunityRecord } from "@workspace/api-client-react";
 import { Loader2, AlertCircle, ShieldCheck, History } from "lucide-react";
 import { OperationalTable, PageHeader } from "../components/operational-table";
-import { Badge } from "../components/layout";
+import { StatusBadge } from "../components/status-badge";
+import { riskTone } from "@/lib/status-grammar";
 
 const label = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-const riskTone = (risk: string) => risk === "high" ? "approval" : risk === "low" ? "verified" : "experiment";
-
 const activeColumns = [
   {
     header: "Opportunity",
@@ -41,7 +40,7 @@ const activeColumns = [
   {
     header: "Evaluator risk",
     accessorKey: "risk_classification",
-    cell: (value: string) => <Badge tone={riskTone(value)}>{value.toUpperCase()}</Badge>,
+    cell: (value: string) => <StatusBadge tone={riskTone(value)}>{value.toUpperCase()}</StatusBadge>,
   },
   {
     header: "Plan",
@@ -58,7 +57,7 @@ const activeColumns = [
 
 const historyColumns = [
   { header: "Opportunity", accessorKey: "title", cell: (value: string, row: OpportunityRecord) => <div className="opportunityIdentity"><strong>{value}</strong><span>{label(row.opportunity_type)}</span>{row.url && <small>{row.url}</small>}</div> },
-  { header: "Lifecycle", accessorKey: "lifecycle", cell: () => <Badge tone="approval">SUPERSEDED</Badge> },
+  { header: "Lifecycle", accessorKey: "lifecycle", cell: () => <StatusBadge tone="warning">SUPERSEDED</StatusBadge> },
   { header: "Final score", accessorKey: "score", cell: (value: number) => value.toFixed(1) },
   { header: "Reason", accessorKey: "rationale" },
   { header: "Updated", accessorKey: "updated_at", cell: (value: string) => new Date(value).toLocaleString() },
@@ -91,7 +90,7 @@ export default function OpportunitiesPage() {
               <h2>Active decision queue</h2>
               <p className="muted">Only candidates supported by the latest persisted baseline evidence appear here.</p>
             </div>
-            <Badge tone="verified"><ShieldCheck className="w-3 h-3 mr-1 inline" /> READ-ONLY</Badge>
+            <StatusBadge tone="info"><ShieldCheck className="w-3 h-3 mr-1 inline" /> READ-ONLY</StatusBadge>
           </div>
           {isLoading ? (
             <div className="flex flex-col items-center justify-center p-12 text-[#77839a]">
@@ -120,7 +119,7 @@ export default function OpportunitiesPage() {
                 <h2><History className="w-4 h-4 inline mr-2" />Invalidated or superseded</h2>
                 <p className="muted">Prior candidates remain traceable but are excluded from current opportunity counts and prioritization.</p>
               </div>
-              <Badge>{data.history.length} HISTORICAL</Badge>
+              <StatusBadge>{data.history.length} HISTORICAL</StatusBadge>
             </div>
             <OperationalTable data={data.history} columns={historyColumns} emptyMessage="No invalidated opportunity history yet." />
           </section>
