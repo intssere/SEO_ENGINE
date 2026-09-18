@@ -275,7 +275,7 @@ export default function DashboardPage() {
               <p className="eyebrow">AI SEO ENGINE · LAST 24 HOURS</p>
               <h2>Engine activity</h2>
             </div>
-            <StatusBadge tone={data.state === "live" ? "verified" : "approval"}>
+            <StatusBadge tone={readinessTone(data.state === "live" ? "live" : "unavailable")}>
               {data.state === "live" ? "DATABASE-BACKED" : "NO LIVE DATA"}
             </StatusBadge>
           </div>
