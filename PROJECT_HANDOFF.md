@@ -451,24 +451,24 @@ It does **not** authorize:
 
 ---
 
-## 12. Current project stage after P4.6
+## 12. Current project stage after P4.7
 
-P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2**, **P4.2 — Design tokens / components / status grammar**, **P4.3 — Enterprise data-grid / workbench primitives**, **P4.4 — Evidence drawer**, **P4.5 — Command Center v2**, and **P4.6 — Full-Site Audit / Crawl Explorer UI** are complete engineering foundations and remain unpublished.
+P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2** through **P4.7 — responsive/mobile/tablet professional polish** are complete engineering foundations and remain unpublished.
 
-P4.6 audit/explorer checkpoint:
-- existing `/technical-seo` route is upgraded rather than creating a duplicate route;
-- pure `AuditWorkspaceModel` defensively normalizes current persisted technical findings and conservative readiness/coverage states;
-- current findings use the shared P4.3 DataGrid;
-- only existing GET hooks are consumed: Technical SEO findings and the already exposed dashboard certification snapshot;
-- bounded baseline coverage is explicitly not whole-site; only explicit whole-site certification can render success;
-- the P2.7 URL Explorer UI mirrors retained URL/sitemap/lastmod/recrawl fields while exposing unavailable HTTP/fetch/redirect/canonical/indexability/content-fingerprint dimensions;
-- because no frontend P2.7 GET binding exists, URL Explorer contains zero synthetic rows and shows `read model not bound`;
-- P2.5 crawl history and P2.6 recrawl-plan UI states are likewise unavailable rather than fabricated;
-- no crawl start/resume/retry, sitemap fetch, Production evidence read/persistence, provider, scheduler, worker or public-write control exists;
-- deterministic model and source-contract tests enforce the read-only and no-fabrication boundary;
-- P4.1–P4.5 behavior remains intact.
+P4.7 responsive-polish checkpoint:
+- compact tablets/phones switch to the mobile navigation shell at `<=820px`;
+- compact-mode page topbars are static, avoiding sticky collision with the mobile navigation bar;
+- shared shell/workspace/content/card min-width and overflow rules keep page chrome from expanding horizontally;
+- DataGrid tables use deliberate 720px internal widths with contained momentum horizontal scrolling inside DataWorkbench;
+- DataWorkbench toolbar/footer/search/pagination controls stack earlier at tablet widths and become phone-safe;
+- shared mobile-nav, grid, drawer, review and draft controls have at least 44px minimum touch targets;
+- title rows, section heads, badges, action groups and long content wrap safely;
+- EvidenceDrawer uses viewport-safe tablet/mobile sizing and dynamic viewport scrolling;
+- Command Center, Full-Site Audit and generic operational surfaces inherit consistent compact spacing/grid behavior;
+- deterministic source-contract tests enforce the responsive shell/overflow/touch/drawer invariants;
+- no API/data/runtime behavior is changed.
 
-Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.6. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
+Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.7. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
 
 The historical Task #51–#56 execution/auth foundations remain in force, but they do not authorize a new live action by themselves.
 
@@ -478,9 +478,9 @@ Do not jump directly to unrestricted autonomous provider mutation, provider read
 
 ## 13. Safe next-step choices
 
-### Default safe engineering path — P4.7
+### Default safe engineering path — P4.8
 
-Proceed next with **P4.7 — responsive/mobile/tablet professional polish** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. It may refine completed P4.1–P4.6 surfaces, but it must not activate provider requests, live crawl/sitemap execution, observation/evidence Production reads/persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
+Proceed next with **P4.8 — accessibility test baseline and WCAG 2.2 AA remediation** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. It may add accessibility contracts and remediate keyboard/focus/semantic/contrast behavior across P4.1–P4.7, but it must not activate provider requests, live crawl/sitemap execution, observation/evidence Production reads/persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
 
 ### Separately authorized live-provider path
 
@@ -507,6 +507,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P4.6 closeout, the default safe engineering milestone is P4.7 unless a different path is explicitly authorized
+10. current selected milestone and its exact authorization boundary; after the P4.7 closeout, the default safe engineering milestone is P4.8 unless a different path is explicitly authorized
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
