@@ -13,9 +13,49 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1 is research/planning code + documentation only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.2 are external-intelligence research/adapter engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P5.1 complete
+## Current engineering state — P5.2 complete
+
+Roadmap **P5.2 — SERP/ranking adapter(s)** is complete under issue #221 / PR #222.
+
+P5.2 adds a deterministic DataForSEO Google Organic SERP/ranking adapter foundation without activating any provider/runtime capability:
+- exact canonical P5.1 review/freshness binding and requirement that the dual-purpose engineering selection remains `dataforseo`;
+- exact Task #68 source/request/market/category lineage binding;
+- expected source key `dataforseo-google-organic-serp` as an adapter contract only, with no Task #67 source admission;
+- inert standard-task endpoint metadata for task-post + advanced result;
+- keyword/location/language/device validation;
+- internal depth bound 10–100 in 10-result increments;
+- normal priority `1` only;
+- deterministic provider tag and request fingerprint;
+- conservative `depth / 10` billed-page-unit upper-bound metadata;
+- supplied-result-only normalization with no transport execution;
+- bounded provider-neutral ranking projection retaining only rank/page/domain/URL;
+- correct separation of organic `rank_group` from absolute SERP-element `rank_absolute`;
+- tracked-domain/subdomain match metrics including best rank/top-10/top-20;
+- explicit no-match success, empty result and bounded provider/task-error semantics;
+- exact Task #68-compatible adapter results and round-trip normalization tests;
+- raw titles/snippets/XPath/status messages/arbitrary provider fields are discarded.
+
+Certification:
+- base SHA/tree: `c352ac4e8c60dfc3ded33aaa63faff3bb43d6be0` / `0c8138ee1134dec9f6846fe97dfaf6a93e97a68e`;
+- exact tested PR head: `184706ae549be75a19d22e15acbc1f280962785b`;
+- PR CI run `35365076296` / CI #417: success across schema/task/workspace tests, Playwright Chromium + P4.10 browser suite, typecheck and build;
+- implementation merge: `873aebeae798e61b2c313dfbe5e618c09c6a7f75`;
+- merge tree: `9136828ed85cbcd3b548a8532e0e452c2bb2f9f7`;
+- post-merge push CI run `35365310166` / CI #418: success across the same full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked;
+- Replit non-browser recursive workspace tests, full typecheck, full build and `git diff --check`: passed.
+
+P5.2 is **unpublished**. It did not authorize or perform DataForSEO signup/enrollment/purchase, credential creation/use, provider/search-engine requests, Task #67 source admission, Task #70 execution, observation/evidence persistence, Production DB reads/DDL/DML, scheduler/worker activation, Task #53/#54/#64 execution, provider/public-site writes, secret/config changes or publication.
+
+Detailed record:
+- `.agents/memory/p5-2-dataforseo-serp-adapter-closeout.md`
+- `docs/p5-2-dataforseo-serp-ranking-adapter.md`
+
+Default next safe milestone: **P5.3 — keyword volume/difficulty/opportunity adapter(s)**, default-off/network-free engineering using deterministic supplied fixtures only. Live DataForSEO enrollment/credentials/requests remain separately unauthorized.
+
+## Previous engineering state — P5.1 complete
 
 Roadmap **P5.1 — provider selection/cost/reliability review for SERP + keyword data** is complete under issue #218 / PR #219.
 
@@ -148,6 +188,7 @@ Completed non-published engineering foundations include:
 - **P4.8 — Accessibility baseline / WCAG 2.2 AA remediation:** single main landmark + skip link/route focus, keyboard-scrollable grids, Radix-managed Ask dialog, labeled forms/live regions, AA-safe muted palette, visible focus, reduced motion and deterministic contrast/source contracts; final browser/final certification remains later.
 - **P4.10 — Playwright/axe/visual regression:** isolated synthetic-fixture Chromium critical paths, axe serious/critical gates, browser error/network escape gates, desktop/tablet/mobile perceptual visual hashes, failure artifacts, and browser dependency lock contracts. P4.9 remains optional/unselected.
 - **P5.1 — external SERP/keyword provider selection review:** dated deterministic provider-role review with explicit pricing/reliability provenance and re-review bounds; DataForSEO initial dual-purpose engineering target, SerpApi SERP benchmark/fallback, Google Ads Keyword Planning official keyword reference, Ahrefs/Semrush deferred; zero provider enrollment/credentials/network/source admission/runtime/persistence/publication.
+- **P5.2 — DataForSEO SERP/ranking adapter foundation:** deterministic standard-task request contract, P5.1 + Task #68 lineage, bounded provider-neutral ranking projection and strict Task #68 result mapping; zero provider enrollment/credentials/network/source admission/runtime/persistence/publication.
 
 The completed P3.6 schema migration does not activate application persistence or reads. None of these foundations activates new production crawling, provider reads, application database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
@@ -254,17 +295,17 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1. P4.9 remains optional/unselected. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.8/P4.10 establish product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression foundations only; P5.1 establishes research/selection guidance only. None implies live full-site crawl execution, sitemap fetching, provider enrollment/requests, Task #67 source admission, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.2. P4.9 remains optional/unselected. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.8/P4.10 establish product/browser foundations; P5.1 establishes provider-selection guidance; P5.2 establishes a network-free SERP/ranking adapter contract only. None implies live full-site crawl execution, sitemap fetching, provider enrollment/requests, Task #67 source admission, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
 
 `MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3/P4 status tables must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next boundary — P5.2 safe by default; live providers only if deliberately authorized; P4.9 optional
+## Next boundary — P5.3 safe by default; live providers only if deliberately authorized; P4.9 optional
 
-With P5.1 certified, the next default safe engineering boundary is **P5.2 — SERP/ranking adapter(s)**. Based on the P5.1 review, the first engineering target may be DataForSEO, but generic `continue` authorizes only default-off/network-free adapter contracts, normalization/bounds/readiness integration and deterministic fake/supplied-transport tests. It must not enroll a provider, create/use credentials, make provider requests, admit a Task #67 external source, execute Task #70, persist evidence, activate a scheduler/worker, mutate Production data/schema, write to a provider/public site, or publish.
+With P5.2 certified, the next default safe engineering boundary is **P5.3 — keyword volume/difficulty/opportunity adapter(s)**. Based on P5.1, the first engineering target may again be DataForSEO, but generic `continue` authorizes only default-off/network-free request/result contracts, normalization/bounds/readiness integration and deterministic supplied-fixture tests. It must not enroll a provider, create/use credentials, make provider requests, admit a Task #67 external source, execute Task #70, persist evidence, activate a scheduler/worker, mutate Production data/schema, write to a provider/public site, or publish.
 
 A separately authorized **P1.4–P1.8 live GSC path** may be chosen instead only with explicit bounded authorization for the exact credential/consent/property/read step.
 
-**P4.9 — Storybook/component documentation** remains optional/unselected and may be taken deliberately later; it is not required before P5.2.
+**P4.9 — Storybook/component documentation** remains optional/unselected and may be taken deliberately later; it is not required before P5.3.
 
 A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 
