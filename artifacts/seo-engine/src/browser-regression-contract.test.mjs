@@ -14,6 +14,7 @@ const visual = read("../e2e/visual-regression.spec.mjs");
 const baselines = read("../e2e/visual-baselines.mjs");
 const hash = read("../e2e/visual-hash.mjs");
 const ci = read("../../../.github/workflows/ci.yml");
+const lockfile = read("../../../pnpm-lock.yaml");
 
 test("P4.10 browser server and browser are local deterministic Chromium", () => {
   assert.ok(config.includes('baseURL: "http://127.0.0.1:4174"'));
@@ -61,6 +62,18 @@ test("visual baselines are committed 512-bit hashes with bounded tolerance", () 
   assert.ok(visual.includes("toBeLessThanOrEqual(baseline.maxDistance)"));
   assert.ok(hash.includes("horizontalBits"));
   assert.ok(hash.includes("verticalBits"));
+});
+
+test("browser test dependencies are pinned in the workspace lockfile", () => {
+  assert.ok(lockfile.includes("'@axe-core/playwright':"));
+  assert.ok(lockfile.includes("specifier: 4.13.0"));
+  assert.ok(lockfile.includes("4.13.0(playwright-core@1.63.0)"));
+  assert.ok(lockfile.includes("'@playwright/test':"));
+  assert.ok(lockfile.includes("specifier: 1.63.0"));
+  assert.ok(lockfile.includes("'@playwright/test@1.63.0':"));
+  assert.ok(lockfile.includes("playwright-core@1.63.0"));
+  assert.ok(lockfile.includes("playwright@1.63.0"));
+  assert.ok(lockfile.includes("pngjs@7.0.0"));
 });
 
 test("normal CI enforces browser regressions rather than capture mode", () => {
