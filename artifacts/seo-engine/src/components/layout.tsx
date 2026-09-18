@@ -69,16 +69,6 @@ function NavigationGroups({
   );
 }
 
-export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: string }) {
-  return <span className={`badge ${tone}`}>{children}</span>;
-}
-
-export function riskTone(risk: string) {
-  if (risk === "approval") return "approval";
-  if (risk === "blocked") return "experiment";
-  return "verified";
-}
-
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { data, isLoading } = useGetDashboard();
