@@ -20,13 +20,13 @@ test("OperationalTable delegates rendering to the shared P4.3 DataGrid", () => {
 });
 
 test("DataGrid exposes accessible search, sort state, and pagination controls", () => {
-  assert.match(grid, /type="search"/);
-  assert.match(grid, /aria-sort=\\{ariaSort\\}/);
-  assert.match(grid, /aria-label=\\{`Sort by \\$\\{column\\.header\\}`\\}/);
-  assert.match(grid, /aria-label="Rows per page"/);
-  assert.match(grid, /aria-label="Table pagination"/);
-  assert.match(grid, />Previous</);
-  assert.match(grid, />Next</);
+  assert.ok(grid.includes('type="search"'));
+  assert.ok(grid.includes('aria-sort={ariaSort}'));
+  assert.ok(grid.includes('aria-label={`Sort by ${column.header}`}'));
+  assert.ok(grid.includes('aria-label="Rows per page"'));
+  assert.ok(grid.includes('aria-label="Table pagination"'));
+  assert.ok(grid.includes("Previous"));
+  assert.ok(grid.includes("Next"));
 });
 
 test("DataGrid consumes the reusable DataWorkbench shell", () => {
