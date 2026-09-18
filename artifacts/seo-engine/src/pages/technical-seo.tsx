@@ -81,8 +81,8 @@ export default function TechnicalSeoPage() {
 
   if (findings.isLoading) {
     return (
-      <div className="auditWorkspaceLoading">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="auditWorkspaceLoading" role="status" aria-live="polite">
+        <Loader2 className="w-8 h-8 animate-spin" aria-hidden="true" />
         <p>Loading audit workspace…</p>
       </div>
     );
