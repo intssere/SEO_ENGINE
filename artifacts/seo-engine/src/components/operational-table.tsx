@@ -1,63 +1,97 @@
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { StatusBadge } from "./status-badge";
 import { readinessTone } from "@/lib/status-grammar";
+import { DataGrid, type DataGridColumn } from "./data-grid";
 
 export interface Column {
   header: string;
   accessorKey: string;
   cell?: (value: any, row: any) => ReactNode;
+  sortable?: boolean;
+  searchable?: boolean;
 }
 
 interface OperationalTableProps {
   data: any[];
   columns?: Column[];
   emptyMessage?: string;
+  label?: string;
+  searchPlaceholder?: string;
+  rowKey?: (row: any, sourceIndex: number) => string;
 }
 
-export function OperationalTable({ data, columns, emptyMessage = "No data available." }: OperationalTableProps) {
-  // Auto-generate columns from the first row if not provided
-  const cols = columns || (data.length > 0 ? Object.keys(data[0]).map(key => ({
-    header: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
-    accessorKey: key,
-    cell: (val: any) => {
-      if (typeof val === 'boolean') return val ? 'Yes' : 'No';
-      if (val === null || val === undefined) return '-';
-      if (typeof val === 'object') return JSON.stringify(val);
-      return String(val);
+function defaultOperationalRowKey(row: any, sourceIndex: number) {
+  const candidates = [
+    "id",
+    "action_id",
+    "deployment_id",
+    "observation_id",
+    "evidence_id",
+    "url",
+    "path",
+    "query",
+    "title",
+  ];
+
+  for (const key of candidates) {
+    const value = row?.[key];
+    if (
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "bigint"
+    ) {
+      return `${key}:${String(value)}:${sourceIndex}`;
     }
-  })) : []);
+  }
+
+  return `row:${sourceIndex}`;
+}
+
+export function OperationalTable({
+  data,
+  columns,
+  emptyMessage = "No data available.",
+  label = "Operational data",
+  searchPlaceholder = "Search rows",
+  rowKey = defaultOperationalRowKey,
+}: OperationalTableProps) {
+  const cols = columns || (
+    data.length > 0
+      ? Object.keys(data[0]).map((key) => ({
+          header: key
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (value) => value.toUpperCase()),
+          accessorKey: key,
+          cell: (value: any) => {
+            if (typeof value === "boolean") return value ? "Yes" : "No";
+            if (value === null || value === undefined) return "—";
+            if (typeof value === "object") return JSON.stringify(value);
+            return String(value);
+          },
+        }))
+      : []
+  );
+
+  const gridColumns: DataGridColumn<any>[] = cols.map((column, index) => ({
+    id: `${column.accessorKey}:${index}`,
+    header: column.header,
+    accessorKey: column.accessorKey,
+    cell: column.cell
+      ? (value, row) => column.cell!(value, row)
+      : undefined,
+    sortable: column.sortable,
+    searchable: column.searchable,
+  }));
 
   return (
-    <div className="tableWrap">
-      <table>
-        <thead>
-          <tr>
-            {cols.map((col) => (
-              <th key={col.header}>{col.header}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.length > 0 ? (
-            data.map((row, i) => (
-              <tr key={i}>
-                {cols.map((col) => (
-                  <td key={col.header}>
-                    {col.cell ? col.cell(row[col.accessorKey], row) : row[col.accessorKey]}
-                  </td>
-                ))}
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={cols.length || 1} className="emptyCell">
-                {emptyMessage}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <DataGrid
+      data={data}
+      columns={gridColumns}
+      getRowId={rowKey}
+      label={label}
+      emptyMessage={emptyMessage}
+      searchPlaceholder={searchPlaceholder}
+    />
   );
 }
 
