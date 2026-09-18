@@ -86,7 +86,7 @@ Detailed record:
 - `.agents/memory/p5-1-provider-selection-review-closeout.md`
 - `docs/p5-1-serp-keyword-provider-selection-review.md`
 
-Default next safe milestone: **P5.2 — SERP/ranking adapter(s)**, default-off/network-free engineering using deterministic fake/supplied transport only. Live DataForSEO enrollment/credentials/requests remain separately unauthorized.
+At the P5.1 checkpoint, the next safe milestone was **P5.2 — SERP/ranking adapter(s)**; that milestone is now complete as recorded above. Live DataForSEO enrollment/credentials/requests remain separately unauthorized.
 
 ## Previous engineering state — P4.10 complete
 
