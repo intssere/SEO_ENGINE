@@ -13,32 +13,37 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.8 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility code only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.8/P4.10 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P4.8 complete
+## Current engineering state — P4.10 complete
 
-Roadmap **P4.8 — accessibility test baseline and WCAG 2.2 AA remediation** is complete under issue #214 / PR #215. P4.1–P4.7 remain the preceding product/navigation/workbench/evidence/Command-Center/audit-explorer/responsive foundations.
+Roadmap **P4.10 — Playwright/axe/visual regression critical-path suite** is complete under issue #216 / PR #217. P4.1–P4.8 remain the completed product/accessibility foundations; P4.9 Storybook/component documentation remains optional and unselected.
 
-P4.8 establishes a deterministic source/unit/build accessibility baseline and remediates concrete AA issues without changing API/data/runtime semantics:
-- the application now exposes a visible-on-focus skip link and one focusable app-level `main#main-content` landmark;
-- SPA route changes hand programmatic focus to the new main content without forcing scroll;
-- mobile navigation supports Escape-close with focus return to the menu toggle and explicit navigation-group semantics;
-- DataGrid horizontal-scroll regions are keyboard-focusable/labeled and pagination has explicit group semantics while retaining table labels and `aria-sort`;
-- the Ask surface now uses the existing Radix Dialog primitive for focus trapping, Escape handling and focus restoration, with Dialog title/description, a programmatically labeled input, help text, and polite/assertive live state announcements;
-- shared Dialog/Sheet close controls use 44px targets and decorative close icons are hidden from assistive technology;
-- Shopify-domain, Performance filters, and Approval editable-draft controls now have programmatic labels;
-- remediated loading/success/error states use `role=status` / `role=alert` semantics and decorative loading/error icons are hidden where updated;
-- audited low-contrast light-surface muted text colors were replaced with AA-safe alternatives, the light muted-foreground token was darkened, and dark navigation-domain label contrast was raised;
-- deterministic tests calculate contrast ratios for the P4.8 normal-text/status palette and require at least 4.5:1 for the covered normal-size text combinations;
-- a shared `:focus-visible` treatment, reduced-motion fallback, and forced-colors focus/status treatment are present;
-- source contracts prevent regression of the landmark, focus, keyboard-scroll, dialog, labeling, live-region, contrast, motion, and frontend-only boundaries.
+P4.10 adds a deterministic browser-level regression harness without activating any live application/provider/runtime capability:
+- Chromium-only Playwright runs against a standalone local Vite frontend server;
+- fixed `en-US` locale, UTC timezone, light color scheme, reduced motion, one worker and deterministic synthetic fixture time/data;
+- every browser `/api/**` request is intercepted with synthetic non-PII fixtures;
+- unknown API requests fail closed and are recorded;
+- non-local/external origins are aborted and recorded, so browser tests cannot reach providers, public sites or Production;
+- no API server, database, provider, OAuth, crawler, scheduler or worker is started for the browser suite;
+- critical browser paths cover Command Center navigation and SPA focus handoff, compact mobile navigation Escape/focus return, Technical SEO DataGrid keyboard/search/sort behavior, and Ask dialog focus trapping/fixture answer/Escape/focus restoration;
+- representative Command Center, Technical SEO and Connections routes run axe WCAG scans with serious/critical violations required to be zero;
+- browser console errors and page errors fail covered tests;
+- visual regression covers Command Center desktop/tablet/mobile and Audit desktop with committed text-only 512-bit directional perceptual hashes;
+- visual comparison uses bounded Hamming tolerance `32/512` bits (6.25%); baseline capture mode is not used by normal CI;
+- Playwright trace/screenshot/report artifacts are retained/uploaded on failures only;
+- the first browser/axe capture exposed a real Command Center contrast regression; P4.10 corrected the affected muted metric/engine colors and the subsequent axe scans pass;
+- browser interaction exposed the need for explicit focus restoration when opening Ask via the global keyboard shortcut; P4.10 adds that restoration path;
+- P4.10 browser packages are pinned in `package.json` and now also committed in `pnpm-lock.yaml`, with a unit contract preventing browser dependency lock drift.
 
-P4.8 is **not final WCAG certification**. Browser-driven axe/visual/critical-path coverage remains P4.10, and final accessibility certification remains P11.5.
+Canonical browser certification is GitHub Actions Ubuntu/Chromium. Replit cannot launch Playwright Chromium on this host because its loader lacks `libglib-2.0.so.0`; Replit remains the non-browser validation/sync target.
 
-P4.8 is engineering-only and remains **unpublished**. It did not authorize or perform provider/public-site activity, live crawl/sitemap execution, Production observation/evidence reads or persistence, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
+A repository-wide frozen-lock probe still fails on a **pre-existing unrelated** omission: `artifacts/api-server/package.json` declares `tsx@^4.23.4` but that importer entry is absent from the inherited lockfile. P4.10 does not widen into unrelated lockfile normalization; its own browser dependency entries are present and contract-enforced.
+
+P4.10 is engineering/test/CI only and remains **unpublished**. It did not authorize or perform real API-server startup, provider/public-site activity, OAuth/credential use, live crawl/sitemap execution, Production observation/evidence reads or persistence, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
 
 Detailed record:
-- `.agents/memory/p4-8-accessibility-wcag-aa-remediation-closeout.md`
+- `.agents/memory/p4-10-playwright-axe-visual-regression-closeout.md`
 
 ## Current database state — P3.6 complete
 
@@ -76,13 +81,17 @@ Detailed record:
 
 ## Replit engineering workspace
 
-P4.8 branch `p4-8-accessibility-wcag-aa-remediation` was created from the P4.7-certified canonical `main`:
-- base SHA: `a983e1e2024c4a223864ea4bf0d48b1eb285c11a`
-- base tree: `32715b2506737f07885881d7ff8c00999bbbe74d`
+P4.10 branch `p4-10-playwright-axe-visual-regression` was created from the P4.8-certified canonical `main`:
+- base SHA: `754d721df41522beade646451a298e35a01f2410`
+- base tree: `f8cd7b9be2ceee7fd956af05e516301f3621fe64`
 
-Before P4.8 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. Exact branch validation on implementation head `4a9a01127b88b4b0aefcc1f2e424143db2c5e63e` / tree `04ce58a5dc33031ef345f6802abeb224278068bd` passed 81 SEO Engine tests, recursive workspace tests including 570 API Server tests, full typecheck, full build and `git diff --check`; exact-head GitHub CI run `35341367991` also passed. No publication, runtime start/restart, database/schema work, crawl/sitemap execution, provider/public-site activity or secret/config changes are part of P4.8.
+Replit exact branch validation on corrected implementation head `187f17e8e816bc97dc9e987f2e8dfd1ba7e38ef7` / tree `a577a6e6a66c9596baaaa8f8c63999cd65cd71af` passed SEO Engine tests, recursive workspace tests, SEO Engine/full typecheck, SEO Engine/full build and `git diff --check`. Browser execution is not certified on Replit because the host cannot launch Chromium due missing `libglib-2.0.so.0`; GitHub Actions is the canonical browser runner.
 
-After PR #215 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.8 without separate explicit authorization.
+GitHub exact-head CI run `35355521841` passed the full schema/task/workspace matrix, Playwright Chromium installation, the P4.10 browser critical-path/axe/visual suite, typecheck and build.
+
+A frozen lockfile probe on Replit still fails because of the inherited unrelated API Server `tsx` importer omission noted above. P4.10-specific browser dependencies are committed in the lockfile and unit-contract-enforced.
+
+After PR #217 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.10 without separate explicit authorization.
 
 ## Completed engineering foundations
 
@@ -104,6 +113,7 @@ Completed non-published engineering foundations include:
 - **P4.6 — Full-Site Audit / Crawl Explorer UI:** read-only Technical SEO workspace over current GET data, defensive finding normalization, bounded-certification truth, production-shaped P2.7 URL Explorer with zero synthetic rows, and explicit unavailable history/recrawl bindings.
 - **P4.7 — Responsive/mobile/tablet professional polish:** unified compact-tablet/mobile shell behavior, internal table scrolling, earlier workbench stacking, 44px shared touch targets, wrap-safe headers/status/text, viewport-safe evidence drawer sizing and consistent compact layouts across P4.1–P4.6.
 - **P4.8 — Accessibility baseline / WCAG 2.2 AA remediation:** single main landmark + skip link/route focus, keyboard-scrollable grids, Radix-managed Ask dialog, labeled forms/live regions, AA-safe muted palette, visible focus, reduced motion and deterministic contrast/source contracts; final browser/final certification remains later.
+- **P4.10 — Playwright/axe/visual regression:** isolated synthetic-fixture Chromium critical paths, axe serious/critical gates, browser error/network escape gates, desktop/tablet/mobile perceptual visual hashes, failure artifacts, and browser dependency lock contracts. P4.9 remains optional/unselected.
 
 The completed P3.6 schema migration does not activate application persistence or reads. None of these foundations activates new production crawling, provider reads, application database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
@@ -210,15 +220,17 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.8. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.8 establish product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility foundations only. None implies live full-site crawl execution, sitemap fetching, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.8/P4.10. P4.9 remains optional/unselected. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.8/P4.10 establish product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression foundations only. None implies live full-site crawl execution, sitemap fetching, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
 
 `MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3/P4 status tables must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next boundary — P4.10 by default; P4.9 only if deliberately selected; P1 live-provider only if deliberately authorized
+## Next boundary — P5.1 safe by default; P1 live-provider only if deliberately authorized; P4.9 optional
 
-The next default safe engineering boundary is **P4.10 — Playwright/axe/visual regression critical-path suite**. It should add browser-level accessibility/interaction/viewport regression coverage for the completed P4 product foundation without activating providers, crawl execution, Production observation/evidence reads/persistence, mutation, scheduling or publication.
+With the selected P4 product/browser foundation complete, the next default safe engineering boundary is **P5.1 — provider selection/cost/reliability review for SERP + keyword data**. P5.1 is research/adapter-planning only and must not make provider calls, bind credentials, collect evidence, or activate runtime execution.
 
-**P4.9 — Storybook/component documentation** remains optional/planned and should be taken only if deliberately selected; its “if selected” roadmap wording does not make it an automatic prerequisite for P4.10.
+A separately authorized **P1.4–P1.8 live GSC path** may be chosen instead only with explicit bounded authorization for the exact credential/consent/property/read step.
+
+**P4.9 — Storybook/component documentation** remains optional/unselected and may be taken deliberately later; it is not required before P5.1.
 
 A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 

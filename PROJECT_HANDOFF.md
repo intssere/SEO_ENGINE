@@ -451,39 +451,45 @@ It does **not** authorize:
 
 ---
 
-## 12. Current project stage after P4.8
+## 12. Current project stage after P4.10
 
-P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2** through **P4.8 — accessibility test baseline and WCAG 2.2 AA remediation** are complete engineering foundations and remain unpublished.
+P3.6 remains the certified Production schema checkpoint. **P4.1–P4.8** plus selected **P4.10 — Playwright/axe/visual regression critical-path suite** are complete engineering foundations and remain unpublished. P4.9 Storybook/component documentation remains optional and unselected.
 
-P4.8 accessibility checkpoint:
-- app shell has one focusable main landmark and a visible-on-focus skip link;
-- SPA route changes move focus to main content without forced scrolling;
-- mobile navigation supports Escape-close/focus-return and grouped navigation semantics;
-- DataGrid scroll regions are keyboard-focusable/labeled;
-- Ask uses the Radix Dialog primitive with trapped/restored focus, title/description, labeled input/help text and live status/error announcements;
-- Shopify-domain, Performance filters and Approval editable-draft controls have programmatic labels;
-- remediated loading/success/error states are announced and decorative icons are hidden where updated;
-- the audited light-surface muted palette and status combinations covered by P4.8 meet deterministic 4.5:1 normal-text contrast checks;
-- shared focus-visible, reduced-motion and forced-colors baselines exist;
-- P4.8 is source/unit/build remediation only, not final browser-driven WCAG certification.
+P4.10 browser-regression checkpoint:
+- Chromium-only Playwright runs on a standalone local Vite frontend with synthetic non-PII fixtures;
+- every browser API request is intercepted; unknown API paths fail closed and all non-local/external origins are blocked;
+- no API server, DB, provider, OAuth, crawler, scheduler or worker participates in browser tests;
+- critical paths cover Command Center navigation/route focus, mobile navigation Escape/focus return, Technical SEO DataGrid keyboard/search/sort, Ask dialog focus/fixture answer/Escape/focus restoration;
+- axe serious/critical WCAG scans pass on Command Center, Technical SEO and Connections;
+- console/page errors fail tests;
+- text-only 512-bit perceptual visual hashes cover Command Center desktop/tablet/mobile and Audit desktop with 32/512 Hamming tolerance;
+- failure-only Playwright artifacts are retained in CI;
+- the initial browser run exposed and P4.10 fixed a real Command Center contrast regression;
+- browser packages are pinned in package + lockfile and contract-enforced;
+- GitHub Actions Ubuntu/Chromium is the canonical browser runner because Replit cannot launch Chromium on this host due missing `libglib-2.0.so.0`;
+- inherited global frozen-lock validation still has an unrelated pre-P4.10 API Server `tsx` importer omission; P4.10 browser deps themselves are locked.
 
-Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.8. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
+Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.8/P4.10. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
 
 The historical Task #51–#56 execution/auth foundations remain in force, but they do not authorize a new live action by themselves.
 
-Do not jump directly to unrestricted autonomous provider mutation, provider reads, persistence execution, publication or further Production DDL.
+Do not jump directly to unrestricted provider mutation, live provider reads, persistence execution, publication or further Production DDL.
 
 ---
 
 ## 13. Safe next-step choices
 
-### Default safe engineering path — P4.10
+### Default safe engineering path — P5.1
 
-Proceed next with **P4.10 — Playwright/axe/visual regression critical-path suite** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. It should add browser-level critical-path accessibility, keyboard, viewport and visual-regression coverage over P4.1–P4.8 without activating provider requests, live crawl/sitemap execution, observation/evidence Production reads/persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
+Proceed next, on a generic `continue`, with **P5.1 — provider selection/cost/reliability review for SERP + keyword data** through the normal issue → branch → research/engineering docs/tests as applicable → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. P5.1 must remain research/planning only: no real provider requests, credentials, data collection, evidence persistence or runtime activation.
 
 ### Optional P4.9
 
-**P4.9 — Storybook/component documentation** remains optional and should be started only if deliberately selected. It is not an automatic prerequisite for P4.10.
+**P4.9 — Storybook/component documentation** remains optional and should be started only if deliberately selected.
+
+### Separately authorized live-provider path
+
+P1.4–P1.8 real GSC activation remains an alternative only with explicit bounded authorization for the exact credential/consent/property/read step.
 
 ### Separately authorized live-provider path
 
@@ -510,6 +516,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P4.8 closeout, the default safe engineering milestone is P4.10; optional P4.9 requires deliberate selection
+10. current selected milestone and its exact authorization boundary; after the P4.10 closeout, the default safe engineering milestone is P5.1; optional P4.9 remains deliberately selectable and P1 live-provider work still requires explicit bounded authorization
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.

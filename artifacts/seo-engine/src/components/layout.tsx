@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState, createContext, useContext } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState, createContext, useContext } from "react";
 import { Link, useLocation } from "wouter";
 import { AskModal } from "./ask-modal";
 import { useGetDashboard } from "@workspace/api-client-react";
@@ -74,16 +74,32 @@ export function Layout({ children }: { children: ReactNode }) {
   const { data, isLoading } = useGetDashboard();
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const askReturnFocusRef = useRef<HTMLElement | null>(null);
   const mobileNavToggleRef = useRef<HTMLButtonElement>(null);
   const mainContentRef = useRef<HTMLElement>(null);
   const previousLocationRef = useRef(location);
   const auth = useAuth();
 
+  const setAskModalOpen = useCallback((open: boolean) => {
+    if (open) {
+      const active = document.activeElement;
+      askReturnFocusRef.current =
+        active instanceof HTMLElement ? active : null;
+      setIsAskModalOpen(true);
+      return;
+    }
+
+    setIsAskModalOpen(false);
+    const returnTarget = askReturnFocusRef.current;
+    askReturnFocusRef.current = null;
+    window.requestAnimationFrame(() => returnTarget?.focus());
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setIsAskModalOpen(true);
+        setAskModalOpen(true);
         return;
       }
       if (e.key === "Escape" && isMobileNavOpen) {
@@ -93,7 +109,7 @@ export function Layout({ children }: { children: ReactNode }) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isMobileNavOpen]);
+  }, [isMobileNavOpen, setAskModalOpen]);
 
   useEffect(() => {
     setIsMobileNavOpen(false);
@@ -115,7 +131,7 @@ export function Layout({ children }: { children: ReactNode }) {
   }, [location]);
 
   return (
-    <AskModalContext.Provider value={setIsAskModalOpen}>
+    <AskModalContext.Provider value={setAskModalOpen}>
       <div className="shell">
         <a className="skipLink" href="#main-content">Skip to main content</a>
         <aside className="sidebar">
@@ -205,7 +221,7 @@ export function Layout({ children }: { children: ReactNode }) {
           {children}
         </main>
 
-        <AskModal open={isAskModalOpen} onOpenChange={setIsAskModalOpen} />
+        <AskModal open={isAskModalOpen} onOpenChange={setAskModalOpen} />
       </div>
     </AskModalContext.Provider>
   );
