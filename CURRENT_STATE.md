@@ -13,9 +13,45 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.7 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.7 are external-intelligence research/adapter/operational-report/frontend engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.8 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P5.7 complete
+## Current engineering state — P5.8 complete
+
+Roadmap **P5.8 — source quality/cost/rate-limit telemetry** is complete under issue #240 / PR #241.
+
+P5.8 adds a deterministic supplied-input-only telemetry report over exact Task #67 source descriptors and the existing dated P5.1 provider review:
+- validates exact Task #67 source ID/fingerprint by reconstructing each descriptor;
+- defines one telemetry stream per source fingerprint + signal type + optional P5.1 provider key;
+- preserves Task #68 success/partial/empty/error completeness and confidence semantics;
+- reports transparent success/usable/error/completeness/confidence/positive-evidence statistics without a proprietary source rank;
+- accepts numeric monetary/billing-unit cost only when explicitly supplied on telemetry events;
+- preserves null cost vs zero cost, rejects mixed currencies/units and performs no FX;
+- never derives numeric spend from P5.1 prose pricing;
+- joins P5.1 pricing model, relative-cost class, reliability evidence class and review freshness as metadata only;
+- classifies supplied rate-limit capacity as unavailable/available/elevated/constrained/exhausted with transparent utilization;
+- never uses rate-limit telemetry to throttle, retry, schedule, execute or reorder Task #67 work;
+- emits deterministic diagnostics for missing/partial telemetry and stale provider review;
+- enforces hard source/stream/event/snapshot bounds and deterministic report lineage.
+
+Certification:
+- base SHA/tree: `cce0217f3c3c8158ae3a7f6836244eba39db8a74` / `6ad6ed0486e743cc491d65f80c5ac857b5718b65`;
+- exact tested implementation head: `24a28000e11bf9de67313904652a4fc65b48927b`;
+- PR CI #446 / run `35396675109`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P5.8, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `56b2f8e9dd4e6cc4934c2ab55c549ea6284d59d3`;
+- implementation tree: `f3d749819741d502e42c4059798109bc05b0b770`;
+- post-merge CI #447 / run `35396903363`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal build chunk-size warning only.
+
+P5.8 is **unpublished**. It performed no provider enrollment/purchase/credential use/request, public-site read/write, Task #67 Production source admission, Task #67 refresh-plan mutation, Task #64/#70 execution, observation/evidence persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p5-8-source-telemetry-closeout.md`
+- `docs/p5-8-source-quality-cost-rate-limit-telemetry.md`
+
+Default next safe milestone: **P6.1 — unified opportunity types across technical/content/query/competitor/link/AI**, deterministic/default-off engineering only.
+
+## Previous engineering state — P5.7 complete
 
 Roadmap **P5.7 — category/market competitor intelligence UI** is complete under issue #237 / PR #238.
 
@@ -50,7 +86,7 @@ Detailed record:
 - `.agents/memory/p5-7-competitor-intelligence-ui-closeout.md`
 - `docs/p5-7-category-market-competitor-intelligence-ui.md`
 
-Default next safe milestone: **P5.8 — source quality/cost/rate-limit telemetry**, default-off/network-free over deterministic supplied/provider-metadata fixtures.
+At the P5.7 checkpoint, the default next safe milestone was **P5.8 — source quality/cost/rate-limit telemetry**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P5.6 complete
 

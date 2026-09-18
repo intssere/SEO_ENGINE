@@ -416,13 +416,13 @@ P3.6 Production checkpoint:
 | P5.5 | backlink authority/link-gap adapter(s) | DONE — issue #231 / PR #232 / merge `605cf9133da8a26ddf9989cab005ec91161c033f` |
 | P5.6 | competitor visibility/page/topic-gap operational pipeline | DONE — issue #234 / PR #235 / merge `e0cf3758be1dff24f443a0a42fa19d2a4110b82b` |
 | P5.7 | category/market competitor intelligence UI | DONE — issue #237 / PR #238 / merge `64947e7662af1fadb389d9dd94f98a2e803d8911` |
-| P5.8 | source quality/cost/rate-limit telemetry | NEXT SAFE DEFAULT — default-off/network-free telemetry over deterministic supplied/provider-metadata fixtures; no live provider execution |
+| P5.8 | source quality/cost/rate-limit telemetry | DONE — issue #240 / PR #241 / merge `56b2f8e9dd4e6cc4934c2ab55c549ea6284d59d3` |
 
 ### Phase P6 — Opportunity and recommendation engine
 
 | ID | Work item | Status |
 |---|---|---|
-| P6.1 | Unified opportunity types across technical/content/query/competitor/link/AI | PLANNED |
+| P6.1 | Unified opportunity types across technical/content/query/competitor/link/AI | NEXT SAFE DEFAULT — deterministic/default-off type system over existing evidence/opportunity families; no live execution |
 | P6.2 | impact × confidence × risk × effort × freshness scoring | PLANNED |
 | P6.3 | conflict/dedupe/suppression/prioritization | PLANNED |
 | P6.4 | explanation/evidence generation | PLANNED |
@@ -578,14 +578,15 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 27. **DONE — P5.5:** deterministic provider-neutral backlink authority/link-gap supplied-fixture adapter, issue #231 / PR #232 / merge `605cf9133da8a26ddf9989cab005ec91161c033f`; dedicated backlink signal, canonical domain/URL/time/authority/anchor/freshness/gap semantics, no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
 28. **DONE — P5.6:** deterministic competitor visibility/page/topic-gap operational pipeline, issue #234 / PR #235 / merge `e0cf3758be1dff24f443a0a42fa19d2a4110b82b`; descriptive supplied-artifact composition only, no live provider/runtime/persistence/publication activation.
 29. **DONE — P5.7:** read-only/default-off category/market competitor intelligence UI, issue #237 / PR #238 / merge `64947e7662af1fadb389d9dd94f98a2e803d8911`; deterministic synthetic P5.6-shaped frontend fixture, DataGrid workbenches, responsive/accessibility/browser certification, no runtime API/provider/database/publication binding.
-30. **NEXT SAFE DEFAULT — P5.8:** source quality/cost/rate-limit telemetry, default-off and network-free over deterministic supplied/provider-metadata fixtures.
-31. **P6 —** unified opportunity/prioritization/explanation engine.
-32. **P7 —** AI/GEO visibility.
-33. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-34. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-35. **P10 —** impact attribution, experimentation and learning loop.
-36. **P11 —** enterprise hardening and certification.
-37. **P12 —** final production completion certification and program closeout.
+30. **DONE — P5.8:** deterministic source quality/cost/rate-limit telemetry, issue #240 / PR #241 / merge `56b2f8e9dd4e6cc4934c2ab55c549ea6284d59d3`; supplied telemetry + P5.1 metadata only, no live provider/runtime/persistence/publication activation.
+31. **NEXT SAFE DEFAULT — P6.1:** unified opportunity types across technical/content/query/competitor/link/AI, deterministic/default-off engineering over existing evidence families.
+32. **P6 —** unified opportunity/prioritization/explanation engine.
+33. **P7 —** AI/GEO visibility.
+34. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+35. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+36. **P10 —** impact attribution, experimentation and learning loop.
+37. **P11 —** enterprise hardening and certification.
+38. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
