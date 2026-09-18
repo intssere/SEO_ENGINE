@@ -13,9 +13,46 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.5 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.5 are external-intelligence research/adapter engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1–P5.6 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.6 are external-intelligence research/adapter/operational-report engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P5.5 complete
+## Current engineering state — P5.6 complete
+
+Roadmap **P5.6 — competitor visibility/page/topic-gap operational pipeline** is complete under issue #234 / PR #235.
+
+P5.6 adds a deterministic, descriptive operational report over already-normalized supplied Task #58/Task #66/P5.2/P5.3/P5.4/P5.5 artifacts:
+- requires 1–10 explicitly manually reviewed competitor targets;
+- defines a reporting-only target alias that removes one leading `www.` while preserving all other subdomains;
+- joins Task #58 competitor pages to P5.2 SERP rows with a deterministic reporting page key;
+- derives per-competitor observed visibility summaries without ranking competitors or claiming market share;
+- derives Task #58 structural semantic differences without treating them as missing-page proof or recommendations;
+- builds exact-keyword topic rows with separate SERP and semantic states;
+- carries P5.3 keyword context without consuming its opportunity score;
+- carries P5.4 trend context while retaining `crossFrameComparable=false`;
+- re-projects P5.5 backlink authority/gap evidence without changing provider-native authority or gap classifications;
+- emits explicit coverage, missing-data diagnostics and deterministic lineage;
+- produces no cross-signal opportunity score or recommendation; P6 retains that responsibility.
+
+Certification:
+- base SHA/tree: `e1c20db8849c41b8751a4f2285ccc6cc68338a22` / `320b57a2c1f108c96f941944d8dafb9da697ddf5`;
+- initial PR head `c5dd8c9af0eba6a70c255e9a1a748d2088350437`, CI #435 / run `35382916747`: schema/task/workspace/browser tests passed and typecheck exposed a test-helper narrowing defect; no merge occurred;
+- corrective head `42ab06eabe3b84d3e0acc44e5365f20d9ba692a1`, CI #436 / run `35383164990`: a test-only literal `\\n` patch typo caused a transform failure; no merge occurred;
+- exact tested implementation head: `ccc101cd95ab3a6bc99fa61b91fa0f00261accee`;
+- PR CI #437 / run `35383388840`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `e0cf3758be1dff24f443a0a42fa19d2a4110b82b`;
+- implementation tree: `a2095f34919adebfa3839cf3449815fb0fb111af`;
+- post-merge CI #438 / run `35383645713`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed.
+
+P5.6 is **unpublished**. It performed no provider enrollment/credential use/request, Task #67 Production source admission, target-registration mutation, Task #64/#70 execution, observation/evidence persistence, Production DB read/write/DDL/DML, scheduler/worker activation, provider/public-site mutation, config/secret change or publication.
+
+Detailed record:
+- `.agents/memory/p5-6-competitor-visibility-gap-closeout.md`
+- `docs/p5-6-competitor-visibility-page-topic-gap-pipeline.md`
+
+Default next safe milestone: **P5.7 — category/market competitor intelligence UI**, read-only/default-off over deterministic P5.6 report fixtures.
+
+## Previous engineering state — P5.5 complete
 
 Roadmap **P5.5 — backlink authority/link-gap adapter(s)** is complete under issue #231 / PR #232.
 
@@ -54,7 +91,7 @@ Detailed record:
 - `.agents/memory/p5-5-backlink-fixture-closeout.md`
 - `docs/p5-5-backlink-authority-link-gap-adapter.md`
 
-Default next safe milestone: **P5.6 — competitor visibility/page/topic-gap operational pipeline**, default-off/network-free engineering using deterministic supplied artifacts and the existing Tasks #58–#70 plus P5.2–P5.5 foundations.
+At the P5.5 checkpoint, the default next safe milestone was **P5.6 — competitor visibility/page/topic-gap operational pipeline**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P5.4 complete
 
