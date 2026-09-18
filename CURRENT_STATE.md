@@ -264,7 +264,7 @@ With P5.1 certified, the next default safe engineering boundary is **P5.2 — SE
 
 A separately authorized **P1.4–P1.8 live GSC path** may be chosen instead only with explicit bounded authorization for the exact credential/consent/property/read step.
 
-**P4.9 — Storybook/component documentation** remains optional/unselected and may be taken deliberately later; it is not required before P5.1.
+**P4.9 — Storybook/component documentation** remains optional/unselected and may be taken deliberately later; it is not required before P5.2.
 
 A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 
