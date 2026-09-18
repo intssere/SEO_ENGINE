@@ -403,13 +403,13 @@ P3.6 Production checkpoint:
 | P4.7 | responsive/mobile/tablet professional polish | DONE — issue #212 / PR #213 |
 | P4.8 | accessibility test baseline and WCAG 2.2 AA remediation | DONE — issue #214 / PR #215 |
 | P4.9 | Storybook/component documentation if selected | PLANNED — optional; not auto-selected |
-| P4.10 | Playwright/axe/visual regression critical-path suite | NEXT |
+| P4.10 | Playwright/axe/visual regression critical-path suite | DONE — issue #216 / PR #217 |
 
 ### Phase P5 — External market/search intelligence
 
 | ID | Work item | Status |
 |---|---|---|
-| P5.1 | Provider selection/cost/reliability review for SERP + keyword data | PLANNED |
+| P5.1 | Provider selection/cost/reliability review for SERP + keyword data | NEXT SAFE DEFAULT — no live provider execution |
 | P5.2 | SERP/ranking adapter(s) | PLANNED |
 | P5.3 | keyword volume/difficulty/opportunity adapter(s) | PLANNED |
 | P5.4 | trends/source adapter(s) | PLANNED |
@@ -567,18 +567,19 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 16. **DONE — P4.6:** Full-Site Audit / Crawl Explorer UI with explicit unbound P2 read-model states and no runtime activation.
 17. **DONE — P4.7:** responsive/mobile/tablet professional polish across completed P4.1–P4.6 surfaces.
 18. **DONE — P4.8:** accessibility source/unit/build baseline and WCAG 2.2 AA remediation across P4.1–P4.7.
-19. **NEXT — P4.10:** Playwright/axe/visual regression critical-path suite for browser-level accessibility/interaction/viewport coverage.
+19. **DONE — P4.10:** isolated Playwright/axe/visual regression critical-path suite; GitHub Ubuntu/Chromium is the canonical browser runner.
 20. **P4.9 — optional:** Storybook/component documentation only if deliberately selected.
-21. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
-22. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
-23. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
-24. **P6 —** unified opportunity/prioritization/explanation engine.
-25. **P7 —** AI/GEO visibility.
-26. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-27. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-28. **P10 —** impact attribution, experimentation and learning loop.
-29. **P11 —** enterprise hardening and certification.
-30. **P12 —** final production completion certification and program closeout.
+21. **P1.4–P1.8 — separately authorized:** real GSC client/secret/consent/property/first-read sequence when explicitly approved.
+22. **P1.9/P1.10 — separately authorized as applicable:** isolated GA4 and catalog completeness/refresh.
+23. **NEXT SAFE DEFAULT — P5.1:** provider selection/cost/reliability review for SERP + keyword data, research/planning only with no live provider calls.
+24. **P5.2–P5.8 —** external SERP/keyword/trend/backlink/competitor intelligence engineering.
+25. **P6 —** unified opportunity/prioritization/explanation engine.
+26. **P7 —** AI/GEO visibility.
+27. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+28. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+29. **P10 —** impact attribution, experimentation and learning loop.
+30. **P11 —** enterprise hardening and certification.
+31. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
