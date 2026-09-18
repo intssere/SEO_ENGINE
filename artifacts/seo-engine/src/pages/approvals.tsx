@@ -37,7 +37,7 @@ const checkIcon = (status: string) =>
   status === "pass" ? (
     <CheckCircle2 className="inlineIcon" />
   ) : status === "warning" ? (
-    <AlertCircle className="inlineIcon" />
+    <AlertCircle className="inlineIcon" aria-hidden="true" />
   ) : (
     <XCircle className="inlineIcon" />
   );
@@ -61,6 +61,7 @@ function ProposalReviewCard({
     row.lifecycle === "approval_ready" &&
     row.quality_approval_eligible &&
     row.quality_status !== "blocked";
+  const draftTextareaId = `approval-draft-${row.id}`;
 
   const [draftText, setDraftText] = useState(row.after_value || "");
   const lastSavedValue = useRef(row.after_value || "");
@@ -215,7 +216,7 @@ function ProposalReviewCard({
 
         <div className="approvalEditColumn">
           <div className="approvalDraftHeader">
-            <span className="approvalLabel">Editable Draft</span>
+            <label className="approvalLabel" htmlFor={draftTextareaId}>Editable Draft</label>
             {row.human_edited && (
               <StatusBadge tone="info">
                 HUMAN EDITED ({row.revision_count})
@@ -223,6 +224,7 @@ function ProposalReviewCard({
             )}
           </div>
           <Textarea
+            id={draftTextareaId}
             className="draftTextarea"
             value={draftText}
             onChange={(e) => setDraftText(e.target.value)}
@@ -315,8 +317,8 @@ function ProposalReviewCard({
           {canReview && (
             <div className="draftFooter">
               {draftError ? (
-                <p className="decisionError draftError">
-                  <AlertCircle className="inlineIcon" /> {draftError}
+                <p className="decisionError draftError" role="alert">
+                  <AlertCircle className="inlineIcon" aria-hidden="true" /> {draftError}
                 </p>
               ) : (
                 <div />
@@ -338,7 +340,7 @@ function ProposalReviewCard({
                 >
                   {editDraft.isPending &&
                   editDraft.variables?.data.mode === "save" ? (
-                    <Loader2 className="animate-spin inlineIcon" />
+                    <Loader2 className="animate-spin inlineIcon" aria-hidden="true" />
                   ) : null}
                   Save draft
                 </button>
@@ -366,10 +368,10 @@ function ProposalReviewCard({
           </p>
           <p>Evaluator: {titleize(row.evaluatorRisk)} · Plan control: {titleize(row.planControlRisk)}</p>
           <p>
-            <RotateCcw className="inlineIcon" /> {row.rollback}
+            <RotateCcw className="inlineIcon" aria-hidden="true" /> {row.rollback}
           </p>
           <p className="guardrailText">
-            <ShieldCheck className="inlineIcon" /> Non-executable review only ·
+            <ShieldCheck className="inlineIcon" aria-hidden="true" /> Non-executable review only ·
             public writes disabled
           </p>
         </section>
@@ -400,7 +402,7 @@ function ProposalReviewCard({
         <div className="approvalActions">
           {!canApprove && (
             <p>
-              <AlertCircle className="inlineIcon" /> Approval is blocked until
+              <AlertCircle className="inlineIcon" aria-hidden="true" /> Approval is blocked until
               every blocking quality check passes.
             </p>
           )}
@@ -481,7 +483,7 @@ export default function ApprovalsPage() {
         />
         <section className="approvalIntro">
           <div>
-            <ClipboardCheck />
+            <ClipboardCheck aria-hidden="true" />
             <div>
               <strong>No bulk or implicit approval</strong>
               <span>
@@ -493,18 +495,18 @@ export default function ApprovalsPage() {
           <StatusBadge tone="info">READ-ONLY DECISIONS</StatusBadge>
         </section>
         {isLoading ? (
-          <div className="approvalLoading">
-            <Loader2 className="animate-spin" />
+          <div className="approvalLoading" role="status" aria-live="polite">
+            <Loader2 className="animate-spin" aria-hidden="true" />
             <p>Loading quality-gated proposals...</p>
           </div>
         ) : isError || !data ? (
-          <div className="approvalLoading error">
-            <AlertCircle />
+          <div className="approvalLoading error" role="alert">
+            <AlertCircle aria-hidden="true" />
             <p>Failed to load proposal reviews.</p>
           </div>
         ) : data.rows.length === 0 ? (
           <div className="approvalEmpty">
-            <ShieldCheck />
+            <ShieldCheck aria-hidden="true" />
             <h2>No quality-gated proposals yet</h2>
             <p>
               The next normal read-only evaluation can prepare proposals for
@@ -567,7 +569,7 @@ export default function ApprovalsPage() {
                 evaluation
               </label>
             )}
-            {submitError && <p className="decisionError">{submitError}</p>}
+            {submitError && <p className="decisionError" role="alert">{submitError}</p>}
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={decision.isPending}>
