@@ -562,17 +562,17 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 11. **DONE — P4.1:** Information Architecture / Navigation v2.
 12. **NEXT — P4.2:** Design tokens/components/status grammar.
 13. **P4.3 —** enterprise data-grid/workbench primitives.
-13. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
-14. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
-15. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
-16. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
-17. **P6 —** unified opportunity/prioritization/explanation engine.
-18. **P7 —** AI/GEO visibility.
-19. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-20. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-21. **P10 —** impact attribution, experimentation and learning loop.
-22. **P11 —** enterprise hardening and certification.
-23. **P12 —** final production completion certification and program closeout.
+14. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
+15. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
+16. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
+17. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
+18. **P6 —** unified opportunity/prioritization/explanation engine.
+19. **P7 —** AI/GEO visibility.
+20. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+21. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+22. **P10 —** impact attribution, experimentation and learning loop.
+23. **P11 —** enterprise hardening and certification.
+24. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
