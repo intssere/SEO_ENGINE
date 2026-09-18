@@ -411,8 +411,8 @@ P3.6 Production checkpoint:
 |---|---|---|
 | P5.1 | Provider selection/cost/reliability review for SERP + keyword data | DONE — issue #218 / PR #219 / merge `1d1ee1b5284b62fe9cb446a7ad6d79a35db53259` |
 | P5.2 | SERP/ranking adapter(s) | DONE — issue #221 / PR #222 / merge `873aebeae798e61b2c313dfbe5e618c09c6a7f75` |
-| P5.3 | keyword volume/difficulty/opportunity adapter(s) | NEXT SAFE DEFAULT — network-free/default-off adapter engineering; no live provider execution |
-| P5.4 | trends/source adapter(s) | PLANNED |
+| P5.3 | keyword volume/difficulty/opportunity adapter(s) | DONE — issue #224 / PR #225 / merge `2c8dc3c8d46fbe0563a8083548b6b2bbf87e1e76` |
+| P5.4 | trends/source adapter(s) | NEXT SAFE DEFAULT — network-free/default-off adapter engineering; no live provider execution |
 | P5.5 | backlink authority/link-gap adapter(s) | PLANNED |
 | P5.6 | competitor visibility/page/topic-gap operational pipeline | builds on Tasks #58–#70 |
 | P5.7 | category/market competitor intelligence UI | PLANNED |
@@ -573,8 +573,8 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 22. **P1.9/P1.10 — separately authorized as applicable:** isolated GA4 and catalog completeness/refresh.
 23. **DONE — P5.1:** provider selection/cost/reliability review for SERP + keyword data under issue #218 / PR #219; DataForSEO selected as the initial dual-purpose engineering target, SerpApi as the SERP benchmark/fallback, Google Ads Keyword Planning as the official keyword-reference candidate, and Ahrefs/Semrush deferred as broad-suite candidates; no live provider calls or enrollment.
 24. **DONE — P5.2:** DataForSEO Google Organic SERP/ranking adapter foundation under issue #221 / PR #222; deterministic standard-task contract, bounded supplied-result ranking projection and Task #68 compatibility; no provider enrollment, credentials, network calls, source admission, Task #70 execution, persistence or publication.
-25. **NEXT SAFE DEFAULT — P5.3:** keyword volume/difficulty/opportunity adapter engineering, default-off and network-free with deterministic supplied fixtures only; no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
-26. **P5.4–P5.8 —** trend/backlink/competitor intelligence engineering.
+25. **DONE — P5.3:** provider-neutral keyword measurement semantics + DataForSEO Keyword Overview supplied-result adapter, issue #224 / PR #225 / merge `2c8dc3c8d46fbe0563a8083548b6b2bbf87e1e76`; no provider enrollment, credentials, source admission, Task #70 execution, persistence, or publication.
+26. **NEXT SAFE DEFAULT — P5.4:** trends/source adapter engineering, default-off and network-free with deterministic supplied fixtures only; P5.5–P5.8 remain planned.
 27. **P6 —** unified opportunity/prioritization/explanation engine.
 28. **P7 —** AI/GEO visibility.
 29. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
