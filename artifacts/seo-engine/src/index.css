@@ -291,27 +291,72 @@
   color: #7f91af;
   margin-top: 2px;
 }
-.sidebar nav {
+.primaryNav {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+  min-height: 0;
+}
+.navDomain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.navDomainLabel {
+  margin: 0;
+  padding: 0 11px;
+  color: #607390;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.navDomainItems {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  overflow: auto;
 }
-.sidebar nav a {
+.primaryNav a {
   color: #93a4bf;
   text-decoration: none;
-  padding: 9px 11px;
+  padding: 8px 11px;
   border-radius: 8px;
   font-size: 13px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
-.sidebar nav a:hover,
-.sidebar nav a.active {
+.primaryNav a:hover,
+.primaryNav a.active {
   background: #172744;
   color: #fff;
 }
-.sidebar nav a.active {
+.primaryNav a.active {
   box-shadow: inset 3px 0 #4b8cff;
+}
+.navLinkText {
+  min-width: 0;
+}
+.navStatus {
+  flex: none;
+  border: 1px solid #334766;
+  border-radius: 999px;
+  padding: 1px 5px;
+  color: #7f91af;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.mobileNav {
+  display: none;
+}
+.mobileNavBar,
+.mobileNavPanel {
+  display: none;
 }
 .sidebarFoot {
   margin-top: auto;
@@ -1535,25 +1580,22 @@ td:first-child {
 }
 @media (max-width: 900px) {
   .shell {
-    grid-template-columns: 76px 1fr;
+    grid-template-columns: 216px 1fr;
   }
   .sidebar {
-    padding: 20px 10px;
+    padding: 20px 12px;
   }
-  .brand div,
-  .sidebar nav a:not(.active),
-  .sidebarFoot {
-    font-size: 0;
+  .brand {
+    padding-inline: 6px;
   }
   .brandMark {
     flex: none;
   }
-  .sidebar nav a {
-    padding: 10px 7px;
-    text-align: center;
+  .navDomainLabel {
+    padding-inline: 9px;
   }
-  .sidebar nav a::first-letter {
-    font-size: 13px;
+  .primaryNav a {
+    padding-inline: 9px;
   }
   .twoCol,
   .threeCol {
@@ -1590,6 +1632,63 @@ td:first-child {
   }
   .sidebar {
     display: none;
+  }
+  .mobileNav {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 8;
+  }
+  .mobileNavBar {
+    min-height: 58px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #dce2eb;
+    background: #0c1730;
+    color: #dbe5f7;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .mobileBrand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .mobileBrand > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .mobileBrand strong {
+    font-size: 12px;
+    letter-spacing: 0.03em;
+  }
+  .mobileBrand small {
+    margin-top: 1px;
+    color: #7f91af;
+    font-size: 10px;
+  }
+  .mobileNavToggle {
+    border: 1px solid #334766;
+    border-radius: 8px;
+    background: #172744;
+    color: #fff;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 650;
+  }
+  .mobileNavPanel {
+    display: block;
+    max-height: calc(100vh - 58px);
+    overflow: auto;
+    border-bottom: 1px solid #23324d;
+    background: #0c1730;
+    padding: 14px;
+  }
+  .mobileNavPanel .primaryNav {
+    gap: 16px;
   }
   .topbar {
     height: auto;

@@ -1,0 +1,48 @@
+[
+  {
+    "domain": "Command Center",
+    "items": [
+      { "label": "Overview", "path": "/" }
+    ]
+  },
+  {
+    "domain": "Discover",
+    "items": [
+      { "label": "Opportunities", "path": "/opportunities" },
+      { "label": "Rankings", "path": "/rankings" },
+      { "label": "Search Intelligence", "path": "/search-intelligence" },
+      { "label": "AI Visibility", "path": "/ai-visibility" }
+    ]
+  },
+  {
+    "domain": "Audit",
+    "items": [
+      { "label": "Technical SEO", "path": "/technical-seo" },
+      { "label": "Internal Links", "path": "/internal-links" }
+    ]
+  },
+  {
+    "domain": "Execute",
+    "items": [
+      { "label": "Actions", "path": "/actions" },
+      { "label": "Approvals", "path": "/approvals" },
+      { "label": "Deployments", "path": "/deployments" }
+    ]
+  },
+  {
+    "domain": "Measure",
+    "items": [
+      { "label": "Performance", "path": "/performance" },
+      { "label": "Impact", "path": "/impact" },
+      { "label": "Experiments", "path": "/experiments" },
+      { "label": "Learning", "path": "/learning", "status": "planned" }
+    ]
+  },
+  {
+    "domain": "System",
+    "items": [
+      { "label": "Connections", "path": "/connections" },
+      { "label": "Settings", "path": "/settings" }
+    ]
+  }
+]

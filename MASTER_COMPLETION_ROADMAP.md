@@ -394,7 +394,7 @@ P3.6 Production checkpoint:
 
 | ID | Work item | Status |
 |---|---|---|
-| P4.1 | Information architecture/navigation v2 | PLANNED |
+| P4.1 | Information architecture/navigation v2 | DONE — issue #200 / PR #201 |
 | P4.2 | Design tokens/components/status grammar | PLANNED |
 | P4.3 | Enterprise data-grid/workbench primitives | PLANNED |
 | P4.4 | Evidence drawer | PLANNED |
@@ -559,19 +559,20 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 8. **DONE — P2.7:** URL Explorer API/query model.
 9. **DONE — P2.8:** technical issue taxonomy/evidence expansion.
 10. **DONE — P3.1–P3.6:** durable observation/evidence model through the explicitly authorized Production migration; application persistence/reads remain disabled.
-11. **NEXT — P4.1:** Information Architecture / Navigation v2.
-12. **P4.2/P4.3 —** design system + data workbench foundation.
-13. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
-14. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
-15. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
-16. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
-17. **P6 —** unified opportunity/prioritization/explanation engine.
-18. **P7 —** AI/GEO visibility.
-19. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-20. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-21. **P10 —** impact attribution, experimentation and learning loop.
-22. **P11 —** enterprise hardening and certification.
-23. **P12 —** final production completion certification and program closeout.
+11. **DONE — P4.1:** Information Architecture / Navigation v2.
+12. **NEXT — P4.2:** Design tokens/components/status grammar.
+13. **P4.3 —** enterprise data-grid/workbench primitives.
+14. **P1.4–P1.8 —** separately authorized real GSC client/secret/consent/property/first-read sequence when ready.
+15. **P4.5/P4.6 —** Command Center v2 + full-site Audit/Crawl Explorer using real crawl/evidence read models.
+16. **P1.9/P1.10 —** isolated GA4 and catalog completeness/refresh.
+17. **P5 —** external SERP/keyword/trend/backlink/competitor intelligence.
+18. **P6 —** unified opportunity/prioritization/explanation engine.
+19. **P7 —** AI/GEO visibility.
+20. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+21. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+22. **P10 —** impact attribution, experimentation and learning loop.
+23. **P11 —** enterprise hardening and certification.
+24. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 

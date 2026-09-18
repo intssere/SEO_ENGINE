@@ -13,9 +13,24 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations and P3.1–P3.6 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; Git synchronization and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1 changes engineering-source product navigation only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P3.6 complete
+## Current engineering state — P4.1 complete
+
+Roadmap **P4.1 — Information Architecture / Navigation v2** is complete under issue #200 / PR #201.
+
+P4.1 establishes the product navigation foundation without activating new runtime capability:
+- six primary domains in order: **Command Center, Discover, Audit, Execute, Measure, System**;
+- all 16 pre-existing application routes remain unchanged and navigable;
+- `Learning` remains available at `/learning` but is subordinate to **Measure** and explicitly marked `Planned` rather than presented as a primary domain;
+- active-route styling now exposes `aria-current="page"`;
+- Approvals pending-count behavior and route-driven title/meta behavior are preserved;
+- mobile navigation no longer disappears below 640px; an accessible toggle uses `aria-expanded` and `aria-controls`;
+- deterministic navigation contract tests cover domain order, route preservation/uniqueness, Learning placement/status and mobile/active-state source contracts.
+
+P4.1 is engineering-only and remains **unpublished**. It did not authorize or perform provider/public-site requests, observation/evidence persistence or Production reads, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
+
+## Current database state — P3.6 complete
 
 Roadmap **P3.6 — Production migration/DDL** is complete. The canonical migration was exact-head CI-certified, merged to GitHub `main`, post-merge CI-certified, then executed once against the explicitly authorized Production Neon branch after the P3.6B recovery/identity gate. Independent read-only Production catalog verification found zero mismatches.
 
@@ -51,13 +66,13 @@ Detailed record:
 
 ## Replit engineering workspace
 
-This docs-only closeout branch was created from canonical `main` at:
-- branch base: `a8020a2e73b8dcf24be12abf262693c630f1cfb9`
-- tree: `e7b521f8d994e333e141b54cb6aca31c78b19018`
+P4.1 branch `p4-1-information-architecture-navigation-v2` was created from the #196-certified canonical `main`:
+- base SHA: `c6bc59cd49c04b511058be74df6308bd074b8eb0`
+- base tree: `9830a5191bfb5c2444280d0da7c0ddde0a5c9b72`
 
-The separately authorized one-time Production DDL changed only the Production database schema. No publish/redeploy, application runtime/config/environment mutation, DML/backfill, credential/OAuth/provider action, live crawl/sitemap/provider/public-site/competitor request, scheduler/worker activation, application persistence/read activation, archive/prune/delete action or public-site/provider write occurred.
+Before P4.1 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. P4.1 pre-PR validation was executed on the exact GitHub task branch in Replit without source edits, commits, pushes, publication, runtime start/restart, database/schema work, provider/public-site activity or secret/config changes.
 
-This docs-only closeout branch/PR may advance canonical GitHub `main` beyond the implementation merge above. After the docs merge, independently resolve the exact final `main`, require its CI to be green, and Git-only reconcile Replit to that exact docs checkpoint without publication.
+After PR #201 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.1 without separate explicit authorization.
 
 ## Completed engineering foundations
 
@@ -71,6 +86,7 @@ Completed non-published engineering foundations include:
 - **P3.4 — Retention/history read models:** deterministic current-head and retained-history projections, supersession-chain/conflict/corroboration views, descriptive retention state, bounded filters/sorting/cursors, explicit unavailable evidence semantics and storage-neutral read/index intent.
 - **P3.5 — Evidence quality/conflict handling:** deterministic evidence availability, caller-time freshness, bounded support levels, provenance-aware corroboration, complete/partial conflict coverage and advisory-only resolution states over validated P3.1–P3.4 artifacts.
 - **P3.6 — Production migration/DDL:** canonical observation/evidence schema now exists in Production with three empty tables, exact constraints/keys/indexes and independently verified zero catalog mismatches.
+- **P4.1 — Information Architecture / Navigation v2:** six-domain product navigation, preserved 16-route surface, honest planned Learning placement, active-route accessibility and usable mobile navigation with deterministic contract coverage.
 
 The completed P3.6 schema migration does not activate application persistence or reads. None of these foundations activates new production crawling, provider reads, application database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
@@ -177,13 +193,13 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8 and P3.1–P3.6. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P2/P3 do not imply live full-site crawl execution, sitemap fetching, application database persistence/reads, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1 establishes product navigation only. Neither implies live full-site crawl execution, sitemap fetching, application database persistence/reads, scheduled crawling, autonomous operation or publication.
 
-`MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3 status table must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
+`MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3/P4 status tables must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next boundary — P4.1 by default; P1 live-provider only if deliberately authorized
+## Next boundary — P4.2 by default; P1 live-provider only if deliberately authorized
 
-The next safe engineering boundary is **P4.1 — Information Architecture / Navigation v2**. It must remain application engineering only unless its task separately authorizes publication or runtime changes.
+The next safe engineering boundary is **P4.2 — Design tokens / components / status grammar**. It must remain application engineering only unless its task separately authorizes publication or runtime changes.
 
 A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 

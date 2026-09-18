@@ -3,28 +3,71 @@ import { Link, useLocation } from "wouter";
 import { AskModal } from "./ask-modal";
 import { useGetDashboard } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth-client";
+import navigation from "@/navigation.json";
 
 export const AskModalContext = createContext<(open: boolean) => void>(() => {});
 export const useAskModal = () => useContext(AskModalContext);
 
-const NAV_ITEMS = [
-  { label: "Overview", path: "/" },
-  { label: "Opportunities", path: "/opportunities" },
-  { label: "Actions", path: "/actions" },
-  { label: "Approvals", path: "/approvals" },
-  { label: "Performance", path: "/performance" },
-  { label: "Rankings", path: "/rankings" },
-  { label: "Technical SEO", path: "/technical-seo" },
-  { label: "Internal Links", path: "/internal-links" },
-  { label: "AI Visibility", path: "/ai-visibility" },
-  { label: "Experiments", path: "/experiments" },
-  { label: "Search Intelligence", path: "/search-intelligence" },
-  { label: "Learning", path: "/learning" },
-  { label: "Deployments", path: "/deployments" },
-  { label: "Impact", path: "/impact" },
-  { label: "Connections", path: "/connections" },
-  { label: "Settings", path: "/settings" },
-];
+type NavigationItem = {
+  label: string;
+  path: string;
+  status?: "planned";
+};
+
+type NavigationDomain = {
+  domain: string;
+  items: NavigationItem[];
+};
+
+const NAV_DOMAINS = navigation as NavigationDomain[];
+const NAV_ITEMS = NAV_DOMAINS.flatMap((domain) => domain.items);
+
+function navigationDomainId(domain: string) {
+  return `nav-domain-${domain.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+}
+
+function NavigationGroups({
+  location,
+  approvalsPending,
+  onNavigate,
+}: {
+  location: string;
+  approvalsPending?: number;
+  onNavigate?: () => void;
+}) {
+  return (
+    <nav className="primaryNav" aria-label="Primary navigation">
+      {NAV_DOMAINS.map((domain) => {
+        const domainId = navigationDomainId(domain.domain);
+        return (
+          <div className="navDomain" key={domain.domain} aria-labelledby={domainId}>
+            <p className="navDomainLabel" id={domainId}>{domain.domain}</p>
+            <div className="navDomainItems">
+              {domain.items.map((item) => {
+                const isActive = location === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    href={item.path}
+                    className={isActive ? "active" : ""}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={onNavigate}
+                  >
+                    <span className="navLinkText">
+                      {item.label}
+                      {item.label === "Approvals" && approvalsPending ? ` · ${approvalsPending}` : ""}
+                    </span>
+                    {item.status === "planned" ? <span className="navStatus">Planned</span> : null}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: string }) {
   return <span className={`badge ${tone}`}>{children}</span>;
@@ -40,6 +83,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { data, isLoading } = useGetDashboard();
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const auth = useAuth();
 
   useEffect(() => {
@@ -54,6 +98,7 @@ export function Layout({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    setIsMobileNavOpen(false);
     const activeItem = NAV_ITEMS.find((item) => item.path === location);
     if (activeItem) {
       document.title = `${activeItem.label} | SEO Engine`;
@@ -75,17 +120,12 @@ export function Layout({ children }: { children: ReactNode }) {
               <small>AI SEO Command Center</small>
             </div>
           </div>
-          <nav>
-            {NAV_ITEMS.map((item) => {
-              const isActive = location === item.path;
-              return (
-                <Link key={item.path} href={item.path} className={isActive ? "active" : ""}>
-                  {item.label}
-                  {item.label === "Approvals" && data?.approvalsPending ? ` · ${data.approvalsPending}` : ""}
-                </Link>
-              );
-            })}
-          </nav>
+
+          <NavigationGroups
+            location={location}
+            approvalsPending={data?.approvalsPending}
+          />
+
           <div className="sidebarFoot">
             {auth.enforcementEnabled && auth.authenticated && auth.user ? (
               <div className="mb-3 border-b border-[#24344f] pb-3 text-xs leading-5 text-[#9fb0c9]">
@@ -115,6 +155,39 @@ export function Layout({ children }: { children: ReactNode }) {
             )}
           </div>
         </aside>
+
+        <div className="mobileNav">
+          <div className="mobileNavBar">
+            <div className="mobileBrand">
+              <span className="brandMark">S</span>
+              <div>
+                <strong>SEO ENGINE</strong>
+                <small>Navigation</small>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="mobileNavToggle"
+              aria-expanded={isMobileNavOpen}
+              aria-controls="mobile-primary-navigation"
+              aria-label={isMobileNavOpen ? "Close navigation" : "Open navigation"}
+              onClick={() => setIsMobileNavOpen((open) => !open)}
+            >
+              {isMobileNavOpen ? "Close" : "Menu"}
+            </button>
+          </div>
+          <div
+            id="mobile-primary-navigation"
+            className="mobileNavPanel"
+            hidden={!isMobileNavOpen}
+          >
+            <NavigationGroups
+              location={location}
+              approvalsPending={data?.approvalsPending}
+              onNavigate={() => setIsMobileNavOpen(false)}
+            />
+          </div>
+        </div>
 
         <section className="workspace relative">
           {children}
