@@ -98,13 +98,13 @@ export default function OpportunitiesPage() {
             <StatusBadge tone="info"><ShieldCheck className="w-3 h-3 mr-1 inline" /> READ-ONLY</StatusBadge>
           </div>
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-12 text-[#77839a]">
-              <Loader2 className="w-8 h-8 animate-spin text-[#3c82f6] mb-4" />
+            <div className="flex flex-col items-center justify-center p-12 text-[#647087]" role="status" aria-live="polite">
+              <Loader2 className="w-8 h-8 animate-spin text-[#3c82f6] mb-4" aria-hidden="true" />
               <p className="font-medium text-sm">Loading opportunities...</p>
             </div>
           ) : isError || !data ? (
-            <div className="flex flex-col items-center justify-center p-12 text-destructive">
-              <AlertCircle className="w-10 h-10 mb-4" />
+            <div className="flex flex-col items-center justify-center p-12 text-destructive" role="alert">
+              <AlertCircle className="w-10 h-10 mb-4" aria-hidden="true" />
               <p className="font-medium">Failed to load opportunities. Ensure the API server is running.</p>
             </div>
           ) : (

@@ -1,8 +1,21 @@
-import { useState, useEffect, useRef } from "react";
+import { useRef, useState } from "react";
 import { useAskSeoEngine } from "@workspace/api-client-react";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 
-export function AskModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function AskModal({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -10,26 +23,14 @@ export function AskModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
   const askMutation = useAskSeoEngine();
 
-  useEffect(() => {
-    if (open) {
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
       setQuestion("");
       setAnswer(null);
       setErrorMsg(null);
-      setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [open]);
-
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && open) {
-        onOpenChange(false);
-      }
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [open, onOpenChange]);
-
-  if (!open) return null;
+    onOpenChange(nextOpen);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,84 +45,117 @@ export function AskModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
           setAnswer(res.answer || "No specific answer provided by the engine.");
         },
         onError: () => {
-          setErrorMsg("Failed to query the SEO engine. Please check connection and try again.");
+          setErrorMsg(
+            "Failed to query the SEO engine. Please check connection and try again.",
+          );
         },
-      }
+      },
     );
   };
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0c1730]/60 backdrop-blur-sm" 
-      onClick={() => onOpenChange(false)}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="ask-modal-title"
-    >
-      <div 
-        className="w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden border border-[#e5e9f0] relative"
-        onClick={(e) => e.stopPropagation()}
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="askModalContent max-w-2xl gap-0 overflow-hidden p-0"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          inputRef.current?.focus();
+        }}
       >
-        <button 
-          onClick={() => onOpenChange(false)}
-          className="absolute top-4 right-4 text-[#77839a] hover:text-[#172033] transition-colors"
-          aria-label="Close dialog"
-        >
-          <X className="w-5 h-5" />
-        </button>
-        <div className="p-4 border-b border-[#e5e9f0] bg-[#fcfcfd]">
-          <p className="text-xs font-bold tracking-widest text-[#76839a] mb-1">COMMAND CENTER</p>
-          <h2 id="ask-modal-title" className="text-lg font-bold text-[#172033]">Ask SEO ENGINE</h2>
-          <p className="text-xs text-[#77839a]">Read-only access. Actions must be approved via operational queues.</p>
-        </div>
-        
+        <DialogHeader className="border-b border-[#e5e9f0] bg-[#fcfcfd] p-4 pr-14 text-left">
+          <p className="mb-1 text-xs font-bold tracking-widest text-[#5f6d83]">
+            COMMAND CENTER
+          </p>
+          <DialogTitle className="text-lg font-bold text-[#172033]">
+            Ask SEO ENGINE
+          </DialogTitle>
+          <DialogDescription className="text-xs text-[#647087]">
+            Read-only access. Actions must be approved via operational queues.
+          </DialogDescription>
+        </DialogHeader>
+
         <div className="p-6">
           <form onSubmit={handleSubmit} className="relative">
+            <label htmlFor="ask-seo-question" className="sr-only">
+              Question for SEO Engine
+            </label>
             <input
               ref={inputRef}
+              id="ask-seo-question"
               type="text"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="e.g. What are the top risks right now?"
-              className="w-full text-lg p-4 pl-0 border-b-2 border-[#e5e9f0] focus:border-[#3c82f6] outline-none transition-colors bg-transparent text-[#172033]"
+              className="askModalInput w-full border-b-2 border-[#e5e9f0] bg-transparent p-4 pl-0 pr-24 text-lg text-[#172033] outline-none transition-colors focus:border-[#3c82f6]"
               disabled={askMutation.isPending}
+              aria-describedby="ask-modal-help"
             />
-            <button 
-              type="submit" 
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#172744] hover:bg-[#0c1730] text-white px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50"
+            <button
+              type="submit"
+              className="askModalSubmit absolute right-0 top-1/2 -translate-y-1/2 rounded-md bg-[#172744] px-4 py-2 font-medium text-white transition-colors hover:bg-[#0c1730] disabled:opacity-50"
               disabled={askMutation.isPending || !question.trim()}
             >
               Ask
             </button>
           </form>
 
-          <div className="mt-8 min-h-[120px]">
+          <p id="ask-modal-help" className="sr-only">
+            Enter a read-only question. The answer does not approve or execute
+            any SEO action.
+          </p>
+
+          <div
+            className="mt-8 min-h-[120px]"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             {askMutation.isPending ? (
-              <div className="flex flex-col items-center justify-center h-full text-[#77839a]">
-                <Loader2 className="w-6 h-6 animate-spin text-[#3c82f6] mb-2" />
-                <span className="text-sm font-medium">Consulting intelligence...</span>
+              <div
+                className="flex h-full flex-col items-center justify-center text-[#647087]"
+                role="status"
+              >
+                <Loader2
+                  className="mb-2 h-6 w-6 animate-spin text-[#3c82f6]"
+                  aria-hidden="true"
+                />
+                <span className="text-sm font-medium">
+                  Consulting intelligence...
+                </span>
               </div>
             ) : errorMsg ? (
-              <div className="p-4 bg-[var(--status-danger-bg)] text-[var(--status-danger-fg)] rounded-md border border-[var(--status-danger-border)] text-sm font-medium">
+              <div
+                className="rounded-md border border-[var(--status-danger-border)] bg-[var(--status-danger-bg)] p-4 text-sm font-medium text-[var(--status-danger-fg)]"
+                role="alert"
+              >
                 {errorMsg}
               </div>
             ) : answer ? (
-              <div className="prose prose-sm max-w-none text-[#455168]">
+              <div
+                className="prose prose-sm max-w-none text-[#455168]"
+                role="status"
+              >
                 {answer.split("\n").map((line, i) => (
-                  <p key={i} className="mb-2 last:mb-0">{line}</p>
+                  <p key={i} className="mb-2 last:mb-0">
+                    {line}
+                  </p>
                 ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-[#aab3c6] text-sm">
+              <div className="flex h-full items-center justify-center text-sm text-[#647087]">
                 Awaiting your input.
               </div>
             )}
           </div>
         </div>
-        <div className="p-3 bg-[#f8fafc] border-t border-[#e5e9f0] text-right text-xs text-[#77839a]">
-          Press <kbd className="font-mono bg-white border border-[#e5e9f0] px-1 rounded">Esc</kbd> to close
+
+        <div className="border-t border-[#e5e9f0] bg-[#f8fafc] p-3 text-right text-xs text-[#647087]">
+          Press{" "}
+          <kbd className="rounded border border-[#d7dde7] bg-white px-1 font-mono">
+            Esc
+          </kbd>{" "}
+          to close
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

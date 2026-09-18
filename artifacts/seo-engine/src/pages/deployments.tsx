@@ -36,13 +36,13 @@ export default function DeploymentsPage() {
 
         <section className="card">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-12 text-[#77839a]">
-              <Loader2 className="w-8 h-8 animate-spin text-[#3c82f6] mb-4" />
+            <div className="flex flex-col items-center justify-center p-12 text-[#647087]" role="status" aria-live="polite">
+              <Loader2 className="w-8 h-8 animate-spin text-[#3c82f6] mb-4" aria-hidden="true" />
               <p className="font-medium text-sm">Loading deployments...</p>
             </div>
           ) : isError || !data ? (
-            <div className="flex flex-col items-center justify-center p-12 text-destructive">
-              <AlertCircle className="w-10 h-10 mb-4" />
+            <div className="flex flex-col items-center justify-center p-12 text-destructive" role="alert">
+              <AlertCircle className="w-10 h-10 mb-4" aria-hidden="true" />
               <p className="font-medium">Failed to load deployments.</p>
             </div>
           ) : (

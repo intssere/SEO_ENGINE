@@ -451,24 +451,23 @@ It does **not** authorize:
 
 ---
 
-## 12. Current project stage after P4.7
+## 12. Current project stage after P4.8
 
-P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2** through **P4.7 — responsive/mobile/tablet professional polish** are complete engineering foundations and remain unpublished.
+P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2** through **P4.8 — accessibility test baseline and WCAG 2.2 AA remediation** are complete engineering foundations and remain unpublished.
 
-P4.7 responsive-polish checkpoint:
-- compact tablets/phones switch to the mobile navigation shell at `<=820px`;
-- compact-mode page topbars are static, avoiding sticky collision with the mobile navigation bar;
-- shared shell/workspace/content/card min-width and overflow rules keep page chrome from expanding horizontally;
-- DataGrid tables use deliberate 720px internal widths with contained momentum horizontal scrolling inside DataWorkbench;
-- DataWorkbench toolbar/footer/search/pagination controls stack earlier at tablet widths and become phone-safe;
-- shared mobile-nav, grid, drawer, review and draft controls have at least 44px minimum touch targets;
-- title rows, section heads, badges, action groups and long content wrap safely;
-- EvidenceDrawer uses viewport-safe tablet/mobile sizing and dynamic viewport scrolling;
-- Command Center, Full-Site Audit and generic operational surfaces inherit consistent compact spacing/grid behavior;
-- deterministic source-contract tests enforce the responsive shell/overflow/touch/drawer invariants;
-- no API/data/runtime behavior is changed.
+P4.8 accessibility checkpoint:
+- app shell has one focusable main landmark and a visible-on-focus skip link;
+- SPA route changes move focus to main content without forced scrolling;
+- mobile navigation supports Escape-close/focus-return and grouped navigation semantics;
+- DataGrid scroll regions are keyboard-focusable/labeled;
+- Ask uses the Radix Dialog primitive with trapped/restored focus, title/description, labeled input/help text and live status/error announcements;
+- Shopify-domain, Performance filters and Approval editable-draft controls have programmatic labels;
+- remediated loading/success/error states are announced and decorative icons are hidden where updated;
+- the audited light-surface muted palette and status combinations covered by P4.8 meet deterministic 4.5:1 normal-text contrast checks;
+- shared focus-visible, reduced-motion and forced-colors baselines exist;
+- P4.8 is source/unit/build remediation only, not final browser-driven WCAG certification.
 
-Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.7. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
+Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.8. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
 
 The historical Task #51–#56 execution/auth foundations remain in force, but they do not authorize a new live action by themselves.
 
@@ -478,9 +477,13 @@ Do not jump directly to unrestricted autonomous provider mutation, provider read
 
 ## 13. Safe next-step choices
 
-### Default safe engineering path — P4.8
+### Default safe engineering path — P4.10
 
-Proceed next with **P4.8 — accessibility test baseline and WCAG 2.2 AA remediation** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. It may add accessibility contracts and remediate keyboard/focus/semantic/contrast behavior across P4.1–P4.7, but it must not activate provider requests, live crawl/sitemap execution, observation/evidence Production reads/persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
+Proceed next with **P4.10 — Playwright/axe/visual regression critical-path suite** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. It should add browser-level critical-path accessibility, keyboard, viewport and visual-regression coverage over P4.1–P4.8 without activating provider requests, live crawl/sitemap execution, observation/evidence Production reads/persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
+
+### Optional P4.9
+
+**P4.9 — Storybook/component documentation** remains optional and should be started only if deliberately selected. It is not an automatic prerequisite for P4.10.
 
 ### Separately authorized live-provider path
 
@@ -507,6 +510,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P4.7 closeout, the default safe engineering milestone is P4.8 unless a different path is explicitly authorized
+10. current selected milestone and its exact authorization boundary; after the P4.8 closeout, the default safe engineering milestone is P4.10; optional P4.9 requires deliberate selection
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.

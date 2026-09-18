@@ -25,21 +25,21 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between p-4 bg-[#f8fafc] border border-[#e5e9f0] rounded-lg">
                 <div>
                   <p className="font-bold text-[#172033] text-sm">Guarded Autonomy</p>
-                  <p className="text-xs text-[#77839a] mt-1">Actions require human approval before deployment.</p>
+                  <p className="text-xs text-[#647087] mt-1">Actions require human approval before deployment.</p>
                 </div>
                 <StatusBadge tone="success">ENFORCED</StatusBadge>
               </div>
               <div className="flex items-center justify-between p-4 bg-[#f8fafc] border border-[#e5e9f0] rounded-lg">
                 <div>
                   <p className="font-bold text-[#172033] text-sm">Read-only Connections</p>
-                  <p className="text-xs text-[#77839a] mt-1">System cannot modify data at the source without a deployment.</p>
+                  <p className="text-xs text-[#647087] mt-1">System cannot modify data at the source without a deployment.</p>
                 </div>
                 <StatusBadge tone="success">ENFORCED</StatusBadge>
               </div>
               <div className="flex items-center justify-between p-4 bg-[#f8fafc] border border-[#e5e9f0] rounded-lg">
                 <div>
                   <p className="font-bold text-[#172033] text-sm">Automatic Rollbacks</p>
-                  <p className="text-xs text-[#77839a] mt-1">Revert deployments if regressions are detected.</p>
+                  <p className="text-xs text-[#647087] mt-1">Revert deployments if regressions are detected.</p>
                 </div>
                 <StatusBadge tone="warning">PENDING SETUP</StatusBadge>
               </div>

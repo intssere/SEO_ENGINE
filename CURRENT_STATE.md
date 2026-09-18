@@ -13,29 +13,32 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.7 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.7 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive-polish code only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.8 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility code only. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P4.7 complete
+## Current engineering state — P4.8 complete
 
-Roadmap **P4.7 — responsive/mobile/tablet professional polish** is complete under issue #212 / PR #213. P4.1–P4.6 remain the preceding product/navigation/workbench/evidence/Command-Center/audit-explorer foundations.
+Roadmap **P4.8 — accessibility test baseline and WCAG 2.2 AA remediation** is complete under issue #214 / PR #215. P4.1–P4.7 remain the preceding product/navigation/workbench/evidence/Command-Center/audit-explorer/responsive foundations.
 
-P4.7 adds a shared presentation-only responsive layer across the completed P4 product surfaces without changing data, API, or runtime semantics:
-- compact tablets and phones switch to the mobile-navigation shell at `<=820px` rather than retaining the cramped desktop sidebar until phone width;
-- compact-mode page topbars become non-sticky so they do not compete with the sticky mobile navigation bar;
-- shared shell/workspace/content/card min-width and overflow rules prevent page-level horizontal expansion;
-- DataGrid tables retain a deliberate 720px internal table width with contained momentum/touch horizontal scrolling inside the workbench rather than widening the page;
-- DataWorkbench search/page-size/pagination controls stack at tablet widths and become full-width/phone-safe as space decreases;
-- core shared mobile-navigation, grid, drawer, review and draft controls receive a `44px` minimum touch target;
-- title rows, section heads, badges, action groups, long URLs and long text wrap safely;
-- EvidenceDrawer uses viewport-safe tablet sizing, phone full-width sizing, dynamic viewport height and contained scrolling;
-- Command Center and Full-Site Audit grids/headings/card layouts collapse consistently across 1180/900/820/640/420 breakpoints;
-- generic flex-based cards/forms inherit wrap-safe compact behavior, improving Settings/Connections and other operational surfaces without changing their action semantics;
-- deterministic source-contract tests enforce compact-tablet shell switching, internal table scrolling, workbench stacking, touch-target sizing, wrap-safe status/header behavior, EvidenceDrawer viewport sizing and the presentation-only boundary.
+P4.8 establishes a deterministic source/unit/build accessibility baseline and remediates concrete AA issues without changing API/data/runtime semantics:
+- the application now exposes a visible-on-focus skip link and one focusable app-level `main#main-content` landmark;
+- SPA route changes hand programmatic focus to the new main content without forcing scroll;
+- mobile navigation supports Escape-close with focus return to the menu toggle and explicit navigation-group semantics;
+- DataGrid horizontal-scroll regions are keyboard-focusable/labeled and pagination has explicit group semantics while retaining table labels and `aria-sort`;
+- the Ask surface now uses the existing Radix Dialog primitive for focus trapping, Escape handling and focus restoration, with Dialog title/description, a programmatically labeled input, help text, and polite/assertive live state announcements;
+- shared Dialog/Sheet close controls use 44px targets and decorative close icons are hidden from assistive technology;
+- Shopify-domain, Performance filters, and Approval editable-draft controls now have programmatic labels;
+- remediated loading/success/error states use `role=status` / `role=alert` semantics and decorative loading/error icons are hidden where updated;
+- audited low-contrast light-surface muted text colors were replaced with AA-safe alternatives, the light muted-foreground token was darkened, and dark navigation-domain label contrast was raised;
+- deterministic tests calculate contrast ratios for the P4.8 normal-text/status palette and require at least 4.5:1 for the covered normal-size text combinations;
+- a shared `:focus-visible` treatment, reduced-motion fallback, and forced-colors focus/status treatment are present;
+- source contracts prevent regression of the landmark, focus, keyboard-scroll, dialog, labeling, live-region, contrast, motion, and frontend-only boundaries.
 
-P4.7 is engineering-only and remains **unpublished**. It did not authorize or perform provider/public-site activity, live crawl/sitemap execution, Production observation/evidence reads or persistence, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
+P4.8 is **not final WCAG certification**. Browser-driven axe/visual/critical-path coverage remains P4.10, and final accessibility certification remains P11.5.
+
+P4.8 is engineering-only and remains **unpublished**. It did not authorize or perform provider/public-site activity, live crawl/sitemap execution, Production observation/evidence reads or persistence, Production DDL/DML, scheduler/worker activation, Task #53/#54 execution, secret/config changes, autonomous mutation or publication.
 
 Detailed record:
-- `.agents/memory/p4-7-responsive-professional-polish-closeout.md`
+- `.agents/memory/p4-8-accessibility-wcag-aa-remediation-closeout.md`
 
 ## Current database state — P3.6 complete
 
@@ -73,13 +76,13 @@ Detailed record:
 
 ## Replit engineering workspace
 
-P4.7 branch `p4-7-responsive-professional-polish` was created from the P4.6-certified canonical `main`:
-- base SHA: `32d01343c82a6deec5a3028aa719883f7d4d18e5`
-- base tree: `6f570e28bf8e570e7ce2a7a46fb4a92160b7c673`
+P4.8 branch `p4-8-accessibility-wcag-aa-remediation` was created from the P4.7-certified canonical `main`:
+- base SHA: `a983e1e2024c4a223864ea4bf0d48b1eb285c11a`
+- base tree: `32715b2506737f07885881d7ff8c00999bbbe74d`
 
-Before P4.7 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. Exact branch validation on implementation head `4b2b7af2b7919a9373f6514f3a7762ad96c08b8a` / tree `f7d9396845073aaa9552b7f583c880c000e0f68d` passed 72 SEO Engine tests, recursive workspace tests including 570 API Server tests, full typecheck, full build and `git diff --check`; exact-head GitHub CI run `35337414946` also passed. No publication, runtime start/restart, database/schema work, crawl/sitemap execution, provider/public-site activity or secret/config changes are part of P4.7.
+Before P4.8 work, Replit was independently verified on that exact `main`, ahead/behind `0/0`, clean, with no untracked files. Exact branch validation on implementation head `4a9a01127b88b4b0aefcc1f2e424143db2c5e63e` / tree `04ce58a5dc33031ef345f6802abeb224278068bd` passed 81 SEO Engine tests, recursive workspace tests including 570 API Server tests, full typecheck, full build and `git diff --check`; exact-head GitHub CI run `35341367991` also passed. No publication, runtime start/restart, database/schema work, crawl/sitemap execution, provider/public-site activity or secret/config changes are part of P4.8.
 
-After PR #213 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.7 without separate explicit authorization.
+After PR #215 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.8 without separate explicit authorization.
 
 ## Completed engineering foundations
 
@@ -100,6 +103,7 @@ Completed non-published engineering foundations include:
 - **P4.5 — Command Center v2:** read-only root operational cockpit over the existing dashboard snapshot, conservative health/coverage/decision/verification/measurement/intelligence states, bounded-certification honesty, and no baseline/mutation controls.
 - **P4.6 — Full-Site Audit / Crawl Explorer UI:** read-only Technical SEO workspace over current GET data, defensive finding normalization, bounded-certification truth, production-shaped P2.7 URL Explorer with zero synthetic rows, and explicit unavailable history/recrawl bindings.
 - **P4.7 — Responsive/mobile/tablet professional polish:** unified compact-tablet/mobile shell behavior, internal table scrolling, earlier workbench stacking, 44px shared touch targets, wrap-safe headers/status/text, viewport-safe evidence drawer sizing and consistent compact layouts across P4.1–P4.6.
+- **P4.8 — Accessibility baseline / WCAG 2.2 AA remediation:** single main landmark + skip link/route focus, keyboard-scrollable grids, Radix-managed Ask dialog, labeled forms/live regions, AA-safe muted palette, visible focus, reduced motion and deterministic contrast/source contracts; final browser/final certification remains later.
 
 The completed P3.6 schema migration does not activate application persistence or reads. None of these foundations activates new production crawling, provider reads, application database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
@@ -206,13 +210,15 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.7. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.7 establish product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive foundations only. None implies live full-site crawl execution, sitemap fetching, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.8. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.8 establish product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility foundations only. None implies live full-site crawl execution, sitemap fetching, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
 
 `MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3/P4 status tables must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next boundary — P4.8 by default; P1 live-provider only if deliberately authorized
+## Next boundary — P4.10 by default; P4.9 only if deliberately selected; P1 live-provider only if deliberately authorized
 
-The next safe engineering boundary is **P4.8 — accessibility test baseline and WCAG 2.2 AA remediation**. It must remain product/UI/accessibility engineering only unless its task separately authorizes publication or runtime changes. It may add deterministic accessibility contracts and remediate keyboard/focus/semantic/contrast issues across P4.1–P4.7 without activating providers, crawl execution, Production observation/evidence reads/persistence, mutation, scheduling or publication.
+The next default safe engineering boundary is **P4.10 — Playwright/axe/visual regression critical-path suite**. It should add browser-level accessibility/interaction/viewport regression coverage for the completed P4 product foundation without activating providers, crawl execution, Production observation/evidence reads/persistence, mutation, scheduling or publication.
+
+**P4.9 — Storybook/component documentation** remains optional/planned and should be taken only if deliberately selected; its “if selected” roadmap wording does not make it an automatic prerequisite for P4.10.
 
 A separately authorized **P1 live-provider** task may be chosen deliberately instead, but a generic `continue` does not authorize real OAuth credentials, consent, provider calls, property binding, evidence persistence, scheduler/worker execution or publication.
 

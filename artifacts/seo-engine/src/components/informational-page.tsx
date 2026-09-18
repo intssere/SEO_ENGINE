@@ -40,7 +40,7 @@ export function InformationalPage({ category, title, description, status }: Info
               dependencies or permissions are not yet configured on this environment, 
               we do not display placeholder or generated metrics.
             </p>
-            <p className="text-[#77839a] text-xs font-semibold tracking-wide">
+            <p className="text-[#647087] text-xs font-semibold tracking-wide">
               EVIDENCE-FIRST POLICY ENFORCED
             </p>
           </div>
