@@ -451,23 +451,24 @@ It does **not** authorize:
 
 ---
 
-## 12. Current project stage after P4.4
+## 12. Current project stage after P4.5
 
-P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2**, **P4.2 — Design tokens / components / status grammar**, **P4.3 — Enterprise data-grid / workbench primitives**, and **P4.4 — Evidence drawer** are complete engineering foundations and remain unpublished.
+P3.6 remains the certified Production schema checkpoint. **P4.1 — Information Architecture / Navigation v2**, **P4.2 — Design tokens / components / status grammar**, **P4.3 — Enterprise data-grid / workbench primitives**, **P4.4 — Evidence drawer**, and **P4.5 — Command Center v2** are complete engineering foundations and remain unpublished.
 
-P4.4 evidence-inspection checkpoint:
-- typed read-only `EvidenceDrawerModel` with pure proposal/opportunity adapters;
-- accessible right-side Sheet-based evidence drawer with real button trigger, title/description and independent scrolling;
-- proposal evidence shows only current-row IDs/counts, confidence, sufficiency, quality checks/state, quality evidence IDs, warnings/blockers, semantic provenance, rationale/benefit and coverage;
-- opportunity evidence remains summary-only because current rows expose counts but not underlying evidence IDs;
-- freshness, support, retention/history, conflict and corroboration explicitly render unavailable because detailed P3 read models are not frontend-bound;
-- missing IDs are never synthesized and count/ID mismatch is partial rather than complete;
-- bounded-pilot coverage is not labeled whole-site;
-- the drawer has no query/mutation/network/provider/database/runtime hooks;
-- deterministic model and source-contract tests enforce the evidence-honesty boundary;
-- P4.1 navigation, P4.2 status grammar and P4.3 workbench primitives remain unchanged.
+P4.5 Command Center checkpoint:
+- root `/` remains the Command Center route but now renders a read-only operational cockpit over the existing dashboard GET snapshot;
+- pure `CommandCenterModel` derives data-health, coverage, decision, verification, measurement and intelligence states;
+- stale/unavailable data, bounded coverage, pending approvals and regressions remain conservative warning/danger states;
+- whole-site certification is the only successful coverage state;
+- zero/missing AI and learning observations remain neutral rather than green/success;
+- reporting filters remain URL-driven and GET-only;
+- the Command Center no longer imports or invokes baseline authorization/run functions and exposes no Run Baseline / Refresh Data control;
+- the Command Center Ask action is removed, leaving only filters and route navigation as interactive behavior;
+- generic activity labels no longer imply AI-specific execution;
+- source contracts enforce no mutation/direct network/database/runtime primitives;
+- P4.1 navigation, P4.2 status grammar, P4.3 workbench primitives and P4.4 evidence drawer remain intact.
 
-Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.4. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
+Completed/proven foundations include P2.1–P2.8, P3.1–P3.6 and P4.1–P4.5. Production remains at the P3.6 34-public-table checkpoint, and observation/evidence application persistence and Production reads remain disabled.
 
 The historical Task #51–#56 execution/auth foundations remain in force, but they do not authorize a new live action by themselves.
 
@@ -477,9 +478,9 @@ Do not jump directly to unrestricted autonomous provider mutation, provider read
 
 ## 13. Safe next-step choices
 
-### Default safe engineering path — P4.5
+### Default safe engineering path — P4.6
 
-Proceed next with **P4.5 — Command Center v2** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. It may compose current read-only foundations, but it must present unavailable live-provider/evidence state honestly and must not activate provider requests, observation/evidence persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
+Proceed next with **P4.6 — Full-Site Audit / Crawl Explorer UI** through the normal issue → branch → implementation → tests → PR → exact-head CI → merge → post-merge CI → Git-only Replit reconciliation workflow. It may compose existing P2/P3 engineering contracts and read-only UI foundations, but it must not activate first-party full-site network execution, sitemap network fetching, observation/evidence Production reads/persistence, scheduler/worker execution, public-site mutation, publication, or further Production DDL.
 
 ### Separately authorized live-provider path
 
@@ -506,6 +507,6 @@ A new agent should begin by independently verifying:
 7. public writes and AI proposal generation remain false
 8. Task #53/#54 dispatch/scheduler/batch remain closed
 9. no unexplained provider/public-site/autonomous mutation activity
-10. current selected milestone and its exact authorization boundary; after the P4.4 closeout, the default safe engineering milestone is P4.5 unless a different path is explicitly authorized
+10. current selected milestone and its exact authorization boundary; after the P4.5 closeout, the default safe engineering milestone is P4.6 unless a different path is explicitly authorized
 
 Do not infer provider-write, provider-read, persistence, scheduler/worker, publication, or Production-DDL authorization from a generic `continue`.
