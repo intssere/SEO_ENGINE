@@ -16,7 +16,8 @@ import {
   ShieldCheck,
   XCircle,
 } from "lucide-react";
-import { Badge } from "../components/layout";
+import { StatusBadge } from "../components/status-badge";
+import { decisionTone, lifecycleTone, qualityTone } from "@/lib/status-grammar";
 import { PageHeader } from "../components/operational-table";
 import {
   AlertDialog,
@@ -32,12 +33,6 @@ import { Textarea } from "../components/ui/textarea";
 
 const titleize = (value: string) =>
   value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-const qualityTone = (status: ProposalRecord["quality_status"]) =>
-  status === "pass"
-    ? "verified"
-    : status === "warning"
-      ? "approval"
-      : "experiment";
 const checkIcon = (status: string) =>
   status === "pass" ? (
     <CheckCircle2 className="inlineIcon" />
@@ -166,27 +161,21 @@ function ProposalReviewCard({
       <div className="approvalCardHead">
         <div>
           <div className="approvalBadges">
-            <Badge tone={qualityTone(row.quality_status)}>
+            <StatusBadge tone={qualityTone(row.quality_status)}>
               QUALITY {row.quality_status.toUpperCase()} · {row.quality_score}
               /100
-            </Badge>
-            <Badge
-              tone={
-                row.lifecycle === "approval_ready"
-                  ? "approval"
-                  : row.lifecycle === "approved_proposal"
-                    ? "verified"
-                    : "neutral"
-              }
+            </StatusBadge>
+            <StatusBadge
+              tone={lifecycleTone(row.lifecycle)}
             >
               {titleize(row.lifecycle)}
-            </Badge>
+            </StatusBadge>
             {row.decision && (
-              <Badge
-                tone={row.decision === "approved" ? "verified" : "experiment"}
+              <StatusBadge
+                tone={decisionTone(row.decision)}
               >
                 {row.decision.toUpperCase()}
-              </Badge>
+              </StatusBadge>
             )}
           </div>
           <h2>{row.title}</h2>
@@ -213,9 +202,9 @@ function ProposalReviewCard({
             <div className="approvalDraftSectionHead">
               <span className="approvalLabel">Generated proposal</span>
               {row.proposal_generation_method && (
-                <Badge tone="neutral">
+                <StatusBadge tone="neutral">
                   {titleize(row.proposal_generation_method)}
-                </Badge>
+                </StatusBadge>
               )}
             </div>
             <p className="approvalReadOnlyText">
@@ -228,9 +217,9 @@ function ProposalReviewCard({
           <div className="approvalDraftHeader">
             <span className="approvalLabel">Editable Draft</span>
             {row.human_edited && (
-              <Badge tone="experiment">
+              <StatusBadge tone="info">
                 HUMAN EDITED ({row.revision_count})
-              </Badge>
+              </StatusBadge>
             )}
           </div>
           <Textarea
@@ -501,7 +490,7 @@ export default function ApprovalsPage() {
               </span>
             </div>
           </div>
-          <Badge tone="verified">READ-ONLY DECISIONS</Badge>
+          <StatusBadge tone="info">READ-ONLY DECISIONS</StatusBadge>
         </section>
         {isLoading ? (
           <div className="approvalLoading">
