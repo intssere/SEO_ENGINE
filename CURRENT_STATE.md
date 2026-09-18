@@ -13,9 +13,42 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6 and P4.1–P4.8/P4.10 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1 is research/planning code + documentation only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P4.10 complete
+## Current engineering state — P5.1 complete
+
+Roadmap **P5.1 — provider selection/cost/reliability review for SERP + keyword data** is complete under issue #218 / PR #219.
+
+P5.1 adds a dated, deterministic external-provider review/selection contract without activating any provider/runtime capability:
+- review date `2026-09-18T00:00:00.000Z`, with a 90-day re-review boundary or earlier review on material provider/API/pricing/terms/reliability change;
+- `dataforseo` is the initial dual-purpose P5.2/P5.3 **engineering target** for SERP + keyword adapters;
+- `serpapi` is the independent SERP benchmark/fallback candidate;
+- `google_ads_keyword_planner` is the official keyword-reference candidate under a separately reviewed Google Ads account/developer-token/OAuth boundary;
+- `ahrefs` and `semrush` are deferred broad-suite candidates;
+- role selection uses explicit ordered policy plus hard capability/evidence gates rather than an opaque weighted score;
+- pricing/reliability/source provenance is explicit and dated;
+- Task #67 external-source admission is not performed and remains separate;
+- no executable provider transport, provider SDK, environment-secret binding, DB client, scheduler/worker or publication path is introduced.
+
+Certification:
+- base SHA/tree: `52e697b08868e546b8edea8083df8ff1bf60d5ec` / `91414019e43141c74a490a134f213b989a326111`;
+- exact tested PR head: `193c517bcefbfac2b1726e59fb33521cd0d45b18`;
+- PR CI run `35361361888` / CI #413: success across schema/task/workspace tests, Playwright Chromium + P4.10 browser suite, typecheck and build;
+- implementation merge: `1d1ee1b5284b62fe9cb446a7ad6d79a35db53259`;
+- merge tree: `573d1ec33cd1c5d84868fe29c8f1cbab6f24636a`;
+- post-merge push CI run `35361587686` / CI #414: success across the same full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked;
+- Replit non-browser recursive workspace tests, full typecheck, full build and `git diff --check`: passed.
+
+P5.1 is **unpublished**. It did not authorize or perform provider signup/enrollment/purchase, API-key/OAuth/developer-token creation/use, any provider request, Task #67 external-source admission, Task #70 execution, observation/evidence persistence, Production DB reads/DDL/DML, scheduler/worker activation, Task #53/#54/#64 execution, public/provider writes, secret/config changes or publication.
+
+Detailed record:
+- `.agents/memory/p5-1-provider-selection-review-closeout.md`
+- `docs/p5-1-serp-keyword-provider-selection-review.md`
+
+Default next safe milestone: **P5.2 — SERP/ranking adapter(s)**, default-off/network-free engineering using deterministic fake/supplied transport only. Live DataForSEO enrollment/credentials/requests remain separately unauthorized.
+
+## Previous engineering state — P4.10 complete
 
 Roadmap **P4.10 — Playwright/axe/visual regression critical-path suite** is complete under issue #216 / PR #217. P4.1–P4.8 remain the completed product/accessibility foundations; P4.9 Storybook/component documentation remains optional and unselected.
 
@@ -91,7 +124,7 @@ GitHub exact-head CI run `35355521841` passed the full schema/task/workspace mat
 
 A frozen lockfile probe on Replit still fails because of the inherited unrelated API Server `tsx` importer omission noted above. P4.10-specific browser dependencies are committed in the lockfile and unit-contract-enforced.
 
-After PR #217 merges and post-merge CI is green, exact-sync the merged GitHub `main` to Replit Git-only. Do not publish P4.10 without separate explicit authorization.
+P4.10 was subsequently merged/certified and exact-synced before P5.1 began. The current exact Replit checkpoint is recorded in the P5.1 section above. Neither P4.10 nor P5.1 has been published.
 
 ## Completed engineering foundations
 
@@ -114,6 +147,7 @@ Completed non-published engineering foundations include:
 - **P4.7 — Responsive/mobile/tablet professional polish:** unified compact-tablet/mobile shell behavior, internal table scrolling, earlier workbench stacking, 44px shared touch targets, wrap-safe headers/status/text, viewport-safe evidence drawer sizing and consistent compact layouts across P4.1–P4.6.
 - **P4.8 — Accessibility baseline / WCAG 2.2 AA remediation:** single main landmark + skip link/route focus, keyboard-scrollable grids, Radix-managed Ask dialog, labeled forms/live regions, AA-safe muted palette, visible focus, reduced motion and deterministic contrast/source contracts; final browser/final certification remains later.
 - **P4.10 — Playwright/axe/visual regression:** isolated synthetic-fixture Chromium critical paths, axe serious/critical gates, browser error/network escape gates, desktop/tablet/mobile perceptual visual hashes, failure artifacts, and browser dependency lock contracts. P4.9 remains optional/unselected.
+- **P5.1 — external SERP/keyword provider selection review:** dated deterministic provider-role review with explicit pricing/reliability provenance and re-review bounds; DataForSEO initial dual-purpose engineering target, SerpApi SERP benchmark/fallback, Google Ads Keyword Planning official keyword reference, Ahrefs/Semrush deferred; zero provider enrollment/credentials/network/source admission/runtime/persistence/publication.
 
 The completed P3.6 schema migration does not activate application persistence or reads. None of these foundations activates new production crawling, provider reads, application database persistence/reads, archival/pruning/deletion, autonomous operation or publication.
 
@@ -220,13 +254,13 @@ If any of these unexpectedly appears open, stop and diagnose read-only rather th
 
 Program tracker: issue #139. Keep it open until final production completion certification.
 
-Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6 and P4.1–P4.8/P4.10. P4.9 remains optional/unselected. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.8/P4.10 establish product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression foundations only. None implies live full-site crawl execution, sitemap fetching, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
+Certified engineering foundations through this checkpoint include P1.1/P1.2, P2.1–P2.8, P3.1–P3.6, P4.1–P4.8/P4.10 and P5.1. P4.9 remains optional/unselected. P1 live-provider activation remains separately authorized. P3.6 establishes schema only; P4.1–P4.8/P4.10 establish product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression foundations only; P5.1 establishes research/selection guidance only. None implies live full-site crawl execution, sitemap fetching, provider enrollment/requests, Task #67 source admission, application observation/evidence Production reads or persistence, scheduled crawling, autonomous operation or publication.
 
 `MASTER_COMPLETION_ROADMAP.md` is the durable long-term plan. Its mutable P2/P3/P4 status tables must reflect these completed foundations; historical task/release evidence elsewhere must not be rewritten.
 
-## Next boundary — P5.1 safe by default; P1 live-provider only if deliberately authorized; P4.9 optional
+## Next boundary — P5.2 safe by default; live providers only if deliberately authorized; P4.9 optional
 
-With the selected P4 product/browser foundation complete, the next default safe engineering boundary is **P5.1 — provider selection/cost/reliability review for SERP + keyword data**. P5.1 is research/adapter-planning only and must not make provider calls, bind credentials, collect evidence, or activate runtime execution.
+With P5.1 certified, the next default safe engineering boundary is **P5.2 — SERP/ranking adapter(s)**. Based on the P5.1 review, the first engineering target may be DataForSEO, but generic `continue` authorizes only default-off/network-free adapter contracts, normalization/bounds/readiness integration and deterministic fake/supplied-transport tests. It must not enroll a provider, create/use credentials, make provider requests, admit a Task #67 external source, execute Task #70, persist evidence, activate a scheduler/worker, mutate Production data/schema, write to a provider/public site, or publish.
 
 A separately authorized **P1.4–P1.8 live GSC path** may be chosen instead only with explicit bounded authorization for the exact credential/consent/property/read step.
 
