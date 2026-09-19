@@ -13,23 +13,23 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P6.5 deterministic actionability classifier is complete and certified.
+**Current checkpoint:** P6.6 deterministic current-vs-proposed preview/diff generation is complete and certified.
 
-- P6.5 issue #255 / PR #256.
-- Base SHA/tree: `153c5c423443c746085c6c7893c1f0893cff6e1d` / `a07d8fb5388d451dc4b10e1a4e7ff63a099fd194`.
-- Exact tested implementation head: `abd73c795b061d7f31b7e6c95a3a8811d702c431`.
-- PR CI #467 / run `35435400355`: success across legacy schema, Task/P3.6/workspace tests including P6.5, Playwright/P4.10, typecheck and build.
-- Implementation merge: `0a306365d8f0e23f203e4dc9c59afed0c04c586f`.
-- Implementation tree: `d776c241f8884e2f83d3aa6db3d212c9da30de1c`.
-- Post-merge CI #468 / run `35435517215`: success.
+- P6.6 issue #258 / PR #259.
+- Base SHA/tree: `c05d7eeb986eaf9fe38669a337f76e9b31b803cb` / `ba1a88da701d1b2860264157c81385505a0413d7`.
+- First PR CI #471 failed one test-only subject-order assertion; no merge occurred.
+- Corrected exact tested head: `c5ae9c78044970c911379f411482901a6a29fdb5`.
+- Corrected PR CI #472 / run `35438598540`: success across legacy schema, Task/P3.6/workspace tests including P6.6, Playwright/P4.10, typecheck and build.
+- Implementation merge: `6f650c985dfd7e8097d2f030704c1841126b587a`.
+- Implementation tree: `25f971bae389a6896a8ee6f0a7df78c37a362974`.
+- Post-merge CI #473 / run `35438728623`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
-- P6.5 reconstructs exact P6.4 lineage and requires explicit policy coverage for every explanation item.
-- Exact precedence is block/suppression → approval-required → recommend-allowed → informational.
-- Actionability is never inferred from score/rank/family/kind/text/evidence semantics.
-- `approval` means approval required, never granted; `recommend` is advisory only; `informational` has no implicit escalation.
-- Every decision explicitly keeps approval grant, execution authorization and automatic transition false.
-- P6.5 remains unpublished and performed no provider/AI request, approval grant, persistence, Production DB activity, scheduler/worker activation, config/secret mutation, automatic transition or publication.
-- Default next safe engineering boundary: **P6.6 — current-vs-proposed preview/diff generation**, deterministic/default-off preview engineering only.
+- P6.6 reconstructs exact P6.5 lineage and accepts only explicitly supplied current/proposed preview fields.
+- Diff states are exactly unchanged/added/removed/modified; null remains distinct from empty string and values are not semantically normalized.
+- P6.5 governance state is preserved; every preview has `applyAuthorized=false`.
+- Proposed state is never treated as applied, approved, recommended, better, safe, valid or executable.
+- P6.6 remains unpublished and performed no provider/AI request, current-site fetch, persistence, Production DB activity, scheduler/worker activation, config/secret mutation, automatic apply or publication.
+- Default next safe engineering boundary: **P6.7 — opportunity lifecycle/history**, deterministic/default-off lifecycle/history engineering only.
 - Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
