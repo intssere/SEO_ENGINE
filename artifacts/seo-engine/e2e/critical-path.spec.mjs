@@ -154,6 +154,48 @@ test("Search Intelligence stays synthetic, searchable, sortable, and network-clo
   assertBrowserClean(errors);
 });
 
+test("AI Visibility workspace is synthetic, searchable, sortable, and network-closed", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/ai-visibility");
+
+  await expect(
+    page.getByRole("heading", { name: "AI Visibility workspace" }),
+  ).toBeVisible();
+  await expect(page.getByText("SYNTHETIC READ-ONLY")).toBeVisible();
+  await expect(page.getByText("DEFAULT-OFF")).toBeVisible();
+  await expect(page.getByText("LIVE DISABLED")).toBeVisible();
+  await expect(page.getByText("Coming soon")).toHaveCount(0);
+
+  const answerRegion = page.getByRole("region", {
+    name: /AI answer observations table\. Scroll horizontally/,
+  });
+  await answerRegion.focus();
+  await expect(answerRegion).toBeFocused();
+
+  const answerSearch = page.getByPlaceholder("Search provider, model, prompt or brand");
+  await answerSearch.fill("provider-beta");
+  await expect(answerRegion.getByText("provider-beta").first()).toBeVisible();
+  await expect(answerRegion.getByText("provider-alpha").first()).toHaveCount(0);
+  await answerSearch.fill("");
+
+  const scoreSort = page.getByRole("button", { name: "Sort by P7.5 score" });
+  await scoreSort.click();
+  await expect(
+    page.getByRole("columnheader", { name: /P7\.5 score/ }),
+  ).toHaveAttribute("aria-sort", "ascending");
+
+  await expect(
+    page.getByText(/P7\.5 score is source evidence and is not a P6\.2 opportunity score/),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/not a recommendation, approval, priority or execution authorization/),
+  ).toBeVisible();
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
 test("Ask dialog traps focus, answers from fixture, closes with Escape, and restores focus", async ({
   page,
 }) => {
@@ -202,7 +244,7 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
   assertBrowserClean(errors);
 });
 
-for (const route of ["/", "/technical-seo", "/search-intelligence", "/connections"]) {
+for (const route of ["/", "/technical-seo", "/search-intelligence", "/ai-visibility", "/connections"]) {
   test(`axe serious/critical scan passes on ${route}`, async ({ page }) => {
     const { boundary, errors } = await openSyntheticPage(page, route);
 
