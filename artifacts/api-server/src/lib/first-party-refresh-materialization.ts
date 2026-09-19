@@ -135,7 +135,6 @@ function validateSource(source: SignalSourceDescriptor): SignalSourceDescriptor 
     manuallyReviewed: source.manuallyReviewed,
   });
   if (stableJson(rebuilt) !== stableJson(source)) throw new Error("source_identity_mismatch");
-  exactSafety(source.safety ?? signalSourceRegistryCapability(), signalSourceRegistryCapability(), "source_safety");
   return rebuilt;
 }
 
