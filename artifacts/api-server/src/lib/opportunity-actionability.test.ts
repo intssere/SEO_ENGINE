@@ -131,28 +131,6 @@ function policy(
   };
 }
 
-function decision(
-  report: ReturnType<typeof classifyOpportunityActionability>,
-  subjectKey: string,
-) {
-  const explanationItem = report.decisions.find((candidate) => {
-    const item = report.decisions.find((value) => value.actionabilityId === candidate.actionabilityId);
-    return item?.opportunityFingerprint === candidate.opportunityFingerprint;
-  });
-  const source = report.decisions.find((candidate) => candidate.opportunityFingerprint ===
-    report.decisions.find((value) => value.opportunityFingerprint === candidate.opportunityFingerprint)?.opportunityFingerprint);
-  const fingerprints = new Set(report.decisions.map((candidate) => candidate.opportunityFingerprint));
-  assert.equal(fingerprints.size, report.decisions.length);
-  assert.ok(explanationItem);
-  assert.ok(source);
-
-  return report.decisions.find((candidate) => {
-    const expected = report.decisions.find((value) => value.opportunityFingerprint === candidate.opportunityFingerprint);
-    return expected?.opportunityFingerprint === candidate.opportunityFingerprint &&
-      subjectKey.length > 0;
-  });
-}
-
 function decisionFor(
   report: ReturnType<typeof classifyOpportunityActionability>,
   explanationReport: OpportunityExplanationReport,
