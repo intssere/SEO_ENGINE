@@ -13,9 +13,48 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.3 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P6.2 complete
+## Current engineering state — P6.3 complete
+
+Roadmap **P6.3 — conflict/dedupe/suppression/prioritization** is complete under issue #249 / PR #250.
+
+P6.3 adds a pure deterministic collection-policy layer over exact P6.1 opportunities and exact P6.2 scores:
+- revalidates the complete canonical P6.1 record and reconstructs the complete canonical P6.2 score before collection processing;
+- requires one exact P6.1 reference time and one exact market/category scope per collection; mixed snapshots/scopes fail closed;
+- collapses exact duplicate opportunity rows only when score/conflict/suppression metadata is identical;
+- rejects the same opportunity fingerprint when score or policy metadata conflicts instead of silently choosing one version;
+- preserves bounded caller-supplied suppression codes as visible audit metadata rather than deleting rows;
+- suppresses P6.2 unscorable rows from ranking and never fabricates a replacement score;
+- recognizes mutual exclusion only through an explicit normalized conflict key and never infers conflict from family, kind, subject or shared evidence;
+- keeps a unique highest P6.2 score eligible inside an explicit conflict while suppressing lower-scored active members;
+- leaves an equal highest-score conflict unresolved with no fingerprint/order/family/kind tiebreak winner;
+- applies dense priority ranks to remaining eligible rows by canonical P6.2 `score100` descending; equal non-conflicting scores share the same rank;
+- treats deterministic fingerprint ordering only as serialization order, not as preference;
+- does not infer lifecycle supersession/history; P6.7 owns that boundary;
+- produces advisory prioritization only, not execution order, recommendation text or actionability classification.
+
+Certification:
+- base SHA/tree: `5efea32b93a0e8f2daa6693a6c5d7faefec6e757` / `ee59b670755addad1b1662aed254609764f0a4d6`;
+- pre-PR implementation commit: `f428a9e523ef0203a8fbc63941af567a9396dbbd`;
+- pre-PR type-safety correction: canonical serialization was made total for `undefined`; no P6.3 collection semantics changed;
+- exact tested implementation head: `20fa4ba5159840d94d36a2900a1d4f687e2cf23e`;
+- PR CI #459 / run `35432176194`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P6.3, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `06739367624018c501a11459881462e2be480657`;
+- implementation tree: `b8f4ff628d55cf94c0664583c4ad83c86f9f5c2e`;
+- post-merge CI #460 / run `35432288284`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal build chunk-size warning only.
+
+P6.3 is **unpublished**. It performed no provider enrollment/purchase/credential use/request, public-site read/write, Task #67 Production source admission or refresh-plan mutation, Task #64/#70 execution, observation/evidence/score/priority persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p6-3-opportunity-prioritization-closeout.md`
+- `docs/p6-3-opportunity-prioritization.md`
+
+Default next safe milestone: **P6.4 — explanation/evidence generation**, deterministic/default-off engineering over certified P6.1/P6.2/P6.3 records; no live execution.
+
+## Previous engineering state — P6.2 complete
 
 Roadmap **P6.2 — impact × confidence × risk × effort × freshness scoring** is complete under issue #246 / PR #247.
 
@@ -48,7 +87,7 @@ Detailed record:
 - `.agents/memory/p6-2-opportunity-scoring-closeout.md`
 - `docs/p6-2-opportunity-scoring.md`
 
-Default next safe milestone: **P6.3 — conflict/dedupe/suppression/prioritization**, deterministic/default-off engineering over certified P6.1/P6.2 records; no live execution.
+At the P6.2 checkpoint, the default next safe milestone was **P6.3 — conflict/dedupe/suppression/prioritization**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P6.1 complete
 

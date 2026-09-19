@@ -13,25 +13,25 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P6.2 impact × confidence × risk × effort × freshness scoring is complete and certified.
+**Current checkpoint:** P6.3 conflict/dedupe/suppression/prioritization is complete and certified.
 
-- P6.2 issue #246 / PR #247.
-- Base SHA/tree: `70137fa940a9f4a733cfe4506efca351813e47db` / `377a6a5b48ce948baf9516b95c82cc18b7d16fc5`.
-- Initial PR head `f5f4267ed330769531a25e0e35b5a2766ae914d9` failed CI #454 / run `35430506731` only because an over-broad static anti-persistence regex falsely matched the cryptographic hash `.update(...)` call; no merge occurred.
-- Exact tested implementation head: `e2bdcead7aa9603305ade20ed86c62a10afcb2c5`.
-- PR CI #455 / run `35430608270`: success across legacy schema, Task/P3.6/workspace tests including P6.2, Playwright/P4.10, typecheck and build.
-- Implementation merge: `0bc3745e978fd57b944123283d3f54dd7e1dd3fb`.
-- Implementation tree: `d20788070aecd9732fe5857e69e8b1baf354b3da`.
-- Post-merge CI #456 / run `35430704830`: success.
+- P6.3 issue #249 / PR #250.
+- Base SHA/tree: `5efea32b93a0e8f2daa6693a6c5d7faefec6e757` / `ee59b670755addad1b1662aed254609764f0a4d6`.
+- Exact tested implementation head: `20fa4ba5159840d94d36a2900a1d4f687e2cf23e`.
+- PR CI #459 / run `35432176194`: success across legacy schema, Task/P3.6/workspace tests including P6.3, Playwright/P4.10, typecheck and build.
+- Implementation merge: `06739367624018c501a11459881462e2be480657`.
+- Implementation tree: `b8f4ff628d55cf94c0664583c4ad83c86f9f5c2e`.
+- Post-merge CI #460 / run `35432288284`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass, with only the existing non-fatal chunk-size warning.
-- P6.2 scores exact P6.1 records using five explicit normalized dimensions and the formula `impact × confidence × freshness × (1-risk) × (1-effort)`.
-- Zero remains a valid score; null means unavailable and makes the combined score unscorable rather than guessed.
-- Every non-null component is evidence-bound to the exact P6.1 record; P6.1 identity and semantic guards are revalidated before scoring.
-- Provider-native/non-comparable evidence remains non-comparable; P6.2 performs no hidden cross-provider normalization.
-- P6.2 scores one record at a time only and does not rank/prioritize a collection, generate recommendations, classify actionability, persist scores, mutate runtime/API/DB state, or replace the legacy opportunity score.
-- The requested `plausible/analytics` review found the main application AGPL-3.0-or-later and the tracker npm package MIT. No Plausible code was imported; its measurement concepts are deferred as a potential P10 reference.
-- P6.2 remains unpublished and performed no provider/public-site request, persistence, Production DB activity, scheduler/worker activation, config/secret mutation or publication.
-- Default next safe engineering boundary: **P6.3 — conflict/dedupe/suppression/prioritization**, deterministic/default-off engineering only.
+- P6.3 revalidates exact P6.1/P6.2 identities, requires homogeneous reference-time/scope collections and collapses only exact duplicate rows.
+- Same opportunity fingerprint with conflicting score/conflict/suppression metadata fails closed.
+- Explicit suppression codes remain visible; unscorable P6.2 rows receive no priority instead of a guessed score.
+- Mutual exclusion exists only through explicit conflict keys; P6.3 never infers conflicts from family/kind/subject/evidence.
+- Unique highest-score explicit conflicts retain one eligible candidate; equal top-score conflicts remain unresolved with no arbitrary deterministic winner.
+- Remaining eligible rows receive dense P6.2 score ranks; equal non-conflicting scores remain co-equal.
+- Priority is advisory only and does not become recommendation, actionability, execution order or authorization.
+- P6.3 remains unpublished and performed no provider/public-site request, persistence, Production DB activity, scheduler/worker activation, config/secret mutation or publication.
+- Default next safe engineering boundary: **P6.4 — explanation/evidence generation**, deterministic/default-off engineering only.
 - Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
