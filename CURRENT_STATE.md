@@ -13,9 +13,47 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.4 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.5 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P6.4 complete
+## Current engineering state — P6.5 complete
+
+Roadmap **P6.5 — actionability classifier: informational / recommend / approval / blocked** is complete under issue #255 / PR #256.
+
+P6.5 adds a pure deterministic governance-classification layer over exact P6.4 explanation lineage:
+- reconstructs the complete canonical P6.4 report before classification, transitively retaining P6.3/P6.2/P6.1 integrity checks;
+- requires exactly one explicit policy entry for every P6.4 explanation item; missing, unknown or duplicate policy coverage fails closed;
+- accepts only explicit `recommendationAllowed`, `approvalRequired` and bounded normalized caller-owned `blockCodes`;
+- never infers actionability from opportunity family/kind/subject text, evidence text/type, P6.2 score, P6.3 advisory rank, missing-evidence code or semantic-guard text;
+- classifies with exact precedence: explicit block or inherited P6.3 suppression → `blocked`; otherwise approval-required → `approval`; otherwise recommendation-allowed → `recommend`; otherwise `informational`;
+- preserves P6.3 suppression/conflict state, so unresolved equal-top conflicts remain blocked and P6.5 never invents a winner;
+- treats `approval` strictly as “approval required,” never approval granted;
+- treats `recommend` as advisory only, never execution authorization;
+- gives `informational` no implicit escalation;
+- emits deterministic normalized policy, decision fingerprints, state counts and report fingerprint;
+- hard-codes `approvalGranted=false`, `executionAuthorized=false` and `automaticTransitionAuthorized=false` on every actionability decision;
+- generates no recommendation prose, current-vs-proposed diff or lifecycle inference.
+
+Certification:
+- base SHA/tree: `153c5c423443c746085c6c7893c1f0893cff6e1d` / `a07d8fb5388d451dc4b10e1a4e7ff63a099fd194`;
+- initial implementation commit: `cc2ec0bec86e3992966166f3500fde8015df1dd6`;
+- pre-PR test-only cleanup removed an unused fixture helper; no P6.5 semantics changed;
+- exact tested implementation head: `abd73c795b061d7f31b7e6c95a3a8811d702c431`;
+- PR CI #467 / run `35435400355`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P6.5, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `0a306365d8f0e23f203e4dc9c59afed0c04c586f`;
+- implementation tree: `d776c241f8884e2f83d3aa6db3d212c9da30de1c`;
+- post-merge CI #468 / run `35435517215`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P6.5 is **unpublished**. It performed no provider/AI request, credential use, public-site read/write, source admission/refresh-plan mutation, Task #64/#70 execution, approval grant, observation/evidence/score/priority/explanation/actionability persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, automatic transition, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p6-5-opportunity-actionability-closeout.md`
+- `docs/p6-5-opportunity-actionability.md`
+
+Default next safe milestone: **P6.6 — current-vs-proposed preview/diff generation**, deterministic/default-off preview engineering over certified P6.1–P6.5 records; no execution, provider/site mutation or automatic apply.
+
+## Previous engineering state — P6.4 complete
 
 Roadmap **P6.4 — explanation/evidence generation** is complete under issue #252 / PR #253.
 
@@ -52,7 +90,7 @@ Detailed record:
 - `.agents/memory/p6-4-opportunity-explanation-closeout.md`
 - `docs/p6-4-opportunity-explanation.md`
 
-Default next safe milestone: **P6.5 — actionability classifier: informational / recommend / approval / blocked**, deterministic/default-off classification over certified P6.1/P6.2/P6.3/P6.4 records; no execution or automatic transition.
+At the P6.4 checkpoint, the default next safe milestone was **P6.5 — actionability classifier**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P6.3 complete
 
