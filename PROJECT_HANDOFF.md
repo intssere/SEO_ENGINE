@@ -13,26 +13,23 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P7.5 deterministic AI visibility scoring/history is complete and certified.
+**Current checkpoint:** P7.6 deterministic AI/GEO opportunity integration is complete and certified.
 
-- P7.5 issue #276 / PR #277.
-- Base SHA/tree: `6f8841688b9897fd65daf5a8a7d8c0890ca5503f` / `25c1bf64ca3e2cc3a911bdb7c8d1dbe7cecebf59`.
-- Initial implementation head `ed6b803d74b779f53d7f6e78576fadcb88c3e051` reached CI #496 / run `35451270712`, which failed only in two P7.5 workspace-test expectations/fixtures; no safety or scoring semantic was weakened.
-- Exact corrected/tested head: `f25d2d912e86a59998e1e8dd4342cf70c54afeac`.
-- PR CI #497 / run `35451398466`: success across legacy schema, Task/P3.6/workspace tests including P7.5, Playwright/P4.10, typecheck and build.
-- Implementation merge: `5a378eb72471aa7697011c814a7703213f5ed8ed`.
-- Implementation tree: `36e878daebc1c687b808b001d22bdf50b284548d`.
-- Post-merge CI #498 / run `35451526600`: success.
+- P7.6 issue #279 / PR #280.
+- Base SHA/tree: `a5eb291d862b667041aed49a00e0001de79f967f` / `302997086f8077af73ee37d42b9cd357f8f1b7b9`.
+- Exact tested implementation head: `1bc0334c754d2e11c8444d4ac2efd6827b48a8ad`.
+- PR CI #501 / run `35452690292`: success across legacy schema, Task/P3.6/workspace tests including P7.6, Playwright/P4.10, typecheck and build.
+- Implementation merge: `2a375966f943f67c5dc606c9e9257585b3e4824f`.
+- Implementation tree: `6300a641327c0064b880d99c6c61a1c877e0afc4`.
+- Post-merge CI #502 / run `35452920099`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
-- P7.5 reconstructs exact P7.4 lineage and uses only caller-supplied normalized weighted score components bound to exact in-scope P7.3 observations.
-- Raw answer/mention/citation/domain/comparison counts are never auto-converted to visibility scores.
-- Null remains distinct from zero; any missing component leaves the combined score unscorable/null.
-- History compares only exact score-key/site/comparison-frame/provider/model/brand/prompt-set/profile identities.
-- Delta directions are arithmetic only and do not imply improvement/regression.
-- No cross-provider/model normalized winner score, market-share/rank/quality/correctness/recommendation/execution-priority claim is generated.
-- P7.5 remains unpublished and performed no provider/AI request, credential use, persistence, Production DB activity, scheduler/worker activation, opportunity generation, site mutation or publication.
-- Default next safe engineering boundary: **P7.6 — AI/GEO opportunity integration**, deterministic/default-off P6-compatible AI opportunity construction only.
-- Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity, execution and publication remain separately unauthorized.
+- P7.6 reconstructs exact P7.5 and transitively exact P7.4/P7.3/P7.2 before integration.
+- A P6 AI opportunity exists only from an explicit integration request; score magnitude, thresholds, history deltas and descriptive comparison counts never auto-create gaps.
+- P7.5 scores remain source evidence only and are never reused as P6.2 scores or mapped to P6.2 dimensions.
+- Citation-specific requests require exact pair/domain-summary provenance while preserving the P7.4 co-occurrence-not-support guard.
+- P7.6 performs no P6.2–P6.7 stage automatically and remains unpublished.
+- Default next safe engineering boundary: **P7.7 — replace the AI Visibility placeholder with a deterministic/read-only production workspace** over certified P7.1–P7.6-shaped data.
+- Real live provider/public-site reads/writes, credentials, source admission, persistence, database activity, execution and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
