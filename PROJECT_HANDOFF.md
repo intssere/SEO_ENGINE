@@ -13,26 +13,25 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P7.7 AI Visibility production workspace is complete and certified; Phase P7 is complete.
+**Current checkpoint:** P8.1 Unified opportunity → proposal → approval governance workspace v1 is complete and certified.
 
-- P7.7 issue #282 / PR #283.
-- Base SHA/tree: `04a7e2fe151903598cc6ca9b5d8342fc7e1fb5ac` / `1ba613467f6745bb6f008da1ff3a8aeefec85629`.
-- Exact tested implementation head: `d03cca7a7787abaa2df8dd65ad40e1898bf383c3`.
-- PR CI #505 / run `35457712689`: success across legacy schema, Task/P3.6/workspace tests including the P7.7 model, Playwright/P4.10 including the new AI Visibility path + axe scan, typecheck and build.
-- Implementation merge: `c70118053ac8e86c284c9e5a151b6f26f52d05dc`.
-- Implementation tree: `2e64f6a33b298ea2b81d26a22123dce921832f36`.
-- Post-merge CI #506 / run `35457856132`: success.
-- Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
-- The former `/ai-visibility` coming-soon placeholder is replaced by a production-quality deterministic/read-only workspace over synthetic certified P7.1–P7.6-shaped evidence.
-- The workspace includes P7.3 answer/brand/citation, P7.4 citation/domain/competitor, P7.5 score/history and P7.6→P6.1 integration DataGrids plus P7.1/P7.2 summary projections.
-- Semantic guards explicitly prohibit consent/indexing/demand/endorsement/winner/improvement/execution inference.
-- Null P7.5 score remains distinct from zero; P7.5 scores are not reused as P6.2 scores.
-- P7.6 opportunity projection remains explicit-request-only and does not imply recommendation, approval, priority or execution.
-- Browser tests verify synthetic/default-off/live-disabled labels, search/sort/focus behavior, closed external network boundary and serious/critical axe accessibility.
-- P7.7 remains unpublished and performed no live provider/AI request, credential use, persistence, Production DB activity, P6 execution, scheduler/worker activation, config/secret mutation, site mutation or publication.
-- **Phase P7 is complete.**
-- Default next safe engineering boundary: **P8.1 — unify opportunity → proposal → approval UI around existing control primitives**, deterministic/read-only governance UX only.
-- Real approval grants, provider/public-site reads/writes, credentials, persistence, database activity, execution and publication remain separately unauthorized.
+- P8.1 issue #285 / PR #286.
+- Base SHA/tree: `ee91cddaa8b5795e926ac91bcefb7b2415877da1` / `12a112d9e38c1570137b049a06f0be9692193fca`.
+- Exact tested PR head: `73f131e29ee36ebda21dc1a3ecec839beaa7a138`.
+- PR CI #510 / run `35460580256`: success.
+- Implementation merge: `6dd42a2850713a4692039bb76900731129422061`.
+- Implementation tree: `e2c98d4d32b96a0d37ab01be4a81011f72dd944d`.
+- Post-merge main CI #511 / run `35460776543`: success.
+- Replit is exact-aligned on `main` at that merge/tree, ahead/behind `0/0`, clean, zero untracked.
+- Replit recursive tests, typecheck, build and `git diff --check`: passed; only the known non-fatal tooltip/sheet sourcemap messages and chunk-size warning remain.
+- `/governance` now provides deterministic/read-only opportunity → proposal → approval reconciliation using only existing GET data.
+- Duplicate IDs, dangling lineage and conflicting shared proposal/control fields fail closed.
+- Review states are descriptive only; recorded approval does not authorize execution.
+- `execution_authorized` and `public_site_writes` remain display-only persisted state.
+- No proposal edit, approval grant/rejection, authorization renewal, execution, rollback, verification action, provider/public-site mutation, persistence, DB activity, scheduler/worker activation, deployment or publication was introduced.
+- P8.1 remains unpublished.
+- Default next safe engineering boundary: **P8.2 — evidence/risk/preview/verification/rollback action cards**, deterministic/read-only UX only.
+- Real approval grants, provider/public-site reads/writes, credentials, persistence, database activity, execution, rollback mutation and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
