@@ -27,14 +27,23 @@ export type GovernanceProposalInput = {
   execution_authorized: boolean;
   public_site_writes: boolean;
   quality_status: string;
+  quality_score: number;
   quality_approval_eligible: boolean;
   before_value: string | null;
   after_value: string | null;
   evidence_count: number;
+  evidence_sufficient: boolean;
   confidence: number;
   title: string;
   field: string;
   action_type: string;
+  url: string | null;
+  path: string | null;
+  rationale: string;
+  expected_benefit: string;
+  rollback: string;
+  bounded_pilot: boolean;
+  whole_site_coverage: boolean;
 };
 
 export type GovernanceRow = {
@@ -60,9 +69,18 @@ export type GovernanceRow = {
   executionAuthorized: boolean;
   publicSiteWrites: boolean;
   qualityStatus: string | null;
+  qualityScore: number | null;
   qualityApprovalEligible: boolean | null;
+  evidenceSufficient: boolean | null;
   field: string | null;
   actionType: string | null;
+  targetUrl: string | null;
+  targetPath: string | null;
+  rationale: string | null;
+  expectedBenefit: string | null;
+  rollbackPlan: string | null;
+  boundedPilot: boolean | null;
+  wholeSiteCoverage: boolean | null;
 };
 
 const CONTROL_FIELDS: Array<keyof GovernanceProposalInput> = [
@@ -73,7 +91,9 @@ const CONTROL_FIELDS: Array<keyof GovernanceProposalInput> = [
 ];
 const DISPLAY_FIELDS: Array<keyof GovernanceProposalInput> = [
   ...CONTROL_FIELDS, "before_value", "after_value", "evidence_count",
-  "confidence", "title", "field", "action_type",
+  "evidence_sufficient", "quality_score", "confidence", "title", "field",
+  "action_type", "url", "path", "rationale", "expected_benefit", "rollback",
+  "bounded_pilot", "whole_site_coverage",
 ];
 
 function uniqueById<T extends { id: string }>(rows: readonly T[], code: string) {
@@ -180,9 +200,18 @@ export function buildGovernanceWorkspaceModel(input: {
       executionAuthorized: proposal.execution_authorized,
       publicSiteWrites: proposal.public_site_writes,
       qualityStatus: proposal.quality_status,
+      qualityScore: proposal.quality_score,
       qualityApprovalEligible: proposal.quality_approval_eligible,
+      evidenceSufficient: proposal.evidence_sufficient,
       field: proposal.field,
       actionType: proposal.action_type,
+      targetUrl: proposal.url,
+      targetPath: proposal.path,
+      rationale: proposal.rationale,
+      expectedBenefit: proposal.expected_benefit,
+      rollbackPlan: proposal.rollback,
+      boundedPilot: proposal.bounded_pilot,
+      wholeSiteCoverage: proposal.whole_site_coverage,
     };
   });
 
@@ -212,9 +241,18 @@ export function buildGovernanceWorkspaceModel(input: {
       executionAuthorized: false,
       publicSiteWrites: false,
       qualityStatus: null,
+      qualityScore: null,
       qualityApprovalEligible: null,
+      evidenceSufficient: null,
       field: null,
       actionType: null,
+      targetUrl: null,
+      targetPath: null,
+      rationale: null,
+      expectedBenefit: null,
+      rollbackPlan: null,
+      boundedPilot: null,
+      wholeSiteCoverage: null,
     });
   }
 
