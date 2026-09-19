@@ -440,7 +440,7 @@ P3.6 Production checkpoint:
 | P7.4 | citation/domain/competitor comparison | DONE — issue #273 / PR #274 / merge `3e34b7e151a0e5669b986e377dded16c53f86073` |
 | P7.5 | AI visibility scoring/history | DONE — issue #276 / PR #277 / merge `5a378eb72471aa7697011c814a7703213f5ed8ed` |
 | P7.6 | AI/GEO opportunity integration | DONE — issue #279 / PR #280 / merge `2a375966f943f67c5dc606c9e9257585b3e4824f` |
-| P7.7 | replace current AI Visibility placeholder with production workspace | NEXT SAFE DEFAULT — deterministic/read-only production-workspace engineering over certified P7.1–P7.6-shaped data; no live provider calls, persistence, execution or publication |
+| P7.7 | replace current AI Visibility placeholder with production workspace | DONE — issue #282 / PR #283 / merge `c70118053ac8e86c284c9e5a151b6f26f52d05dc` |
 
 ### Phase P8 — Governed execution and implementation
 
@@ -448,7 +448,7 @@ Existing Tasks #51–#54 remain the safety foundation.
 
 | ID | Work item | Status |
 |---|---|---|
-| P8.1 | Unify opportunity → proposal → approval UI around existing control primitives | PLANNED |
+| P8.1 | Unify opportunity → proposal → approval UI around existing control primitives | NEXT SAFE DEFAULT — deterministic/read-only governance UX over certified opportunity/proposal/approval primitives; no approval grant, execution, persistence or publication |
 | P8.2 | Evidence/risk/preview/verification/rollback action cards | PLANNED |
 | P8.3 | Expand bounded Shopify/site mutation action classes only after individual review | PLANNED |
 | P8.4 | Add verification adapters per mutation class | PLANNED |
@@ -587,12 +587,13 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 36. **DONE — P7.4:** deterministic/default-off citation/domain/competitor comparison over exact P7.3 records, issue #273 / PR #274 / merge `3e34b7e151a0e5669b986e377dded16c53f86073`; explicit competitor groups, positive mention-evidence overlap, descriptive citation-domain co-occurrence, no winner/rank/scoring activation.
 37. **DONE — P7.5:** deterministic/default-off evidence-bound AI visibility scoring/history over exact P7.4/P7.3 lineage, issue #276 / PR #277 / merge `5a378eb72471aa7697011c814a7703213f5ed8ed`; transparent weighted components, null-vs-zero, exact-scope history and no cross-provider normalization/runtime/persistence activation.
 38. **DONE — P7.6:** deterministic/default-off exact-lineage P7→P6 AI/GEO opportunity integration, issue #279 / PR #280 / merge `2a375966f943f67c5dc606c9e9257585b3e4824f`; explicit request only, exact P7.5/P7.4/P7.3 evidence, no P6 scoring/prioritization/runtime/persistence/publication activation.
-39. **NEXT SAFE DEFAULT — P7.7:** replace the AI Visibility placeholder with a deterministic/read-only production workspace over certified P7.1–P7.6-shaped data; no live provider calls, persistence, execution or publication.
-40. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-41. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-42. **P10 —** impact attribution, experimentation and learning loop.
-43. **P11 —** enterprise hardening and certification.
-44. **P12 —** final production completion certification and program closeout.
+39. **DONE — P7.7:** deterministic/read-only AI Visibility production workspace, issue #282 / PR #283 / merge `c70118053ac8e86c284c9e5a151b6f26f52d05dc`; synthetic P7.1–P7.6-shaped workbench, DataGrid/browser/axe certification, no live provider/runtime/persistence/execution/publication activation.
+40. **DONE — Phase P7:** AI/GEO accessibility, prompt modeling, supplied answer/citation evidence, competitor comparison, visibility scoring/history, P6 opportunity lineage and production read-only workspace.
+41. **NEXT SAFE DEFAULT — P8.1:** unify opportunity → proposal → approval UI around existing control primitives; deterministic/read-only governance UX only, no approval grant or execution.
+42. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+43. **P10 —** impact attribution, experimentation and learning loop.
+44. **P11 —** enterprise hardening and certification.
+45. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
