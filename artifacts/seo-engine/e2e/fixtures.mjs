@@ -180,6 +180,50 @@ export const findingsFixture = {
   ],
 };
 
+const governanceOpportunityFixture = {
+  readiness,
+  rows: [
+    {
+      id: "opp-1", title: "Improve product meta description",
+      opportunity_type: "content_alignment", score: 82, confidence: 0.9,
+      risk_classification: "medium", query: "fragrance",
+      url: "https://example.test/products/a", evidence_count: 3,
+      why_qualifies: "Synthetic governance fixture", recommendation: "Synthetic proposal",
+      execution_authorized: false, lifecycle: "active",
+      rationale: "Synthetic rationale", updated_at: "2026-09-19T00:00:00.000Z"
+    },
+    {
+      id: "opp-2", title: "Review collection title",
+      opportunity_type: "technical_remediation", score: 55, confidence: 0.7,
+      risk_classification: "low", query: null,
+      url: "https://example.test/collections/a", evidence_count: 1,
+      why_qualifies: "Synthetic governance fixture", recommendation: "No proposal yet",
+      execution_authorized: false, lifecycle: "active",
+      rationale: "Synthetic rationale", updated_at: "2026-09-19T00:00:00.000Z"
+    }
+  ],
+  history: []
+};
+
+const governanceProposalFixture = {
+  id: "plan-1", opportunity_id: "opp-1",
+  proposal_fingerprint: "fixture-proposal-fingerprint",
+  lifecycle: "approved_proposal", decision: "approved", revision_requested: false,
+  evaluatorRisk: "medium", planControlRisk: "blocked", effectiveExecutionRisk: "medium",
+  execution_authorized: false, public_site_writes: false,
+  quality_status: "pass", quality_approval_eligible: true,
+  before_value: "Old description", after_value: "Proposed description",
+  evidence_count: 3, confidence: 0.9,
+  title: "Improve product meta description", field: "meta_description", action_type: "update",
+  quality_score: 96, quality_blocking_reasons: [], bounded_pilot: true,
+  whole_site_coverage: false, plan_status: "completed", path: "/products/a",
+  url: "https://example.test/products/a", rationale: "Synthetic rationale",
+  expected_benefit: "Synthetic expected benefit", rollback: "Restore prior value",
+  dry_run: true, evidence_ids: ["ev-1", "ev-2", "ev-3"]
+};
+
+const governanceProposalListFixture = { readiness, rows: [governanceProposalFixture] };
+
 const emptyListFixture = {
   readiness,
   rows: [],
@@ -284,12 +328,17 @@ export async function installSyntheticNetwork(page) {
       await json(route, findingsFixture);
       return;
     }
+    if (method === "GET" && path === "/api/opportunities") {
+      await json(route, governanceOpportunityFixture);
+      return;
+    }
+    if (method === "GET" && (path === "/api/actions" || path === "/api/approvals")) {
+      await json(route, governanceProposalListFixture);
+      return;
+    }
     if (
       method === "GET" &&
       [
-        "/api/opportunities",
-        "/api/actions",
-        "/api/approvals",
         "/api/ai-visibility",
         "/api/learning",
         "/api/verification",
