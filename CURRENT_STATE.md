@@ -13,9 +13,48 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1–P7.5 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1–P7.6 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P7.5 complete
+## Current engineering state — P7.6 complete
+
+Roadmap **P7.6 — AI/GEO opportunity integration** is complete under issue #279 / PR #280.
+
+P7.6 adds a pure deterministic lineage bridge from exact certified P7 evidence into P6.1-compatible AI opportunities:
+- reconstructs exact P7.5 scoring/history before integration and fails closed on tampered lineage; P7.5 transitively revalidates P7.4/P7.3/P7.2;
+- requires an explicit integration request for every projected opportunity; score magnitude, score threshold, history delta, comparison count, mention count or citation count never auto-generates a gap;
+- supports only existing certified P6 AI kinds `ai_visibility_gap` and `ai_citation_gap`, both under family `ai`;
+- binds requests to exact P7.5 snapshot/score and exact P7.4 comparison fingerprints;
+- visibility-gap requests reject citation pair/domain claims;
+- citation-gap requests require an exact pair involving the selected score brand plus exact selected P7.4 domain summaries from that pair's citation-domain co-occurrence evidence;
+- projects P7.5 score, P7.4 comparison/pair/domain-summary and exact P7.3 score-component observation fingerprints as P6.1 `ai_visibility` evidence;
+- preserves P7.3 observation timestamps while leaving derived P7.4/P7.5 artifact `observedAt` null;
+- uses only explicitly supplied P6 market/category fingerprints and never maps P7 language/market keys into P6 scope;
+- preserves unscorable P7.5 state as null, carries exact missing P7.5 component codes in lineage, and projects only deterministic P6 missing-evidence code `p7.5.unscorable_score`;
+- never reuses P7.5 `score100` as P6.2 scoring and never maps P7.5 components to P6 impact/confidence/risk/effort/freshness;
+- performs no P6.2 scoring, P6.3 prioritization, P6.4 explanation, P6.5 actionability, P6.6 preview or P6.7 lifecycle transition;
+- rejects duplicate normalized integration keys and duplicate exact P6.1 opportunity projections;
+- preserves P7.4 citation-co-occurrence and P7.3 missing-mention-evidence guardrails;
+- emits deterministic lineage, P6.1 opportunity, integration and report fingerprints.
+
+Certification:
+- base SHA/tree: `a5eb291d862b667041aed49a00e0001de79f967f` / `302997086f8077af73ee37d42b9cd357f8f1b7b9`;
+- exact tested implementation head: `1bc0334c754d2e11c8444d4ac2efd6827b48a8ad`;
+- PR CI #501 / run `35452690292`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P7.6, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `2a375966f943f67c5dc606c9e9257585b3e4824f`;
+- implementation tree: `6300a641327c0064b880d99c6c61a1c877e0afc4`;
+- post-merge CI #502 / run `35452920099`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P7.6 is **unpublished**. It performed no live provider/AI request, credential use, source admission, opportunity/score persistence, Production DB read/write/DDL/DML, P6 scoring/prioritization/actionability/execution, scheduler/worker/retry activation, approval grant, public-site mutation, automatic transition, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p7-6-ai-geo-opportunity-integration-closeout.md`
+- `docs/p7-6-ai-geo-opportunity-integration.md`
+
+Default next safe milestone: **P7.7 — replace the current AI Visibility placeholder with a production workspace**, using deterministic/read-only certified P7.1–P7.6-shaped data and preserving all no-live-provider/no-persistence/no-execution boundaries unless separately authorized.
+
+## Previous engineering state — P7.5 complete
 
 Roadmap **P7.5 — AI visibility scoring/history** is complete under issue #276 / PR #277.
 
@@ -53,7 +92,7 @@ Detailed record:
 - `.agents/memory/p7-5-ai-visibility-scoring-history-closeout.md`
 - `docs/p7-5-ai-visibility-scoring-history.md`
 
-Default next safe milestone: **P7.6 — AI/GEO opportunity integration**, deterministic/default-off mapping from exact certified P7.3/P7.4/P7.5 evidence into P6-compatible AI opportunity records only; no live provider request, persistence, execution, recommendation shortcut or publication.
+At the P7.5 checkpoint, the default next safe milestone was **P7.6 — AI/GEO opportunity integration**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P7.4 complete
 

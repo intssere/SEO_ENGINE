@@ -439,8 +439,8 @@ P3.6 Production checkpoint:
 | P7.3 | AI answer/brand/citation visibility collection strategy | DONE — issue #270 / PR #271 / merge `399a6b946b213b2e8aff9416ca5287896476fe48` |
 | P7.4 | citation/domain/competitor comparison | DONE — issue #273 / PR #274 / merge `3e34b7e151a0e5669b986e377dded16c53f86073` |
 | P7.5 | AI visibility scoring/history | DONE — issue #276 / PR #277 / merge `5a378eb72471aa7697011c814a7703213f5ed8ed` |
-| P7.6 | AI/GEO opportunity integration | NEXT SAFE DEFAULT — deterministic/default-off integration of exact P7.3/P7.4/P7.5 evidence into P6-compatible AI opportunities; no live provider request, persistence, execution or publication |
-| P7.7 | replace current AI Visibility placeholder with production workspace | PLANNED |
+| P7.6 | AI/GEO opportunity integration | DONE — issue #279 / PR #280 / merge `2a375966f943f67c5dc606c9e9257585b3e4824f` |
+| P7.7 | replace current AI Visibility placeholder with production workspace | NEXT SAFE DEFAULT — deterministic/read-only production-workspace engineering over certified P7.1–P7.6-shaped data; no live provider calls, persistence, execution or publication |
 
 ### Phase P8 — Governed execution and implementation
 
@@ -586,12 +586,13 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 35. **DONE — P7.3:** deterministic/default-off provider-neutral supplied-observation answer/brand/citation normalization, issue #270 / PR #271 / merge `399a6b946b213b2e8aff9416ca5287896476fe48`; exact P7.2 lineage, explicit mention/citation evidence, no live provider/persistence/scoring activation.
 36. **DONE — P7.4:** deterministic/default-off citation/domain/competitor comparison over exact P7.3 records, issue #273 / PR #274 / merge `3e34b7e151a0e5669b986e377dded16c53f86073`; explicit competitor groups, positive mention-evidence overlap, descriptive citation-domain co-occurrence, no winner/rank/scoring activation.
 37. **DONE — P7.5:** deterministic/default-off evidence-bound AI visibility scoring/history over exact P7.4/P7.3 lineage, issue #276 / PR #277 / merge `5a378eb72471aa7697011c814a7703213f5ed8ed`; transparent weighted components, null-vs-zero, exact-scope history and no cross-provider normalization/runtime/persistence activation.
-38. **NEXT SAFE DEFAULT — P7.6:** deterministic/default-off AI/GEO opportunity integration from exact certified P7.3/P7.4/P7.5 evidence into P6-compatible AI opportunity records; no live provider request, persistence, execution or publication.
-39. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-40. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-41. **P10 —** impact attribution, experimentation and learning loop.
-42. **P11 —** enterprise hardening and certification.
-43. **P12 —** final production completion certification and program closeout.
+38. **DONE — P7.6:** deterministic/default-off exact-lineage P7→P6 AI/GEO opportunity integration, issue #279 / PR #280 / merge `2a375966f943f67c5dc606c9e9257585b3e4824f`; explicit request only, exact P7.5/P7.4/P7.3 evidence, no P6 scoring/prioritization/runtime/persistence/publication activation.
+39. **NEXT SAFE DEFAULT — P7.7:** replace the AI Visibility placeholder with a deterministic/read-only production workspace over certified P7.1–P7.6-shaped data; no live provider calls, persistence, execution or publication.
+40. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+41. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+42. **P10 —** impact attribution, experimentation and learning loop.
+43. **P11 —** enterprise hardening and certification.
+44. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
