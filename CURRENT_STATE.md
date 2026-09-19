@@ -13,9 +13,45 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.7 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P6.7 complete
+## Current engineering state — P7.1 complete
+
+Roadmap **P7.1 — AI crawler/bot accessibility audit** is complete under issue #264 / PR #265.
+
+P7.1 adds a pure deterministic supplied-evidence accessibility audit:
+- accepts only caller-supplied exact bot identity, user-agent, site-relative path and evidence observations;
+- performs no live crawl, robots.txt fetch, vendor-policy lookup, AI/provider request or credential use;
+- validates canonical audit/observation timestamps and rejects future observations;
+- preserves exact caller-supplied user-agent/path while normalizing only opaque site/bot keys;
+- treats supplied robots policy as `allowed`, `disallowed`, or `unknown` without implementing a hidden robots.txt parser;
+- classifies exact observations with fixed precedence: explicit robots/HTTP access denial → `blocked`; 404/410 → `unavailable`; challenge/429/unresolved 3xx → `limited`; explicit robots allow + 2xx + body available → `accessible`; otherwise `indeterminate`;
+- retains all applicable diagnostics even when a higher-precedence status wins;
+- collapses exact duplicate observations only when their normalized metadata match and fails closed on conflicting duplicate evidence;
+- rejects conflicting user-agent identities under one normalized bot key;
+- produces deterministic per-bot summaries, including `mixed` when probe states differ;
+- explicitly states that robots allowance is not training consent/license and accessibility is not proof of indexing, citation or AI-answer visibility;
+- never infers vendor intent, page meta/X-Robots semantics, recommendations, prompt/topic sets, AI-answer collection, visibility scores or AI/GEO opportunities.
+
+Certification:
+- base SHA/tree: `5ffb308a0a606b2514c3aaa8d443b8e382679e65` / `b6c3dcc81984059cb44f953f440fe567d7bdb992`;
+- exact tested implementation head: `1525569d0f917e0760dc3aa53823a37ef0f6fdaa`;
+- PR CI #480 / run `35442537775`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P7.1, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `74e5de6518359f9f92b2e73edd5d44f02eecffa2`;
+- implementation tree: `6dfd2b5179b489367858ca2092000a9e0292415f`;
+- post-merge CI #481 / run `35442677104`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P7.1 is **unpublished**. It performed no live crawl, robots.txt fetch, provider/AI request, credential use, source admission, observation/accessibility persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, approval grant, public-site mutation, automatic transition, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p7-1-ai-crawler-accessibility-closeout.md`
+- `docs/p7-1-ai-crawler-accessibility.md`
+
+Default next safe milestone: **P7.2 — prompt/topic set model**, deterministic/default-off modeling over explicit supplied/synthetic prompt/topic definitions only; no AI-provider request, answer collection, persistence or publication.
+
+## Previous engineering state — P6.7 complete
 
 Roadmap **P6.7 — opportunity lifecycle/history** is complete under issue #261 / PR #262.
 
@@ -52,7 +88,7 @@ Detailed record:
 
 **Phase P6 — Opportunity and recommendation engine is now complete through P6.7.**
 
-Default next safe milestone: **P7.1 — AI crawler/bot accessibility audit**, deterministic/default-off audit engineering using supplied/synthetic evidence only; no live crawl, provider request, credential use, site mutation or publication.
+At the P6.7 checkpoint, the default next safe milestone was **P7.1 — AI crawler/bot accessibility audit**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P6.6 complete
 

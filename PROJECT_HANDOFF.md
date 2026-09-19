@@ -13,24 +13,23 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P6.7 deterministic opportunity lifecycle/history is complete and certified; Phase P6 is complete.
+**Current checkpoint:** P7.1 deterministic AI crawler/bot accessibility audit is complete and certified.
 
-- P6.7 issue #261 / PR #262.
-- Base SHA/tree: `04f458d6b0eecdd5c09d7cc85543d65e5c2ffabd` / `6b9184f65fe5b88aa427d613378effbf1d9f8ead`.
-- Exact tested implementation head: `56f5ba6f6aa33378f7e4cc39ba34ba6a923866e4`.
-- PR CI #476 / run `35440752266`: success across legacy schema, Task/P3.6/workspace tests including P6.7, Playwright/P4.10, typecheck and build.
-- Implementation merge: `d587a1cc7737c87e09b5bdb827b1cc80170c8a8b`.
-- Implementation tree: `5e410bc0b5cd6953d769fe336407d4e6491d222d`.
-- Post-merge CI #477 / run `35440907498`: success.
+- P7.1 issue #264 / PR #265.
+- Base SHA/tree: `5ffb308a0a606b2514c3aaa8d443b8e382679e65` / `b6c3dcc81984059cb44f953f440fe567d7bdb992`.
+- Exact tested implementation head: `1525569d0f917e0760dc3aa53823a37ef0f6fdaa`.
+- PR CI #480 / run `35442537775`: success across legacy schema, Task/P3.6/workspace tests including P7.1, Playwright/P4.10, typecheck and build.
+- Implementation merge: `74e5de6518359f9f92b2e73edd5d44f02eecffa2`.
+- Implementation tree: `6dfd2b5179b489367858ca2092000a9e0292415f`.
+- Post-merge CI #481 / run `35442677104`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
-- P6.7 reconstructs exact P6.6/P6.5 lineage and gives every current opportunity a neutral `observed` baseline only.
-- Lifecycle changes require explicit caller-supplied ordered events; no score/rank/actionability/preview inference is allowed.
-- States are `observed`, `active`, `deferred`, `dismissed`, `closed`, and `superseded`; terminal exact fingerprints cannot silently reactivate.
-- Supersession is explicit-current-target only and acyclic; no similarity-based supersession is inferred.
-- `closed` is lifecycle bookkeeping only and does not prove implementation, resolution or verification.
-- P6.7 remains unpublished and performed no provider/AI request, persistence, Production DB activity, scheduler/worker activation, config/secret mutation, automatic transition or publication.
-- **Phase P6 is complete.**
-- Default next safe engineering boundary: **P7.1 — AI crawler/bot accessibility audit**, deterministic/default-off supplied/synthetic audit engineering only.
+- P7.1 is supplied-evidence only: exact bot/user-agent/path plus caller-supplied robots decision, HTTP status, challenge/body observations and evidence fingerprints.
+- Probe states are deterministic `accessible / blocked / limited / unavailable / indeterminate`; per-bot summaries may be `mixed`.
+- P7.1 performs no robots.txt parsing, live crawling or vendor-policy lookup.
+- Robots allowance is explicitly not training consent/license; accessibility is explicitly not indexing, citation or AI-answer visibility.
+- P7.1 remains unpublished and performed no provider/AI request, credential use, persistence, Production DB activity, scheduler/worker activation, config/secret mutation, site mutation or publication.
+- Phase P6 remains complete.
+- Default next safe engineering boundary: **P7.2 — prompt/topic set model**, deterministic/default-off supplied/synthetic modeling only.
 - Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
