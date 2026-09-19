@@ -617,11 +617,7 @@ test("P7.5 bounds fail closed", () => {
   assert.throws(
     () => buildAiVisibilityScoringHistory({
       historyReferenceTime: HISTORY_REFERENCE,
-      snapshots: Array.from({ length: P7_5_MAX_SNAPSHOTS + 1 }, (_, index) =>
-        snapshot(
-          `2026-09-${String(1 + Math.floor(index / 24)).padStart(2, "0")}T${String(index % 24).padStart(2, "0")}:00:00.000Z`,
-          1000 + index * 10,
-        )),
+      snapshots: Array.from({ length: P7_5_MAX_SNAPSHOTS + 1 }, () => base),
     }),
     /ai_visibility_snapshot_limit_exceeded/,
   );

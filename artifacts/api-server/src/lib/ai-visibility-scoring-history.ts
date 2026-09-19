@@ -478,9 +478,10 @@ function buildScoreRecords(
 
     const group = comparisons.get(comparisonKey);
     if (!group) throw new Error("unknown_ai_visibility_comparison");
+    const brand = findBrand(collection, brandKey);
     const groupBrandKeys = new Set([
       group.subject.brandKey,
-      ...group.competitors.map((brand) => brand.brandKey),
+      ...group.competitors.map((candidate) => candidate.brandKey),
     ]);
     if (!groupBrandKeys.has(brandKey)) {
       throw new Error("ai_visibility_brand_outside_comparison");
@@ -489,7 +490,6 @@ function buildScoreRecords(
     const provider = findProvider(collection, providerKey);
     const model = provider.models.find((candidate) => candidate.modelKey === modelKey);
     if (!model) throw new Error("unknown_ai_visibility_model");
-    const brand = findBrand(collection, brandKey);
     const promptSet = findPromptSet(promptModel, promptSetKey);
     const observations = scopedObservations(collection, providerKey, modelKey, promptSet);
     const allowedEvidence = new Set(
