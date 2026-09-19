@@ -13,9 +13,46 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1–P7.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1–P7.3 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P7.2 complete
+## Current engineering state — P7.3 complete
+
+Roadmap **P7.3 — AI answer/brand/citation visibility collection strategy** is complete under issue #270 / PR #271.
+
+P7.3 adds a pure deterministic provider-neutral normalization contract over exact P7.2 lineage and supplied/synthetic collection observations:
+- reconstructs the exact P7.2 prompt/topic model and requires complete canonical equality before accepting observations;
+- binds every observation to an exact P7.2 prompt key/fingerprint and inherits exact prompt topic lineage rather than re-inferring topics;
+- accepts only explicit caller-supplied opaque provider/model identities and never infers provider capability, quality, policy, market share, freshness or recommendation;
+- accepts only explicit caller-supplied tracked-brand definitions and explicit supplied mention records; it performs no answer-text brand mining or alias discovery;
+- uses deterministic answer states `answered`, `refused`, `unavailable`, and `error`;
+- requires answered observations to carry bounded exact answer text and requires non-answered observations to carry no answer text, mention records or citation records;
+- preserves answer text and matched mention text exactly after bounded control-character validation;
+- accepts only HTTP(S) citation URLs, rejects URL credentials, removes fragments, normalizes via the platform URL parser, and exposes lower-cased hostname as descriptive citation domain;
+- collapses exact repeated mention/citation records deterministically and fails closed on conflicting citation title metadata for one normalized URL;
+- validates canonical collection/observation timestamps with no wall-clock dependency;
+- emits deterministic provider/model/brand/mention/citation/observation/report fingerprints and descriptive counts;
+- explicitly states that answer observation does not imply correctness, mention does not imply recommendation/sentiment/prominence/preference, absent mention evidence does not prove absence, and citation presence does not imply endorsement/authority/trust/support;
+- explicitly states that collection does not imply indexing/crawler accessibility, makes no cross-provider comparability claim, performs no P7.4 domain/competitor comparison, no P7.5 visibility scoring/history and no P7.6 opportunity generation.
+
+Certification:
+- base SHA/tree: `d325d46010c36764a8be14af8c697e627f8e69b2` / `2721afdea15f59a29fb4f2e5334b41f25a8d0641`;
+- exact tested implementation head: `4313d5df785d43245d0f327265897a29c915a0cf`;
+- PR CI #488 / run `35447907730`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P7.3, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `399a6b946b213b2e8aff9416ca5287896476fe48`;
+- implementation tree: `35d337012c4865e162e606f505d3ea63660e4e09`;
+- post-merge CI #489 / run `35448044951`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P7.3 is **unpublished**. It performed no live AI/provider request, credential use, provider selection, source admission, prompt/answer/mention/citation persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, approval grant, public-site mutation, automatic transition, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p7-3-ai-answer-visibility-collection-closeout.md`
+- `docs/p7-3-ai-answer-visibility-collection.md`
+
+Default next safe milestone: **P7.4 — citation/domain/competitor comparison**, deterministic/default-off comparison over exact P7.3 supplied-observation records only; no live AI/provider request, credential use, persistence, scoring or publication.
+
+## Previous engineering state — P7.2 complete
 
 Roadmap **P7.2 — prompt/topic set model** is complete under issue #267 / PR #268.
 
@@ -49,7 +86,7 @@ Detailed record:
 - `.agents/memory/p7-2-ai-prompt-topic-model-closeout.md`
 - `docs/p7-2-ai-prompt-topic-model.md`
 
-Default next safe milestone: **P7.3 — AI answer/brand/citation visibility collection strategy**, deterministic/default-off provider-neutral collection-contract and supplied/synthetic fixture engineering only; no live AI-provider request, credential use, persistence or publication.
+At the P7.2 checkpoint, the default next safe milestone was **P7.3 — AI answer/brand/citation visibility collection strategy**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P7.1 complete
 

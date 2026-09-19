@@ -13,24 +13,24 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P7.2 deterministic prompt/topic set model is complete and certified.
+**Current checkpoint:** P7.3 deterministic AI answer/brand/citation collection contract is complete and certified.
 
-- P7.2 issue #267 / PR #268.
-- Base SHA/tree: `3c46105da8daaa6464c5f012e6c20d991b83db0f` / `d3b2ebea2e2a0a8f54c0b7e4d740deb578d7f2f7`.
-- Exact tested implementation head: `a10bedcec52baa16507ee8715d439cc672f15254`.
-- PR CI #484 / run `35445344907`: success across legacy schema, Task/P3.6/workspace tests including P7.2, Playwright/P4.10, typecheck and build.
-- Implementation merge: `ecee3e9796c04c25f3c800e73e621c2cef299666`.
-- Implementation tree: `78384a93df0a3d66beba03d0e06b83a5ba57bd11`.
-- Post-merge CI #485 / run `35445482575`: success.
+- P7.3 issue #270 / PR #271.
+- Base SHA/tree: `d325d46010c36764a8be14af8c697e627f8e69b2` / `2721afdea15f59a29fb4f2e5334b41f25a8d0641`.
+- Exact tested implementation head: `4313d5df785d43245d0f327265897a29c915a0cf`.
+- PR CI #488 / run `35447907730`: success across legacy schema, Task/P3.6/workspace tests including P7.3, Playwright/P4.10, typecheck and build.
+- Implementation merge: `399a6b946b213b2e8aff9416ca5287896476fe48`.
+- Implementation tree: `35d337012c4865e162e606f505d3ea63660e4e09`.
+- Post-merge CI #489 / run `35448044951`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
-- P7.2 is supplied-definition only: explicit topics, exact prompt text and explicit prompt-set membership.
-- Topic hierarchy is caller-defined only and must be acyclic; no semantic/embedding relation is inferred.
-- Prompt intent/language/market codes are caller-owned opaque metadata and are never inferred.
-- Set-level topic coverage is only the union of explicit prompt topic references and implies no demand, priority, visibility, citation, ranking or recommendation.
-- P7.2 performs no prompt generation/rewriting/expansion, embedding call, AI/provider request, answer/citation collection, scoring, opportunity generation or persistence.
-- P7.2 remains unpublished.
-- Default next safe engineering boundary: **P7.3 — AI answer/brand/citation visibility collection strategy**, deterministic/default-off provider-neutral contract + supplied/synthetic fixture engineering only.
-- Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity and publication remain separately unauthorized.
+- P7.3 reconstructs exact P7.2 prompt/topic lineage and normalizes supplied/synthetic observations only.
+- Provider/model and brand identities are explicit caller-owned registries; P7.3 infers no provider policy/capability or brand aliases.
+- Answer text and matched mention text are preserved exactly; explicit mention evidence is never treated as recommendation, sentiment, prominence or preference.
+- Citations are HTTP(S)-only, fragment-stripped deterministic URLs with descriptive lower-cased hostname/domain; citation presence does not imply endorsement, authority, trust or support.
+- P7.3 performs no live AI/provider request, answer generation, text mining, provider selection, persistence, domain/competitor comparison, visibility scoring/history or opportunity generation.
+- P7.3 remains unpublished.
+- Default next safe engineering boundary: **P7.4 — citation/domain/competitor comparison**, deterministic/default-off comparison over exact P7.3 records only.
+- Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity, scoring and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
