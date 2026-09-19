@@ -213,7 +213,7 @@ const governanceProposalFixture = {
   execution_authorized: false, public_site_writes: false,
   quality_status: "pass", quality_approval_eligible: true,
   before_value: "Old description", after_value: "Proposed description",
-  evidence_count: 3, confidence: 0.9,
+  evidence_count: 3, evidence_sufficient: true, confidence: 0.9,
   title: "Improve product meta description", field: "meta_description", action_type: "update",
   quality_score: 96, quality_blocking_reasons: [], bounded_pilot: true,
   whole_site_coverage: false, plan_status: "completed", path: "/products/a",
