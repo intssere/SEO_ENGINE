@@ -13,20 +13,21 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P8.3 first individual mutation-action-class review is complete; implementation is blocked pending separate provider-scope authorization.
+**Current checkpoint:** P9.1 read-only scheduler/queue architecture v1 is complete and certified.
 
-- Canonical P8.2 docs-closeout main before this review: `7877878f3b85e28c0ecce68ed19f7a68a68f5896` / tree `0bef5a51457feb46617e3c78d573560d94f87187`.
-- P8.2 implementation remains fully certified and unpublished.
-- P8.3 review issue: #291 — **P8.3A — Individual action-class review: product media alt text**.
-- Existing executable mutation classes remain exactly Shopify product/collection SEO `title` and `meta_description` under the isolated `write_products` credential.
-- The preferred future expansion is product media alt text.
-- Current Shopify `fileUpdate` requires `write_files` or `write_themes`; the existing Task #53 credential is intentionally `write_products` only.
-- Therefore media-alt implementation is **BLOCKED** until a separate explicit authorization covers the isolated `write_files` scope/credential architecture. Do not broaden the Task #53 credential silently.
-- Deprecated `productUpdateMedia` is not an acceptable bypass for the scope review.
-- The future contract in issue #291 binds one Product GID + one MediaImage/File GID, exact before/proposed fingerprints, one alt-only forward mutation, independent provider + uniquely-bound storefront verification, one deterministic restore mutation, bounded rollback re-verification, and manual intervention on non-convergence.
-- Merchant-visible title/description HTML remain deferred; handle is rejected as the first expansion.
-- No provider request, OAuth enrollment, scope/credential mutation, public-site write, execution, persistence, database activity, scheduler/worker activation, deployment or publication occurred during this review.
-- Generic `continue` does **not** authorize P8.3 implementation, `write_files` enrollment, P8.4 verification-adapter implementation for the blocked class, or any live mutation.
+- P9.1 issue #293 / PR #294.
+- Base SHA/tree: `53aef9450ed282d74fe3b3436bbb5ec05315f47c` / `b11922ac555733f96b03c65e8bf112e37ae14cc3`.
+- Exact tested PR head/tree: `71aa75c620c8e05ea37c23a1ca932dbe255139b9` / `e2f2d40dd530b80c74d6803f9245ff642f9f11a8`.
+- Exact-head PR CI #522 / run `35467292055`: success.
+- Implementation merge: `e348aed49b3d787d237096a2bde24b23930e3223`.
+- Implementation tree: `e2f2d40dd530b80c74d6803f9245ff642f9f11a8`.
+- Post-merge main CI #523 / run `35467412415`: success.
+- Replit is exact-aligned on `main` at the merge/tree, ahead/behind `0/0`, clean, zero untracked.
+- Replit recursive tests, typecheck, build and `git diff --check`: passed; only known non-fatal tooltip/sheet sourcemap messages and chunk-size warning remain.
+- P9.1 is pure deterministic architecture only: `signal_refresh` and `crawl_refresh` schedules, fixed anchor-based cadence, bounded due windows, explicit not-started/paused/due/missed/already-materialized states, deterministic one-intent-per-due-slot projection and bounded canonical queue serialization.
+- P9.1 activates no timer, scheduler, durable queue, worker, retry loop, Task #69 packet materialization, Task #70 execution, provider/crawl read, credential use, persistence, DB write, Task #53/#54 execution, provider/public-site mutation, deployment or publication.
+- P8.3 media-alt mutation implementation remains separately blocked pending explicit isolated `write_files` scope/credential authorization.
+- Default next safe boundary: **P9.2 scheduled GSC/analytics/catalog refresh architecture/materialization review**. Generic continuation may define default-off deterministic orchestration contracts only; it does not authorize runtime scheduling, durable enqueue, provider requests, credentials, persistence, Task #70 execution or publication.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
