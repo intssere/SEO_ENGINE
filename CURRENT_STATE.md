@@ -13,9 +13,50 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.5 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.6 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P6.5 complete
+## Current engineering state — P6.6 complete
+
+Roadmap **P6.6 — current-vs-proposed preview/diff generation** is complete under issue #258 / PR #259.
+
+P6.6 adds a pure deterministic preview layer over exact P6.5 actionability lineage:
+- reconstructs the exact P6.5 report before preview generation, transitively retaining P6.4/P6.3/P6.2/P6.1 integrity checks;
+- accepts only explicitly caller-supplied preview entries bound to exact opportunity and actionability fingerprints;
+- never discovers current site state and never generates proposed content;
+- preview coverage is optional; absent previews are not fabricated;
+- normalizes only preview/field keys while preserving current/proposed values exactly;
+- keeps null distinct from empty string;
+- uses exact field statuses: unchanged, added, removed, modified;
+- rejects duplicate normalized preview keys per opportunity and duplicate normalized field keys within a preview;
+- preserves P6.5 informational/recommend/approval/blocked classification without modifying governance state;
+- permits inspection of blocked previews without implying actionability or apply permission;
+- emits deterministic field/preview/report counts and fingerprints;
+- explicitly treats proposed state as neither applied, approved, recommended, better, safe nor valid;
+- generates no patch/apply instruction and hard-codes `applyAuthorized=false`;
+- performs no lifecycle/history inference; P6.7 owns that boundary.
+
+Certification:
+- base SHA/tree: `c05d7eeb986eaf9fe38669a337f76e9b31b803cb` / `ba1a88da701d1b2860264157c81385505a0413d7`;
+- initial implementation commit: `af8c8850ea4f168c063032db3f4b2b678eb2de3b`;
+- serialization-hygiene commit: `07dfa68650902aec525609018d7cf15050940c5e`;
+- first PR CI #471 / run `35438506383` failed one P6.6 test because the test assumed subject order instead of canonical P6.5 decision order; implementation semantics were correct and no merge occurred;
+- corrected exact tested head: `c5ae9c78044970c911379f411482901a6a29fdb5`;
+- corrected PR CI #472 / run `35438598540`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P6.6, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `6f650c985dfd7e8097d2f030704c1841126b587a`;
+- implementation tree: `25f971bae389a6896a8ee6f0a7df78c37a362974`;
+- post-merge CI #473 / run `35438728623`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P6.6 is **unpublished**. It performed no provider/AI request, credential use, current-site fetch, public-site read/write, source admission/refresh-plan mutation, Task #64/#70 execution, approval grant, observation/evidence/score/priority/explanation/actionability/preview persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, automatic apply/transition, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p6-6-opportunity-preview-diff-closeout.md`
+- `docs/p6-6-opportunity-preview-diff.md`
+
+Default next safe milestone: **P6.7 — opportunity lifecycle/history**, deterministic/default-off lifecycle-state/history engineering over certified P6.1–P6.6 records; no execution, persistence activation, provider/site mutation or automatic transition.
+
+## Previous engineering state — P6.5 complete
 
 Roadmap **P6.5 — actionability classifier: informational / recommend / approval / blocked** is complete under issue #255 / PR #256.
 
@@ -51,7 +92,7 @@ Detailed record:
 - `.agents/memory/p6-5-opportunity-actionability-closeout.md`
 - `docs/p6-5-opportunity-actionability.md`
 
-Default next safe milestone: **P6.6 — current-vs-proposed preview/diff generation**, deterministic/default-off preview engineering over certified P6.1–P6.5 records; no execution, provider/site mutation or automatic apply.
+At the P6.5 checkpoint, the default next safe milestone was **P6.6 — current-vs-proposed preview/diff generation**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P6.4 complete
 
