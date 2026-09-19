@@ -7,6 +7,8 @@ import { DataGrid, type DataGridColumn } from "@/components/data-grid";
 import { StatusBadge } from "@/components/status-badge";
 import { qualityTone, riskTone } from "@/lib/status-grammar";
 import { buildGovernanceWorkspaceModel, type GovernanceRow } from "@/lib/governance-workspace-model";
+import { buildGovernanceActionCardModel } from "@/lib/governance-action-card-model";
+import { GovernanceActionCardView } from "@/components/governance-action-card";
 
 const titleize = (value: string | null) =>
   value ? value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()) : "—";
@@ -100,6 +102,10 @@ export default function GovernancePage() {
     });
   }, [opportunities.data, actions.data, approvals.data]);
 
+  const actionCardModel = useMemo(
+    () => model ? buildGovernanceActionCardModel(model.rows) : null,
+    [model],
+  );
   const loading = opportunities.isLoading || actions.isLoading || approvals.isLoading;
   const error = opportunities.isError || actions.isError || approvals.isError;
 
@@ -153,6 +159,31 @@ export default function GovernancePage() {
             filteredEmptyMessage="No governance rows match the current search."
           />
         </section>
+        {actionCardModel ? (
+          <section className="governanceActionCardsSection" aria-labelledby="governance-action-cards-title">
+            <div className="sectionHead">
+              <div>
+                <p className="eyebrow">READ-ONLY ACTION INSPECTION</p>
+                <h2 id="governance-action-cards-title">Action inspection cards</h2>
+                <p className="muted">
+                  Evidence, risk, preview, verification availability, and rollback-plan facts from the same reconciled proposal records. Verification and rollback execution state are never inferred.
+                </p>
+              </div>
+              <StatusBadge tone="info">MODEL {actionCardModel.modelFingerprint}</StatusBadge>
+            </div>
+            {actionCardModel.cards.length > 0 ? (
+              <div className="governanceActionCards">
+                {actionCardModel.cards.map((card) => (
+                  <GovernanceActionCardView key={card.cardId} card={card} />
+                ))}
+              </div>
+            ) : (
+              <div className="governanceActionCardsEmpty">
+                No proposal rows are available; opportunity-only records do not fabricate action cards.
+              </div>
+            )}
+          </section>
+        ) : null}
         <section className="governanceSafetyNote" aria-label="Governance semantics">
           <ShieldCheck aria-hidden="true" />
           <div><strong>Read-only descriptive state</strong><p>Approval display state is not approval authority. Approved does not authorize execution. execution_authorized and public_site_writes are persisted source fields shown for inspection only.</p></div>

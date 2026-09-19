@@ -15,9 +15,12 @@ const proposal = (id: string, opportunityId: string, overrides: Partial<Governan
   lifecycle: "approval_ready", decision: null, revision_requested: false,
   evaluatorRisk: "medium", planControlRisk: "blocked", effectiveExecutionRisk: "medium",
   execution_authorized: false, public_site_writes: false, quality_status: "pass",
-  quality_approval_eligible: true, before_value: "Before", after_value: "After",
-  evidence_count: 3, confidence: 0.8, title: "Proposal " + id,
-  field: "meta_description", action_type: "update", ...overrides,
+  quality_score: 96, quality_approval_eligible: true, before_value: "Before", after_value: "After",
+  evidence_count: 3, evidence_sufficient: true, confidence: 0.8, title: "Proposal " + id,
+  field: "meta_description", action_type: "update", url: "https://example.test/" + id,
+  path: "/" + id, rationale: "Rationale " + id, expected_benefit: "Benefit " + id,
+  rollback: "Restore prior value", bounded_pilot: true, whole_site_coverage: false,
+  ...overrides,
 });
 
 test("P8.1 reconciliation is deterministic and retains opportunity-only rows", () => {
@@ -73,6 +76,10 @@ test("same proposal ID conflict fails closed instead of choosing a source winner
   assert.throws(() => buildGovernanceWorkspaceModel({
     opportunities: [opportunity("o1")], proposals: [p],
     approvals: [{ ...p, after_value: "Different" }],
+  }), /governance_projected_field_conflict/);
+  assert.throws(() => buildGovernanceWorkspaceModel({
+    opportunities: [opportunity("o1")], proposals: [p],
+    approvals: [{ ...p, rollback: "Different rollback plan" }],
   }), /governance_projected_field_conflict/);
 });
 
