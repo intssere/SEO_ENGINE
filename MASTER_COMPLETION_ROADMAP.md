@@ -428,13 +428,13 @@ P3.6 Production checkpoint:
 | P6.4 | explanation/evidence generation | DONE — issue #252 / PR #253 / merge `b3b83e36ba6bb0c5461396eb2a2b1aa33e62762f` |
 | P6.5 | actionability classifier: informational / recommend / approval / blocked | DONE — issue #255 / PR #256 / merge `0a306365d8f0e23f203e4dc9c59afed0c04c586f` |
 | P6.6 | current-vs-proposed preview/diff generation | DONE — issue #258 / PR #259 / merge `6f650c985dfd7e8097d2f030704c1841126b587a` |
-| P6.7 | opportunity lifecycle/history | NEXT SAFE DEFAULT — deterministic/default-off lifecycle/history engineering over certified P6.1–P6.6 records; no execution or automatic transition |
+| P6.7 | opportunity lifecycle/history | DONE — issue #261 / PR #262 / merge `d587a1cc7737c87e09b5bdb827b1cc80170c8a8b` |
 
 ### Phase P7 — AI/GEO visibility
 
 | ID | Work item | Status |
 |---|---|---|
-| P7.1 | AI crawler/bot accessibility audit | PLANNED |
+| P7.1 | AI crawler/bot accessibility audit | NEXT SAFE DEFAULT — deterministic/default-off supplied/synthetic accessibility-policy audit engineering; no live crawl/provider request/site mutation |
 | P7.2 | prompt/topic set model | PLANNED |
 | P7.3 | AI answer/brand/citation visibility collection strategy | PLANNED |
 | P7.4 | citation/domain/competitor comparison | PLANNED |
@@ -579,9 +579,9 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 28. **DONE — P5.6:** deterministic competitor visibility/page/topic-gap operational pipeline, issue #234 / PR #235 / merge `e0cf3758be1dff24f443a0a42fa19d2a4110b82b`; descriptive supplied-artifact composition only, no live provider/runtime/persistence/publication activation.
 29. **DONE — P5.7:** read-only/default-off category/market competitor intelligence UI, issue #237 / PR #238 / merge `64947e7662af1fadb389d9dd94f98a2e803d8911`; deterministic synthetic P5.6-shaped frontend fixture, DataGrid workbenches, responsive/accessibility/browser certification, no runtime API/provider/database/publication binding.
 30. **DONE — P5.8:** deterministic source quality/cost/rate-limit telemetry, issue #240 / PR #241 / merge `56b2f8e9dd4e6cc4934c2ab55c549ea6284d59d3`; supplied telemetry + P5.1 metadata only, no live provider/runtime/persistence/publication activation.
-31. **DONE — P6.1/P6.2/P6.3/P6.4/P6.5/P6.6:** unified opportunity classification/evidence, deterministic transparent scoring, deterministic collection conflict/dedupe/suppression/prioritization, deterministic explanation/evidence projection, deterministic actionability classification, and deterministic current-vs-proposed preview/diff generation are complete; P6.6 issue #258 / PR #259 / merge `6f650c985dfd7e8097d2f030704c1841126b587a`.
-32. **P6 —** unified opportunity/prioritization/explanation engine.
-33. **P7 —** AI/GEO visibility.
+31. **DONE — P6.1/P6.2/P6.3/P6.4/P6.5/P6.6/P6.7:** the complete deterministic opportunity/recommendation-engine foundation is complete through explicit lifecycle/history; P6.7 issue #261 / PR #262 / merge `d587a1cc7737c87e09b5bdb827b1cc80170c8a8b`.
+32. **DONE — Phase P6:** unified opportunity classification, scoring, prioritization, explanation, actionability, preview/diff and lifecycle/history foundation.
+33. **NEXT SAFE DEFAULT — P7.1:** deterministic/default-off AI crawler/bot accessibility audit engineering using supplied/synthetic evidence only; no live crawl/provider request/site mutation.
 34. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
 35. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
 36. **P10 —** impact attribution, experimentation and learning loop.
