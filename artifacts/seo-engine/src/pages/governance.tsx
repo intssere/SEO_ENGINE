@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import "./governance.css";
 import { Link } from "wouter";
 import { useListActions, useListApprovals, useListOpportunities } from "@workspace/api-client-react";
 import { AlertCircle, Loader2, ShieldCheck } from "lucide-react";
