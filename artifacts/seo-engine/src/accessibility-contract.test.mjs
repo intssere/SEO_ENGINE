@@ -13,6 +13,7 @@ const ask = read("components/ask-modal.tsx");
 const connections = read("pages/connections.tsx");
 const performance = read("pages/performance.tsx");
 const approvals = read("pages/approvals.tsx");
+const governance = read("pages/governance.tsx");
 const dashboard = read("pages/dashboard.tsx");
 const technical = read("pages/technical-seo.tsx");
 const css = read("index.css");
@@ -166,4 +167,12 @@ test("P4.8 remains a frontend accessibility baseline, not browser certification"
   assert.doesNotMatch(source, /DATABASE_URL|postgres|drizzle/);
   assert.doesNotMatch(source, /startCrawl|resumeCrawl|fetchSitemap/);
   assert.doesNotMatch(source, /PUBLIC_SITE_WRITES_ENABLED|SIGNAL_COLLECTION_JOB_EXECUTION_ENABLED/);
+});
+
+test("P8.1 governance page preserves read-only accessible DataGrid semantics", () => {
+  assert.ok(governance.includes('label="Governance pipeline"'));
+  assert.ok(governance.includes("READ-ONLY GOVERNANCE"));
+  assert.ok(governance.includes("NO APPROVAL GRANT"));
+  assert.ok(governance.includes("NO EXECUTION"));
+  assert.doesNotMatch(governance, /useDecideApproval|useAuthorizeInternalAction|mutate\s*\(/);
 });
