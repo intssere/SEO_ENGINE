@@ -227,7 +227,12 @@ function normalizePreviews(
 
   return normalized
     .sort((a, b) => a.order - b.order || a.previewKey.localeCompare(b.previewKey))
-    .map(({ order: _order, ...preview }) => preview);
+    .map((preview) => ({
+      opportunityFingerprint: preview.opportunityFingerprint,
+      actionabilityFingerprint: preview.actionabilityFingerprint,
+      previewKey: preview.previewKey,
+      fields: preview.fields,
+    }));
 }
 
 function buildPreview(
