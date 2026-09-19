@@ -207,8 +207,8 @@ test("Governance workspace is read-only, searchable, sortable, and network-close
   await expect(page.getByText("ROLLBACK PLAN ONLY")).toBeVisible();
   await expect(page.getByText("ROLLBACK STATUS UNAVAILABLE")).toBeVisible();
   await expect(page.getByText("Restore prior value")).toBeVisible();
-  await expect(page.getByText("Old description")).toBeVisible();
-  await expect(page.getByText("Proposed description")).toBeVisible();
+  await expect(page.getByText("Old description", { exact: true })).toBeVisible();
+  await expect(page.getByText("Proposed description", { exact: true })).toBeVisible();
   const region = page.getByRole("region", { name: /Governance pipeline table\. Scroll horizontally/ });
   await region.focus();
   await expect(region).toBeFocused();
