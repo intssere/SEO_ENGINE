@@ -448,8 +448,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 
 | ID | Work item | Status |
 |---|---|---|
-| P8.1 | Unify opportunity → proposal → approval UI around existing control primitives | NEXT SAFE DEFAULT — deterministic/read-only governance UX over certified opportunity/proposal/approval primitives; no approval grant, execution, persistence or publication |
-| P8.2 | Evidence/risk/preview/verification/rollback action cards | PLANNED |
+| P8.1 | Unify opportunity → proposal → approval UI around existing control primitives | DONE — issue #285 / PR #286 / merge `6dd42a2850713a4692039bb76900731129422061` |
+| P8.2 | Evidence/risk/preview/verification/rollback action cards | NEXT SAFE DEFAULT — deterministic/read-only action-card UX over existing certified evidence/risk/preview/verification/rollback data; no approval grant, execution, rollback mutation, provider/site mutation, persistence or publication |
 | P8.3 | Expand bounded Shopify/site mutation action classes only after individual review | PLANNED |
 | P8.4 | Add verification adapters per mutation class | PLANNED |
 | P8.5 | Add deterministic rollback/manual-intervention workflows | PLANNED |
@@ -589,11 +589,12 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 38. **DONE — P7.6:** deterministic/default-off exact-lineage P7→P6 AI/GEO opportunity integration, issue #279 / PR #280 / merge `2a375966f943f67c5dc606c9e9257585b3e4824f`; explicit request only, exact P7.5/P7.4/P7.3 evidence, no P6 scoring/prioritization/runtime/persistence/publication activation.
 39. **DONE — P7.7:** deterministic/read-only AI Visibility production workspace, issue #282 / PR #283 / merge `c70118053ac8e86c284c9e5a151b6f26f52d05dc`; synthetic P7.1–P7.6-shaped workbench, DataGrid/browser/axe certification, no live provider/runtime/persistence/execution/publication activation.
 40. **DONE — Phase P7:** AI/GEO accessibility, prompt modeling, supplied answer/citation evidence, competitor comparison, visibility scoring/history, P6 opportunity lineage and production read-only workspace.
-41. **NEXT SAFE DEFAULT — P8.1:** unify opportunity → proposal → approval UI around existing control primitives; deterministic/read-only governance UX only, no approval grant or execution.
-42. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-43. **P10 —** impact attribution, experimentation and learning loop.
-44. **P11 —** enterprise hardening and certification.
-45. **P12 —** final production completion certification and program closeout.
+41. **DONE — P8.1:** deterministic/read-only unified opportunity → proposal → approval governance workspace, issue #285 / PR #286 / merge `6dd42a2850713a4692039bb76900731129422061`; no approval grant, execution, persistence or publication.
+42. **NEXT SAFE DEFAULT — P8.2:** evidence/risk/preview/verification/rollback action cards; deterministic/read-only UX only, no approval grant, execution or rollback mutation.
+43. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+44. **P10 —** impact attribution, experimentation and learning loop.
+45. **P11 —** enterprise hardening and certification.
+46. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
