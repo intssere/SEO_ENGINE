@@ -96,7 +96,8 @@ function score(
     freshness: 0.9,
   };
   const components = Object.fromEntries(DIMENSIONS.map((dimension, index) => {
-    const value = values[dimension] === undefined ? defaults[dimension] : values[dimension];
+    const supplied = values[dimension];
+    const value: number | null = supplied === undefined ? defaults[dimension] : supplied;
     return [
       dimension,
       value === null
