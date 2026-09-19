@@ -15,6 +15,7 @@ import { AuthProvider } from './lib/auth-client';
 import DashboardPage from './pages/dashboard';
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
+import GovernancePage from './pages/governance';
 import ActionsPage from './pages/actions';
 import ApprovalsPage from './pages/approvals';
 import PerformancePage from './pages/performance';
@@ -48,6 +49,7 @@ function Router() {
         <Switch>
           <Route path="/" component={DashboardPage} />
           <Route path="/opportunities" component={OpportunitiesPage} />
+          <Route path="/governance" component={GovernancePage} />
           <Route path="/actions" component={ActionsPage} />
           <Route path="/approvals" component={ApprovalsPage} />
           <Route path="/performance" component={PerformancePage} />
