@@ -13,24 +13,24 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P7.3 deterministic AI answer/brand/citation collection contract is complete and certified.
+**Current checkpoint:** P7.4 deterministic citation/domain/competitor comparison is complete and certified.
 
-- P7.3 issue #270 / PR #271.
-- Base SHA/tree: `d325d46010c36764a8be14af8c697e627f8e69b2` / `2721afdea15f59a29fb4f2e5334b41f25a8d0641`.
-- Exact tested implementation head: `4313d5df785d43245d0f327265897a29c915a0cf`.
-- PR CI #488 / run `35447907730`: success across legacy schema, Task/P3.6/workspace tests including P7.3, Playwright/P4.10, typecheck and build.
-- Implementation merge: `399a6b946b213b2e8aff9416ca5287896476fe48`.
-- Implementation tree: `35d337012c4865e162e606f505d3ea63660e4e09`.
-- Post-merge CI #489 / run `35448044951`: success.
+- P7.4 issue #273 / PR #274.
+- Base SHA/tree: `de4d6df160d95ef13d6dd7dc6b358b1eadcfdd36` / `1200efff9d1e6bee23f654337bbcf5d2e724fcfd`.
+- Exact tested implementation head: `8c5ba7ff86d28e6b77c67d26db32a10031b4c4ef`.
+- PR CI #492 / run `35449557160`: success across legacy schema, Task/P3.6/workspace tests including P7.4, Playwright/P4.10, typecheck and build.
+- Implementation merge: `3e34b7e151a0e5669b986e377dded16c53f86073`.
+- Implementation tree: `cb0403478f20e6aae1847d6d2d9fa58cdc54af19`.
+- Post-merge CI #493 / run `35449745409`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
-- P7.3 reconstructs exact P7.2 prompt/topic lineage and normalizes supplied/synthetic observations only.
-- Provider/model and brand identities are explicit caller-owned registries; P7.3 infers no provider policy/capability or brand aliases.
-- Answer text and matched mention text are preserved exactly; explicit mention evidence is never treated as recommendation, sentiment, prominence or preference.
-- Citations are HTTP(S)-only, fragment-stripped deterministic URLs with descriptive lower-cased hostname/domain; citation presence does not imply endorsement, authority, trust or support.
-- P7.3 performs no live AI/provider request, answer generation, text mining, provider selection, persistence, domain/competitor comparison, visibility scoring/history or opportunity generation.
-- P7.3 remains unpublished.
-- Default next safe engineering boundary: **P7.4 — citation/domain/competitor comparison**, deterministic/default-off comparison over exact P7.3 records only.
-- Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity, scoring and publication remain separately unauthorized.
+- P7.4 reconstructs exact P7.3 lineage and compares only explicit positive tracked-brand mention evidence plus exact citation-domain provenance.
+- Competitor groups are caller-supplied only; P7.4 infers no competitor identity.
+- Evidence-only observation differences do not imply semantic brand absence.
+- Citation-domain co-occurrence is descriptive only and does not imply brand support, endorsement, association, authority, trust or correctness.
+- P7.4 selects no winner, emits no ranking/market-share claim and performs no visibility scoring/history.
+- P7.4 remains unpublished and performed no live provider/AI request, citation fetch, persistence, Production DB activity, scheduler/worker activation, config/secret mutation, site mutation or publication.
+- Default next safe engineering boundary: **P7.5 — AI visibility scoring/history**, deterministic/default-off scoring/history over exact P7.3/P7.4 records only.
+- Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity, cross-provider normalization claims, opportunity generation and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.

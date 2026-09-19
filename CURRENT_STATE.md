@@ -13,9 +13,44 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1–P7.3 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1–P7.4 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P7.3 complete
+## Current engineering state — P7.4 complete
+
+Roadmap **P7.4 — citation/domain/competitor comparison** is complete under issue #273 / PR #274.
+
+P7.4 adds a pure deterministic comparison layer over exact P7.3 supplied-observation records:
+- reconstructs the exact P7.3 collection and requires complete canonical equality before comparison;
+- preserves exact P7.2 prompt/topic lineage transitively through P7.3;
+- accepts only explicit caller-supplied comparison groups containing one tracked subject brand and one or more tracked competitor brands;
+- never infers competitor identity from answer text, brand labels, topics, citation domains, provider/model identity, market data or external knowledge;
+- compares only explicit positive P7.3 brand-mention evidence and never treats missing supplied mention evidence as proof of semantic brand absence;
+- derives deterministic subject/competitor observation sets, shared positive-evidence observation sets and evidence-only differences;
+- derives citation-domain co-occurrence only from citations appearing in observations that also carry explicit brand-mention evidence;
+- explicitly states that citation-domain co-occurrence does not prove brand support, endorsement, association, authority, trust or factual support;
+- emits deterministic descriptive domain summaries with citation count, distinct observation count and exact citation/provider/prompt/topic provenance;
+- emits deterministic pair/group/report fingerprints and bounded counts;
+- selects no winner, produces no ranking, makes no market-share or quality claim, performs no cross-provider normalized metric comparison, and generates no P7.5 visibility score/history or P7.6 opportunity.
+
+Certification:
+- base SHA/tree: `de4d6df160d95ef13d6dd7dc6b358b1eadcfdd36` / `1200efff9d1e6bee23f654337bbcf5d2e724fcfd`;
+- exact tested implementation head: `8c5ba7ff86d28e6b77c67d26db32a10031b4c4ef`;
+- PR CI #492 / run `35449557160`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P7.4, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `3e34b7e151a0e5669b986e377dded16c53f86073`;
+- implementation tree: `cb0403478f20e6aae1847d6d2d9fa58cdc54af19`;
+- post-merge CI #493 / run `35449745409`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P7.4 is **unpublished**. It performed no live AI/provider request, credential use, answer-text mining, citation fetch, source admission, comparison/domain persistence, Production DB read/write/DDL/DML, visibility scoring, scheduler/worker/retry activation, approval grant, public-site mutation, automatic transition, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p7-4-ai-citation-competitor-comparison-closeout.md`
+- `docs/p7-4-ai-citation-competitor-comparison.md`
+
+Default next safe milestone: **P7.5 — AI visibility scoring/history**, deterministic/default-off scoring/history engineering over exact certified P7.3/P7.4 records only; no live AI/provider request, persistence, provider normalization claim, opportunity generation or publication.
+
+## Previous engineering state — P7.3 complete
 
 Roadmap **P7.3 — AI answer/brand/citation visibility collection strategy** is complete under issue #270 / PR #271.
 
@@ -50,7 +85,7 @@ Detailed record:
 - `.agents/memory/p7-3-ai-answer-visibility-collection-closeout.md`
 - `docs/p7-3-ai-answer-visibility-collection.md`
 
-Default next safe milestone: **P7.4 — citation/domain/competitor comparison**, deterministic/default-off comparison over exact P7.3 supplied-observation records only; no live AI/provider request, credential use, persistence, scoring or publication.
+At the P7.3 checkpoint, the default next safe milestone was **P7.4 — citation/domain/competitor comparison**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P7.2 complete
 
