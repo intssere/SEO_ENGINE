@@ -426,8 +426,8 @@ P3.6 Production checkpoint:
 | P6.2 | impact × confidence × risk × effort × freshness scoring | DONE — issue #246 / PR #247 / merge `0bc3745e978fd57b944123283d3f54dd7e1dd3fb` |
 | P6.3 | conflict/dedupe/suppression/prioritization | DONE — issue #249 / PR #250 / merge `06739367624018c501a11459881462e2be480657` |
 | P6.4 | explanation/evidence generation | DONE — issue #252 / PR #253 / merge `b3b83e36ba6bb0c5461396eb2a2b1aa33e62762f` |
-| P6.5 | actionability classifier: informational / recommend / approval / blocked | NEXT SAFE DEFAULT — deterministic/default-off classification over certified P6.1/P6.2/P6.3/P6.4 records; no execution or automatic transition |
-| P6.6 | current-vs-proposed preview/diff generation | PLANNED |
+| P6.5 | actionability classifier: informational / recommend / approval / blocked | DONE — issue #255 / PR #256 / merge `0a306365d8f0e23f203e4dc9c59afed0c04c586f` |
+| P6.6 | current-vs-proposed preview/diff generation | NEXT SAFE DEFAULT — deterministic/default-off preview/diff engineering over certified P6.1–P6.5 records; no execution or automatic apply |
 | P6.7 | opportunity lifecycle/history | PLANNED |
 
 ### Phase P7 — AI/GEO visibility
@@ -579,7 +579,7 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 28. **DONE — P5.6:** deterministic competitor visibility/page/topic-gap operational pipeline, issue #234 / PR #235 / merge `e0cf3758be1dff24f443a0a42fa19d2a4110b82b`; descriptive supplied-artifact composition only, no live provider/runtime/persistence/publication activation.
 29. **DONE — P5.7:** read-only/default-off category/market competitor intelligence UI, issue #237 / PR #238 / merge `64947e7662af1fadb389d9dd94f98a2e803d8911`; deterministic synthetic P5.6-shaped frontend fixture, DataGrid workbenches, responsive/accessibility/browser certification, no runtime API/provider/database/publication binding.
 30. **DONE — P5.8:** deterministic source quality/cost/rate-limit telemetry, issue #240 / PR #241 / merge `56b2f8e9dd4e6cc4934c2ab55c549ea6284d59d3`; supplied telemetry + P5.1 metadata only, no live provider/runtime/persistence/publication activation.
-31. **DONE — P6.1/P6.2/P6.3/P6.4:** unified opportunity classification/evidence, deterministic transparent scoring, deterministic collection conflict/dedupe/suppression/prioritization, and deterministic explanation/evidence projection are complete; P6.4 issue #252 / PR #253 / merge `b3b83e36ba6bb0c5461396eb2a2b1aa33e62762f`.
+31. **DONE — P6.1/P6.2/P6.3/P6.4/P6.5:** unified opportunity classification/evidence, deterministic transparent scoring, deterministic collection conflict/dedupe/suppression/prioritization, deterministic explanation/evidence projection, and deterministic actionability classification are complete; P6.5 issue #255 / PR #256 / merge `0a306365d8f0e23f203e4dc9c59afed0c04c586f`.
 32. **P6 —** unified opportunity/prioritization/explanation engine.
 33. **P7 —** AI/GEO visibility.
 34. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
