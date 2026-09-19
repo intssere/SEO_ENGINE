@@ -463,8 +463,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 |---|---|---|
 | P9.1 | Read-only scheduler/queue architecture | DONE — issue #293 / PR #294 / merge `e348aed49b3d787d237096a2bde24b23930e3223` |
 | P9.2 | scheduled GSC/analytics/catalog refresh | DONE — issue #296 / PR #297 / merge `6f7b1dec70d99e6797980e08b10f072c6869d18a`; GSC runner foundation recognized only as architecture availability; GA4/catalog runner foundations remain explicit gaps; no runtime scheduling/provider execution |
-| P9.3 | scheduled full/incremental crawl policy | NEXT SAFE BOUNDARY — deterministic/default-off crawl-policy architecture over existing P2 + P9.1 evidence only; no live timer, crawl request, durable queue, worker, persistence or publication on generic continuation |
-| P9.4 | bounded external intelligence refresh | PLANNED |
+| P9.3 | scheduled full/incremental crawl policy | DONE — issue #299 / PR #300 / merge `023df71e35376a774c11494d8c17b03a65e7c7b6`; exact P2.1–P2.6 + P9.1 lineage, periodic full reconciliation, P2.6 fallback preservation, bounded incremental/no-work review; no live timer/crawl/network/durable queue/worker/persistence/publication |
+| P9.4 | bounded external intelligence refresh | NEXT SAFE BOUNDARY — deterministic/default-off external-intelligence refresh architecture over existing P5 + Task #67/#68 + P9.1 evidence using supplied/fake provider results only; no live provider enrollment/credentials/network, Task #69/#70 execution, durable queue, worker, persistence or publication on generic continuation |
 | P9.5 | failure/retry/dead-letter/idempotency controls | PLANNED |
 | P9.6 | worker observability and pause/kill controls | PLANNED |
 | P9.7 | recommendation generation worker | PLANNED |
@@ -595,11 +595,12 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 44. **P8.4–P8.8 — BLOCKED/PLANNED:** do not proceed automatically from the P8.3 review; mutation-class implementation/verification/rollback/live-pilot work requires its own reviewed authorization boundary.
 45. **DONE — P9.1:** deterministic/default-off read-work scheduler/queue architecture, issue #293 / PR #294 / merge `e348aed49b3d787d237096a2bde24b23930e3223`; no runtime scheduling, queue persistence, Task #70 execution or provider/crawl activity.
 46. **DONE — P9.2:** deterministic/default-off first-party refresh materialization review, issue #296 / PR #297 / merge `6f7b1dec70d99e6797980e08b10f072c6869d18a`; exact Task #67/#68/P9.1 lineage, GSC runner-foundation recognition only, explicit GA4/catalog runner gaps, zero runtime scheduling/provider/persistence activation.
-47. **NEXT SAFE BOUNDARY — P9.3:** scheduled full/incremental crawl policy architecture over existing P2 + P9.1 models; generic continuation remains default-off and may not activate timers, live crawl/network, durable enqueue, workers/retries, persistence or publication.
-48. **P9.4–P9.8 — PLANNED/FUTURE:** proceed one certified boundary at a time; autonomous mutation policy remains separate and late-stage.
-49. **P10 —** impact attribution, experimentation and learning loop.
-50. **P11 —** enterprise hardening and certification.
-51. **P12 —** final production completion certification and program closeout.
+47. **DONE — P9.3:** deterministic/default-off scheduled full/incremental crawl-policy review, issue #299 / PR #300 / merge `023df71e35376a774c11494d8c17b03a65e7c7b6`; exact P2.1–P2.6 + P9.1 lineage, bounded periodic full reconciliation, exact P2.6 fallback preservation, incremental/no-work selection, zero live crawl/runtime/persistence/publication activation.
+48. **NEXT SAFE BOUNDARY — P9.4:** bounded external-intelligence refresh architecture over existing P5 + Task #67/#68 + P9.1 evidence using deterministic supplied/fake provider results only; no provider enrollment/credentials/live network, Task #69/#70 execution, durable queue, workers/retries, persistence or publication on generic continuation.
+49. **P9.5–P9.8 — PLANNED/FUTURE:** proceed one certified boundary at a time; autonomous mutation policy remains separate and late-stage.
+50. **P10 —** impact attribution, experimentation and learning loop.
+51. **P11 —** enterprise hardening and certification.
+52. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
