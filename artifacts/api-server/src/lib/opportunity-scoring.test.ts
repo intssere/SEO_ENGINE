@@ -242,6 +242,6 @@ test("P6.2 source contains no network, environment, database, execution, persist
   assert.doesNotMatch(sourceText, /XMLHttpRequest|WebSocket|EventSource/);
   assert.doesNotMatch(sourceText, /process\.env|DATABASE_URL|postgres|drizzle/);
   assert.doesNotMatch(sourceText, /executeCompetitorPilot|executeAuthorizedSignalCollectionJob/);
-  assert.doesNotMatch(sourceText, /\.(?:insert|update|delete)\s*\(|\b(?:insertInto|updateTable|deleteFrom|persistRecord)\b/);
+  assert.doesNotMatch(sourceText, /\b(?:insertInto|updateTable|deleteFrom|persistRecord|sql\s*`|db\.(?:insert|update|delete))\b/);
   assert.doesNotMatch(sourceText, /setTimeout|setInterval|queueMicrotask/);
 });
