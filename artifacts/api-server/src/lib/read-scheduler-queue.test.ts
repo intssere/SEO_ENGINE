@@ -139,7 +139,7 @@ test("P9.1 detects tampered schedule identity and safety", () => {
       schedule: {
         ...active,
         safety: { ...active.safety, schedulerActivated: true },
-      } as ReadScheduleDefinition,
+      } as unknown as ReadScheduleDefinition,
       now: "2026-09-20T00:01:00Z",
     }),
     /read_scheduler_safety_mismatch/,
