@@ -196,6 +196,26 @@ test("AI Visibility workspace is synthetic, searchable, sortable, and network-cl
   assertBrowserClean(errors);
 });
 
+test("Governance workspace is read-only, searchable, sortable, and network-closed", async ({ page }) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/governance");
+  await expect(page.getByRole("heading", { name: "Governance workspace" })).toBeVisible();
+  await expect(page.getByText("READ-ONLY GOVERNANCE")).toBeVisible();
+  await expect(page.getByText("NO APPROVAL GRANT")).toBeVisible();
+  await expect(page.getByText("NO EXECUTION")).toBeVisible();
+  const region = page.getByRole("region", { name: /Governance pipeline table\. Scroll horizontally/ });
+  await region.focus();
+  await expect(region).toBeFocused();
+  const search = page.getByPlaceholder("Search opportunity, proposal, review state or risk");
+  await search.fill("approved");
+  await expect(region.getByText("Approved").first()).toBeVisible();
+  await search.fill("");
+  const sort = page.getByRole("button", { name: "Sort by Review state" });
+  await sort.click();
+  await expect(page.getByRole("columnheader", { name: /Review state/ })).toHaveAttribute("aria-sort", "ascending");
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
 test("Ask dialog traps focus, answers from fixture, closes with Escape, and restores focus", async ({
   page,
 }) => {
@@ -244,7 +264,7 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
   assertBrowserClean(errors);
 });
 
-for (const route of ["/", "/technical-seo", "/search-intelligence", "/ai-visibility", "/connections"]) {
+for (const route of ["/", "/technical-seo", "/search-intelligence", "/ai-visibility", "/governance", "/connections"]) {
   test(`axe serious/critical scan passes on ${route}`, async ({ page }) => {
     const { boundary, errors } = await openSyntheticPage(page, route);
 

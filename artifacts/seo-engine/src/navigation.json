@@ -24,6 +24,7 @@
   {
     "domain": "Execute",
     "items": [
+      { "label": "Governance", "path": "/governance" },
       { "label": "Actions", "path": "/actions" },
       { "label": "Approvals", "path": "/approvals" },
       { "label": "Deployments", "path": "/deployments" }
