@@ -449,8 +449,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 | ID | Work item | Status |
 |---|---|---|
 | P8.1 | Unify opportunity → proposal → approval UI around existing control primitives | DONE — issue #285 / PR #286 / merge `6dd42a2850713a4692039bb76900731129422061` |
-| P8.2 | Evidence/risk/preview/verification/rollback action cards | NEXT SAFE DEFAULT — deterministic/read-only action-card UX over existing certified evidence/risk/preview/verification/rollback data; no approval grant, execution, rollback mutation, provider/site mutation, persistence or publication |
-| P8.3 | Expand bounded Shopify/site mutation action classes only after individual review | PLANNED |
+| P8.2 | Evidence/risk/preview/verification/rollback action cards | DONE — issue #288 / PR #289 / merge `964e940d82f93dece9fbaaf56eca21782318e357` |
+| P8.3 | Expand bounded Shopify/site mutation action classes only after individual review | NEXT REVIEW BOUNDARY — select and document one bounded action class plus its safety, verification and rollback/manual-intervention contract before implementation; no live provider/site mutation or execution activation on generic continuation |
 | P8.4 | Add verification adapters per mutation class | PLANNED |
 | P8.5 | Add deterministic rollback/manual-intervention workflows | PLANNED |
 | P8.6 | Action history and audit ledger | PLANNED |
@@ -590,11 +590,12 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 39. **DONE — P7.7:** deterministic/read-only AI Visibility production workspace, issue #282 / PR #283 / merge `c70118053ac8e86c284c9e5a151b6f26f52d05dc`; synthetic P7.1–P7.6-shaped workbench, DataGrid/browser/axe certification, no live provider/runtime/persistence/execution/publication activation.
 40. **DONE — Phase P7:** AI/GEO accessibility, prompt modeling, supplied answer/citation evidence, competitor comparison, visibility scoring/history, P6 opportunity lineage and production read-only workspace.
 41. **DONE — P8.1:** deterministic/read-only unified opportunity → proposal → approval governance workspace, issue #285 / PR #286 / merge `6dd42a2850713a4692039bb76900731129422061`; no approval grant, execution, persistence or publication.
-42. **NEXT SAFE DEFAULT — P8.2:** evidence/risk/preview/verification/rollback action cards; deterministic/read-only UX only, no approval grant, execution or rollback mutation.
-43. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-44. **P10 —** impact attribution, experimentation and learning loop.
-45. **P11 —** enterprise hardening and certification.
-46. **P12 —** final production completion certification and program closeout.
+42. **DONE — P8.2:** deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action cards, issue #288 / PR #289 / merge `964e940d82f93dece9fbaaf56eca21782318e357`; no mutation, execution, persistence or publication.
+43. **NEXT REVIEW BOUNDARY — P8.3:** select and specify one bounded Shopify/site mutation action class, including exact safety, verification and rollback/manual-intervention contracts, before any implementation; no live provider/site mutation on generic continuation.
+44. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+45. **P10 —** impact attribution, experimentation and learning loop.
+46. **P11 —** enterprise hardening and certification.
+47. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 

@@ -13,9 +13,47 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7 and P8.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7 and P8.1–P8.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P8.1 complete
+## Current engineering state — P8.2 complete
+
+Roadmap **P8.2 — Read-only evidence/risk/preview/verification/rollback action cards v1** is complete under issue #288 / PR #289.
+
+P8.2 extends the existing P8.1 `/governance` workspace with deterministic/read-only proposal action cards:
+- uses only the existing P8.1 GET sources for opportunities, actions and approvals;
+- creates one card per reconciled proposal and never fabricates a card for opportunity-only rows;
+- preserves exact evidence count/sufficiency and quality status/score/approval-eligibility fields;
+- keeps opportunity, evaluator, plan-control and effective-execution risk domains separate;
+- displays `execution_authorized` and `public_site_writes` only as persisted descriptive flags;
+- preserves exact current-vs-proposed values, including null versus empty-string distinction;
+- displays rationale and expected benefit as source facts without converting them into recommendation or authorization;
+- reports per-action verification detail as explicitly unavailable because the current governance GET contract exposes no per-action verification result/evidence record;
+- treats recorded lifecycle, including `verified_result`, as descriptive lifecycle only and never as verification proof;
+- treats `ProposalRecord.rollback` strictly as a rollback plan string, with rollback execution/status/result explicitly unavailable;
+- adds deterministic action-card fingerprints, fail-closed missing/invalid display-fact validation, responsive semantic cards, closed-network browser assertions and continued Governance serious/critical axe coverage;
+- adds no backend route, OpenAPI/schema change, mutation hook, database binding, provider request, execution, verification or rollback capability.
+
+Certification:
+- base SHA/tree: `d83e23554b3e4499ff83f2edc8e71c605c89f790` / `0ceded2440aa96f1b93f7d992b020adfc71ab9e2`;
+- initial implementation head: `452f33a376d993ee6c529a6214b9d210757e00db`;
+- PR CI #514 / run `35463018320`: failed only in the Governance Playwright test because `getByText("Old description")` matched both the existing pipeline and new action card; schema, Task, migration and workspace tests had passed;
+- correction commit / exact tested PR head: `d02999c3dcae8552bbecde2de1c4a0f2cebdc82b`; the browser assertion was narrowed to exact card preview text with no product/model semantic change;
+- PR CI #515 / run `35463135154`: success;
+- implementation merge: `964e940d82f93dece9fbaaf56eca21782318e357`;
+- implementation tree: `c07238481c5c3764d9b8087a462d24124e80eb08`;
+- post-merge main CI #516 / run `35463259622`: success;
+- Replit exact-synced on `main` at that merge/tree, ahead/behind `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P8.2 is **unpublished**. It performed no proposal edit/generation, approval grant/rejection, authorization renewal, execution, verification mutation, rollback mutation, provider/public-site request or write, persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, environment/secret/config mutation, deployment or publication.
+
+Detailed record:
+- `.agents/memory/p8-2-governance-action-cards-closeout.md`
+- `docs/p8-2-governance-action-cards.md`
+
+Default next safe boundary: **P8.3 — individual bounded mutation-action-class review and contract selection before implementation**. A generic continuation may perform read-only repository analysis and define one candidate action class, its safety gates, verification contract and rollback/manual-intervention contract; it does **not** authorize a live provider/public-site mutation, execution activation, credential/scope change, persistence, database activity or publication.
+
+## Previous engineering state — P8.1 complete
 
 Roadmap **P8.1 — Unified opportunity → proposal → approval governance workspace v1** is complete under issue #285 / PR #286.
 
@@ -48,7 +86,7 @@ Detailed record:
 - `.agents/memory/p8-1-governance-workspace-closeout.md`
 - `docs/p8-1-governance-workspace.md`
 
-Default next safe milestone: **P8.2 — evidence/risk/preview/verification/rollback action cards**, deterministic/read-only UX engineering over existing certified control data only; no approval grant, execution, rollback mutation, provider/site mutation, persistence or publication.
+At the P8.1 checkpoint, the default next safe milestone was **P8.2 — evidence/risk/preview/verification/rollback action cards**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P7.7 complete
 

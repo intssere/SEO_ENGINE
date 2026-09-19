@@ -13,25 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P8.1 Unified opportunity → proposal → approval governance workspace v1 is complete and certified.
+**Current checkpoint:** P8.2 read-only evidence/risk/preview/verification/rollback action cards v1 is complete and certified.
 
-- P8.1 issue #285 / PR #286.
-- Base SHA/tree: `ee91cddaa8b5795e926ac91bcefb7b2415877da1` / `12a112d9e38c1570137b049a06f0be9692193fca`.
-- Exact tested PR head: `73f131e29ee36ebda21dc1a3ecec839beaa7a138`.
-- PR CI #510 / run `35460580256`: success.
-- Implementation merge: `6dd42a2850713a4692039bb76900731129422061`.
-- Implementation tree: `e2c98d4d32b96a0d37ab01be4a81011f72dd944d`.
-- Post-merge main CI #511 / run `35460776543`: success.
-- Replit is exact-aligned on `main` at that merge/tree, ahead/behind `0/0`, clean, zero untracked.
-- Replit recursive tests, typecheck, build and `git diff --check`: passed; only the known non-fatal tooltip/sheet sourcemap messages and chunk-size warning remain.
-- `/governance` now provides deterministic/read-only opportunity → proposal → approval reconciliation using only existing GET data.
-- Duplicate IDs, dangling lineage and conflicting shared proposal/control fields fail closed.
-- Review states are descriptive only; recorded approval does not authorize execution.
-- `execution_authorized` and `public_site_writes` remain display-only persisted state.
-- No proposal edit, approval grant/rejection, authorization renewal, execution, rollback, verification action, provider/public-site mutation, persistence, DB activity, scheduler/worker activation, deployment or publication was introduced.
-- P8.1 remains unpublished.
-- Default next safe engineering boundary: **P8.2 — evidence/risk/preview/verification/rollback action cards**, deterministic/read-only UX only.
-- Real approval grants, provider/public-site reads/writes, credentials, persistence, database activity, execution, rollback mutation and publication remain separately unauthorized.
+- P8.2 issue #288 / PR #289.
+- Base SHA/tree: `d83e23554b3e4499ff83f2edc8e71c605c89f790` / `0ceded2440aa96f1b93f7d992b020adfc71ab9e2`.
+- Initial PR head `452f33a376d993ee6c529a6214b9d210757e00db` reached CI #514 / run `35463018320`; all non-browser validation passed, but one Playwright assertion was ambiguous because the same preview text appeared in both pipeline and card.
+- Correction commit / exact tested PR head: `d02999c3dcae8552bbecde2de1c4a0f2cebdc82b`; test locator only, no semantic/product change.
+- Exact-head PR CI #515 / run `35463135154`: success.
+- Implementation merge: `964e940d82f93dece9fbaaf56eca21782318e357`.
+- Implementation tree: `c07238481c5c3764d9b8087a462d24124e80eb08`.
+- Post-merge main CI #516 / run `35463259622`: success.
+- Replit is exact-aligned on `main` at the merge/tree, ahead/behind `0/0`, clean, zero untracked.
+- Replit recursive tests, typecheck, build and `git diff --check`: passed; only known non-fatal tooltip/sheet sourcemap messages and chunk-size warning remain.
+- `/governance` now includes one deterministic read-only action inspection card per reconciled proposal.
+- Verification detail remains explicitly unavailable; lifecycle is never treated as verification proof.
+- `rollback` remains a plan string only; rollback execution/status/result remain explicitly unavailable.
+- Evidence/risk/current-vs-proposed facts remain source-bound and non-authorizing.
+- No approval, authorization, execution, verification mutation, rollback mutation, provider/public-site request/write, persistence, database activity, scheduler/worker activation, deployment or publication was introduced.
+- P8.2 remains unpublished.
+- Default next safe boundary: **P8.3 individual action-class review/contract selection before implementation**. Generic continuation may inspect and specify a bounded candidate class but does not authorize live provider/site mutation or execution activation.
+- Real provider/public-site writes, credential/scope changes, persistence, Production database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
