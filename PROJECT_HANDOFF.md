@@ -13,22 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P9.1 read-only scheduler/queue architecture v1 is complete and certified.
+**Current checkpoint:** P9.2 default-off first-party refresh materialization review v1 is complete and certified.
 
-- P9.1 issue #293 / PR #294.
-- Base SHA/tree: `53aef9450ed282d74fe3b3436bbb5ec05315f47c` / `b11922ac555733f96b03c65e8bf112e37ae14cc3`.
-- Exact tested PR head/tree: `71aa75c620c8e05ea37c23a1ca932dbe255139b9` / `e2f2d40dd530b80c74d6803f9245ff642f9f11a8`.
-- Exact-head PR CI #522 / run `35467292055`: success.
-- Implementation merge: `e348aed49b3d787d237096a2bde24b23930e3223`.
-- Implementation tree: `e2f2d40dd530b80c74d6803f9245ff642f9f11a8`.
-- Post-merge main CI #523 / run `35467412415`: success.
+- P9.2 issue #296 / PR #297.
+- Base SHA/tree: `757d55acd0aafbdfd0511bfd425b392c2a6c5a6f` / `2e85be0238b8d86fe083faeb6f63f1b01f16e9ab`.
+- Initial PR head/tree: `32237d48d5ff94e876ad7f317502d7738fd017b8` / `ab1db57d6c603a41838debd843db06c195bfc5c3`.
+- CI #526 / run `35468908442` failed only in one negative test because the fixture eagerly built the invalid schedule before `assert.throws`; production/model code was unchanged.
+- Correction / exact tested PR head/tree: `d6de55b2d1e63c2237e0557599bfe0896e767d87` / `e929c3ededd5fcf71d9891bf51bb92f9dd03fd95`.
+- Exact-head CI #527 / run `35468999452`: success across full matrix.
+- Implementation merge: `6f7b1dec70d99e6797980e08b10f072c6869d18a`.
+- Implementation tree: `e929c3ededd5fcf71d9891bf51bb92f9dd03fd95`.
+- Post-merge main CI #528 / run `35469110061`: success.
 - Replit is exact-aligned on `main` at the merge/tree, ahead/behind `0/0`, clean, zero untracked.
 - Replit recursive tests, typecheck, build and `git diff --check`: passed; only known non-fatal tooltip/sheet sourcemap messages and chunk-size warning remain.
-- P9.1 is pure deterministic architecture only: `signal_refresh` and `crawl_refresh` schedules, fixed anchor-based cadence, bounded due windows, explicit not-started/paused/due/missed/already-materialized states, deterministic one-intent-per-due-slot projection and bounded canonical queue serialization.
-- P9.1 activates no timer, scheduler, durable queue, worker, retry loop, Task #69 packet materialization, Task #70 execution, provider/crawl read, credential use, persistence, DB write, Task #53/#54 execution, provider/public-site mutation, deployment or publication.
+- P9.2 validates exact Task #66 market/category + Task #67 source/plan + Task #68 request lineage, binds it to P9.1 `signal_refresh` schedules, and emits a review candidate only for exact due slots.
+- Exact Task #71 GSC Search Analytics is marked only as runner-foundation-available; runtime readiness, credentials, OAuth, network access and Task #70 execution remain separately false/unauthorized.
+- GA4 analytics and Shopify catalog remain explicit runner-foundation gaps; P9.2 does not revive historical legacy ingestion code as current Task #70 runners.
+- P9.2 creates no Task #69 packet, Task #70 execution, durable queue/reservation, provider request, persistence, DB write, scheduler/worker/retry activation, deployment or publication.
 - P8.3 media-alt mutation implementation remains separately blocked pending explicit isolated `write_files` scope/credential authorization.
-- Default next safe boundary: **P9.2 scheduled GSC/analytics/catalog refresh architecture/materialization review**. Generic continuation may define default-off deterministic orchestration contracts only; it does not authorize runtime scheduling, durable enqueue, provider requests, credentials, persistence, Task #70 execution or publication.
-- P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
+- Default next safe boundary: **P9.3 scheduled full/incremental crawl policy architecture**. Generic continuation may perform deterministic/default-off policy modeling over existing P2 + P9.1 artifacts only; no live timer/crawl/network/durable queue/worker/persistence/publication.
+- P4.9 remains optional and unselected; real provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
 
