@@ -1,11 +1,17 @@
-import { openai } from "@workspace/integrations-openai-ai-server";
-import { generateAiMetaDescriptionProposal, type AiProposalResult } from "./ai-proposal.js";
+import {
+  generateAiMetaDescriptionProposal,
+  type AiProposalResult,
+} from "./ai-proposal.js";
 import type { DryRunProposal } from "./action-planner.js";
-import type { CrawlPageSignal, OpportunityCandidate } from "./opportunity-engine.js";
+import type {
+  CrawlPageSignal,
+  OpportunityCandidate,
+} from "./opportunity-engine.js";
 import { evaluateProposalQuality } from "./proposal-quality.js";
 import type { SemanticPageProfile } from "./semantic-evidence.js";
 
-export const aiProposalGenerationEnabled = () => process.env.AI_PROPOSAL_GENERATION_ENABLED?.trim().toLowerCase() === "true";
+export const aiProposalGenerationEnabled = () =>
+  process.env.AI_PROPOSAL_GENERATION_ENABLED?.trim().toLowerCase() === "true";
 
 export async function refineProposalWithAi(input: {
   proposal: DryRunProposal;
@@ -13,9 +19,15 @@ export async function refineProposalWithAi(input: {
   candidate: OpportunityCandidate;
   page: CrawlPageSignal;
   activeProposalValues: Array<{ generationKey: string; value: string }>;
-  evidence: { crawl?: string | null; shopify?: string | null; gsc?: string | null; opportunity?: string | null };
+  evidence: {
+    crawl?: string | null;
+    shopify?: string | null;
+    gsc?: string | null;
+    opportunity?: string | null;
+  };
 }): Promise<{ proposal: DryRunProposal; result: AiProposalResult }> {
-  const deterministicCandidate = input.proposal.expectedOutcome.proposal.afterValue;
+  const deterministicCandidate =
+    input.proposal.expectedOutcome.proposal.afterValue;
   const model = "gpt-5.6-luna";
   const result = await generateAiMetaDescriptionProposal({
     profile: input.profile,
@@ -23,11 +35,17 @@ export async function refineProposalWithAi(input: {
     deterministicCandidate,
     providerModel: `openai:${model}`,
     generateText: async (prompt) => {
+      const { openai } =
+        await import("@workspace/integrations-openai-ai-server");
       const response = await openai.chat.completions.create({
         model,
         max_completion_tokens: 8192,
         messages: [
-          { role: "system", content: "You write evidence-grounded metadata. Follow the supplied constraints exactly." },
+          {
+            role: "system",
+            content:
+              "You write evidence-grounded metadata. Follow the supplied constraints exactly.",
+          },
           { role: "user", content: prompt },
         ],
       });
@@ -41,10 +59,15 @@ export async function refineProposalWithAi(input: {
           proposal: {
             ...input.proposal.expectedOutcome.proposal,
             afterValue: value,
-            supportingEvidenceIds: [...new Set([
-              ...input.proposal.expectedOutcome.proposal.supportingEvidenceIds,
-              ...Object.values(input.evidence).filter((item): item is string => Boolean(item)),
-            ])],
+            supportingEvidenceIds: [
+              ...new Set([
+                ...input.proposal.expectedOutcome.proposal
+                  .supportingEvidenceIds,
+                ...Object.values(input.evidence).filter(
+                  (item): item is string => Boolean(item),
+                ),
+              ]),
+            ],
             evidenceSufficient: true,
           },
         },

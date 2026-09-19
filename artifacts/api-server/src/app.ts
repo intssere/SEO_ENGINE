@@ -5,7 +5,11 @@ import cookieParser from "cookie-parser";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { loadAuthConfig } from "./lib/auth-foundation.js";
-import { attachAuthSession, securityHeaders } from "./middlewares/auth-security.js";
+import { mountProductionWeb } from "./lib/production-web.js";
+import {
+  attachAuthSession,
+  securityHeaders,
+} from "./middlewares/auth-security.js";
 
 const app: Express = express();
 app.set("trust proxy", 1);
@@ -46,5 +50,9 @@ app.use(cookieParser());
 app.use(attachAuthSession);
 
 app.use("/api", router);
+
+if (process.env.NODE_ENV === "production") {
+  mountProductionWeb(app);
+}
 
 export default app;

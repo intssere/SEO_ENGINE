@@ -3,6 +3,8 @@ import test from "node:test";
 import {
   DIAMOND_SHELF_SITE,
   EXPECTED_CORE_TABLE_COUNT,
+  EXPECTED_CURRENT_TABLE_COUNT,
+  EXPECTED_OBSERVATION_EVIDENCE_TABLE_COUNT,
   EXPECTED_RUNTIME_TABLE_COUNT,
   planRuntimeBootstrap,
 } from "./runtime-bootstrap.js";
@@ -35,7 +37,11 @@ test("fully initialized runtime schema skips migrations and allows idempotent si
 });
 
 test("unrecognized partial or future schema states fail closed", () => {
-  for (const count of [12, EXPECTED_CORE_TABLE_COUNT + 1, EXPECTED_RUNTIME_TABLE_COUNT + 1]) {
+  for (const count of [
+    12,
+    EXPECTED_CORE_TABLE_COUNT + 1,
+    EXPECTED_RUNTIME_TABLE_COUNT + 1,
+  ]) {
     const plan = planRuntimeBootstrap(count);
     assert.equal(plan.schemaState, "partial");
     assert.equal(plan.blocked, true);
@@ -54,4 +60,13 @@ test("bootstrap target is locked to Diamond Shelf production identity", () => {
   assert.equal(DIAMOND_SHELF_SITE.domain, "diamondshelf.us");
   assert.equal(DIAMOND_SHELF_SITE.canonicalOrigin, "https://diamondshelf.us");
   assert.equal(DIAMOND_SHELF_SITE.platform, "shopify");
+});
+
+test("current runtime schema count includes the P3.6 observation/evidence tables", () => {
+  assert.equal(EXPECTED_OBSERVATION_EVIDENCE_TABLE_COUNT, 3);
+  assert.equal(EXPECTED_CURRENT_TABLE_COUNT, 34);
+  assert.equal(
+    EXPECTED_CURRENT_TABLE_COUNT,
+    EXPECTED_RUNTIME_TABLE_COUNT + EXPECTED_OBSERVATION_EVIDENCE_TABLE_COUNT,
+  );
 });
