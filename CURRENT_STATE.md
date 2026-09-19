@@ -13,9 +13,50 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1–P9.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1–P9.3 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only; P9.3 is deterministic/default-off scheduled full/incremental crawl-policy review engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P9.2 complete
+## Current engineering state — P9.3 complete
+
+Roadmap **P9.3 — Scheduled full/incremental crawl policy architecture v1** is complete under issue #299 / PR #300.
+
+P9.3 adds a pure deterministic/default-off policy-review boundary between exact P9.1 due `crawl_refresh` intents and the certified P2.1–P2.6 first-party crawl artifacts:
+- reconstructs the exact current P2.1 crawl plan, P2.2 sitemap inventory, P2.3 execution plan/checkpoint and P2.4 full-site certification lineage before policy evaluation;
+- reconstructs supplied P2.5 history comparison and P2.6 incremental plan from exact before/after sources, explicit incremental policy and supplied trusted candidates;
+- requires supplied P2.6 `after` inventory/certification to equal the current full-site lineage;
+- binds site/origin scope plus exact current/incremental fingerprints and explicit P9.3 policy into a P9.1 `crawl_refresh` schedule;
+- uses caller-supplied timestamps only and derives a deterministic slot index from the P9.1 anchor/cadence;
+- supports an explicit bounded `fullReconciliationEverySlots` policy from 1 through 720 slots;
+- selects `full_reconciliation` on scheduled full slots, blocked current whole-site certification, missing incremental evidence, or either exact P2.6 full-reconciliation fallback;
+- selects `incremental` only when exact safe P2.6 evidence contains selected URLs;
+- selects `no_work` when exact safe P2.6 evidence contains no selected candidates;
+- preserves P2.6 fallback reasons `aggregate_regression_without_url_level_evidence` and `lineage_change_without_url_level_evidence` without weakening them;
+- only P9.1 `due` emits one deterministic `proposed_review` crawl-policy candidate; `not_started`, `paused`, `missed` and `already_materialized` emit none;
+- preserves P2 page ceilings, same-origin GET/robots/canonical/query-trap controls, bounded batching/concurrency/rate limits, redirect revalidation, checkpoint/resume and whole-site certification semantics;
+- fails closed on tampered schedule, current crawl lineage, comparison or incremental-plan lineage;
+- contains no timer/network/database/environment/persistence or crawl-execution primitive;
+- keeps scheduler/timer, durable enqueue/reservation, worker/batch/retry runtime, sitemap/crawl network access, crawl execution, observation/evidence persistence, Production DB reads/writes, Task #53/#54, provider/public-site writes, automatic transition and publication explicitly false.
+
+Certification:
+- base SHA/tree: `3907785ab69247c7876e7dcb63c3c33c794a06ac` / `48398ece7617652cafba799fef01d0211e7faef0`;
+- exact tested PR head/tree: `eb41b808e6cd90664a14d0e5d69a4ac33c5a829b` / `b0715be30d22f9183b91f08f92c253818627c7e0`;
+- exact-head PR CI #531 / run `35471860344`: success across legacy schema validation, Task/P3.6 tests, all workspace tests, Playwright, typecheck and build;
+- implementation merge: `023df71e35376a774c11494d8c17b03a65e7c7b6`;
+- implementation tree: `b0715be30d22f9183b91f08f92c253818627c7e0`;
+- post-merge main CI #532 / run `35471981585`: success;
+- Replit exact-aligned on `main` at the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; only existing non-fatal sourcemap and large-chunk warnings remain.
+
+P9.3 is **unpublished**. It performed no live timer/scheduler activation, crawl/sitemap network request, durable queue materialization/reservation, worker/batch/retry activation, observation/evidence persistence, Production DB read/write/DDL/DML, Task #53/#54 execution, provider/public-site mutation, environment/secret/config mutation, deployment or publication.
+
+Detailed record:
+- issue #299 — `P9.3 — Scheduled full/incremental crawl policy architecture v1`
+- PR #300 — `P9.3 — Scheduled full/incremental crawl policy architecture v1`
+- `docs/p9-3-scheduled-crawl-policy.md`
+- `.agents/memory/p9-3-scheduled-crawl-policy-closeout.md`
+
+Default next safe boundary: **P9.4 — bounded external intelligence refresh**. Generic continuation may compose existing P5 external-intelligence adapters/telemetry with Task #67/#68 and P9.1 `signal_refresh` semantics using deterministic supplied/fake provider results only. It does **not** authorize provider enrollment, credentials, live provider/network reads, Task #69/#70 execution, durable queue materialization, workers/retries, persistence, Production DB writes, provider/public-site writes, deployment or publication.
+
+## Previous engineering state — P9.2 complete
 
 Roadmap **P9.2 — Default-off first-party refresh materialization review v1** is complete under issue #296 / PR #297.
 
@@ -53,7 +94,7 @@ Detailed record:
 - `docs/p9-2-first-party-refresh-materialization.md`
 - `.agents/memory/p9-2-first-party-refresh-closeout.md`
 
-Default next safe boundary: **P9.3 — scheduled full/incremental crawl policy architecture**. Generic continuation may compose existing P2 full/incremental crawl planning evidence with P9.1 `crawl_refresh` schedules using supplied/fake inputs and deterministic default-off policy models only; it does **not** authorize a live timer, crawl network request, worker/retry activation, durable queue persistence, observation/evidence persistence, Production DB writes, provider/public-site writes, deployment or publication.
+At the P9.2 checkpoint, the default next safe boundary was **P9.3 — scheduled full/incremental crawl policy architecture**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P9.1 complete
 
