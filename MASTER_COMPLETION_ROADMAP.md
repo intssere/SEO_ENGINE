@@ -436,8 +436,8 @@ P3.6 Production checkpoint:
 |---|---|---|
 | P7.1 | AI crawler/bot accessibility audit | DONE — issue #264 / PR #265 / merge `74e5de6518359f9f92b2e73edd5d44f02eecffa2` |
 | P7.2 | prompt/topic set model | DONE — issue #267 / PR #268 / merge `ecee3e9796c04c25f3c800e73e621c2cef299666` |
-| P7.3 | AI answer/brand/citation visibility collection strategy | NEXT SAFE DEFAULT — deterministic/default-off provider-neutral collection-contract + supplied/synthetic fixture engineering; no live AI-provider request, credential use or persistence |
-| P7.4 | citation/domain/competitor comparison | PLANNED |
+| P7.3 | AI answer/brand/citation visibility collection strategy | DONE — issue #270 / PR #271 / merge `399a6b946b213b2e8aff9416ca5287896476fe48` |
+| P7.4 | citation/domain/competitor comparison | NEXT SAFE DEFAULT — deterministic/default-off comparison over exact P7.3 supplied-observation records; no live provider request, persistence or visibility scoring |
 | P7.5 | AI visibility scoring/history | PLANNED |
 | P7.6 | AI/GEO opportunity integration | PLANNED |
 | P7.7 | replace current AI Visibility placeholder with production workspace | PLANNED |
@@ -583,12 +583,13 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 32. **DONE — Phase P6:** unified opportunity classification, scoring, prioritization, explanation, actionability, preview/diff and lifecycle/history foundation.
 33. **DONE — P7.1:** deterministic/default-off supplied-evidence AI crawler/bot accessibility audit, issue #264 / PR #265 / merge `74e5de6518359f9f92b2e73edd5d44f02eecffa2`; no live crawl/provider/runtime/persistence/publication activation.
 34. **DONE — P7.2:** deterministic/default-off supplied-definition prompt/topic-set model, issue #267 / PR #268 / merge `ecee3e9796c04c25f3c800e73e621c2cef299666`; explicit acyclic topic hierarchy, exact prompt text, no generation/provider/persistence activation.
-35. **NEXT SAFE DEFAULT — P7.3:** deterministic/default-off AI answer/brand/citation visibility collection strategy using provider-neutral contracts and supplied/synthetic fixtures only; no live AI-provider request, credential use or persistence.
-36. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-37. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-38. **P10 —** impact attribution, experimentation and learning loop.
-39. **P11 —** enterprise hardening and certification.
-40. **P12 —** final production completion certification and program closeout.
+35. **DONE — P7.3:** deterministic/default-off provider-neutral supplied-observation answer/brand/citation normalization, issue #270 / PR #271 / merge `399a6b946b213b2e8aff9416ca5287896476fe48`; exact P7.2 lineage, explicit mention/citation evidence, no live provider/persistence/scoring activation.
+36. **NEXT SAFE DEFAULT — P7.4:** deterministic/default-off citation/domain/competitor comparison over exact P7.3 records only; no live provider request, persistence or visibility scoring.
+37. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+38. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+39. **P10 —** impact attribution, experimentation and learning loop.
+40. **P11 —** enterprise hardening and certification.
+41. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
