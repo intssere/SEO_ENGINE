@@ -13,26 +13,20 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P8.2 read-only evidence/risk/preview/verification/rollback action cards v1 is complete and certified.
+**Current checkpoint:** P8.3 first individual mutation-action-class review is complete; implementation is blocked pending separate provider-scope authorization.
 
-- P8.2 issue #288 / PR #289.
-- Base SHA/tree: `d83e23554b3e4499ff83f2edc8e71c605c89f790` / `0ceded2440aa96f1b93f7d992b020adfc71ab9e2`.
-- Initial PR head `452f33a376d993ee6c529a6214b9d210757e00db` reached CI #514 / run `35463018320`; all non-browser validation passed, but one Playwright assertion was ambiguous because the same preview text appeared in both pipeline and card.
-- Correction commit / exact tested PR head: `d02999c3dcae8552bbecde2de1c4a0f2cebdc82b`; test locator only, no semantic/product change.
-- Exact-head PR CI #515 / run `35463135154`: success.
-- Implementation merge: `964e940d82f93dece9fbaaf56eca21782318e357`.
-- Implementation tree: `c07238481c5c3764d9b8087a462d24124e80eb08`.
-- Post-merge main CI #516 / run `35463259622`: success.
-- Replit is exact-aligned on `main` at the merge/tree, ahead/behind `0/0`, clean, zero untracked.
-- Replit recursive tests, typecheck, build and `git diff --check`: passed; only known non-fatal tooltip/sheet sourcemap messages and chunk-size warning remain.
-- `/governance` now includes one deterministic read-only action inspection card per reconciled proposal.
-- Verification detail remains explicitly unavailable; lifecycle is never treated as verification proof.
-- `rollback` remains a plan string only; rollback execution/status/result remain explicitly unavailable.
-- Evidence/risk/current-vs-proposed facts remain source-bound and non-authorizing.
-- No approval, authorization, execution, verification mutation, rollback mutation, provider/public-site request/write, persistence, database activity, scheduler/worker activation, deployment or publication was introduced.
-- P8.2 remains unpublished.
-- Default next safe boundary: **P8.3 individual action-class review/contract selection before implementation**. Generic continuation may inspect and specify a bounded candidate class but does not authorize live provider/site mutation or execution activation.
-- Real provider/public-site writes, credential/scope changes, persistence, Production database activity and publication remain separately unauthorized.
+- Canonical P8.2 docs-closeout main before this review: `7877878f3b85e28c0ecce68ed19f7a68a68f5896` / tree `0bef5a51457feb46617e3c78d573560d94f87187`.
+- P8.2 implementation remains fully certified and unpublished.
+- P8.3 review issue: #291 — **P8.3A — Individual action-class review: product media alt text**.
+- Existing executable mutation classes remain exactly Shopify product/collection SEO `title` and `meta_description` under the isolated `write_products` credential.
+- The preferred future expansion is product media alt text.
+- Current Shopify `fileUpdate` requires `write_files` or `write_themes`; the existing Task #53 credential is intentionally `write_products` only.
+- Therefore media-alt implementation is **BLOCKED** until a separate explicit authorization covers the isolated `write_files` scope/credential architecture. Do not broaden the Task #53 credential silently.
+- Deprecated `productUpdateMedia` is not an acceptable bypass for the scope review.
+- The future contract in issue #291 binds one Product GID + one MediaImage/File GID, exact before/proposed fingerprints, one alt-only forward mutation, independent provider + uniquely-bound storefront verification, one deterministic restore mutation, bounded rollback re-verification, and manual intervention on non-convergence.
+- Merchant-visible title/description HTML remain deferred; handle is rejected as the first expansion.
+- No provider request, OAuth enrollment, scope/credential mutation, public-site write, execution, persistence, database activity, scheduler/worker activation, deployment or publication occurred during this review.
+- Generic `continue` does **not** authorize P8.3 implementation, `write_files` enrollment, P8.4 verification-adapter implementation for the blocked class, or any live mutation.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.

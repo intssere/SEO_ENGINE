@@ -450,7 +450,7 @@ Existing Tasks #51–#54 remain the safety foundation.
 |---|---|---|
 | P8.1 | Unify opportunity → proposal → approval UI around existing control primitives | DONE — issue #285 / PR #286 / merge `6dd42a2850713a4692039bb76900731129422061` |
 | P8.2 | Evidence/risk/preview/verification/rollback action cards | DONE — issue #288 / PR #289 / merge `964e940d82f93dece9fbaaf56eca21782318e357` |
-| P8.3 | Expand bounded Shopify/site mutation action classes only after individual review | NEXT REVIEW BOUNDARY — select and document one bounded action class plus its safety, verification and rollback/manual-intervention contract before implementation; no live provider/site mutation or execution activation on generic continuation |
+| P8.3 | Expand bounded Shopify/site mutation action classes only after individual review | REVIEW COMPLETE / IMPLEMENTATION BLOCKED — issue #291 selects product media alt text as the preferred future class; current Shopify `fileUpdate` requires a separately authorized isolated `write_files` scope/credential architecture, so no implementation or live mutation is authorized |
 | P8.4 | Add verification adapters per mutation class | PLANNED |
 | P8.5 | Add deterministic rollback/manual-intervention workflows | PLANNED |
 | P8.6 | Action history and audit ledger | PLANNED |
@@ -591,11 +591,12 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 40. **DONE — Phase P7:** AI/GEO accessibility, prompt modeling, supplied answer/citation evidence, competitor comparison, visibility scoring/history, P6 opportunity lineage and production read-only workspace.
 41. **DONE — P8.1:** deterministic/read-only unified opportunity → proposal → approval governance workspace, issue #285 / PR #286 / merge `6dd42a2850713a4692039bb76900731129422061`; no approval grant, execution, persistence or publication.
 42. **DONE — P8.2:** deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action cards, issue #288 / PR #289 / merge `964e940d82f93dece9fbaaf56eca21782318e357`; no mutation, execution, persistence or publication.
-43. **NEXT REVIEW BOUNDARY — P8.3:** select and specify one bounded Shopify/site mutation action class, including exact safety, verification and rollback/manual-intervention contracts, before any implementation; no live provider/site mutation on generic continuation.
-44. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-45. **P10 —** impact attribution, experimentation and learning loop.
-46. **P11 —** enterprise hardening and certification.
-47. **P12 —** final production completion certification and program closeout.
+43. **P8.3 REVIEW COMPLETE / IMPLEMENTATION BLOCKED:** issue #291 selects product media alt text as the preferred future bounded class and defines its exact safety/verification/rollback contract; implementation requires separate explicit authorization for a new isolated `write_files` scope/credential architecture. Current executable classes remain product/collection SEO `title` and `meta_description` only.
+44. **P8.4–P8.8 — BLOCKED/PLANNED:** do not proceed automatically from the P8.3 review; mutation-class implementation/verification/rollback/live-pilot work requires its own reviewed authorization boundary.
+45. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+46. **P10 —** impact attribution, experimentation and learning loop.
+47. **P11 —** enterprise hardening and certification.
+48. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 

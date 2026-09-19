@@ -15,7 +15,43 @@ Published application source:
 
 Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7 and P8.1–P8.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P8.2 complete
+## Current engineering state — P8.3 action-class review complete; implementation blocked
+
+Roadmap **P8.3 — expand bounded Shopify/site mutation action classes only after individual review** has completed its first individual action-class review under issue #291. No mutation-class implementation was authorized or added.
+
+Review result:
+- the current certified execution foundation remains limited to Shopify `product` / `collection` SEO fields `title` and `meta_description`;
+- those existing fields use the isolated Task #53 `write_products` credential and retain the existing Task #51–#54 exact-target, stale-state, authorization, verification, deterministic rollback and manual-intervention controls;
+- product media alt text was selected as the preferred future bounded action class because it is a single reversible metadata field with lower blast radius than merchant-visible title, description HTML or handle changes;
+- current Shopify Admin GraphQL `fileUpdate` supports file alt text but requires `write_files` or `write_themes`;
+- the existing Task #53 credential is deliberately `write_products` only, so adding `write_files` would expand provider authority and requires separate explicit authorization;
+- deprecated `productUpdateMedia` must not be selected merely to avoid that scope review;
+- merchant-visible title and description-HTML mutation classes remain deferred; handle mutation is not accepted as the first expansion because of URL/canonical/redirect/indexing blast radius.
+
+Future media-alt implementation contract, if separately authorized:
+- one exact Diamond Shelf Product GID plus one exact MediaImage/File GID; no batch or wildcard target;
+- a distinct field identity such as `media_alt`;
+- exact provider pre-read and before/proposed fingerprints;
+- fail closed on stale alt, changed/missing media identity, ownership/reference mismatch, non-ready file state, duplicate deployment or active site execution;
+- a separately reviewed isolated `write_files` credential/profile; never silently broaden the existing Task #53 `write_products` profile;
+- exactly one `fileUpdate` forward mutation setting only alt text;
+- independent provider verification plus storefront verification that uniquely binds the rendered image to the intended asset;
+- exactly one deterministic `fileUpdate` rollback to the approved before-alt value on verification failure;
+- bounded provider/storefront rollback re-verification and then manual intervention, never a second rollback mutation;
+- exact audit/idempotency lineage with no autonomous chaining or self-authorization.
+
+P8.3 review work performed no Shopify/provider request, OAuth enrollment, credential/scope change, public-site write, action execution, verification/rollback mutation, persistence, Production DB read/write/DDL/DML, environment/config mutation, scheduler/worker activation, deployment or publication.
+
+Detailed record:
+- issue #291 — `P8.3A — Individual action-class review: product media alt text`
+- `docs/p8-3-action-class-review.md`
+- `.agents/memory/p8-3-action-class-review-closeout.md`
+
+**Implementation blocker:** separate explicit authorization is required before engineering or enrolling a new isolated `write_files` credential/scope architecture for product-media-alt mutation. Generic `continue` does not cross this boundary.
+
+Default safe continuation while that authorization is absent: remain on non-mutating engineering/research lanes already permitted by the roadmap, or explicitly authorize the isolated P8.3 media-alt scope/credential engineering boundary. P8.4–P8.8 are not automatically unlocked by this review.
+
+## Previous engineering state — P8.2 complete
 
 Roadmap **P8.2 — Read-only evidence/risk/preview/verification/rollback action cards v1** is complete under issue #288 / PR #289.
 
@@ -51,7 +87,7 @@ Detailed record:
 - `.agents/memory/p8-2-governance-action-cards-closeout.md`
 - `docs/p8-2-governance-action-cards.md`
 
-Default next safe boundary: **P8.3 — individual bounded mutation-action-class review and contract selection before implementation**. A generic continuation may perform read-only repository analysis and define one candidate action class, its safety gates, verification contract and rollback/manual-intervention contract; it does **not** authorize a live provider/public-site mutation, execution activation, credential/scope change, persistence, database activity or publication.
+At the P8.2 checkpoint, the default next safe boundary was **P8.3 individual bounded mutation-action-class review**. That review is now complete as recorded above; implementation remains blocked pending separate explicit authorization for a new isolated `write_files` scope/credential architecture.
 
 ## Previous engineering state — P8.1 complete
 
