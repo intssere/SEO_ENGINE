@@ -22,7 +22,7 @@ const START_AT = "2026-09-19T20:00:00.000Z";
 const DUE_AT = "2026-09-19T20:05:00.000Z";
 const MISSED_AT = "2026-09-19T20:35:00.000Z";
 
-function fixture(
+function lineageFixture(
   channel: "gsc" | "analytics" | "catalog" = "gsc",
   overrides: {
     sourceKey?: string;
@@ -99,18 +99,21 @@ function fixture(
     planId: plan.planId,
     planFingerprint: plan.planFingerprint,
   });
+  return { market, category, source, plan, request };
+}
+
+function fixture(
+  channel: "gsc" | "analytics" | "catalog" = "gsc",
+) {
+  const lineage = lineageFixture(channel);
   const schedule = buildFirstPartyRefreshSchedule({
     key: "first-party-" + channel,
-    source,
-    plan,
-    request,
-    market,
-    category,
+    ...lineage,
     startAt: START_AT,
     cadenceMinutes: 60,
     dueWindowMinutes: 30,
   });
-  return { market, category, source, plan, request, schedule };
+  return { ...lineage, schedule };
 }
 
 test("P9.2 deterministically binds exact GSC Task 67/68 lineage to P9.1", () => {
@@ -333,7 +336,7 @@ test("source, plan, request and schedule tampering fail closed", () => {
 });
 
 test("external, unsupported and malformed GSC source contracts fail closed", () => {
-  const external = fixture("analytics", {
+  const external = lineageFixture("analytics", {
     sourceClass: "external",
     trustClass: "reviewed_external",
   });
@@ -348,7 +351,7 @@ test("external, unsupported and malformed GSC source contracts fail closed", () 
     /first_party_source_required/,
   );
 
-  const unsupported = fixture("gsc", {
+  const unsupported = lineageFixture("gsc", {
     sourceKey: "other-first-party-keyword-source",
   });
   assert.throws(
@@ -362,7 +365,7 @@ test("external, unsupported and malformed GSC source contracts fail closed", () 
     /unsupported_first_party_refresh_channel/,
   );
 
-  const malformedGsc = fixture("analytics", {
+  const malformedGsc = lineageFixture("analytics", {
     sourceKey: GSC_SEARCH_ANALYTICS_SOURCE_KEY,
     signalTypes: ["analytics"],
   });
