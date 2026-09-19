@@ -89,8 +89,14 @@ export default function GovernancePage() {
     if (!opportunities.data || !actions.data || !approvals.data) return null;
     return buildGovernanceWorkspaceModel({
       opportunities: opportunities.data.rows,
-      proposals: actions.data.rows,
-      approvals: approvals.data.rows,
+      proposals: actions.data.rows.map((row) => ({
+        ...row,
+        proposal_fingerprint: row.proposal_fingerprint ?? null,
+      })),
+      approvals: approvals.data.rows.map((row) => ({
+        ...row,
+        proposal_fingerprint: row.proposal_fingerprint ?? null,
+      })),
     });
   }, [opportunities.data, actions.data, approvals.data]);
 
