@@ -13,25 +13,23 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P6.3 conflict/dedupe/suppression/prioritization is complete and certified.
+**Current checkpoint:** P6.4 deterministic explanation/evidence generation is complete and certified.
 
-- P6.3 issue #249 / PR #250.
-- Base SHA/tree: `5efea32b93a0e8f2daa6693a6c5d7faefec6e757` / `ee59b670755addad1b1662aed254609764f0a4d6`.
-- Exact tested implementation head: `20fa4ba5159840d94d36a2900a1d4f687e2cf23e`.
-- PR CI #459 / run `35432176194`: success across legacy schema, Task/P3.6/workspace tests including P6.3, Playwright/P4.10, typecheck and build.
-- Implementation merge: `06739367624018c501a11459881462e2be480657`.
-- Implementation tree: `b8f4ff628d55cf94c0664583c4ad83c86f9f5c2e`.
-- Post-merge CI #460 / run `35432288284`: success.
+- P6.4 issue #252 / PR #253.
+- Base SHA/tree: `72c2daf503cc475ceb4d684b894735453b1b62e6` / `fd802bd4c4b5407fa7a2e7c8f919d00e78e73b46`.
+- Exact tested implementation head: `1a07f0e9e482e800e17ca308252bff2cdba3a165`.
+- PR CI #463 / run `35433617406`: success across legacy schema, Task/P3.6/workspace tests including P6.4, Playwright/P4.10, typecheck and build.
+- Implementation merge: `b3b83e36ba6bb0c5461396eb2a2b1aa33e62762f`.
+- Implementation tree: `6ab4bac7d8613088a01856c061229e17dd938321`.
+- Post-merge CI #464 / run `35433777998`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass, with only the existing non-fatal chunk-size warning.
-- P6.3 revalidates exact P6.1/P6.2 identities, requires homogeneous reference-time/scope collections and collapses only exact duplicate rows.
-- Same opportunity fingerprint with conflicting score/conflict/suppression metadata fails closed.
-- Explicit suppression codes remain visible; unscorable P6.2 rows receive no priority instead of a guessed score.
-- Mutual exclusion exists only through explicit conflict keys; P6.3 never infers conflicts from family/kind/subject/evidence.
-- Unique highest-score explicit conflicts retain one eligible candidate; equal top-score conflicts remain unresolved with no arbitrary deterministic winner.
-- Remaining eligible rows receive dense P6.2 score ranks; equal non-conflicting scores remain co-equal.
-- Priority is advisory only and does not become recommendation, actionability, execution order or authorization.
-- P6.3 remains unpublished and performed no provider/public-site request, persistence, Production DB activity, scheduler/worker activation, config/secret mutation or publication.
-- Default next safe engineering boundary: **P6.4 — explanation/evidence generation**, deterministic/default-off engineering only.
+- P6.4 revalidates exact P6.3 report integrity and reconstructs exact P6.1/P6.2 lineage before producing explanations.
+- It emits deterministic structured statements and evidence cards only; every non-null component keeps its exact P6.2 evidence basis.
+- Null components remain unavailable with no fabricated basis; P6.1 missing-evidence codes and semantic guards remain explicit.
+- P6.3 rank/suppression/conflict state is mirrored without re-deciding it; equal-top conflicts remain unresolved and explanation order creates no additional preference.
+- P6.4 uses fixed English templates only and performs no LLM/freeform inference, causal-outcome claim, recommendation generation, actionability classification, preview/diff generation or lifecycle inference.
+- P6.4 remains unpublished and performed no provider/AI request, persistence, Production DB activity, scheduler/worker activation, config/secret mutation or publication.
+- Default next safe engineering boundary: **P6.5 — actionability classifier: informational / recommend / approval / blocked**, deterministic/default-off classification only.
 - Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 

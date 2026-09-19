@@ -13,9 +13,48 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.3 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.4 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P6.3 complete
+## Current engineering state — P6.4 complete
+
+Roadmap **P6.4 — explanation/evidence generation** is complete under issue #252 / PR #253.
+
+P6.4 adds a pure deterministic explanation/evidence projection over exact P6.1 opportunities, P6.2 scores and P6.3 prioritization decisions:
+- requires the exact P6.3 collection input plus the exact canonical P6.3 report and re-runs P6.3 before explaining anything;
+- reconstructs each unique P6.1 opportunity and P6.2 score and fails closed on tampered lineage;
+- emits one deterministic explanation item per unique P6.3 decision without re-ranking, re-suppressing or choosing a new conflict winner;
+- mirrors exact P6.3 decision status, advisory rank/tie count, conflict key, explicit suppression codes and system suppression reasons;
+- projects the exact P6.2 score status, score values, formula, blockers and all five component values/basis codes;
+- retains the exact P6.2 evidence basis fingerprints on every non-null component statement while null components remain unavailable with no claimed evidence basis;
+- projects every P6.1 evidence reference as an evidence card and reverse-maps only the P6.2 score dimensions that explicitly cite that fingerprint;
+- preserves P6.1 missing-evidence codes and semantic guards explicitly, including provider-native/non-comparable and descriptive-only boundaries;
+- uses fixed deterministic English templates only; there is no freeform/LLM inference;
+- generates no causal outcome claim, SEO recommendation, actionability classification, current-vs-proposed diff or lifecycle inference;
+- gives statements, explanation items and the whole report deterministic fingerprints;
+- inherits P6.3 decision serialization only for deterministic output order and does not turn equal-score serialization into a new preference.
+
+Certification:
+- base SHA/tree: `72c2daf503cc475ceb4d684b894735453b1b62e6` / `fd802bd4c4b5407fa7a2e7c8f919d00e78e73b46`;
+- initial implementation commit: `5aed992ca924e6405a1342be9d26e84783c0b598`;
+- pre-PR fixture corrections aligned evidence-card assertions with P6.1 canonical evidence ordering and allowed the required negative semantic-guard phrase “not a recommendation by itself” without weakening the no-prescriptive-language test;
+- pre-PR TypeScript fixture correction made null/undefined narrowing explicit without changing P6.4 semantics;
+- exact tested implementation head: `1a07f0e9e482e800e17ca308252bff2cdba3a165`;
+- PR CI #463 / run `35433617406`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P6.4, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `b3b83e36ba6bb0c5461396eb2a2b1aa33e62762f`;
+- implementation tree: `6ab4bac7d8613088a01856c061229e17dd938321`;
+- post-merge CI #464 / run `35433777998`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal build chunk-size warning only.
+
+P6.4 is **unpublished**. It performed no provider/AI request, credential use, public-site read/write, Task #67 Production source admission or refresh-plan mutation, Task #64/#70 execution, observation/evidence/score/priority/explanation persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p6-4-opportunity-explanation-closeout.md`
+- `docs/p6-4-opportunity-explanation.md`
+
+Default next safe milestone: **P6.5 — actionability classifier: informational / recommend / approval / blocked**, deterministic/default-off classification over certified P6.1/P6.2/P6.3/P6.4 records; no execution or automatic transition.
+
+## Previous engineering state — P6.3 complete
 
 Roadmap **P6.3 — conflict/dedupe/suppression/prioritization** is complete under issue #249 / PR #250.
 
@@ -52,7 +91,7 @@ Detailed record:
 - `.agents/memory/p6-3-opportunity-prioritization-closeout.md`
 - `docs/p6-3-opportunity-prioritization.md`
 
-Default next safe milestone: **P6.4 — explanation/evidence generation**, deterministic/default-off engineering over certified P6.1/P6.2/P6.3 records; no live execution.
+At the P6.3 checkpoint, the default next safe milestone was **P6.4 — explanation/evidence generation**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P6.2 complete
 
