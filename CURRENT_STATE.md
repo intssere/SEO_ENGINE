@@ -13,9 +13,49 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1–P9.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P9.1 complete
+## Current engineering state — P9.2 complete
+
+Roadmap **P9.2 — Default-off first-party refresh materialization review v1** is complete under issue #296 / PR #297.
+
+P9.2 adds a pure deterministic review boundary between exact P9.1 due `signal_refresh` intents and certified first-party read foundations:
+- independently reconstructs Task #66 market/category identity;
+- independently validates Task #67 source identity plus exact refresh-plan ID/fingerprint/safety;
+- rebuilds the exact Task #68 adapter request from source/selected-item/market/category/plan lineage and fails closed on mismatch;
+- binds exact source/market/category/signal scope and exact Task #67 plan + Task #68 request lineage into P9.1 schedule fingerprints;
+- requires `workClass=signal_refresh`, exact P9.1 schedule identity/safety and a caller-supplied evaluation timestamp;
+- only P9.1 `due` emits one `proposed_review` P9.2 candidate; `not_started`, `paused`, `missed` and `already_materialized` emit none;
+- recognizes the exact Task #71 GSC source key + keyword contract only as `runner_foundation_available`; this explicitly does not mean configured, credential-ready, OAuth-ready, network-ready, Task #70-authorized or executable;
+- represents first-party `analytics` and `catalog` channels as `runner_foundation_unavailable` with exact blockers because no current Task #70-compatible source-specific runner equivalent to Task #71 is certified for those channels;
+- rejects external sources, unsupported first-party signals and malformed GSC source contracts;
+- changes schedule identity when material source/market/category/plan/request lineage changes;
+- imports/calls no Task #69 packet construction or Task #70 execution primitive;
+- contains no timer/network/database/environment/persistence primitive;
+- keeps scheduler/timer, durable enqueue/reservation, worker/batch/retry, Task #69 packet materialization, Task #70 execution, credentials/OAuth, provider reads, persistence, Production DB writes, Task #53/#54, provider/public-site writes, automatic transition and publication explicitly false.
+
+Certification:
+- base SHA/tree: `757d55acd0aafbdfd0511bfd425b392c2a6c5a6f` / `2e85be0238b8d86fe083faeb6f63f1b01f16e9ab`;
+- initial PR head/tree: `32237d48d5ff94e876ad7f317502d7738fd017b8` / `ab1db57d6c603a41838debd843db06c195bfc5c3`;
+- PR CI #526 / run `35468908442`: failed only because the negative-test helper eagerly built a schedule before `assert.throws`; schema, Task and P3.6 migration checks passed;
+- correction commit / exact tested PR head/tree: `d6de55b2d1e63c2237e0557599bfe0896e767d87` / `e929c3ededd5fcf71d9891bf51bb92f9dd03fd95`; test-fixture split only, no product/model semantic change;
+- exact-head PR CI #527 / run `35468999452`: success across schema, Task/migration tests, all workspace tests, Playwright, typecheck and build;
+- implementation merge: `6f7b1dec70d99e6797980e08b10f072c6869d18a`;
+- implementation tree: `e929c3ededd5fcf71d9891bf51bb92f9dd03fd95`;
+- post-merge main CI #528 / run `35469110061`: success;
+- Replit exact-aligned on `main` at the merge/tree, ahead/behind `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P9.2 is **unpublished**. It performed no live timer/scheduler activation, durable queue materialization/reservation, Task #69 packet creation, Task #70 execution, GSC/GA4/Shopify provider request, credential/OAuth use, observation/evidence persistence, Production DB read/write/DDL/DML, Task #53/#54 execution, provider/public-site mutation, environment/secret/config mutation, deployment or publication.
+
+Detailed record:
+- issue #296 — `P9.2 — Default-off first-party refresh materialization review v1`
+- `docs/p9-2-first-party-refresh-materialization.md`
+- `.agents/memory/p9-2-first-party-refresh-closeout.md`
+
+Default next safe boundary: **P9.3 — scheduled full/incremental crawl policy architecture**. Generic continuation may compose existing P2 full/incremental crawl planning evidence with P9.1 `crawl_refresh` schedules using supplied/fake inputs and deterministic default-off policy models only; it does **not** authorize a live timer, crawl network request, worker/retry activation, durable queue persistence, observation/evidence persistence, Production DB writes, provider/public-site writes, deployment or publication.
+
+## Previous engineering state — P9.1 complete
 
 Roadmap **P9.1 — Read-only scheduler/queue architecture v1** is complete under issue #293 / PR #294.
 
@@ -49,7 +89,7 @@ Detailed record:
 - `docs/p9-1-read-scheduler-queue-architecture.md`
 - `.agents/memory/p9-1-read-scheduler-queue-closeout.md`
 
-Default next safe boundary: **P9.2 — scheduled GSC/analytics/catalog refresh architecture/materialization review**. Generic continuation may define deterministic/default-off orchestration contracts over already certified first-party read foundations, but does **not** authorize a live timer, durable queue enqueue, worker, Task #70 execution, provider request, credentials, persistence, Production DB write, or publication.
+At the P9.1 checkpoint, the default next safe boundary was **P9.2 — scheduled GSC/analytics/catalog refresh architecture/materialization review**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P8.3 action-class review complete; implementation blocked
 
