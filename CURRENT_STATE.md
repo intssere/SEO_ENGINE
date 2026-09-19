@@ -13,9 +13,45 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7 and P8.1–P8.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P8.3 action-class review complete; implementation blocked
+## Current engineering state — P9.1 complete
+
+Roadmap **P9.1 — Read-only scheduler/queue architecture v1** is complete under issue #293 / PR #294.
+
+P9.1 adds a pure deterministic control-plane model for future scheduled read work without activating any runtime scheduler:
+- supports only non-mutating `signal_refresh` and `crawl_refresh` work classes;
+- defines deterministic schedule IDs/fingerprints from exact schedule semantics and lineage;
+- uses caller-supplied timestamps only, with no wall-clock access;
+- defines fixed cadence slots anchored to `startAt`, bounded non-overlapping due windows, and no completion-time drift;
+- projects explicit `not_started`, `paused`, `due`, `missed`, and `already_materialized` states;
+- emits no catch-up/backfill intent for missed windows;
+- validates any supplied last-materialized timestamp as an exact aligned schedule slot and fails closed on future/misaligned state;
+- projects at most one deterministic read-work intent per due schedule/slot;
+- bounds queue projection to 100 schedules and rejects duplicate schedule keys/IDs;
+- treats canonical output ordering as serialization only, never priority or ranking;
+- leaves scheduler/timer activation, durable enqueue, reservation/claim, worker, batch executor, retry loop, Task #69 packet materialization, Task #70 execution, credential use, provider/crawl network reads, observation/evidence persistence, Production DB writes, provider/public-site writes, Task #53/#54 execution, automatic transition and publication explicitly false.
+
+Certification:
+- base SHA/tree: `53aef9450ed282d74fe3b3436bbb5ec05315f47c` / `b11922ac555733f96b03c65e8bf112e37ae14cc3`;
+- exact tested PR head/tree: `71aa75c620c8e05ea37c23a1ca932dbe255139b9` / `e2f2d40dd530b80c74d6803f9245ff642f9f11a8`;
+- PR CI #522 / run `35467292055`: success;
+- implementation merge: `e348aed49b3d787d237096a2bde24b23930e3223`;
+- implementation tree: `e2f2d40dd530b80c74d6803f9245ff642f9f11a8`;
+- post-merge main CI #523 / run `35467412415`: success;
+- Replit exact-aligned on `main` at the merge/tree, ahead/behind `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P9.1 is **unpublished**. It performed no timer/scheduler activation, queue materialization, reservation, worker/retry activation, Task #69 packet creation, Task #70 execution, provider/crawl request, credential use, observation/evidence persistence, Production DB read/write/DDL/DML, Task #53/#54 execution, provider/public-site mutation, environment/secret/config mutation, deployment or publication.
+
+Detailed record:
+- issue #293 — `P9.1 — Read-only scheduler/queue architecture v1`
+- `docs/p9-1-read-scheduler-queue-architecture.md`
+- `.agents/memory/p9-1-read-scheduler-queue-closeout.md`
+
+Default next safe boundary: **P9.2 — scheduled GSC/analytics/catalog refresh architecture/materialization review**. Generic continuation may define deterministic/default-off orchestration contracts over already certified first-party read foundations, but does **not** authorize a live timer, durable queue enqueue, worker, Task #70 execution, provider request, credentials, persistence, Production DB write, or publication.
+
+## Previous engineering state — P8.3 action-class review complete; implementation blocked
 
 Roadmap **P8.3 — expand bounded Shopify/site mutation action classes only after individual review** has completed its first individual action-class review under issue #291. No mutation-class implementation was authorized or added.
 
@@ -49,7 +85,7 @@ Detailed record:
 
 **Implementation blocker:** separate explicit authorization is required before engineering or enrolling a new isolated `write_files` credential/scope architecture for product-media-alt mutation. Generic `continue` does not cross this boundary.
 
-Default safe continuation while that authorization is absent: remain on non-mutating engineering/research lanes already permitted by the roadmap, or explicitly authorize the isolated P8.3 media-alt scope/credential engineering boundary. P8.4–P8.8 are not automatically unlocked by this review.
+At the P8.3 checkpoint, the default safe continuation while mutation authorization remained absent was to use non-mutating roadmap lanes. P9.1 has now completed in that safe lane as recorded above; P8.4–P8.8 remain blocked/planned and are not automatically unlocked.
 
 ## Previous engineering state — P8.2 complete
 
