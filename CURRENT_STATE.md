@@ -13,9 +13,45 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1–P7.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P7.1 complete
+## Current engineering state — P7.2 complete
+
+Roadmap **P7.2 — prompt/topic set model** is complete under issue #267 / PR #268.
+
+P7.2 adds a pure deterministic supplied-definition catalog:
+- accepts only explicit caller-supplied topics, prompts and prompt sets under a canonical site/reference frame;
+- normalizes only opaque keys/codes while preserving topic/set labels and prompt text exactly;
+- validates explicit topic parent relationships, requiring known parents and rejecting self-parenting or hierarchy cycles;
+- never infers topic relationships from labels, prompt text, keyword similarity or embeddings;
+- requires every prompt to reference one or more known topics and deterministically dedupes/sorts repeated topic references;
+- treats caller-owned intent/language/market codes as opaque normalized labels and never infers those attributes from prompt text;
+- requires every prompt set to reference one or more known prompts and deterministically dedupes/sorts repeated prompt references;
+- derives descriptive set-level topic coverage only as the exact union of referenced prompt topic keys;
+- rejects duplicate normalized topic, prompt or set keys rather than silently merging definitions;
+- emits deterministic topic, prompt, set and report fingerprints plus bounded reference/count summaries;
+- explicitly states that prompt/set membership does not imply demand, popularity, search volume, priority, AI visibility, answer inclusion, citation, ranking or recommendation;
+- performs no prompt generation/expansion/rewriting, embedding generation, provider/model request, answer/citation collection, visibility scoring or opportunity generation.
+
+Certification:
+- base SHA/tree: `3c46105da8daaa6464c5f012e6c20d991b83db0f` / `d3b2ebea2e2a0a8f54c0b7e4d740deb578d7f2f7`;
+- exact tested implementation head: `a10bedcec52baa16507ee8715d439cc672f15254`;
+- PR CI #484 / run `35445344907`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P7.2, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `ecee3e9796c04c25f3c800e73e621c2cef299666`;
+- implementation tree: `78384a93df0a3d66beba03d0e06b83a5ba57bd11`;
+- post-merge CI #485 / run `35445482575`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P7.2 is **unpublished**. It performed no provider/AI/embedding request, credential use, source admission, prompt/topic persistence, answer/citation collection, Production DB read/write/DDL/DML, scheduler/worker/retry activation, approval grant, public-site mutation, automatic transition, environment/secret/config mutation or publication.
+
+Detailed record:
+- `.agents/memory/p7-2-ai-prompt-topic-model-closeout.md`
+- `docs/p7-2-ai-prompt-topic-model.md`
+
+Default next safe milestone: **P7.3 — AI answer/brand/citation visibility collection strategy**, deterministic/default-off provider-neutral collection-contract and supplied/synthetic fixture engineering only; no live AI-provider request, credential use, persistence or publication.
+
+## Previous engineering state — P7.1 complete
 
 Roadmap **P7.1 — AI crawler/bot accessibility audit** is complete under issue #264 / PR #265.
 
@@ -49,7 +85,7 @@ Detailed record:
 - `.agents/memory/p7-1-ai-crawler-accessibility-closeout.md`
 - `docs/p7-1-ai-crawler-accessibility.md`
 
-Default next safe milestone: **P7.2 — prompt/topic set model**, deterministic/default-off modeling over explicit supplied/synthetic prompt/topic definitions only; no AI-provider request, answer collection, persistence or publication.
+At the P7.1 checkpoint, the default next safe milestone was **P7.2 — prompt/topic set model**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P6.7 complete
 

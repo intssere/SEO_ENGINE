@@ -435,8 +435,8 @@ P3.6 Production checkpoint:
 | ID | Work item | Status |
 |---|---|---|
 | P7.1 | AI crawler/bot accessibility audit | DONE — issue #264 / PR #265 / merge `74e5de6518359f9f92b2e73edd5d44f02eecffa2` |
-| P7.2 | prompt/topic set model | NEXT SAFE DEFAULT — deterministic/default-off supplied/synthetic prompt/topic modeling; no AI-provider request, answer collection or persistence |
-| P7.3 | AI answer/brand/citation visibility collection strategy | PLANNED |
+| P7.2 | prompt/topic set model | DONE — issue #267 / PR #268 / merge `ecee3e9796c04c25f3c800e73e621c2cef299666` |
+| P7.3 | AI answer/brand/citation visibility collection strategy | NEXT SAFE DEFAULT — deterministic/default-off provider-neutral collection-contract + supplied/synthetic fixture engineering; no live AI-provider request, credential use or persistence |
 | P7.4 | citation/domain/competitor comparison | PLANNED |
 | P7.5 | AI visibility scoring/history | PLANNED |
 | P7.6 | AI/GEO opportunity integration | PLANNED |
@@ -582,12 +582,13 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 31. **DONE — P6.1/P6.2/P6.3/P6.4/P6.5/P6.6/P6.7:** the complete deterministic opportunity/recommendation-engine foundation is complete through explicit lifecycle/history; P6.7 issue #261 / PR #262 / merge `d587a1cc7737c87e09b5bdb827b1cc80170c8a8b`.
 32. **DONE — Phase P6:** unified opportunity classification, scoring, prioritization, explanation, actionability, preview/diff and lifecycle/history foundation.
 33. **DONE — P7.1:** deterministic/default-off supplied-evidence AI crawler/bot accessibility audit, issue #264 / PR #265 / merge `74e5de6518359f9f92b2e73edd5d44f02eecffa2`; no live crawl/provider/runtime/persistence/publication activation.
-34. **NEXT SAFE DEFAULT — P7.2:** deterministic/default-off prompt/topic set modeling using explicit supplied/synthetic definitions only; no AI-provider request, answer collection or persistence.
-35. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
-36. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-37. **P10 —** impact attribution, experimentation and learning loop.
-38. **P11 —** enterprise hardening and certification.
-39. **P12 —** final production completion certification and program closeout.
+34. **DONE — P7.2:** deterministic/default-off supplied-definition prompt/topic-set model, issue #267 / PR #268 / merge `ecee3e9796c04c25f3c800e73e621c2cef299666`; explicit acyclic topic hierarchy, exact prompt text, no generation/provider/persistence activation.
+35. **NEXT SAFE DEFAULT — P7.3:** deterministic/default-off AI answer/brand/citation visibility collection strategy using provider-neutral contracts and supplied/synthetic fixtures only; no live AI-provider request, credential use or persistence.
+36. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
+37. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
+38. **P10 —** impact attribution, experimentation and learning loop.
+39. **P11 —** enterprise hardening and certification.
+40. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 

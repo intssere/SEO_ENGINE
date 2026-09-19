@@ -13,23 +13,23 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P7.1 deterministic AI crawler/bot accessibility audit is complete and certified.
+**Current checkpoint:** P7.2 deterministic prompt/topic set model is complete and certified.
 
-- P7.1 issue #264 / PR #265.
-- Base SHA/tree: `5ffb308a0a606b2514c3aaa8d443b8e382679e65` / `b6c3dcc81984059cb44f953f440fe567d7bdb992`.
-- Exact tested implementation head: `1525569d0f917e0760dc3aa53823a37ef0f6fdaa`.
-- PR CI #480 / run `35442537775`: success across legacy schema, Task/P3.6/workspace tests including P7.1, Playwright/P4.10, typecheck and build.
-- Implementation merge: `74e5de6518359f9f92b2e73edd5d44f02eecffa2`.
-- Implementation tree: `6dfd2b5179b489367858ca2092000a9e0292415f`.
-- Post-merge CI #481 / run `35442677104`: success.
+- P7.2 issue #267 / PR #268.
+- Base SHA/tree: `3c46105da8daaa6464c5f012e6c20d991b83db0f` / `d3b2ebea2e2a0a8f54c0b7e4d740deb578d7f2f7`.
+- Exact tested implementation head: `a10bedcec52baa16507ee8715d439cc672f15254`.
+- PR CI #484 / run `35445344907`: success across legacy schema, Task/P3.6/workspace tests including P7.2, Playwright/P4.10, typecheck and build.
+- Implementation merge: `ecee3e9796c04c25f3c800e73e621c2cef299666`.
+- Implementation tree: `78384a93df0a3d66beba03d0e06b83a5ba57bd11`.
+- Post-merge CI #485 / run `35445482575`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
-- P7.1 is supplied-evidence only: exact bot/user-agent/path plus caller-supplied robots decision, HTTP status, challenge/body observations and evidence fingerprints.
-- Probe states are deterministic `accessible / blocked / limited / unavailable / indeterminate`; per-bot summaries may be `mixed`.
-- P7.1 performs no robots.txt parsing, live crawling or vendor-policy lookup.
-- Robots allowance is explicitly not training consent/license; accessibility is explicitly not indexing, citation or AI-answer visibility.
-- P7.1 remains unpublished and performed no provider/AI request, credential use, persistence, Production DB activity, scheduler/worker activation, config/secret mutation, site mutation or publication.
-- Phase P6 remains complete.
-- Default next safe engineering boundary: **P7.2 — prompt/topic set model**, deterministic/default-off supplied/synthetic modeling only.
+- P7.2 is supplied-definition only: explicit topics, exact prompt text and explicit prompt-set membership.
+- Topic hierarchy is caller-defined only and must be acyclic; no semantic/embedding relation is inferred.
+- Prompt intent/language/market codes are caller-owned opaque metadata and are never inferred.
+- Set-level topic coverage is only the union of explicit prompt topic references and implies no demand, priority, visibility, citation, ranking or recommendation.
+- P7.2 performs no prompt generation/rewriting/expansion, embedding call, AI/provider request, answer/citation collection, scoring, opportunity generation or persistence.
+- P7.2 remains unpublished.
+- Default next safe engineering boundary: **P7.3 — AI answer/brand/citation visibility collection strategy**, deterministic/default-off provider-neutral contract + supplied/synthetic fixture engineering only.
 - Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
