@@ -13,9 +13,44 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8 and P6.1–P6.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P6.1 complete
+## Current engineering state — P6.2 complete
+
+Roadmap **P6.2 — impact × confidence × risk × effort × freshness scoring** is complete under issue #246 / PR #247.
+
+P6.2 adds a pure deterministic scoring kernel over exact P6.1 unified opportunity records without changing the legacy opportunity engine:
+- models `impact`, `confidence`, `risk`, `effort`, and `freshness` as explicit normalized `[0,1]` components supplied by defensible upstream/family-specific adapters;
+- computes `score01 = impact × confidence × freshness × (1 - risk) × (1 - effort)` and `score100 = score01 × 100`;
+- keeps `0` as a valid scored value and `null` as unavailable/unscorable; any missing required component makes the combined score null instead of fabricating a neutral replacement;
+- requires every non-null component to cite bounded evidence fingerprints that exist on the exact P6.1 record, with deterministic dedupe/order and a deterministic score fingerprint;
+- reconstructs the P6.1 record and fails closed if its canonical opportunity ID/fingerprint no longer matches;
+- inherits P6.1 semantic guards so provider-native keyword difficulty/backlink authority, request-frame trends, competitor visibility and descriptive telemetry are not silently converted into false cross-provider comparisons;
+- scores one opportunity at a time only; P6.3 retains collection conflict/dedupe/suppression/prioritization, P6.4 explanation generation, and P6.5 actionability classification;
+- preserves the legacy opportunity-engine `{ demand, proximity, confidence, evidence }` score unchanged.
+
+Certification:
+- base SHA/tree: `70137fa940a9f4a733cfe4506efca351813e47db` / `377a6a5b48ce948baf9516b95c82cc18b7d16fc5`;
+- initial PR head `f5f4267ed330769531a25e0e35b5a2766ae914d9`, CI #454 / run `35430506731`: workspace validation exposed an over-broad static anti-persistence test that falsely matched `crypto.createHash(...).update(...)`; no merge occurred;
+- exact tested implementation head: `e2bdcead7aa9603305ade20ed86c62a10afcb2c5`;
+- PR CI #455 / run `35430608270`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including P6.2, Playwright/P4.10 browser suite, typecheck and build;
+- implementation merge: `0bc3745e978fd57b944123283d3f54dd7e1dd3fb`;
+- implementation tree: `d20788070aecd9732fe5857e69e8b1baf354b3da`;
+- post-merge CI #456 / run `35430704830`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal build chunk-size warning only.
+
+P6.2 is **unpublished**. It performed no provider enrollment/purchase/credential use/request, public-site read/write, Task #67 Production source admission or refresh-plan mutation, Task #64/#70 execution, observation/evidence/score persistence, Production DB read/write/DDL/DML, scheduler/worker/retry activation, environment/secret/config mutation or publication.
+
+Adjacent review: `plausible/analytics` was inspected as requested. Its main application is AGPL-3.0-or-later, while `tracker/npm_package` carries an MIT license. No Plausible code was imported. Funnel/goal, UTM/referrer, filtered breakdown/time-series and lightweight first-party event concepts are potentially useful later in P10 measurement/learning; any direct reuse remains a separate licensing/architecture decision.
+
+Detailed record:
+- `.agents/memory/p6-2-opportunity-scoring-closeout.md`
+- `docs/p6-2-opportunity-scoring.md`
+
+Default next safe milestone: **P6.3 — conflict/dedupe/suppression/prioritization**, deterministic/default-off engineering over certified P6.1/P6.2 records; no live execution.
+
+## Previous engineering state — P6.1 complete
 
 Roadmap **P6.1 — unified opportunity types across technical/content/query/competitor/link/AI** is complete under issue #243 / PR #244.
 
@@ -46,7 +81,7 @@ Detailed record:
 - `.agents/memory/p6-1-unified-opportunity-types-closeout.md`
 - `docs/p6-1-unified-opportunity-types.md`
 
-Default next safe milestone: **P6.2 — impact × confidence × risk × effort × freshness scoring**, deterministic/default-off engineering only; no live execution.
+At the P6.1 checkpoint, the default next safe milestone was **P6.2 — impact × confidence × risk × effort × freshness scoring**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P5.8 complete
 

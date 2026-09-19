@@ -423,8 +423,8 @@ P3.6 Production checkpoint:
 | ID | Work item | Status |
 |---|---|---|
 | P6.1 | Unified opportunity types across technical/content/query/competitor/link/AI | DONE — issue #243 / PR #244 / merge `6d979eba38a56b629c9fe96d7921eac4449b8f60` |
-| P6.2 | impact × confidence × risk × effort × freshness scoring | NEXT SAFE DEFAULT — deterministic/default-off transparent scoring over P6.1 records; no live execution |
-| P6.3 | conflict/dedupe/suppression/prioritization | PLANNED |
+| P6.2 | impact × confidence × risk × effort × freshness scoring | DONE — issue #246 / PR #247 / merge `0bc3745e978fd57b944123283d3f54dd7e1dd3fb` |
+| P6.3 | conflict/dedupe/suppression/prioritization | NEXT SAFE DEFAULT — deterministic/default-off collection policy over certified P6.1/P6.2 records; no live execution |
 | P6.4 | explanation/evidence generation | PLANNED |
 | P6.5 | actionability classifier: informational / recommend / approval / blocked | PLANNED |
 | P6.6 | current-vs-proposed preview/diff generation | PLANNED |
@@ -579,7 +579,7 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 28. **DONE — P5.6:** deterministic competitor visibility/page/topic-gap operational pipeline, issue #234 / PR #235 / merge `e0cf3758be1dff24f443a0a42fa19d2a4110b82b`; descriptive supplied-artifact composition only, no live provider/runtime/persistence/publication activation.
 29. **DONE — P5.7:** read-only/default-off category/market competitor intelligence UI, issue #237 / PR #238 / merge `64947e7662af1fadb389d9dd94f98a2e803d8911`; deterministic synthetic P5.6-shaped frontend fixture, DataGrid workbenches, responsive/accessibility/browser certification, no runtime API/provider/database/publication binding.
 30. **DONE — P5.8:** deterministic source quality/cost/rate-limit telemetry, issue #240 / PR #241 / merge `56b2f8e9dd4e6cc4934c2ab55c549ea6284d59d3`; supplied telemetry + P5.1 metadata only, no live provider/runtime/persistence/publication activation.
-31. **NEXT SAFE DEFAULT — P6.1:** unified opportunity types across technical/content/query/competitor/link/AI, deterministic/default-off engineering over existing evidence families.
+31. **DONE — P6.1/P6.2:** unified opportunity classification/evidence plus deterministic transparent scoring are complete; P6.2 issue #246 / PR #247 / merge `0bc3745e978fd57b944123283d3f54dd7e1dd3fb`.
 32. **P6 —** unified opportunity/prioritization/explanation engine.
 33. **P7 —** AI/GEO visibility.
 34. **P8 —** integrated action/approval/deployment UX and expanded bounded execution classes.
