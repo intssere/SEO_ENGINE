@@ -97,7 +97,8 @@ type WorkingDecision = NormalizedEntry & {
 const CODE = /^[a-z0-9][a-z0-9._:-]{0,95}$/;
 
 function canonicalJson(value: unknown): string {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (value === undefined) return "undefined";
+  if (value === null || typeof value !== "object") return JSON.stringify(value) ?? "undefined";
   if (Array.isArray(value)) return `[${value.map((item) => canonicalJson(item)).join(",")}]`;
   const record = value as Record<string, unknown>;
   return `{${Object.keys(record)
