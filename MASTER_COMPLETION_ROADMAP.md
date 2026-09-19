@@ -461,8 +461,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 
 | ID | Work item | Status |
 |---|---|---|
-| P9.1 | Read-only scheduler/queue architecture | PLANNED |
-| P9.2 | scheduled GSC/analytics/catalog refresh | PLANNED |
+| P9.1 | Read-only scheduler/queue architecture | DONE — issue #293 / PR #294 / merge `e348aed49b3d787d237096a2bde24b23930e3223` |
+| P9.2 | scheduled GSC/analytics/catalog refresh | NEXT SAFE BOUNDARY — deterministic/default-off orchestration architecture/materialization review only; no live timer, durable enqueue, worker, Task #70 execution, provider request, credentials, persistence or publication on generic continuation |
 | P9.3 | scheduled full/incremental crawl policy | PLANNED |
 | P9.4 | bounded external intelligence refresh | PLANNED |
 | P9.5 | failure/retry/dead-letter/idempotency controls | PLANNED |
@@ -593,10 +593,12 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 42. **DONE — P8.2:** deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action cards, issue #288 / PR #289 / merge `964e940d82f93dece9fbaaf56eca21782318e357`; no mutation, execution, persistence or publication.
 43. **P8.3 REVIEW COMPLETE / IMPLEMENTATION BLOCKED:** issue #291 selects product media alt text as the preferred future bounded class and defines its exact safety/verification/rollback contract; implementation requires separate explicit authorization for a new isolated `write_files` scope/credential architecture. Current executable classes remain product/collection SEO `title` and `meta_description` only.
 44. **P8.4–P8.8 — BLOCKED/PLANNED:** do not proceed automatically from the P8.3 review; mutation-class implementation/verification/rollback/live-pilot work requires its own reviewed authorization boundary.
-45. **P9 —** scheduled read automation and incremental crawling; mutation automation remains later.
-46. **P10 —** impact attribution, experimentation and learning loop.
-47. **P11 —** enterprise hardening and certification.
-48. **P12 —** final production completion certification and program closeout.
+45. **DONE — P9.1:** deterministic/default-off read-work scheduler/queue architecture, issue #293 / PR #294 / merge `e348aed49b3d787d237096a2bde24b23930e3223`; no runtime scheduling, queue persistence, Task #70 execution or provider/crawl activity.
+46. **NEXT SAFE BOUNDARY — P9.2:** scheduled GSC/analytics/catalog refresh architecture/materialization review; generic continuation remains default-off and may not activate timers, durable enqueue, workers, Task #70 execution, provider calls, credentials, persistence or publication.
+47. **P9.3–P9.8 — PLANNED/FUTURE:** proceed one certified boundary at a time; autonomous mutation policy remains separate and late-stage.
+48. **P10 —** impact attribution, experimentation and learning loop.
+49. **P11 —** enterprise hardening and certification.
+50. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
