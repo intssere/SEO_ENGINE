@@ -255,7 +255,11 @@ function classifyChannel(
   ) throw new Error("first_party_refresh_source_contract_mismatch");
 
   if (source.key === GSC_SEARCH_ANALYTICS_SOURCE_KEY) {
-    if (signalType !== "keyword" || !source.signalTypes.includes("keyword")) {
+    if (
+      signalType !== "keyword"
+      || source.signalTypes.length !== 1
+      || source.signalTypes[0] !== "keyword"
+    ) {
       throw new Error("gsc_source_contract_mismatch");
     }
     return {
