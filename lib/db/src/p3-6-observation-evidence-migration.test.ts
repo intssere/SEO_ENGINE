@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import postgres from "postgres";
+import { ensureDiamondShelfIdentity } from "./runtime-bootstrap.js";
 
 const TARGET_TABLES = Object.freeze([
   "seo_evidence",
@@ -82,30 +83,72 @@ const EXPECTED_CONSTRAINTS = Object.freeze([
 
 const EXPECTED_INDEXES = Object.freeze({
   seo_observation_pkey: ["observation_id"],
-  idx_seo_observation_semantic_provenance_observed: ["semantic_key", "provenance_fingerprint", "observed_at", "observation_id"],
+  idx_seo_observation_semantic_provenance_observed: [
+    "semantic_key",
+    "provenance_fingerprint",
+    "observed_at",
+    "observation_id",
+  ],
   idx_seo_observation_semantic_value: ["semantic_key", "value_fingerprint"],
-  idx_seo_observation_site_kind_source_observed: ["site_id", "observation_kind", "source_kind", "observed_at"],
-  idx_seo_observation_url_kind_observed: ["url_id", "observation_kind", "observed_at"],
+  idx_seo_observation_site_kind_source_observed: [
+    "site_id",
+    "observation_kind",
+    "source_kind",
+    "observed_at",
+  ],
+  idx_seo_observation_url_kind_observed: [
+    "url_id",
+    "observation_kind",
+    "observed_at",
+  ],
   idx_seo_observation_stale_after_site: ["stale_after", "site_id"],
   seo_evidence_pkey: ["reference_fingerprint"],
   idx_seo_evidence_evidence_id: ["evidence_id"],
   idx_seo_evidence_source: ["source_kind", "source_fingerprint"],
   seo_observation_evidence_pkey: ["observation_id", "reference_fingerprint"],
-  idx_seo_observation_evidence_reference: ["reference_fingerprint", "observation_id"],
+  idx_seo_observation_evidence_reference: [
+    "reference_fingerprint",
+    "observation_id",
+  ],
   idx_seo_observation_history_observed: ["site_id", "observed_at"],
-  idx_seo_observation_history_site_semantic_observed: ["site_id", "canonical_origin", "semantic_key", "observed_at", "observation_id"],
-  idx_seo_observation_history_semantic_provenance_observed: ["site_id", "semantic_key", "provenance_fingerprint", "observed_at", "observation_id"],
-  idx_seo_observation_history_kind_source_observed: ["site_id", "observation_kind", "source_kind", "observed_at", "observation_id"],
+  idx_seo_observation_history_site_semantic_observed: [
+    "site_id",
+    "canonical_origin",
+    "semantic_key",
+    "observed_at",
+    "observation_id",
+  ],
+  idx_seo_observation_history_semantic_provenance_observed: [
+    "site_id",
+    "semantic_key",
+    "provenance_fingerprint",
+    "observed_at",
+    "observation_id",
+  ],
+  idx_seo_observation_history_kind_source_observed: [
+    "site_id",
+    "observation_kind",
+    "source_kind",
+    "observed_at",
+    "observation_id",
+  ],
 } as const);
 
 function migrationPath(): string {
-  return fileURLToPath(new URL("../migrations/0003_observation_evidence_schema.sql", import.meta.url));
+  return fileURLToPath(
+    new URL(
+      "../migrations/0003_observation_evidence_schema.sql",
+      import.meta.url,
+    ),
+  );
 }
 
 function normalizeIndexColumns(indexdef: string): string[] {
   const match = indexdef.match(/\(([^)]+)\)\s*$/);
   assert.ok(match, `index definition missing column list: ${indexdef}`);
-  return match[1]!.split(",").map((value) => value.trim().replace(/^"|"$/g, ""));
+  return match[1]!
+    .split(",")
+    .map((value) => value.trim().replace(/^"|"$/g, ""));
 }
 
 test("P3.6 migration source is additive schema-only and fail-closed", async () => {
@@ -114,19 +157,48 @@ test("P3.6 migration source is additive schema-only and fail-closed", async () =
   assert.match(source, /COMMIT;\s*$/);
   assert.equal((source.match(/\bCREATE\s+TABLE\s+/gi) ?? []).length, 3);
   assert.deepEqual(
-    [...source.matchAll(/\bCREATE\s+TABLE\s+([a-z_]+)/gi)].map((match) => match[1]).sort(),
+    [...source.matchAll(/\bCREATE\s+TABLE\s+([a-z_]+)/gi)]
+      .map((match) => match[1])
+      .sort(),
     [...TARGET_TABLES].sort(),
   );
-  assert.equal(/\bCREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\b/i.test(source), false, "unexpected pre-existing target tables must fail closed");
-  assert.equal(/\bDEFAULT\s+(?:now\s*\(|current_timestamp|gen_random_uuid\s*\(|uuid_generate)/i.test(source), false);
-  assert.equal(/\bINSERT\s+INTO\b|\bUPDATE\s+[A-Za-z_][A-Za-z0-9_.]*\s+SET\b|\bDELETE\s+FROM\b|\bMERGE\s+INTO\b|\bCOPY\s+[A-Za-z_]/i.test(source), false);
-  assert.equal(/history_relation|retention_disposition|quality_assessment|resolution_action/i.test(source), false);
+  assert.equal(
+    /\bCREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\b/i.test(source),
+    false,
+    "unexpected pre-existing target tables must fail closed",
+  );
+  assert.equal(
+    /\bDEFAULT\s+(?:now\s*\(|current_timestamp|gen_random_uuid\s*\(|uuid_generate)/i.test(
+      source,
+    ),
+    false,
+  );
+  assert.equal(
+    /\bINSERT\s+INTO\b|\bUPDATE\s+[A-Za-z_][A-Za-z0-9_.]*\s+SET\b|\bDELETE\s+FROM\b|\bMERGE\s+INTO\b|\bCOPY\s+[A-Za-z_]/i.test(
+      source,
+    ),
+    false,
+  );
+  assert.equal(
+    /history_relation|retention_disposition|quality_assessment|resolution_action/i.test(
+      source,
+    ),
+    false,
+  );
 });
 
 test("P3.6 migration applies to the certified runtime baseline and matches the frozen schema contract", async (t) => {
   const databaseUrl = process.env.DATABASE_URL?.trim();
-  assert.ok(databaseUrl, "DATABASE_URL is required for the focused P3.6 migration test");
-  const sql = postgres(databaseUrl, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
+  assert.ok(
+    databaseUrl,
+    "DATABASE_URL is required for the focused P3.6 migration test",
+  );
+  const sql = postgres(databaseUrl, {
+    max: 1,
+    prepare: false,
+    connect_timeout: 8,
+    idle_timeout: 2,
+  });
   t.after(async () => {
     await sql.end({ timeout: 1 }).catch(() => undefined);
   });
@@ -138,7 +210,11 @@ test("P3.6 migration applies to the certified runtime baseline and matches the f
       AND table_name IN ('seo_observation', 'seo_evidence', 'seo_observation_evidence')
     ORDER BY table_name
   `;
-  assert.equal(before.length, 0, "target relations must not pre-exist in the migration test baseline");
+  assert.equal(
+    before.length,
+    0,
+    "target relations must not pre-exist in the migration test baseline",
+  );
 
   const migration = await readFile(migrationPath(), "utf8");
   await sql.unsafe(migration);
@@ -150,16 +226,21 @@ test("P3.6 migration applies to the certified runtime baseline and matches the f
       AND table_name IN ('seo_observation', 'seo_evidence', 'seo_observation_evidence')
     ORDER BY table_name
   `;
-  assert.deepEqual(tables.map((row) => row.table_name), TARGET_TABLES);
+  assert.deepEqual(
+    tables.map((row) => row.table_name),
+    TARGET_TABLES,
+  );
 
-  const columns = await sql<{
-    table_name: keyof typeof EXPECTED_COLUMNS;
-    column_name: string;
-    data_type: string;
-    character_maximum_length: number | null;
-    is_nullable: string;
-    column_default: string | null;
-  }[]>`
+  const columns = await sql<
+    {
+      table_name: keyof typeof EXPECTED_COLUMNS;
+      column_name: string;
+      data_type: string;
+      character_maximum_length: number | null;
+      is_nullable: string;
+      column_default: string | null;
+    }[]
+  >`
     SELECT table_name, column_name, data_type, character_maximum_length, is_nullable, column_default
     FROM information_schema.columns
     WHERE table_schema = 'public'
@@ -170,12 +251,22 @@ test("P3.6 migration applies to the certified runtime baseline and matches the f
   for (const table of TARGET_TABLES) {
     const actual = columns
       .filter((row) => row.table_name === table)
-      .map((row) => [row.column_name, row.data_type, row.character_maximum_length, row.is_nullable]);
+      .map((row) => [
+        row.column_name,
+        row.data_type,
+        row.character_maximum_length,
+        row.is_nullable,
+      ]);
     assert.deepEqual(actual, EXPECTED_COLUMNS[table]);
   }
-  assert.ok(columns.every((row) => row.column_default === null), "P3.6 tables must have no database-generated defaults");
+  assert.ok(
+    columns.every((row) => row.column_default === null),
+    "P3.6 tables must have no database-generated defaults",
+  );
 
-  const constraints = await sql<{ constraint_name: string; definition: string }[]>`
+  const constraints = await sql<
+    { constraint_name: string; definition: string }[]
+  >`
     SELECT pc.conname AS constraint_name, pg_get_constraintdef(pc.oid) AS definition
     FROM pg_constraint pc
     JOIN pg_class c ON c.oid = pc.conrelid
@@ -184,15 +275,36 @@ test("P3.6 migration applies to the certified runtime baseline and matches the f
       AND c.relname IN ('seo_observation', 'seo_evidence', 'seo_observation_evidence')
     ORDER BY pc.conname
   `;
-  assert.deepEqual(constraints.map((row) => row.constraint_name), [...EXPECTED_CONSTRAINTS].sort());
-  const byConstraint = new Map(constraints.map((row) => [row.constraint_name, row.definition] as const));
-  const freshnessBounds = byConstraint.get("seo_observation_fresh_for_ms_bounds") ?? "";
+  assert.deepEqual(
+    constraints.map((row) => row.constraint_name),
+    [...EXPECTED_CONSTRAINTS].sort(),
+  );
+  const byConstraint = new Map(
+    constraints.map((row) => [row.constraint_name, row.definition] as const),
+  );
+  const freshnessBounds =
+    byConstraint.get("seo_observation_fresh_for_ms_bounds") ?? "";
   assert.match(freshnessBounds, /fresh_for_ms\s*>=\s*60000/i);
-  assert.match(freshnessBounds, /fresh_for_ms\s*<=\s*(?:2592000000|'2592000000'::bigint)/i);
-  assert.match(byConstraint.get("seo_observation_freshness_consistency") ?? "", /stale_after.*observed_at.*fresh_for_ms/i);
-  assert.match(byConstraint.get("seo_observation_subject_url_pair") ?? "", /subject_kind.*site.*url_id IS NULL.*canonical_url IS NULL.*subject_kind.*url.*url_id IS NOT NULL.*canonical_url IS NOT NULL/i);
-  assert.match(byConstraint.get("seo_observation_evidence_observation_fk") ?? "", /REFERENCES seo_observation\(observation_id\).*ON DELETE RESTRICT/i);
-  assert.match(byConstraint.get("seo_observation_evidence_evidence_fk") ?? "", /REFERENCES seo_evidence\(reference_fingerprint\).*ON DELETE RESTRICT/i);
+  assert.match(
+    freshnessBounds,
+    /fresh_for_ms\s*<=\s*(?:2592000000|'2592000000'::bigint)/i,
+  );
+  assert.match(
+    byConstraint.get("seo_observation_freshness_consistency") ?? "",
+    /stale_after.*observed_at.*fresh_for_ms/i,
+  );
+  assert.match(
+    byConstraint.get("seo_observation_subject_url_pair") ?? "",
+    /subject_kind.*site.*url_id IS NULL.*canonical_url IS NULL.*subject_kind.*url.*url_id IS NOT NULL.*canonical_url IS NOT NULL/i,
+  );
+  assert.match(
+    byConstraint.get("seo_observation_evidence_observation_fk") ?? "",
+    /REFERENCES seo_observation\(observation_id\).*ON DELETE RESTRICT/i,
+  );
+  assert.match(
+    byConstraint.get("seo_observation_evidence_evidence_fk") ?? "",
+    /REFERENCES seo_evidence\(reference_fingerprint\).*ON DELETE RESTRICT/i,
+  );
 
   const indexes = await sql<{ indexname: string; indexdef: string }[]>`
     SELECT indexname, indexdef
@@ -201,9 +313,13 @@ test("P3.6 migration applies to the certified runtime baseline and matches the f
       AND tablename IN ('seo_observation', 'seo_evidence', 'seo_observation_evidence')
     ORDER BY indexname
   `;
-  assert.deepEqual(indexes.map((row) => row.indexname), Object.keys(EXPECTED_INDEXES).sort());
+  assert.deepEqual(
+    indexes.map((row) => row.indexname),
+    Object.keys(EXPECTED_INDEXES).sort(),
+  );
   for (const row of indexes) {
-    const expected = EXPECTED_INDEXES[row.indexname as keyof typeof EXPECTED_INDEXES];
+    const expected =
+      EXPECTED_INDEXES[row.indexname as keyof typeof EXPECTED_INDEXES];
     assert.ok(expected, `unexpected index ${row.indexname}`);
     assert.deepEqual(normalizeIndexColumns(row.indexdef), expected);
   }
@@ -216,9 +332,22 @@ test("P3.6 migration applies to the certified runtime baseline and matches the f
     SELECT 'seo_observation_evidence', COUNT(*)::int FROM seo_observation_evidence
     ORDER BY table_name
   `;
-  assert.deepEqual(rowCounts.map((row) => ({ table_name: row.table_name, row_count: row.row_count })), [
-    { table_name: "seo_evidence", row_count: 0 },
-    { table_name: "seo_observation", row_count: 0 },
-    { table_name: "seo_observation_evidence", row_count: 0 },
-  ]);
+  assert.deepEqual(
+    rowCounts.map((row) => ({
+      table_name: row.table_name,
+      row_count: row.row_count,
+    })),
+    [
+      { table_name: "seo_evidence", row_count: 0 },
+      { table_name: "seo_observation", row_count: 0 },
+      { table_name: "seo_observation_evidence", row_count: 0 },
+    ],
+  );
+
+  const runtimeIdentity = await ensureDiamondShelfIdentity(databaseUrl);
+  assert.equal(runtimeIdentity.status, "ready");
+  assert.equal(runtimeIdentity.tableCount, 34);
+  assert.equal(runtimeIdentity.domain, "diamondshelf.us");
+  assert.ok(runtimeIdentity.organizationId);
+  assert.ok(runtimeIdentity.siteId);
 });

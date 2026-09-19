@@ -1,0 +1,8 @@
+.git
+.migration-backup
+node_modules
+**/node_modules
+**/dist
+artifacts/seo-engine/playwright-report
+artifacts/seo-engine/test-results
+screenshots

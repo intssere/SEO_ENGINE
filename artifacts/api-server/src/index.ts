@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { loadStartupRuntimeConfig } from "./lib/startup-runtime.js";
 
 const rawPort = process.env["PORT"];
 
@@ -18,9 +19,24 @@ if (Number.isNaN(port) || port <= 0) {
 if (process.env.DATABASE_URL?.trim()) {
   const { ensureDiamondShelfIdentity } = await import("@workspace/db");
   const identity = await ensureDiamondShelfIdentity();
-  logger.info({ status: identity.status, tableCount: identity.tableCount, reason: identity.reason ?? undefined }, "Diamond Shelf identity check");
+  logger.info(
+    {
+      status: identity.status,
+      tableCount: identity.tableCount,
+      reason: identity.reason ?? undefined,
+    },
+    "Diamond Shelf identity check",
+  );
+  if (identity.status !== "ready") {
+    throw new Error(
+      `Database identity verification blocked startup: ${identity.reason ?? "unknown reason"}`,
+    );
+  }
 } else {
-  logger.info({ status: "blocked", reason: "DATABASE_URL is not configured." }, "Diamond Shelf identity check");
+  logger.info(
+    { status: "blocked", reason: "DATABASE_URL is not configured." },
+    "Diamond Shelf identity check",
+  );
 }
 
 app.listen(port, (err) => {
@@ -30,9 +46,18 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
-  if (process.env.DATABASE_URL?.trim()) {
+  const startup = loadStartupRuntimeConfig();
+  if (startup.pilotQueueResumeEnabled) {
     void import("./lib/pilot-orchestration")
       .then(({ resumeQueuedPilots }) => resumeQueuedPilots())
       .catch(() => undefined);
+  } else {
+    logger.info(
+      {
+        databaseConfigured: startup.databaseConfigured,
+        pilotQueueResumeEnabled: false,
+      },
+      "Pending legacy pilot queue resume disabled",
+    );
   }
 });
