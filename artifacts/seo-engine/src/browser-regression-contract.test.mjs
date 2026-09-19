@@ -47,6 +47,7 @@ test("critical paths include focus, grid, dialog, axe and browser-error gates", 
   assert.ok(critical.includes('new AxeBuilder({ page })'));
   assert.ok(critical.includes('"/technical-seo"'));
   assert.ok(critical.includes('"/connections"'));
+  assert.ok(critical.includes('"/ai-visibility"'));
   assert.ok(critical.includes("assertNetworkBoundary"));
   assert.ok(critical.includes("assertBrowserClean"));
 });

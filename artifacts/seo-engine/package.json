@@ -8,7 +8,7 @@
     "build": "PORT=4174 BASE_PATH=/ vite build --config vite.config.ts",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test src/navigation.test.mjs src/design-system.test.mjs src/data-grid-contract.test.mjs src/evidence-drawer-contract.test.mjs src/command-center-contract.test.mjs src/audit-workspace-contract.test.mjs src/responsive-polish-contract.test.mjs src/accessibility-contract.test.mjs src/browser-regression-contract.test.mjs && tsx --test src/lib/status-grammar.test.ts src/lib/data-grid-model.test.ts src/lib/evidence-drawer-model.test.ts src/lib/command-center-model.test.ts src/lib/audit-workspace-model.test.ts",
+    "test": "node --test src/navigation.test.mjs src/design-system.test.mjs src/data-grid-contract.test.mjs src/evidence-drawer-contract.test.mjs src/command-center-contract.test.mjs src/audit-workspace-contract.test.mjs src/responsive-polish-contract.test.mjs src/accessibility-contract.test.mjs src/browser-regression-contract.test.mjs && tsx --test src/lib/status-grammar.test.ts src/lib/data-grid-model.test.ts src/lib/evidence-drawer-model.test.ts src/lib/command-center-model.test.ts src/lib/audit-workspace-model.test.ts src/lib/ai-visibility-ui-model.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:capture": "P4_10_CAPTURE_VISUAL=1 playwright test e2e/visual-regression.spec.mjs --project=chromium",
     "test:e2e:server": "PORT=4174 BASE_PATH=/ vite --config vite.config.ts --host 127.0.0.1"
