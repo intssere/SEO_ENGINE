@@ -1,0 +1,274 @@
+.aiVisibilityWorkspace {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.aiVisibilityTopbarBadges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.aiVisibilityHero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid #dfe5ee;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.aiVisibilityHero > div:first-child {
+  min-width: 0;
+  max-width: 760px;
+}
+
+.aiVisibilityHero h1 {
+  margin: 5px 0 8px;
+  color: #172033;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+}
+
+.aiVisibilityHero p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.aiVisibilityHeroState {
+  display: flex;
+  gap: 10px;
+  width: min(390px, 100%);
+  padding: 14px;
+  border: 1px solid #cfe0f5;
+  border-radius: 10px;
+  background: #f4f8fd;
+  color: #2c3b54;
+}
+
+.aiVisibilityHeroState svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  color: #245ea8;
+}
+
+.aiVisibilityHeroState div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aiVisibilityHeroState strong {
+  font-size: 12px;
+}
+
+.aiVisibilityHeroState span {
+  color: #536078;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.aiVisibilityScopeStrip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid #dfe5ee;
+  border-radius: 10px;
+  background: #dfe5ee;
+}
+
+.aiVisibilityScopeStrip > div {
+  min-width: 0;
+  padding: 12px 14px;
+  background: #ffffff;
+}
+
+.aiVisibilityScopeStrip span {
+  display: block;
+  color: #647087;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.aiVisibilityScopeStrip strong {
+  display: block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: #263249;
+  font-size: 12px;
+}
+
+.aiVisibilitySummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.aiVisibilitySummaryCard {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 16px;
+}
+
+.aiVisibilitySummaryCard svg {
+  width: 17px;
+  height: 17px;
+  color: #4077ca;
+}
+
+.aiVisibilitySummaryCard span {
+  color: #647087;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.aiVisibilitySummaryCard strong {
+  color: #172033;
+  font-size: 21px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.aiVisibilitySummaryCard small {
+  color: #536078;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.aiVisibilityPanel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.aiVisibilityPanelHead {
+  justify-content: space-between;
+  padding: 18px 20px 15px;
+  border-bottom: 1px solid #e8ecf2;
+}
+
+.aiVisibilityPanelHead p {
+  max-width: 820px;
+  margin: 5px 0 0;
+  color: #647087;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.aiVisibilityCell,
+.aiVisibilitySubject {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 140px;
+}
+
+.aiVisibilityCell strong,
+.aiVisibilitySubject strong {
+  color: #263249;
+  font-size: 12px;
+}
+
+.aiVisibilityCell small,
+.aiVisibilitySubject small {
+  color: #536078;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.aiVisibilitySubject {
+  min-width: 260px;
+  max-width: 440px;
+}
+
+.aiVisibilitySubject strong {
+  overflow-wrap: anywhere;
+}
+
+.aiVisibilityBottomGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  gap: 14px;
+}
+
+.aiVisibilityGuardrailPanel ul,
+.aiVisibilityDiagnosticsPanel ul {
+  margin: 16px 0 0;
+  padding-left: 18px;
+  color: #536078;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.aiVisibilityDiagnosticsPanel p {
+  margin: 16px 0 0;
+  color: #536078;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.aiVisibilityPanel .dataGridWrap {
+  max-height: 520px;
+}
+
+@media (max-width: 1180px) {
+  .aiVisibilitySummaryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .aiVisibilityScopeStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .aiVisibilityHero {
+    flex-direction: column;
+  }
+
+  .aiVisibilityBottomGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .aiVisibilityScopeStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .aiVisibilityTopbarBadges {
+    justify-content: flex-start;
+  }
+
+  .aiVisibilityHero {
+    padding: 18px;
+  }
+
+  .aiVisibilityHero h1 {
+    font-size: 24px;
+  }
+
+  .aiVisibilitySummaryGrid,
+  .aiVisibilityScopeStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .aiVisibilityPanelHead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .aiVisibilitySummaryCard strong {
+    font-size: 19px;
+  }
+}
