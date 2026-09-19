@@ -13,23 +13,24 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P6.6 deterministic current-vs-proposed preview/diff generation is complete and certified.
+**Current checkpoint:** P6.7 deterministic opportunity lifecycle/history is complete and certified; Phase P6 is complete.
 
-- P6.6 issue #258 / PR #259.
-- Base SHA/tree: `c05d7eeb986eaf9fe38669a337f76e9b31b803cb` / `ba1a88da701d1b2860264157c81385505a0413d7`.
-- First PR CI #471 failed one test-only subject-order assertion; no merge occurred.
-- Corrected exact tested head: `c5ae9c78044970c911379f411482901a6a29fdb5`.
-- Corrected PR CI #472 / run `35438598540`: success across legacy schema, Task/P3.6/workspace tests including P6.6, Playwright/P4.10, typecheck and build.
-- Implementation merge: `6f650c985dfd7e8097d2f030704c1841126b587a`.
-- Implementation tree: `25f971bae389a6896a8ee6f0a7df78c37a362974`.
-- Post-merge CI #473 / run `35438728623`: success.
+- P6.7 issue #261 / PR #262.
+- Base SHA/tree: `04f458d6b0eecdd5c09d7cc85543d65e5c2ffabd` / `6b9184f65fe5b88aa427d613378effbf1d9f8ead`.
+- Exact tested implementation head: `56f5ba6f6aa33378f7e4cc39ba34ba6a923866e4`.
+- PR CI #476 / run `35440752266`: success across legacy schema, Task/P3.6/workspace tests including P6.7, Playwright/P4.10, typecheck and build.
+- Implementation merge: `d587a1cc7737c87e09b5bdb827b1cc80170c8a8b`.
+- Implementation tree: `5e410bc0b5cd6953d769fe336407d4e6491d222d`.
+- Post-merge CI #477 / run `35440907498`: success.
 - Replit exact-synced to the implementation merge/tree at `0/0`, clean, zero untracked; recursive tests/typecheck/build/diff-check all pass; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
-- P6.6 reconstructs exact P6.5 lineage and accepts only explicitly supplied current/proposed preview fields.
-- Diff states are exactly unchanged/added/removed/modified; null remains distinct from empty string and values are not semantically normalized.
-- P6.5 governance state is preserved; every preview has `applyAuthorized=false`.
-- Proposed state is never treated as applied, approved, recommended, better, safe, valid or executable.
-- P6.6 remains unpublished and performed no provider/AI request, current-site fetch, persistence, Production DB activity, scheduler/worker activation, config/secret mutation, automatic apply or publication.
-- Default next safe engineering boundary: **P6.7 — opportunity lifecycle/history**, deterministic/default-off lifecycle/history engineering only.
+- P6.7 reconstructs exact P6.6/P6.5 lineage and gives every current opportunity a neutral `observed` baseline only.
+- Lifecycle changes require explicit caller-supplied ordered events; no score/rank/actionability/preview inference is allowed.
+- States are `observed`, `active`, `deferred`, `dismissed`, `closed`, and `superseded`; terminal exact fingerprints cannot silently reactivate.
+- Supersession is explicit-current-target only and acyclic; no similarity-based supersession is inferred.
+- `closed` is lifecycle bookkeeping only and does not prove implementation, resolution or verification.
+- P6.7 remains unpublished and performed no provider/AI request, persistence, Production DB activity, scheduler/worker activation, config/secret mutation, automatic transition or publication.
+- **Phase P6 is complete.**
+- Default next safe engineering boundary: **P7.1 — AI crawler/bot accessibility audit**, deterministic/default-off supplied/synthetic audit engineering only.
 - Real provider/public-site reads/writes, credentials, source admission, Task #64/#70 execution, persistence, database activity and publication remain separately unauthorized.
 - P4.9 remains optional and unselected; P1 real GSC activation remains separately authorized.
 
