@@ -27,6 +27,7 @@ const expectedDomains = [
 const expectedRoutes = [
   "/",
   "/opportunities",
+  "/governance",
   "/actions",
   "/approvals",
   "/performance",
