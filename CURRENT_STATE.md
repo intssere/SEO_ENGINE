@@ -13,9 +13,46 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1–P7.6 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7 and P7.1–P7.7 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P7.6 complete
+## Current engineering state — P7.7 complete
+
+Roadmap **P7.7 — AI Visibility production workspace v1** is complete under issue #282 / PR #283.
+
+P7.7 replaces the previous `/ai-visibility` coming-soon placeholder with a production-quality deterministic/read-only workspace over synthetic P7.1–P7.6-shaped data:
+- adds a dedicated frontend AI Visibility model with deterministic synthetic fixture validation;
+- exposes P7.1 crawler accessibility and P7.2 prompt/topic-set coverage summary projections without implying consent, indexing, demand, popularity or priority;
+- adds searchable/sortable P7.3 answer/brand/citation evidence, P7.4 citation/domain/competitor comparison, P7.5 score/history, and P7.6→P6.1 integration DataGrids;
+- preserves null P7.5 score distinctly from numeric zero;
+- renders history direction only as arithmetic delta and never labels it improvement/regression;
+- preserves provider/model score-frame boundaries and makes no cross-provider winner/ranking claim;
+- preserves P7.3 missing-mention-evidence and P7.4 citation-co-occurrence guardrails;
+- requires explicit P7.6 integration provenance in the synthetic fixture and keeps P6.2 score unavailable, recommendation ungenerated and execution unauthorized;
+- explicitly labels the workspace SYNTHETIC READ-ONLY, DEFAULT-OFF and LIVE DISABLED;
+- adds responsive styling, deterministic model tests, browser search/sort/focus coverage and `/ai-visibility` serious/critical axe coverage;
+- keeps the browser network boundary closed and introduces no backend/API schema/runtime binding.
+
+Certification:
+- base SHA/tree: `04a7e2fe151903598cc6ca9b5d8342fc7e1fb5ac` / `1ba613467f6745bb6f008da1ff3a8aeefec85629`;
+- exact tested implementation head: `d03cca7a7787abaa2df8dd65ad40e1898bf383c3`;
+- PR CI #505 / run `35457712689`: success across legacy schema, Task tests, P3.6 migration test, all workspace tests including the P7.7 model, Playwright/P4.10 browser suite including the AI Visibility workspace + axe route, typecheck and build;
+- implementation merge: `c70118053ac8e86c284c9e5a151b6f26f52d05dc`;
+- implementation tree: `2e64f6a33b298ea2b81d26a22123dce921832f36`;
+- post-merge CI #506 / run `35457856132`: success across the full matrix;
+- Replit exact-synced to that merge/tree at `0/0`, clean, zero untracked, with no Replit-only commit or non-Git mutation;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; existing non-fatal tooltip/sheet sourcemap messages and chunk-size warning only.
+
+P7.7 is **unpublished**. It performed no live provider/AI request, credential use, public-site read/write, answer/citation collection, persistence, Production DB read/write/DDL/DML, P6 scoring/prioritization/actionability/execution, scheduler/worker/retry activation, approval grant, automatic transition, environment/secret/config mutation, deployment or publication.
+
+**Phase P7 is complete.**
+
+Detailed record:
+- `.agents/memory/p7-7-ai-visibility-workspace-closeout.md`
+- `docs/p7-7-ai-visibility-workspace.md`
+
+Default next safe milestone: **P8.1 — unify opportunity → proposal → approval UI around existing control primitives**, deterministic/read-only governance UX engineering only; no approval grant, execution, provider/site mutation, persistence or publication.
+
+## Previous engineering state — P7.6 complete
 
 Roadmap **P7.6 — AI/GEO opportunity integration** is complete under issue #279 / PR #280.
 
@@ -52,7 +89,7 @@ Detailed record:
 - `.agents/memory/p7-6-ai-geo-opportunity-integration-closeout.md`
 - `docs/p7-6-ai-geo-opportunity-integration.md`
 
-Default next safe milestone: **P7.7 — replace the current AI Visibility placeholder with a production workspace**, using deterministic/read-only certified P7.1–P7.6-shaped data and preserving all no-live-provider/no-persistence/no-execution boundaries unless separately authorized.
+At the P7.6 checkpoint, the default next safe milestone was **P7.7 — AI Visibility production workspace**; that milestone is now complete as recorded above.
 
 ## Previous engineering state — P7.5 complete
 
