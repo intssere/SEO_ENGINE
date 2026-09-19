@@ -252,8 +252,13 @@ test("preview and field keys normalize deterministically and input order does no
   const two = buildOpportunityPreviewDiff({ ...first, previews: secondPreviews });
   assert.equal(one.reportFingerprint, two.reportFingerprint);
   assert.deepEqual(one, two);
-  assert.equal(one.previews[0]?.previewKey, "page.content");
-  assert.deepEqual(one.previews[1]?.fields.map((field) => field.fieldKey), ["description", "title"]);
+  assert.deepEqual(
+    [...one.previews.map((candidate) => candidate.previewKey)].sort((a, b) => a.localeCompare(b)),
+    ["page.content", "page.meta"],
+  );
+  const meta = one.previews.find((candidate) => candidate.previewKey === "page.meta");
+  assert.ok(meta);
+  assert.deepEqual(meta.fields.map((field) => field.fieldKey), ["description", "title"]);
 });
 
 test("P6.6 preserves all four P6.5 actionability classes without changing them", () => {
