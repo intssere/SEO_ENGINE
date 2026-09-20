@@ -51,6 +51,11 @@ Unless the user gives exact, specific authorization for a bounded action:
 - Do not overwrite production plan data merely to make labels or reporting fields agree.
 - Fail closed on stale state, incomplete evidence, schema mismatch, unknown authorization, ambiguous target identity, or verification uncertainty.
 
+- P9.6 worker-control artifacts are review-only. A generic `continue` never activates a worker, scheduler, retry loop, durable pause/kill state, queue claim, provider/crawl request, persistence, deployment, or publication.
+- Worker-control precedence is `kill > drain > pause > running`. Pause/drain may allow already in-flight work to continue, but cannot admit new claims or reset P9.5 history.
+- A killed worker state cannot ordinary-resume. Started or outcome-uncertain killed work requires manual-intervention reconciliation; dead-letter/no-work items must never be revived through resume.
+- Pause/drain/kill/resume must never reset P9.5 attempts/backoff/idempotency, extend the original P9.1 work window, or create catch-up/backfill.
+
 ## 4. Explicit execution boundaries
 
 ### Task #51 — Controlled Execution Foundation
