@@ -526,26 +526,25 @@ test("missing recommendation lineage fails closed", () => {
   );
 });
 
-test("conflicting same-action recommendation lineage fails closed", () => {
-  const conflicting = event({
+test("repeated same-action recommendation lineage must agree exactly", () => {
+  const repeated = event({
     id: 2,
     actionId: "action-treatment",
     occurredAt: "2026-09-20T13:00:00.000Z",
-    recommendationId: "recommendation-2",
-    recommendationFingerprint: fp(222),
+    recommendationId: "recommendation-1",
+    recommendationFingerprint: fp(102),
   });
   const base = outcomeFixture({
-    extraEvents: [conflicting],
+    extraEvents: [repeated],
   });
 
-  assert.throws(
-    () =>
-      buildRecommendationCalibrationReport({
-        ...base,
-        calibrationDefinitions: [definition()],
-      }),
-    /p10_6_recommendation_lineage_conflict/,
-  );
+  const report = buildRecommendationCalibrationReport({
+    ...base,
+    calibrationDefinitions: [definition()],
+  });
+
+  assert.equal(report.recommendation.recommendationId, "recommendation-1");
+  assert.equal(report.recommendation.recommendationFingerprint, fp(102));
 });
 
 test("tampered P10.5 report fails exact integrity", () => {
