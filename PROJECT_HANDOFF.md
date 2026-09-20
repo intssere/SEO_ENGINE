@@ -13,25 +13,28 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P9.3 scheduled full/incremental crawl policy architecture v1 is complete and certified.
+**Current checkpoint:** P9.4 bounded external intelligence refresh architecture v1 is complete and certified.
 
-- P9.3 issue #299 / PR #300.
-- Base SHA/tree: `3907785ab69247c7876e7dcb63c3c33c794a06ac` / `48398ece7617652cafba799fef01d0211e7faef0`.
-- Exact tested PR head/tree: `eb41b808e6cd90664a14d0e5d69a4ac33c5a829b` / `b0715be30d22f9183b91f08f92c253818627c7e0`.
-- Exact-head PR CI #531 / run `35471860344`: success across the full matrix.
-- Implementation merge: `023df71e35376a774c11494d8c17b03a65e7c7b6`.
-- Implementation tree: `b0715be30d22f9183b91f08f92c253818627c7e0`.
-- Post-merge main CI #532 / run `35471981585`: success.
-- Replit was Git-only fast-forwarded to exact implementation `main`, origin/main exact, ahead/behind `0/0`, clean, zero untracked.
-- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed; only known non-fatal sourcemap and large-chunk warnings remain.
-- P9.3 reconstructs the exact current P2.1–P2.4 lineage and, when supplied, exact P2.5 comparison + P2.6 incremental-plan lineage before evaluating a P9.1 `crawl_refresh` due slot.
-- It deterministically selects `full_reconciliation`, `incremental` or `no_work`; scheduled full slots, blocked current certification, missing incremental evidence and exact P2.6 fallback states force full reconciliation.
-- Incremental mode is emitted only from exact safe P2.6 evidence with selected URLs; zero candidates become `no_work`.
-- P2 page ceilings, trap guards, same-origin GET/robots/canonical controls, bounded batching/concurrency/rate limits, checkpoint/resume and whole-site certification semantics remain intact.
-- P9.3 creates only `proposed_review` candidates. It activates no timer/scheduler, crawler/network request, durable queue/reservation, worker/batch/retry runtime, persistence, Production DB access, Task #53/#54, provider/public-site write, deployment or publication.
-- P8.3 media-alt mutation implementation remains separately blocked pending explicit isolated `write_files` scope/credential authorization.
-- Default next safe boundary: **P9.4 bounded external intelligence refresh**. Generic continuation may use deterministic supplied/fake external-intelligence results over existing P5 + Task #67/#68 + P9.1 contracts only; no live provider enrollment/credentials/network, Task #69/#70 execution, durable queue, worker/retry, persistence or publication.
-- P4.9 remains optional and unselected; real provider/runtime activation remains separately authorized.
+- Canonical P9.4 base preserved the separately merged Railway deployment adapter: PR #303 / main `123600024800f592867075e2b3f2f190e0ae78e4`, tree `2141b614507ef023992ffc13654132bcead2632d`, main CI #536 success.
+- P9.4 issue #304 / PR #305.
+- Base SHA/tree: `123600024800f592867075e2b3f2f190e0ae78e4` / `2141b614507ef023992ffc13654132bcead2632d`.
+- Initial implementation commits: `e9b7088f0f08b5f50eb4b7978416697cd31b0fab`, `711055de4ee535fe8d1d6f70af7bbfef49b7156c`.
+- CI #537 / run `35494931740` failed one P9.4 non-due test because its telemetry reference time was later than caller-supplied `now`; the model correctly failed closed. Schema/Task/P3.6 checks passed.
+- Test-fixture-only correction / exact tested PR head: `a29faa0edf05d22624ea0c5133a96f55e7b012c0`.
+- Exact tested PR tree: `b296ce42f54850313b0c4efa5e9e746df8eac85a`.
+- Exact-head PR CI #538 / run `35495015109`: success.
+- Implementation merge: `5031d9a4d10f68fbe7a82ccc3acb562e31506a9b`.
+- Implementation tree: `b296ce42f54850313b0c4efa5e9e746df8eac85a`.
+- Post-merge main CI #539 / run `35495152681`: success.
+- Replit is exact-aligned at that merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero untracked; recursive tests, full typecheck, full build and `git diff --check` passed.
+- P9.4 reconstructs exact Task #66/#67/#68 reviewed-external lineage and recognizes only exact P5.2 SERP, P5.3 keyword, P5.4 trend and P5.5 supplied-backlink source contracts.
+- P5.2–P5.5 remain supplied-result/request-contract foundations only; live runtime is explicitly unavailable.
+- One exact P5.8 telemetry stream is rebuilt. Quality/cost remain descriptive and cannot reorder Task #67; provider-review/rate-limit facts affect review disposition only.
+- Only P9.1 `due` emits a `proposed_review` candidate; no catch-up/backfill is added.
+- No provider enrollment/credentials/OAuth/network, Task #69/#70 execution, timer/scheduler, durable queue/reservation, worker/batch/retry runtime, persistence, Production DB access, Task #53/#54, provider/public-site mutation, deployment or publication was activated.
+- P8.3 media-alt implementation remains separately blocked pending explicit isolated `write_files` authorization.
+- Default next safe boundary: **P9.5 failure/retry/dead-letter/idempotency controls**. Generic continuation may build deterministic/default-off control-plane semantics over supplied/proposed P9.1–P9.4 artifacts only; no live retries, durable queue/dead-letter store, worker/provider/crawl runtime, persistence or publication.
+- P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
 
