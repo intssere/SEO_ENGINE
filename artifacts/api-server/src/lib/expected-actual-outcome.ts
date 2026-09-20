@@ -388,7 +388,7 @@ function pow10(power: number): bigint {
 }
 
 function alignDecimals(left: ParsedDecimal, right: ParsedDecimal) {
-  const scale = Math.max(left.scale, right.scale);
+  const scale = left.scale >= right.scale ? left.scale : right.scale;
   return {
     left: left.integer * pow10(scale - left.scale),
     right: right.integer * pow10(scale - right.scale),
