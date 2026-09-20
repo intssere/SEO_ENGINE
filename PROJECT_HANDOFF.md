@@ -13,29 +13,29 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P10.1 unified change timeline is complete and certified. P10.2 is the next safe engineering boundary.
+**Current checkpoint:** P10.2 direct action-to-page/query/category attribution is complete and certified. P10.3 is the next safe engineering boundary.
 
-- P10.1 issue #319 / implementation PR #320.
-- Implementation base SHA/tree: `621750c172bddef78a30415b6e157f1bc2e3cb8c` / `70a5ede3f9c0cf62fce1738efff12c570a0ae4ae`.
-- Exact tested implementation head/tree: `23d9f97fb3c644f62b41e7b6c8c0cf22c8755fb4` / `f321069813c95546d95ed253119b7bc8d79f2380`.
-- Exact-head PR CI #558 / run `35505049246`: success.
-- Implementation merge: `779b5a655dd04f60744d24ee373071a6a03dca23`.
-- Implementation tree: `f321069813c95546d95ed253119b7bc8d79f2380`.
-- Post-merge main CI #559 / run `35505161647`: success.
-- Replit was independently verified exact-aligned to the implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift and zero diff against origin/main.
-- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS.
-- P10.1 defines five bounded descriptive event classes: opportunity, recommendation, proposal, execution and measurement.
-- Event identity binds canonical time, exact source identity/fingerprint when supplied, direct site/target lineage and exact upstream IDs/fingerprints; unknown values remain null.
-- Exact replay for one source identity collapses; conflicting replay for that same source identity fails closed.
-- Ordering is timestamp → equal-time event-kind precedence → event fingerprint only; it creates no priority, quality, risk, execution preference or causality.
-- The P6.7 adapter independently rebuilds supplied lifecycle state and projects only explicit P6.7 transition IDs/fingerprints.
-- Provider-write/verification/rollback/manual-intervention/retained-live states are descriptive only when directly supplied; uncertain write outcomes remain unknown.
-- Measurement eligibility/pending/unavailable markers are descriptive only. P10.1 performs no impact calculation and no causal attribution.
-- P10.1 creates no proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
-- P10.1 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
-- P9.8 remains review-complete but implementation-blocked. P10.1 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new Shopify scopes.
+- P10.2 issue #322 / implementation PR #323.
+- Implementation base SHA/tree: `5046f1ed19fd93bbcee332934efcc9a967fd229c` / `d122b0f80a1789bef6863f3305cc6b5c7a55eacc`.
+- Exact tested implementation head/tree: `4040632c297af50b5a7b49d5bcd1efcdf36bd711` / `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`.
+- Exact-head PR CI #563 / run `35507439693`: success.
+- Implementation merge: `34eb263c48b2c01920cb23df1b854d7df95b3bea`.
+- Implementation tree: `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`.
+- Post-merge main CI #564 / run `35507555715`: success.
+- Replit was Git-only fast-forwarded to the exact implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift and zero diff against origin/main.
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
+- P10.2 independently verifies the exact supplied P10.1 report before deriving any association.
+- Only explicit non-null P10.1 `lineage.actionId` joins events to an action.
+- Page association uses only exact same-action page ID/URL fields; query/category use only exact same-action association fields.
+- Missing association remains unavailable; P10.2 does not use temporal proximity, shared plan/opportunity/proposal, URL/path/resource kind, metric movement or semantic inference to fill gaps.
+- Direct page identity can enrich a missing counterpart only through the same page ID or the same URL; contradictory direct identity fails closed.
+- Multiple explicit query/category values are retained as deterministic sets with exact event provenance.
+- Association means exact lineage relationship only. P10.2 performs no causal attribution and no impact calculation.
+- P10.2 creates no proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
+- P10.2 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
+- P9.8 remains review-complete but implementation-blocked. P10.2 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new Shopify scopes.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P10.2 — action-to-page/query/category attribution**. First define deterministic direct-association semantics over exact P10.1/source lineage; do not infer association or causality from timestamp proximity.
+- Default next safe boundary: **P10.3 — before/after windows and confounder flags**. Begin with deterministic supplied-window semantics over exact P10.1/P10.2 lineage and preserve association-vs-causality separation.
 - Generic `continue` does not authorize provider/public-site writes, Production DB changes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
