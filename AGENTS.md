@@ -80,7 +80,12 @@ Unless the user gives exact, specific authorization for a bounded action:
 - P10.4 assignment-basis labels are provenance only. `externally_randomized` and `externally_matched` do not mean the engine verified randomization, balance, matching quality, comparability or exchangeability.
 - P10.4 holdout observations must match exact declared unit scope. Cross-arm overlap, other-action overlap, treatment confounders and missing coverage are descriptive structural flags only and do not perform causal adjustment.
 - P10.4 must not calculate treatment effect, metric delta, confidence intervals, p-values/significance, experiment success/failure, winner/loser or rollout/retain/rollback recommendations. Chronology, association, window membership, confounders, experiment structure and future outcome/causal analysis remain separate layers.
-- Generic continuation into P10.5 may define deterministic supplied expected-vs-actual outcome tracking over exact P10.1–P10.4 lineage only; it does not authorize live outcome/provider loading, Production loaders/writes, provider calls, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- P10.5 expected-vs-actual tracking is deterministic/read-only. It must independently verify exact P10.4 integrity, preserve the exact P10.1–P10.4 lineage chain and bind outcomes only to exact supplied metric/target/scope/after-window facts.
+- P10.5 numeric values must remain bounded canonical decimals with exact arithmetic. Signed difference is `actual - expected`; above/equal/below is numeric order only. Do not calculate percentage change, uplift, treatment effect, difference-in-differences or other inferred impact.
+- Missing expected/actual values remain unavailable. Multiple actual records stay independent; never average, select, aggregate, smooth, impute or infer a trend unless a later explicitly scoped task defines that operation.
+- P10.5 metric direction is metadata only. Do not transform it or outcome differences into success/failure, good/bad, favorable/unfavorable, recommendation quality, winner/loser, retain/replace/rollback or rollout advice.
+- P10.5 upstream P10.4 structural flags and P10.3 confounders are context only; they do not weight arithmetic, create confidence or establish cause.
+- Generic continuation into P10.6 may define deterministic supplied recommendation-calibration/learning-signal semantics over exact P10.1–P10.5 lineage only; it does not authorize automatic reward/model updates, recommendation ranking/policy mutation, live provider/outcome loading, Production loaders/writes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 
 ## 4. Explicit execution boundaries
 

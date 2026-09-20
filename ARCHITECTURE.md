@@ -447,7 +447,31 @@ Permanent semantics:
 
 P10.4 has no live experiment assignment, Production/live database loader, SQL, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
 
-P10.5 may define deterministic supplied expected-vs-actual outcome tracking over exact P10.1–P10.4 lineage, but generic continuation does not authorize live outcome loading, causal attribution, Production/provider mutation or deployment/publication.
+### P10.5 expected-vs-actual outcome tracking
+
+P10.5 adds deterministic/read-only supplied outcome definitions and exact descriptive arithmetic over exact certified P10.1–P10.4 lineage.
+
+Permanent semantics:
+- P10.5 must independently rebuild the supplied P10.4 report from its supplied P10.4 input before outcome tracking; mismatched P10.4 input/report fails closed;
+- P10.4 remains responsible for exact P10.1→P10.2→P10.3 lineage verification, so P10.5 must not bypass or recreate weaker lineage paths;
+- metric definitions are caller-supplied immutable key/unit/direction/source records;
+- metric direction is metadata only and must never become good/bad, success/failure, winner/loser, rollout/retain/rollback or recommendation quality;
+- expected outcomes bind to the exact P10.4 treatment action or exact holdout unit, exact scope and exact shared after window;
+- treatment scope must match direct P10.2 treatment association; holdout scope must equal the declared P10.4 holdout scope exactly;
+- actual records must bind exactly to one expectation's metric/target/scope and fall inside the exact P10.4 after window;
+- numeric values use bounded canonical decimal strings and exact BigInt-aligned decimal subtraction;
+- the only numeric derivation is `actual - expected`; the only relation is numeric order `above_expected`, `equal_expected` or `below_expected`;
+- null/missing expected or actual values remain unavailable and are never imputed;
+- multiple actual records remain independent deterministic observations; no selection, averaging, aggregation, smoothing or trend inference is permitted;
+- exact source replay dedupes and conflicting replay fails closed;
+- exact P10.4 structural-flag fingerprints/count and P10.3 treatment-confounder count may be preserved as context only;
+- structural/confounder context must never alter arithmetic, create confidence or prove cause;
+- expected values are not causal counterfactuals, actual values do not prove action impact, signed differences are arithmetic only and above/equal/below relations are descriptive only;
+- P10.5 calculates no percentage change, uplift, treatment-vs-holdout effect, difference-in-differences, confidence interval, statistical significance, probability, causal attribution, recommendation or rollout decision.
+
+P10.5 has no live outcome loading, live experiment assignment, Production/live database loader, SQL, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
+
+P10.6 may define deterministic supplied recommendation-calibration/learning signals over exact P10.1–P10.5 lineage, but generic continuation does not authorize automatic model reward, recommendation ranking/policy mutation, provider/runtime activity, autonomous execution or deployment/publication.
 
 ## Measurement architecture
 
@@ -487,18 +511,18 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P10.4 complete**.
+The current engineering architecture checkpoint is **P10.5 complete**.
 
-- P10.4 issue #328 / implementation PR #329.
-- Exact tested implementation head/tree: `ce67cbbe5542e45ddd5f76204274555e2c5ea45a` / `d236693f98231e6aa991a3e39feb6a17e802187d`.
-- Exact-head CI #571 / run `35510122006` and post-merge main CI #572 / run `35510239165` passed.
-- Canonical implementation merge/tree: `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e` / `d236693f98231e6aa991a3e39feb6a17e802187d`.
-- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
-- P10.1 chronology, P10.2 direct association, P10.3 window/confounder evidence and P10.4 experiment/holdout structure remain distinct deterministic/read-only layers.
-- P10.4 records supplied design/assignment provenance and structural holdout evidence only; it does not verify randomization/matching, infer comparability/exchangeability, calculate treatment effect/statistics or make rollout recommendations.
-- P9.8 remains review-complete but implementation-blocked; P10.4 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P10.5 issue #331 / implementation PR #332.
+- Exact tested implementation head/tree: `a7e198e38118ac091907713812dd526d17bd448c` / `81354446398d038a6360502385982cd47166c38f`.
+- Exact-head CI #575 / run `35511781930` and post-merge main CI #576 / run `35511907628` passed.
+- Canonical implementation merge/tree: `d038fbb1b8cccc67366dec7eb79961e10e947507` / `81354446398d038a6360502385982cd47166c38f`.
+- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests (API `991/991`), full typecheck, full build and `git diff --check`.
+- P10.1 chronology, P10.2 direct association, P10.3 window/confounder evidence, P10.4 experiment/holdout structure and P10.5 expected-vs-actual tracking remain distinct deterministic/read-only layers.
+- P10.5 performs exact descriptive arithmetic only; outcome differences do not establish causal effect, recommendation quality, statistical significance or rollout decisions.
+- P9.8 remains review-complete but implementation-blocked; P10.5 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P10.5 — expected-vs-actual outcome tracking**, limited initially to deterministic supplied outcome-definition/comparison semantics over exact P10.1–P10.4 lineage without live provider loading or causal claims.
+- Default next safe program boundary is **P10.6 — recommendation calibration/learning signals**, limited initially to deterministic supplied calibration/learning-signal semantics over exact P10.1–P10.5 lineage without automatic reward/ranking/policy mutation or causal inference.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.

@@ -478,8 +478,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 | P10.2 | action-to-page/query/category attribution | DONE — issue #322 / PR #323 / merge `34eb263c48b2c01920cb23df1b854d7df95b3bea`; exact P10.1 integrity verification, explicit-action-ID-only page/query/category association, provenance retention, unavailable-state preservation, fail-closed lineage/page conflicts and explicit non-causal guards; no live DB/provider/runtime/mutation/publication activation |
 | P10.3 | before/after windows and confounder flags | DONE — issue #325 / PR #326 / merge `7337cefde56bfecc11664f81fbba8adcc6130393`; exact P10.1→P10.2 integrity, retained-live-only anchor, caller-supplied canonical windows, exact direct-scope observation membership, direct-evidence confounder flags, deterministic replay guards and explicit non-causal semantics; no live DB/provider/runtime/mutation/publication activation |
 | P10.4 | experiment/holdout framework where practical | DONE — issue #328 / PR #329 / merge `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e`; exact P10.1→P10.3 integrity, one bounded treatment action, exact shared P10.3 windows, caller-supplied holdouts/assignment provenance, exact-scope observations and descriptive structural contamination/coverage flags; no live assignment, statistics/causal calculation, DB/provider/runtime/mutation/publication activation |
-| P10.5 | expected-vs-actual outcome tracking | NEXT SAFE BOUNDARY — define deterministic/read-only supplied expected/outcome definitions, provenance and descriptive comparison semantics over exact P10.1–P10.4 lineage; no live provider loading, causal attribution, Production DB/public-write mutation or publication on generic continuation |
-| P10.6 | recommendation calibration/learning signals | PLANNED |
+| P10.5 | expected-vs-actual outcome tracking | DONE — issue #331 / PR #332 / merge `d038fbb1b8cccc67366dec7eb79961e10e947507`; exact P10.4 rebuild/integrity, supplied metric/expectation/actual provenance, canonical-decimal BigInt subtraction, descriptive above/equal/below relation, unavailable-state/replay guards and explicit non-causal/non-statistical semantics; no live outcome/DB/provider/runtime/mutation/publication activation |
+| P10.6 | recommendation calibration/learning signals | NEXT SAFE BOUNDARY — define deterministic/read-only supplied recommendation-calibration and learning-signal semantics over exact P10.1–P10.5 lineage; no automatic model reward, ranking/policy mutation, live provider loading, autonomous execution, Production DB/public-write mutation or publication on generic continuation |
 | P10.7 | Impact workspace v2 | PLANNED |
 
 ### Phase P11 — Enterprise hardening
@@ -605,9 +605,10 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 54. **DONE — P10.2:** direct action-to-page/query/category attribution, issue #322 / PR #323 / merge `34eb263c48b2c01920cb23df1b854d7df95b3bea`; exact action-ID-only association, provenance retention, unavailable-state preservation, fail-closed direct identity conflicts and no causal/runtime activation.
 55. **DONE — P10.3:** before/after windows and confounder flags, issue #325 / PR #326 / merge `7337cefde56bfecc11664f81fbba8adcc6130393`; exact retained-live anchoring, supplied windows, exact direct-scope membership and descriptive confounder evidence with no causal/runtime activation.
 56. **DONE — P10.4:** supplied experiment/holdout framework, issue #328 / PR #329 / merge `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e`; exact treatment lineage, supplied holdouts/assignment provenance, exact shared-window observations and descriptive contamination/coverage flags with no live assignment/statistical/causal/runtime activation.
-57. **NEXT SAFE BOUNDARY — P10.5:** deterministic supplied expected-vs-actual outcome tracking over exact P10.1–P10.4 lineage; no live provider loading or causal attribution. **P10.6–P10.7 remain planned.**
-58. **P11 —** enterprise hardening and certification.
-59. **P12 —** final production completion certification and program closeout.
+57. **DONE — P10.5:** expected-vs-actual outcome tracking, issue #331 / PR #332 / merge `d038fbb1b8cccc67366dec7eb79961e10e947507`; exact P10.4 lineage verification, supplied metric/expectation/actual provenance, canonical-decimal exact arithmetic and descriptive relations with no causal/statistical/runtime activation.
+58. **NEXT SAFE BOUNDARY — P10.6:** deterministic supplied recommendation calibration/learning signals over exact P10.1–P10.5 lineage; no automatic reward/ranking/policy mutation or live provider loading. **P10.7 remains planned.**
+59. **P11 —** enterprise hardening and certification.
+60. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
