@@ -382,7 +382,6 @@ Permanent semantics:
 
 P10.1 has no Production/live database loader, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
 
-P10.2 may build direct action-to-page/query/category association only from exact lineage. Missing association must remain unavailable; chronology, association and causality remain separate concepts.
 
 ### P10.2 direct action attribution
 
