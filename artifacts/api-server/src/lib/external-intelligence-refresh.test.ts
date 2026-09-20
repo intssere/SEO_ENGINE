@@ -358,11 +358,16 @@ test("P9.4 non-due P9.1 states emit no review candidate", () => {
   const fixture = lineageFixture("serp");
   const active = scheduleFixture(fixture);
   const supplied = telemetry(fixture);
+  const beforeStartTelemetry: ExternalIntelligenceTelemetryInput = {
+    referenceTime: "2026-09-20T00:58:00.000Z",
+    events: supplied.events,
+    rateLimitSnapshots: [],
+  };
 
   assert.equal(projectExternalIntelligenceRefreshReview({
     schedule: active,
     ...fixture,
-    telemetry: supplied,
+    telemetry: beforeStartTelemetry,
     now: "2026-09-20T00:59:00.000Z",
   }).candidate, null);
 
