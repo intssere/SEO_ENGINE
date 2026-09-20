@@ -13,27 +13,30 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P9.8 autonomous mutation policy architecture review is complete; implementation remains blocked.
+**Current checkpoint:** P10.1 unified change timeline is complete and certified. P10.2 is the next safe engineering boundary.
 
-- P9.8 issue #316 / PR #317.
-- Base SHA/tree: `484eb0e90dfed3638c84ae2b92999a60e40cf77b` / `128a61bf5526e61b0134017bbf7c56f0905f00a9`.
-- Exact tested review head/tree: `71e36898b0092765c9371a12dd77143cbdb7f30b` / `3e41fbffc9fb8e03edc303456531a72c8d66e13d`.
-- Exact-head PR CI #554 / run `35502451078`: success.
-- Review merge: `84944e49cdc2e8dee0dde3b2abb723daf7c5a535`.
-- Review tree: `3e41fbffc9fb8e03edc303456531a72c8d66e13d`.
-- Post-merge main CI #555 / run `35502566507`: success.
-- Replit exact-aligned at review merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked differences; recursive tests, full typecheck, full build and `git diff --check` passed.
-- First future autonomous canary class: Shopify **product SEO `meta_description`** only under existing isolated `write_products`.
-- Collection metadata, SEO title, visible content/title, handles, inventory/price/status/publication, themes and new write scopes are excluded from the initial class.
-- Media alt remains P8.3-blocked because current Shopify `fileUpdate` requires separate `write_files`/equivalent authority.
-- Future autonomy must start from exact P9.7 `proposal_review` via a separately certified governed-proposal materialization bridge; P9.7 artifacts are not ProposalRecords.
-- Autonomous policy grants must be immutable/versioned, expiring/revocable, explicitly activated outside the worker; the worker cannot create, expand, renew or self-approve its own grant.
-- Policy authorization must remain separate from human approval provenance; do not fabricate approvals/human actors or spoof current Task #54 human confirmation.
-- Initial future canary architecture: deterministic/non-AI, changed preview, no missing evidence, >=2 persisted evidence refs, quality pass >=90 with zero warnings/blockers, low effective risk, exact stale-state match, one action/24h/site, one active mutation, 14-day same-target cooldown.
-- Pause/drain/kill block new forward writes. If a provider side effect may already exist, verification and the single rollback path remain mandatory safety closure; uncertainty blocks further autonomous mutation.
-- P9.8 implementation remains blocked behind P9.7→proposal materialization, durable policy/provenance/idempotency/control, P8.4–P8.6 and separately authorized schema/config work.
-- No autonomous mutation code, policy persistence/activation, approval/authorization mutation, Task #51/#53/#54 execution, credential/scope change, provider/public-site write, Production DB change, deployment or publication occurred.
-- Default next safe boundary: **P10.1 unified change timeline**. This does not unlock P9.8 implementation or activation.
+- P10.1 issue #319 / implementation PR #320.
+- Implementation base SHA/tree: `621750c172bddef78a30415b6e157f1bc2e3cb8c` / `70a5ede3f9c0cf62fce1738efff12c570a0ae4ae`.
+- Exact tested implementation head/tree: `23d9f97fb3c644f62b41e7b6c8c0cf22c8755fb4` / `f321069813c95546d95ed253119b7bc8d79f2380`.
+- Exact-head PR CI #558 / run `35505049246`: success.
+- Implementation merge: `779b5a655dd04f60744d24ee373071a6a03dca23`.
+- Implementation tree: `f321069813c95546d95ed253119b7bc8d79f2380`.
+- Post-merge main CI #559 / run `35505161647`: success.
+- Replit was independently verified exact-aligned to the implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift and zero diff against origin/main.
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS.
+- P10.1 defines five bounded descriptive event classes: opportunity, recommendation, proposal, execution and measurement.
+- Event identity binds canonical time, exact source identity/fingerprint when supplied, direct site/target lineage and exact upstream IDs/fingerprints; unknown values remain null.
+- Exact replay for one source identity collapses; conflicting replay for that same source identity fails closed.
+- Ordering is timestamp → equal-time event-kind precedence → event fingerprint only; it creates no priority, quality, risk, execution preference or causality.
+- The P6.7 adapter independently rebuilds supplied lifecycle state and projects only explicit P6.7 transition IDs/fingerprints.
+- Provider-write/verification/rollback/manual-intervention/retained-live states are descriptive only when directly supplied; uncertain write outcomes remain unknown.
+- Measurement eligibility/pending/unavailable markers are descriptive only. P10.1 performs no impact calculation and no causal attribution.
+- P10.1 creates no proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
+- P10.1 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
+- P9.8 remains review-complete but implementation-blocked. P10.1 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new Shopify scopes.
+- Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
+- Default next safe boundary: **P10.2 — action-to-page/query/category attribution**. First define deterministic direct-association semantics over exact P10.1/source lineage; do not infer association or causality from timestamp proximity.
+- Generic `continue` does not authorize provider/public-site writes, Production DB changes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.

@@ -364,6 +364,26 @@ Initial future blast-radius proposal is shadow-only first, then at most one prod
 
 P9.8 review completion does not authorize implementation or activation.
 
+### P10.1 unified change timeline
+
+P10.1 adds a deterministic/read-only chronology and lineage layer over caller-supplied facts from already-certified opportunity, recommendation, proposal, execution and measurement models.
+
+Permanent semantics:
+- event classes are bounded to opportunity, recommendation, proposal, execution and measurement;
+- every event binds canonical caller-supplied time plus exact source system/version/event identity and fingerprint when available;
+- opportunity/recommendation/action-plan/proposal/approval/action/deployment/verification/rollback/target/query/category lineage is carried only when directly supplied;
+- unknown or unavailable facts remain null and are never filled from temporal proximity;
+- exact replay for one source identity collapses deterministically, while conflicting replay for that same identity fails closed;
+- P6.7 lifecycle projection independently rebuilds the supplied P6.7 report and emits only explicit lifecycle transition IDs/fingerprints;
+- timeline ordering is timestamp, equal-time event-kind precedence and final event fingerprint only; it creates no priority, quality, risk or execution preference;
+- provider-write, verification, rollback, manual-intervention and retained-live states are descriptive only when directly evidenced;
+- measurement markers are descriptive eligible/pending/unavailable state only;
+- temporal proximity creates neither lineage nor attribution, metric movement is not attributed to an action, and P10.1 calculates no impact.
+
+P10.1 has no Production/live database loader, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
+
+P10.2 may build direct action-to-page/query/category association only from exact lineage. Missing association must remain unavailable; chronology, association and causality remain separate concepts.
+
 ## Measurement architecture
 
 Persistent changes must eventually feed a measurement loop rather than being judged on deployment success alone. Intended evidence includes:
@@ -402,16 +422,17 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P9.8 review complete / implementation blocked**.
+The current engineering architecture checkpoint is **P10.1 complete**.
 
-- Canonical implementation merge: `b7a64e860f7fbd7b15e9e87a5812e0cef442c104`.
-- Canonical implementation tree: `52dd4492d042fea27d9fb6ce7fb5dc040fff568e`.
-- P9.7 exact-head CI #550 and post-merge main CI #551 passed.
-- Replit was exact-aligned to the implementation merge/tree and passed recursive tests, full typecheck, full build and `git diff --check`.
-- P9.1–P9.7 remain engineering-only/default-off automation architecture; no live autonomous recommendation, provider-read, or mutation worker is activated.
+- P10.1 issue #319 / implementation PR #320.
+- Exact tested implementation head/tree: `23d9f97fb3c644f62b41e7b6c8c0cf22c8755fb4` / `f321069813c95546d95ed253119b7bc8d79f2380`.
+- Exact-head CI #558 / run `35505049246` and post-merge main CI #559 / run `35505161647` passed.
+- Canonical implementation merge/tree: `779b5a655dd04f60744d24ee373071a6a03dca23` / `f321069813c95546d95ed253119b7bc8d79f2380`.
+- Replit was independently verified exact-aligned to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
+- P10.1 is deterministic/read-only chronology + exact lineage only; it performs no causal attribution, impact calculation, live loading, persistence or runtime activation.
+- P9.8 remains review-complete but implementation-blocked; P10.1 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
-- Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and Task #51/#53/#54 live execution still requires its separate exact authorization.
-- P9.8 review selects product SEO `meta_description` as the narrowest future autonomous canary class and leaves implementation blocked behind policy/provenance/idempotency/P8.4–P8.6 prerequisites.
-- Default next safe program boundary is **P10.1 — unified change timeline**; this does not unblock P9.8 implementation or live autonomous mutation.
+- Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
+- Default next safe program boundary is **P10.2 — action-to-page/query/category attribution**, limited initially to deterministic direct-association semantics over exact P10.1/source lineage. Temporal proximity alone must not create association or causality.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
