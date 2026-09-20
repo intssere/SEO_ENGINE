@@ -471,7 +471,30 @@ Permanent semantics:
 
 P10.5 has no live outcome loading, live experiment assignment, Production/live database loader, SQL, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
 
-P10.6 may define deterministic supplied recommendation-calibration/learning signals over exact P10.1–P10.5 lineage, but generic continuation does not authorize automatic model reward, recommendation ranking/policy mutation, provider/runtime activity, autonomous execution or deployment/publication.
+### P10.6 recommendation calibration / learning signals
+
+P10.6 adds deterministic/read-only directional calibration evidence over exact certified P10.1–P10.5 lineage.
+
+Permanent semantics:
+- P10.6 must independently rebuild the supplied P10.5 report from its supplied P10.5 input before calibration; mismatched P10.5 input/report fails closed;
+- recommendation identity is resolved only from exact P10.1 events sharing the P10.5 treatment `actionId`;
+- same-action recommendation lineage must carry non-null recommendation ID/fingerprint and must agree exactly; upstream P10.2 already rejects conflicting same-action recommendation identity, while P10.6 retains a defensive conflict guard;
+- calibration definitions are caller-supplied immutable key/recommendation/expectation/role/source records;
+- direct v1 calibration may reference only exact treatment expectations, not holdout expectations;
+- calibration role is descriptive metadata only and never becomes weight, priority, score, rank, confidence or authority;
+- one directional signal is projected per exact P10.5 actual record;
+- bounded signal vocabulary is `same_as_declared_direction`, `opposite_declared_direction`, `equal_expected`, `neutral_direction`, or `unavailable`;
+- a directional signal describes only declared metric direction versus exact P10.5 expected/actual arithmetic;
+- definitions with no available actual comparison remain `signal_unavailable`; no synthetic observation may be fabricated;
+- multiple actuals remain independent; do not select, average, vote, aggregate, build win/loss scorecards, infer trends, infer confidence or collapse metrics into an overall recommendation grade;
+- exact replay dedupes and conflicting calibration-key/source/expectation replay fails closed;
+- P10.4 structural flags and P10.3 confounders remain provenance-only context and never weight/suppress/promote signals or establish cause;
+- directional signals are not recommendation quality, reward/penalty, action success/failure, causal effect, ranking weight or rollout advice;
+- P10.6 calculates no reward score, recommendation score/rank, model parameter/weight update, policy update, prompt/template update, causal attribution or rollout recommendation.
+
+P10.6 has no recommendation persistence/update, model training/fine-tuning, live outcome loading, live experiment assignment, Production/live database loader, SQL, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
+
+P10.7 may define deterministic/read-only Impact workspace v2 projection and frontend presentation over exact P10.1–P10.6 artifacts, but generic continuation does not authorize causal verdicts, live provider/runtime activity, recommendation/model/policy mutation, autonomous execution or deployment/publication.
 
 ## Measurement architecture
 
@@ -511,18 +534,18 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P10.5 complete**.
+The current engineering architecture checkpoint is **P10.6 complete**.
 
-- P10.5 issue #331 / implementation PR #332.
-- Exact tested implementation head/tree: `a7e198e38118ac091907713812dd526d17bd448c` / `81354446398d038a6360502385982cd47166c38f`.
-- Exact-head CI #575 / run `35511781930` and post-merge main CI #576 / run `35511907628` passed.
-- Canonical implementation merge/tree: `d038fbb1b8cccc67366dec7eb79961e10e947507` / `81354446398d038a6360502385982cd47166c38f`.
-- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests (API `991/991`), full typecheck, full build and `git diff --check`.
-- P10.1 chronology, P10.2 direct association, P10.3 window/confounder evidence, P10.4 experiment/holdout structure and P10.5 expected-vs-actual tracking remain distinct deterministic/read-only layers.
-- P10.5 performs exact descriptive arithmetic only; outcome differences do not establish causal effect, recommendation quality, statistical significance or rollout decisions.
-- P9.8 remains review-complete but implementation-blocked; P10.5 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P10.6 issue #334 / implementation PR #335.
+- Exact tested implementation head/tree: `e0dbd4d6fd01a6043bfb1b164c3c0a9d23fff25a` / `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
+- Exact-head CI #579 / run `35516046746` and post-merge main CI #580 / run `35516171732` passed.
+- Canonical implementation merge/tree: `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6` / `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
+- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests `1013/1013`, full typecheck, full build and `git diff --check`.
+- P10.1 chronology, P10.2 direct association, P10.3 window/confounder evidence, P10.4 experiment/holdout structure, P10.5 expected-vs-actual tracking and P10.6 directional calibration remain distinct deterministic/read-only layers.
+- P10.6 directional signals are not recommendation quality, reward, causal effect, model update, ranking/policy change or rollout decision.
+- P9.8 remains review-complete but implementation-blocked; P10.6 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P10.6 — recommendation calibration/learning signals**, limited initially to deterministic supplied calibration/learning-signal semantics over exact P10.1–P10.5 lineage without automatic reward/ranking/policy mutation or causal inference.
+- Default next safe program boundary is **P10.7 — Impact workspace v2**, limited initially to deterministic/read-only workspace projection/frontend presentation over exact supplied P10.1–P10.6 artifacts without causal verdicts, live provider loading or mutation authority.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.

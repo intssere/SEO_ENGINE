@@ -85,7 +85,12 @@ Unless the user gives exact, specific authorization for a bounded action:
 - Missing expected/actual values remain unavailable. Multiple actual records stay independent; never average, select, aggregate, smooth, impute or infer a trend unless a later explicitly scoped task defines that operation.
 - P10.5 metric direction is metadata only. Do not transform it or outcome differences into success/failure, good/bad, favorable/unfavorable, recommendation quality, winner/loser, retain/replace/rollback or rollout advice.
 - P10.5 upstream P10.4 structural flags and P10.3 confounders are context only; they do not weight arithmetic, create confidence or establish cause.
-- Generic continuation into P10.6 may define deterministic supplied recommendation-calibration/learning-signal semantics over exact P10.1–P10.5 lineage only; it does not authorize automatic reward/model updates, recommendation ranking/policy mutation, live provider/outcome loading, Production loaders/writes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- P10.6 recommendation calibration is deterministic/read-only. It must independently verify exact P10.5 integrity and resolve the calibration subject only through exact same-action recommendation ID/fingerprint lineage.
+- P10.6 calibration definitions are caller-supplied exact recommendation/treatment-expectation/role/source records. Holdout expectations must not directly calibrate the treatment recommendation in v1.
+- P10.6 roles are metadata only. Per-actual directional signals may state only `same_as_declared_direction`, `opposite_declared_direction`, `equal_expected`, `neutral_direction`, or `unavailable`; they are not recommendation quality, reward, success/failure, causal impact or rollout advice.
+- P10.6 must keep multiple actual signals independent. Never select, average, vote, build win/loss scorecards, infer trends/confidence, or aggregate metrics into an overall recommendation grade.
+- P10.6 must not calculate reward/recommendation scores, recalculate rank, update model parameters/weights, mutate policy, change prompts/templates, persist recommendation updates, perform causal attribution or generate autonomous transitions.
+- Generic continuation into P10.7 may define deterministic/read-only Impact workspace v2 projection/frontend presentation over exact P10.1–P10.6 supplied artifacts only; it does not authorize live provider/outcome loading, Production loaders/writes, recommendation/model/policy mutation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 
 ## 4. Explicit execution boundaries
 
