@@ -13,9 +13,70 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1–P9.7 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only; P9.3 is deterministic/default-off scheduled full/incremental crawl-policy review engineering only; P9.4 is deterministic/default-off bounded external-intelligence refresh-review engineering only; P9.5 is deterministic/default-off failure/retry/dead-letter/idempotency control-plane engineering only; P9.6 is deterministic/default-off worker observability and pause/drain/kill/resume control-plane engineering only; P9.7 is deterministic/default-off recommendation-generation review engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1–P9.8 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only; P9.3 is deterministic/default-off scheduled full/incremental crawl-policy review engineering only; P9.4 is deterministic/default-off bounded external-intelligence refresh-review engineering only; P9.5 is deterministic/default-off failure/retry/dead-letter/idempotency control-plane engineering only; P9.6 is deterministic/default-off worker observability and pause/drain/kill/resume control-plane engineering only; P9.7 is deterministic/default-off recommendation-generation review engineering only; P9.8 is autonomous-mutation policy architecture review only with implementation blocked. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P9.7 complete
+## Current engineering state — P9.8 review complete / implementation blocked
+
+Roadmap **P9.8 — Autonomous mutation policy engine architecture review** is complete under issue #316 / PR #317.
+
+P9.8 is review-only architecture. It made no autonomous-mutation implementation or runtime change.
+
+Review decisions:
+- selected the first future autonomous canary class as Shopify **product SEO `meta_description`** only;
+- retained the current existing Task #51–#54 executable surface as product/collection SEO `title` + `meta_description` under isolated `write_products`, but did not admit the broader surface to initial autonomy;
+- deferred collection meta description, product/collection SEO title, merchant-visible content/title, handles, inventory/price/status/publication, theme mutation and any new write scope;
+- preserved P8.3 media-alt as separately blocked because current Shopify `fileUpdate` requires `write_files` or `write_themes`, outside the existing isolated `write_products` authority;
+- requires future autonomy to originate from exact P9.7 `proposal_review` lineage through a separately certified deterministic governed-proposal materialization bridge;
+- forbids treating a P9.7 review artifact directly as a ProposalRecord or executable action;
+- requires an immutable/versioned, expiring/revocable policy grant created outside the worker; the worker may never create, expand, renew or self-approve its own authority;
+- requires policy authorization provenance to remain distinct from human approval provenance; future code must not fabricate human approval rows/actors;
+- requires a distinct policy-authorized execution namespace; future automation must not fabricate the current Task #54 `APPLY_AND_VERIFY_TASK54` human confirmation;
+- proposes initial canary admission only for deterministic/non-AI proposals, exact changed preview, no missing evidence, evidence sufficient, >=2 persisted evidence refs, quality `pass`, quality score >=90, zero warnings/blockers, bounded pilot, low effective execution risk, exact target/current-state match and no unresolved site mutation incident;
+- requires a durable policy decision/idempotency reservation before any forward provider mutation;
+- defines Stage 0 shadow evaluation, then a future Stage 1 canary capped at one product-meta-description action per 24 hours/site, one active site mutation, one action per worker cycle and 14-day same-target cooldown;
+- requires a fresh policy version and explicit activation for any volume/class expansion;
+- defines side-effect-safe pause/drain/kill: block new forward writes; if a provider write may already have occurred, provider/storefront reconciliation and the existing single bounded rollback path remain mandatory safety closure;
+- kill does not retroactively roll back already completed/verified historical actions, but an in-flight write observed after kill defaults to restoration unless it was already terminal before kill;
+- any unresolved forward/rollback uncertainty enters manual intervention and blocks further autonomous mutation;
+- sets Stage 1 expansion review only after at least 20 terminal canary actions with zero manual intervention, zero unresolved uncertainty, verified rollbacks, verified retained writes, no duplicate execution and complete policy/action audit lineage.
+
+P9.8 implementation remains blocked pending:
+1. deterministic P9.7 → governed-proposal materialization;
+2. durable policy grants/version/activation/revocation;
+3. distinct policy authorization provenance;
+4. policy-aware Task #51-compatible authorization;
+5. policy-aware Task #54-compatible execution namespace without spoofing human confirmation;
+6. durable policy decision/idempotency reservation;
+7. durable mutation pause/drain/kill control bridge;
+8. P8.4 verification-adapter certification;
+9. P8.5 rollback/manual-intervention certification;
+10. P8.6 action history/audit ledger;
+11. separately authorized schema/config work for any new persistence;
+12. separate implementation authorization and later separate live activation authorization.
+
+Provider contract was rechecked against current Shopify Admin GraphQL documentation on 2026-09-20: product/collection update authority remains under `write_products`; `fileUpdate` alt updates require `write_files` or `write_themes`.
+
+Certification:
+- base SHA/tree: `484eb0e90dfed3638c84ae2b92999a60e40cf77b` / `128a61bf5526e61b0134017bbf7c56f0905f00a9`;
+- exact tested review head/tree: `71e36898b0092765c9371a12dd77143cbdb7f30b` / `3e41fbffc9fb8e03edc303456531a72c8d66e13d`;
+- exact-head PR CI #554 / run `35502451078`: success across schema, Task/P3.6 checks, all workspace tests, Playwright, typecheck and build;
+- review merge: `84944e49cdc2e8dee0dde3b2abb723daf7c5a535`;
+- review tree: `3e41fbffc9fb8e03edc303456531a72c8d66e13d`;
+- post-merge main CI #555 / run `35502566507`: success;
+- Replit exact-aligned at the review merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked differences;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed.
+
+P9.8 review is **unpublished**. It performed no policy persistence, approval creation/renewal, Task #51/#53/#54 preflight/execution, live worker/scheduler/retry/batch activation, credential/scope change, provider/public-site request/write, Production DB read/write/DDL/DML, environment/secret/config mutation, deployment or publication.
+
+Detailed record:
+- issue #316 — `P9.8 — Autonomous mutation policy engine architecture review`
+- PR #317 — `P9.8 — autonomous mutation policy engine architecture review`
+- `docs/p9-8-autonomous-mutation-policy-review.md`
+- `.agents/memory/p9-8-autonomous-mutation-policy-review-closeout.md`
+
+Default next safe boundary: **P10.1 — unified change timeline**. Generic continuation may build deterministic/read-only timeline architecture over existing supplied/persisted change/evidence/deployment lineages without enabling P9.8 implementation, autonomous mutation, provider writes, new scopes, Production DB mutation, deployment or publication.
+
+## Previous engineering state — P9.7 complete
 
 Roadmap **P9.7 — Deterministic recommendation generation worker v1** is complete under issue #313 / PR #314.
 

@@ -13,25 +13,27 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P9.7 deterministic recommendation generation worker v1 is complete and certified.
+**Current checkpoint:** P9.8 autonomous mutation policy architecture review is complete; implementation remains blocked.
 
-- P9.7 issue #313 / PR #314.
-- Base SHA/tree: `48a3e44fae0a320ad527e00ee06f5ee9eb2643a7` / `7e849723f7427009ecbd14a6d96dab7b32f94cb3`.
-- Exact tested PR head/tree: `9401c2b7e2598cde6e4a90ec50204c68c3e49ef2` / `52dd4492d042fea27d9fb6ce7fb5dc040fff568e`.
-- Exact-head PR CI #550 / run `35500244101`: success.
-- Implementation merge: `b7a64e860f7fbd7b15e9e87a5812e0cef442c104`.
-- Implementation tree: `52dd4492d042fea27d9fb6ce7fb5dc040fff568e`.
-- Post-merge main CI #551 / run `35500407071`: success.
-- Replit exact-aligned at implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked differences; recursive tests, full typecheck, full build and `git diff --check` passed.
-- P9.7 rebuilds exact P6.7 and thereby P6.1–P6.6 lineage; P7.6 AI/GEO opportunities are accepted only after canonical P6 integration.
-- Generation is deterministic bounded review guidance only. No AI proposal runtime, model/provider call or freeform site copy.
-- `recommend` + observed/active can emit advisory review; `approval` additionally requires an exact changed P6.6 preview; informational/blocked/deferred/terminal states do not generate.
-- P9.6 non-running control modes hold otherwise eligible work.
-- Recommendation/idempotency identity binds exact upstream lineage and preview state but not temporary pause/resume or observation time.
-- P8 handoff is projection-only: no ProposalRecord, persistence, approval, execution, public write, automatic transition or Task #51 authorization is created.
-- No live worker/scheduler/retry loop, AI/model/provider call, AI proposal-generation gate change, durable queue, persistence, Task #69/#70, Production DB operation, Task #51/#53/#54 execution, provider/public-site mutation, deployment or publication was activated.
-- P8.3 media-alt implementation remains separately blocked pending explicit isolated `write_files` authorization.
-- Default next boundary: **P9.8 autonomous mutation policy engine REVIEW ONLY**. Generic continuation may define/review architecture and activation prerequisites only; it does not authorize autonomous mutation implementation or activation.
+- P9.8 issue #316 / PR #317.
+- Base SHA/tree: `484eb0e90dfed3638c84ae2b92999a60e40cf77b` / `128a61bf5526e61b0134017bbf7c56f0905f00a9`.
+- Exact tested review head/tree: `71e36898b0092765c9371a12dd77143cbdb7f30b` / `3e41fbffc9fb8e03edc303456531a72c8d66e13d`.
+- Exact-head PR CI #554 / run `35502451078`: success.
+- Review merge: `84944e49cdc2e8dee0dde3b2abb723daf7c5a535`.
+- Review tree: `3e41fbffc9fb8e03edc303456531a72c8d66e13d`.
+- Post-merge main CI #555 / run `35502566507`: success.
+- Replit exact-aligned at review merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked differences; recursive tests, full typecheck, full build and `git diff --check` passed.
+- First future autonomous canary class: Shopify **product SEO `meta_description`** only under existing isolated `write_products`.
+- Collection metadata, SEO title, visible content/title, handles, inventory/price/status/publication, themes and new write scopes are excluded from the initial class.
+- Media alt remains P8.3-blocked because current Shopify `fileUpdate` requires separate `write_files`/equivalent authority.
+- Future autonomy must start from exact P9.7 `proposal_review` via a separately certified governed-proposal materialization bridge; P9.7 artifacts are not ProposalRecords.
+- Autonomous policy grants must be immutable/versioned, expiring/revocable, explicitly activated outside the worker; the worker cannot create, expand, renew or self-approve its own grant.
+- Policy authorization must remain separate from human approval provenance; do not fabricate approvals/human actors or spoof current Task #54 human confirmation.
+- Initial future canary architecture: deterministic/non-AI, changed preview, no missing evidence, >=2 persisted evidence refs, quality pass >=90 with zero warnings/blockers, low effective risk, exact stale-state match, one action/24h/site, one active mutation, 14-day same-target cooldown.
+- Pause/drain/kill block new forward writes. If a provider side effect may already exist, verification and the single rollback path remain mandatory safety closure; uncertainty blocks further autonomous mutation.
+- P9.8 implementation remains blocked behind P9.7→proposal materialization, durable policy/provenance/idempotency/control, P8.4–P8.6 and separately authorized schema/config work.
+- No autonomous mutation code, policy persistence/activation, approval/authorization mutation, Task #51/#53/#54 execution, credential/scope change, provider/public-site write, Production DB change, deployment or publication occurred.
+- Default next safe boundary: **P10.1 unified change timeline**. This does not unlock P9.8 implementation or activation.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
