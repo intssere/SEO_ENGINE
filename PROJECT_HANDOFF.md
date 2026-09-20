@@ -13,30 +13,32 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P10.4 supplied experiment/holdout framework is complete and certified. P10.5 is the next safe engineering boundary.
+**Current checkpoint:** P10.5 expected-vs-actual outcome tracking is complete and certified. P10.6 is the next safe engineering boundary.
 
-- P10.4 issue #328 / implementation PR #329.
-- Implementation base SHA/tree: `7ec8706bf7320cff7a41a420f387f43eecbd1b13` / `ad0f09cd5fc7c2e0bf9f60705232e7cfc326ebb9`.
-- Exact tested implementation head/tree: `ce67cbbe5542e45ddd5f76204274555e2c5ea45a` / `d236693f98231e6aa991a3e39feb6a17e802187d`.
-- Exact-head PR CI #571 / run `35510122006`: success.
-- Implementation merge: `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e`.
-- Implementation tree: `d236693f98231e6aa991a3e39feb6a17e802187d`.
-- Post-merge main CI #572 / run `35510239165`: success.
-- Replit was Git-only fast-forwarded to the exact implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift and zero diff against origin/main.
-- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
-- P10.4 independently rebuilds exact P10.2 from supplied P10.1 and exact P10.3 treatment analysis from its supplied P10.3 input before projecting any experiment/holdout structure.
-- P10.4 v1 is deliberately bounded to one exact treatment action with an exact retained-live P10.3 anchor and both exact P10.3 before/after windows.
-- Holdouts are immutable caller-supplied analysis definitions with exact unit IDs, explicit assignment source fingerprints and exact scope; P10.4 does not create live assignments.
-- Zero holdouts remains `treatment_only`; P10.4 never invents a pseudo-control.
-- Declared assignment basis (`externally_randomized`, `externally_matched`, `externally_selected`, `observational`) is provenance only and is not proof of randomization, balance, matching quality, comparability or exchangeability.
-- Holdout observations must carry exact source identity and scope exactly equal to the declared holdout scope; membership is only before/after/outside against the exact treatment P10.3 windows.
-- Structural flags are descriptive only: cross-arm exact scope overlap, exact holdout-action overlap, treatment P10.3 confounder presence, and missing before/after holdout coverage.
-- P10.4 calculates no treatment effect, metric delta, confidence interval, statistical significance, causal attribution, experiment winner/success or rollout/retain/rollback recommendation.
-- P10.4 creates no proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
-- P10.4 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
-- P9.8 remains review-complete but implementation-blocked. P10.4 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new provider scopes.
+- P10.5 issue #331 / implementation PR #332.
+- Implementation base SHA/tree: `e0fbb08f5f4995a5d691861a01a7a8c7dd8260fe` / `fe347637abdb7096b3b6a242e7e255add28ec7b6`.
+- Exact tested implementation head/tree: `a7e198e38118ac091907713812dd526d17bd448c` / `81354446398d038a6360502385982cd47166c38f`.
+- Exact-head PR CI #575 / run `35511781930`: success.
+- Implementation merge: `d038fbb1b8cccc67366dec7eb79961e10e947507`.
+- Implementation tree: `81354446398d038a6360502385982cd47166c38f`.
+- Post-merge main CI #576 / run `35511907628`: success.
+- Replit was Git-only fast-forwarded to the exact implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
+- Replit recursive workspace tests PASS, including API suite `991/991`; full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
+- P10.5 independently rebuilds exact supplied P10.4 before producing any outcome tracking, thereby retaining the exact P10.1→P10.3 verification already enforced by P10.4.
+- Metric definitions are caller supplied with exact key/unit/direction/source provenance; direction metadata never becomes a success/failure or good/bad judgment.
+- Expected outcomes bind only to the exact treatment action or exact holdout unit and exact after-window scope.
+- Actual records must bind to the exact expectation metric/target/scope and lie inside the exact P10.4 after window.
+- Numeric values are bounded canonical decimal strings; subtraction uses exact BigInt-aligned decimal arithmetic rather than floating-point value math.
+- The only derived values are exact signed difference and descriptive `above_expected` / `equal_expected` / `below_expected`.
+- Null or missing expected/actual values remain unavailable; P10.5 never imputes values.
+- Multiple actuals are preserved independently; no averaging, trend inference, percentage change, uplift, treatment-vs-holdout effect or difference-in-differences is calculated.
+- P10.4 structural flags and P10.3 treatment confounders are preserved as context only and never weight/discount outcome arithmetic.
+- P10.5 performs no statistical significance/confidence interval, causal attribution, recommendation-quality judgment or rollout/retain/rollback decision.
+- P10.5 creates no live outcome loading, proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
+- P10.5 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
+- P9.8 remains review-complete but implementation-blocked. P10.5 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new provider scopes.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P10.5 — expected-vs-actual outcome tracking**. Begin with deterministic supplied expected/outcome definitions and descriptive comparisons over exact P10.1–P10.4 lineage; no live provider loading or causal claims are authorized by generic continuation.
+- Default next safe boundary: **P10.6 — recommendation calibration/learning signals**. Begin with deterministic supplied calibration/learning-signal semantics over exact P10.1–P10.5 lineage, with no automatic reward/policy/ranking mutation and no causal inference from outcome differences.
 - Generic `continue` does not authorize provider/public-site writes, Production DB changes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
