@@ -13,27 +13,24 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P9.4 bounded external intelligence refresh architecture v1 is complete and certified.
+**Current checkpoint:** P9.5 failure/retry/dead-letter/idempotency controls v1 is complete and certified.
 
-- Canonical P9.4 base preserved the separately merged Railway deployment adapter: PR #303 / main `123600024800f592867075e2b3f2f190e0ae78e4`, tree `2141b614507ef023992ffc13654132bcead2632d`, main CI #536 success.
-- P9.4 issue #304 / PR #305.
-- Base SHA/tree: `123600024800f592867075e2b3f2f190e0ae78e4` / `2141b614507ef023992ffc13654132bcead2632d`.
-- Initial implementation commits: `e9b7088f0f08b5f50eb4b7978416697cd31b0fab`, `711055de4ee535fe8d1d6f70af7bbfef49b7156c`.
-- CI #537 / run `35494931740` failed one P9.4 non-due test because its telemetry reference time was later than caller-supplied `now`; the model correctly failed closed. Schema/Task/P3.6 checks passed.
-- Test-fixture-only correction / exact tested PR head: `a29faa0edf05d22624ea0c5133a96f55e7b012c0`.
-- Exact tested PR tree: `b296ce42f54850313b0c4efa5e9e746df8eac85a`.
-- Exact-head PR CI #538 / run `35495015109`: success.
-- Implementation merge: `5031d9a4d10f68fbe7a82ccc3acb562e31506a9b`.
-- Implementation tree: `b296ce42f54850313b0c4efa5e9e746df8eac85a`.
-- Post-merge main CI #539 / run `35495152681`: success.
-- Replit is exact-aligned at that merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero untracked; recursive tests, full typecheck, full build and `git diff --check` passed.
-- P9.4 reconstructs exact Task #66/#67/#68 reviewed-external lineage and recognizes only exact P5.2 SERP, P5.3 keyword, P5.4 trend and P5.5 supplied-backlink source contracts.
-- P5.2–P5.5 remain supplied-result/request-contract foundations only; live runtime is explicitly unavailable.
-- One exact P5.8 telemetry stream is rebuilt. Quality/cost remain descriptive and cannot reorder Task #67; provider-review/rate-limit facts affect review disposition only.
-- Only P9.1 `due` emits a `proposed_review` candidate; no catch-up/backfill is added.
-- No provider enrollment/credentials/OAuth/network, Task #69/#70 execution, timer/scheduler, durable queue/reservation, worker/batch/retry runtime, persistence, Production DB access, Task #53/#54, provider/public-site mutation, deployment or publication was activated.
+- P9.5 issue #307 / PR #308.
+- Base SHA/tree: `91a2dcc1d94421964a6c16940fac4c12855a1676` / `df1a0f2ada77af20bbeae253fb69bffb07b15d55`.
+- Exact tested PR head/tree: `bf4c69555eb7eb29deeff330e25db195d8533b72` / `3737d643751b0404a4fbd0837626b50eda839d90`.
+- Exact-head PR CI #542 / run `35496786420`: success.
+- Implementation merge: `83334cf68900bf779851f92056dc351811822533`.
+- Implementation tree: `3737d643751b0404a4fbd0837626b50eda839d90`.
+- Post-merge main CI #543 / run `35496913783`: success.
+- Replit exact-aligned at implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero untracked; recursive tests, full typecheck, full build and `git diff --check` passed.
+- P9.5 validates exact P9.1 intents plus exact P9.2/P9.3/P9.4 candidate envelopes and candidate ↔ P9.1 binding before deriving one stable idempotency identity.
+- Attempt history is supplied/synthetic only. Exact duplicate attempt records are suppressed; conflicting replay, gaps, future timestamps, cross-window attempts and attempts after success fail closed.
+- Only explicit transient/throttled failures are retry-eligible. Generic runner failure, normalization/integrity failure, stale lineage, authorization-closed, identity/manual-intervention, expiry and unknown failures are non-retryable by default.
+- Retry review uses bounded max-attempt and capped deterministic backoff and never extends the original P9.1 due window.
+- Non-retryable/expired/exhausted work emits an inert dead-letter review only; success is terminal and replay-suppressed.
+- No timer/scheduler/live retry loop, durable queue/DLQ, worker/batch execution, Task #69/#70 execution, credential/OAuth use, provider/crawl network request, persistence, Production DB operation, Task #53/#54, provider/public-site mutation, deployment or publication was activated.
 - P8.3 media-alt implementation remains separately blocked pending explicit isolated `write_files` authorization.
-- Default next safe boundary: **P9.5 failure/retry/dead-letter/idempotency controls**. Generic continuation may build deterministic/default-off control-plane semantics over supplied/proposed P9.1–P9.4 artifacts only; no live retries, durable queue/dead-letter store, worker/provider/crawl runtime, persistence or publication.
+- Default next safe boundary: **P9.6 worker observability and pause/kill controls**. Generic continuation may build deterministic/default-off worker-state/health/pause/kill-switch semantics over supplied/fake state only; no live worker/scheduler/retry loop, durable queue mutation, provider/crawl runtime, persistence or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
