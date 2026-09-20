@@ -424,7 +424,30 @@ Permanent semantics:
 
 P10.3 has no Production/live database loader, SQL, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
 
-P10.4 may define deterministic supplied experiment/holdout semantics where practical, but generic continuation does not activate live assignment, experimentation, Production/provider mutation or causal conclusions.
+### P10.4 supplied experiment/holdout framework
+
+P10.4 adds deterministic/read-only experiment-design lineage and structural holdout evidence over exact certified P10.1 chronology, P10.2 direct association and P10.3 window/confounder analysis.
+
+Permanent semantics:
+- supplied P10.2 must rebuild exactly from the supplied P10.1 timeline before P10.4 analysis;
+- supplied P10.3 treatment input must bind to that exact P10.1/P10.2 chain and its supplied report must equal the deterministic P10.3 rebuild;
+- v1 contains exactly one treatment action and requires its exact P10.3 retained-live anchor plus available before and after windows;
+- P10.4 reuses those exact P10.3 windows and never derives, shifts, re-anchors or aligns windows by timestamp proximity;
+- holdouts are caller-supplied immutable analysis definitions, never assignments created by P10.4;
+- zero holdouts remains `treatment_only`; P10.4 never manufactures a pseudo-control;
+- each holdout has an exact unit ID, explicit assignment-source fingerprint and at least one page/query/category scope dimension;
+- assignment basis is caller-declared provenance only: `externally_randomized`, `externally_matched`, `externally_selected` or `observational`;
+- P10.4 never treats those labels as independent proof of randomization, matching quality, balance, comparability or exchangeability;
+- holdout observation scope must exactly equal the declared holdout scope; fuzzy URL/path, semantic query/category or taxonomy expansion cannot broaden a unit;
+- holdout observation membership is only before/after/outside against the exact treatment P10.3 windows;
+- exact source replay dedupes and conflicting replay under one source identity fails closed;
+- cross-arm scope overlap, exact holdout-action overlap, treatment P10.3 confounder presence and missing holdout window coverage are descriptive structural flags only;
+- holdout presence does not establish comparability, scope disjointness does not establish exchangeability, before/after timing does not establish causality and contamination flags do not perform causal adjustment;
+- P10.4 calculates no treatment effect, metric delta, confidence interval, statistical significance, experiment success/failure, winner/loser or rollout/retain/rollback recommendation.
+
+P10.4 has no live experiment assignment, Production/live database loader, SQL, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
+
+P10.5 may define deterministic supplied expected-vs-actual outcome tracking over exact P10.1–P10.4 lineage, but generic continuation does not authorize live outcome loading, causal attribution, Production/provider mutation or deployment/publication.
 
 ## Measurement architecture
 
@@ -464,18 +487,18 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P10.3 complete**.
+The current engineering architecture checkpoint is **P10.4 complete**.
 
-- P10.3 issue #325 / implementation PR #326.
-- Exact tested implementation head/tree: `14d24e1c4186fafd5ef5f159d789f0e1cd05cd99` / `a6b4e87a607f9a2ea973c7d2f6f603d511669d53`.
-- Exact-head CI #567 / run `35508864497` and post-merge main CI #568 / run `35509022152` passed.
-- Canonical implementation merge/tree: `7337cefde56bfecc11664f81fbba8adcc6130393` / `a6b4e87a607f9a2ea973c7d2f6f603d511669d53`.
+- P10.4 issue #328 / implementation PR #329.
+- Exact tested implementation head/tree: `ce67cbbe5542e45ddd5f76204274555e2c5ea45a` / `d236693f98231e6aa991a3e39feb6a17e802187d`.
+- Exact-head CI #571 / run `35510122006` and post-merge main CI #572 / run `35510239165` passed.
+- Canonical implementation merge/tree: `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e` / `d236693f98231e6aa991a3e39feb6a17e802187d`.
 - Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
-- P10.1 chronology, P10.2 direct association and P10.3 window/confounder membership remain distinct deterministic/read-only layers.
-- P10.3 window membership and confounder overlap are descriptive and perform no causal attribution, causal adjustment, impact calculation or recommendation.
-- P9.8 remains review-complete but implementation-blocked; P10.3 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P10.1 chronology, P10.2 direct association, P10.3 window/confounder evidence and P10.4 experiment/holdout structure remain distinct deterministic/read-only layers.
+- P10.4 records supplied design/assignment provenance and structural holdout evidence only; it does not verify randomization/matching, infer comparability/exchangeability, calculate treatment effect/statistics or make rollout recommendations.
+- P9.8 remains review-complete but implementation-blocked; P10.4 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P10.4 — experiment/holdout framework where practical**, limited initially to deterministic supplied experiment/holdout semantics over exact P10.1–P10.3 lineage without live assignment or causal claims from timing alone.
+- Default next safe program boundary is **P10.5 — expected-vs-actual outcome tracking**, limited initially to deterministic supplied outcome-definition/comparison semantics over exact P10.1–P10.4 lineage without live provider loading or causal claims.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
