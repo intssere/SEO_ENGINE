@@ -56,6 +56,10 @@ Unless the user gives exact, specific authorization for a bounded action:
 - A killed worker state cannot ordinary-resume. Started or outcome-uncertain killed work requires manual-intervention reconciliation; dead-letter/no-work items must never be revived through resume.
 - Pause/drain/kill/resume must never reset P9.5 attempts/backoff/idempotency, extend the original P9.1 work window, or create catch-up/backfill.
 
+- P9.7 recommendation-generation artifacts are review-only. They must use deterministic supplied/synthetic P6 lineage; do not call the AI proposal runtime, enable `AI_PROPOSAL_GENERATION_ENABLED`, persist proposals, grant approval, create Task #51 authorization, or execute provider/site changes from generic continuation.
+- P9.7 `proposal_review` is not a ProposalRecord and is not approval-ready by implication. A changed P6.6 preview is a prerequisite for approval-class review, not proof that the proposed state is better, safe, approved, or executable.
+- P9.8 autonomous mutation policy is a separate high-control boundary. After P9.7, generic `continue` may be used for review/architecture definition only; it does not authorize autonomous-mutation implementation/activation, Task #51/#53/#54 execution, new write credentials/scopes, public-site/provider mutation, Production DB writes, deployment, or publication.
+
 ## 4. Explicit execution boundaries
 
 ### Task #51 — Controlled Execution Foundation

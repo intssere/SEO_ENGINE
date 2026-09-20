@@ -13,9 +13,50 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1–P9.6 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only; P9.3 is deterministic/default-off scheduled full/incremental crawl-policy review engineering only; P9.4 is deterministic/default-off bounded external-intelligence refresh-review engineering only; P9.5 is deterministic/default-off failure/retry/dead-letter/idempotency control-plane engineering only; P9.6 is deterministic/default-off worker observability and pause/drain/kill/resume control-plane engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1–P9.7 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only; P9.3 is deterministic/default-off scheduled full/incremental crawl-policy review engineering only; P9.4 is deterministic/default-off bounded external-intelligence refresh-review engineering only; P9.5 is deterministic/default-off failure/retry/dead-letter/idempotency control-plane engineering only; P9.6 is deterministic/default-off worker observability and pause/drain/kill/resume control-plane engineering only; P9.7 is deterministic/default-off recommendation-generation review engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P9.6 complete
+## Current engineering state — P9.7 complete
+
+Roadmap **P9.7 — Deterministic recommendation generation worker v1** is complete under issue #313 / PR #314.
+
+P9.7 adds a pure deterministic/default-off recommendation-generation control plane over exact supplied/synthetic P6.1–P6.7 lineage plus a canonical P9.6 worker-control state:
+- independently rebuilds the supplied P6.7 lifecycle report, transitively validating P6.6 preview/diff, P6.5 actionability, P6.4 explanation, P6.3 prioritization, P6.2 scoring and P6.1 opportunity/evidence identity;
+- accepts P7.6 AI/GEO opportunities only after they have entered the canonical P6 pipeline; P9.7 does not read P7 provider observations directly;
+- permits generation only while P9.6 control mode is `running`; paused/draining/drained/killed modes hold otherwise eligible work;
+- uses deterministic bounded review templates only; no freeform generation, AI/model/provider call or AI proposal runtime;
+- P6.5 `recommend` + P6.7 `observed|active` may emit an advisory-review candidate;
+- P6.5 `approval` + P6.7 `observed|active` may emit a proposal-review candidate only when at least one exact P6.6 preview contains a changed field;
+- P6.5 `informational` and `blocked` remain withheld;
+- P6.7 `deferred` remains held;
+- P6.7 `dismissed|closed|superseded` remain terminal and are never regenerated;
+- preserves exact opportunity/explanation/actionability/lifecycle/score/evidence/statement/missing-evidence/semantic-guard/preview lineage;
+- preserves P6.3 priority facts only as lineage and serializes P9.7 outputs by opportunity fingerprint so P9.7 creates no additional recommendation priority or dispatch order;
+- emits stable recommendation/idempotency identities independent of temporary pause/resume state and P9.7 observation time, so unchanged exact lineage regenerates the same identity;
+- emits only a P8-compatible governance handoff projection; it creates no ProposalRecord and grants no approval, execution, public-write, automatic-transition or Task #51 authority;
+- contains no AI runtime/provider/network/database/wall-clock/timer/worker-process/Task #69/#70 primitive;
+- keeps live worker, scheduler, retry loop, AI/model calls, AI proposal-generation gate, durable queue/claim, recommendation/proposal persistence, Production DB reads/writes, approval grant, Task #51/#53/#54 execution, provider/public-site writes, automatic transition and publication explicitly false.
+
+Certification:
+- base SHA/tree: `48a3e44fae0a320ad527e00ee06f5ee9eb2643a7` / `7e849723f7427009ecbd14a6d96dab7b32f94cb3`;
+- exact tested PR head/tree: `9401c2b7e2598cde6e4a90ec50204c68c3e49ef2` / `52dd4492d042fea27d9fb6ce7fb5dc040fff568e`;
+- exact-head PR CI #550 / run `35500244101`: success across schema, Task/P3.6 checks, all workspace tests, Playwright, typecheck and build;
+- implementation merge: `b7a64e860f7fbd7b15e9e87a5812e0cef442c104`;
+- implementation tree: `52dd4492d042fea27d9fb6ce7fb5dc040fff568e`;
+- post-merge main CI #551 / run `35500407071`: success;
+- Replit exact-aligned at the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked differences;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed.
+
+P9.7 is **unpublished**. It performed no live worker/scheduler/retry activation, AI/model/provider call, `AI_PROPOSAL_GENERATION_ENABLED` change, durable queue/claim mutation, recommendation/proposal persistence, Task #69/#70 execution, credential/OAuth use, provider/crawl request, Production DB read/write/DDL/DML, approval grant, Task #51/#53/#54 execution, provider/public-site mutation, environment/secret/config mutation, deployment or publication.
+
+Detailed record:
+- issue #313 — `P9.7 — Deterministic recommendation generation worker v1`
+- PR #314 — `P9.7 — Deterministic recommendation generation worker v1`
+- `docs/p9-7-recommendation-generation-worker.md`
+- `.agents/memory/p9-7-recommendation-generation-worker-closeout.md`
+
+Default next boundary: **P9.8 — autonomous mutation policy engine REVIEW ONLY**. Generic continuation may inspect and define the policy architecture, eligible already-certified action classes, risk/approval/verification/rollback requirements, and activation prerequisites. It does **not** authorize implementation or activation of autonomous mutation, proposal-to-execution transition, Task #51/#53/#54 execution, new provider scopes/credentials, Production DB writes, public-site/provider writes, deployment or publication.
+
+## Previous engineering state — P9.6 complete
 
 Roadmap **P9.6 — Worker observability and pause/drain/kill/resume controls v1** is complete under issue #310 / PR #311.
 
