@@ -507,7 +507,7 @@ function normalizeExternalConfounders(
 
     const factFingerprint = hash({
       version: WINDOW_CONFOUNDER_VERSION,
-      kind: "external_confounder",
+      recordType: "external_confounder",
       ...normalized,
     });
     const candidate = { ...normalized, factFingerprint };
@@ -926,7 +926,6 @@ export function buildActionWindowConfounderReport(
   const reportFingerprint = hash(identity);
 
   return {
-    version: WINDOW_CONFOUNDER_VERSION,
     reportId: `p103-report-${reportFingerprint.slice(0, 24)}`,
     reportFingerprint,
     ...identity,

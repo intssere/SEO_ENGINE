@@ -48,9 +48,7 @@ function event(input: {
   category?: string | null;
 }): UnifiedTimelineSourceEventInput {
   const eventKind = input.eventKind ?? "action_authorized";
-  const eventClass = eventKind === "measurement"
-    ? "measurement"
-    : eventKind.startsWith("opportunity_")
+  const eventClass = eventKind.startsWith("opportunity_")
       ? "opportunity"
       : eventKind === "recommendation_review_emitted"
         ? "recommendation"
@@ -132,7 +130,7 @@ function event(input: {
 function fixture(events: UnifiedTimelineSourceEventInput[]) {
   const timeline = buildUnifiedChangeTimeline({
     timelineKey: "diamond-shelf.p10-3",
-    referenceTime: "2026-09-20T12:00:00.000Z",
+    referenceTime: "2026-09-20T15:00:00.000Z",
     events,
   });
   return {
