@@ -13,9 +13,59 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2, P9.1–P9.8 and P10.1 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only; P9.3 is deterministic/default-off scheduled full/incremental crawl-policy review engineering only; P9.4 is deterministic/default-off bounded external-intelligence refresh-review engineering only; P9.5 is deterministic/default-off failure/retry/dead-letter/idempotency control-plane engineering only; P9.6 is deterministic/default-off worker observability and pause/drain/kill/resume control-plane engineering only; P9.7 is deterministic/default-off recommendation-generation review engineering only; P9.8 is autonomous-mutation policy architecture review only with implementation blocked. P10.1 is deterministic/read-only unified change-timeline engineering only: caller-supplied chronology/lineage normalization, exact P6.7 transition projection, fail-closed source replay conflicts and non-causal measurement markers; it adds no live loader, attribution inference, provider/runtime call, persistence, mutation or publication. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2, P9.1–P9.8 and P10.1–P10.2 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only; P9.3 is deterministic/default-off scheduled full/incremental crawl-policy review engineering only; P9.4 is deterministic/default-off bounded external-intelligence refresh-review engineering only; P9.5 is deterministic/default-off failure/retry/dead-letter/idempotency control-plane engineering only; P9.6 is deterministic/default-off worker observability and pause/drain/kill/resume control-plane engineering only; P9.7 is deterministic/default-off recommendation-generation review engineering only; P9.8 is autonomous-mutation policy architecture review only with implementation blocked. P10.1 is deterministic/read-only unified change-timeline engineering only: caller-supplied chronology/lineage normalization, exact P6.7 transition projection, fail-closed source replay conflicts and non-causal measurement markers; it adds no live loader, attribution inference, provider/runtime call, persistence, mutation or publication. P10.2 is deterministic/read-only direct action-association engineering only: exact action-ID joins to explicitly supplied page/query/category facts with fail-closed lineage/page conflicts, unavailable-state preservation and non-causal semantics; it adds no live loader, provider/runtime call, persistence, mutation or publication. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P10.1 complete
+## Current engineering state — P10.2 complete
+
+Roadmap **P10.2 — Action-to-page/query/category attribution** is complete under issue #322 / PR #323.
+
+P10.2 adds a pure deterministic/read-only direct-association layer over an exact supplied P10.1 report:
+- independently rebuilds and verifies the supplied P10.1 report before attribution; tampered/non-canonical input fails closed;
+- groups events into an action only through an explicit non-null P10.1 `lineage.actionId`;
+- page association uses only same-action `target.pageId` and/or `target.url`;
+- query association uses only same-action `associations.query`;
+- category association uses only same-action `associations.category`;
+- every association retains exact contributing P10.1 event/source provenance;
+- missing page/query/category evidence stays `unavailable`; there is no likely/inferred/estimated association state;
+- exact same page ID may enrich a missing URL and exact same URL may enrich a missing page ID;
+- same page ID with conflicting non-null URLs or same URL with conflicting non-null page IDs fails closed;
+- page-ID-only and URL-only evidence with no shared identifier remain separate rather than being guessed equivalent;
+- multiple distinct directly supplied queries/categories are preserved as deterministic sets with no semantic expansion, weighting or taxonomy inference;
+- same-action site/opportunity/recommendation/action-plan/proposal lineage may enrich nulls, while conflicting non-null singular lineage fails closed;
+- shared opportunity/action-plan/proposal, matching URL, resource kind, URL path, event ordering, metric movement or timestamp proximity never creates action association;
+- explicitly records that association is direct lineage only, not causal attribution or impact measurement;
+- creates no proposal, approval, authorization, execution, provider/public-site write or autonomous-mutation authority;
+- contains no Production/live database loader, provider/network request, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, schema change, route activation, deployment or publication.
+
+Implementation:
+- `artifacts/api-server/src/lib/action-attribution.ts`
+- `artifacts/api-server/src/lib/action-attribution.test.ts`
+- `artifacts/api-server/src/lib/action-attribution-contract.test.ts`
+- `docs/p10-2-action-attribution.md`
+
+Certification:
+- implementation base SHA/tree: `5046f1ed19fd93bbcee332934efcc9a967fd229c` / `d122b0f80a1789bef6863f3305cc6b5c7a55eacc`;
+- exact tested PR head/tree: `4040632c297af50b5a7b49d5bcd1efcdf36bd711` / `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`;
+- detached Replit branch validation: focused unit tests, contract tests, API typecheck and `git diff --check` PASS;
+- exact-head PR CI #563 / run `35507439693`: success across schema, Task/P3.6 checks, all workspace tests, Playwright, typecheck and build;
+- implementation merge: `34eb263c48b2c01920cb23df1b854d7df95b3bea`;
+- implementation tree: `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`;
+- post-merge main CI #564 / run `35507555715`: success;
+- Replit was Git-only fast-forwarded to the exact implementation merge/tree with origin/main exact, ahead/behind `0/0`, clean index/worktree, zero tracked/untracked differences and zero diff against origin/main;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS;
+- Replit validation used existing dependencies only and performed no dependency/lockfile update, config/secret/database/provider/runtime change, deployment or publication.
+
+P10.2 is **unpublished**. It performed no Production DB read/write/DDL/DML, provider/crawl request, credential/OAuth use, proposal/approval/action persistence, Task #51/#53/#54 execution, provider/public-site mutation, P9.8 implementation/activation, P10.3 implementation, scheduler/worker/retry activation, environment/secret/config mutation, deployment or publication.
+
+Detailed record:
+- issue #322 — `P10.2 — action-to-page/query/category attribution`
+- PR #323 — `P10.2 — direct action attribution`
+- `docs/p10-2-action-attribution.md`
+- `.agents/memory/p10-2-action-attribution-closeout.md`
+
+Default next safe boundary: **P10.3 — before/after windows and confounder flags**. Generic continuation may define deterministic/read-only supplied-window/confounder semantics over exact P10.1/P10.2 lineage. It must not interpret association as causality, query live providers, mutate Production data/schema, start P9.8 autonomous mutation, execute Task #51/#53/#54, deploy or publish.
+
+## Previous engineering state — P10.1 complete
 
 Roadmap **P10.1 — Unified Change Timeline v1** is complete under issue #319 / PR #320.
 

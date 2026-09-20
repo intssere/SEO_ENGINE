@@ -475,8 +475,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 | ID | Work item | Status |
 |---|---|---|
 | P10.1 | unified change timeline | DONE — issue #319 / PR #320 / merge `779b5a655dd04f60744d24ee373071a6a03dca23`; deterministic/read-only direct-source chronology/lineage normalization, exact P6.7 transition adapter, replay dedupe/conflict fail-closed semantics, descriptive execution/measurement state and explicit non-causal guards; no live DB/provider/runtime/mutation/publication activation |
-| P10.2 | action-to-page/query/category attribution | NEXT SAFE BOUNDARY — define deterministic/read-only direct attribution from exact P10.1/source lineage, preserving unavailable associations and non-causal semantics; no provider/runtime/public-write/Production DB mutation/publication on generic continuation |
-| P10.3 | before/after windows and confounder flags | PLANNED |
+| P10.2 | action-to-page/query/category attribution | DONE — issue #322 / PR #323 / merge `34eb263c48b2c01920cb23df1b854d7df95b3bea`; exact P10.1 integrity verification, explicit-action-ID-only page/query/category association, provenance retention, unavailable-state preservation, fail-closed lineage/page conflicts and explicit non-causal guards; no live DB/provider/runtime/mutation/publication activation |
+| P10.3 | before/after windows and confounder flags | NEXT SAFE BOUNDARY — define deterministic/read-only supplied before/after window membership and confounder flags over exact P10.1/P10.2 lineage; preserve association-vs-causality separation; no provider/runtime/public-write/Production DB mutation/publication on generic continuation |
 | P10.4 | experiment/holdout framework where practical | PLANNED |
 | P10.5 | expected-vs-actual outcome tracking | PLANNED |
 | P10.6 | recommendation calibration/learning signals | PLANNED |
@@ -602,10 +602,11 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 51. **DONE — P9.7:** deterministic recommendation-generation review worker over exact P6/P9.6 lineage; no AI/provider/proposal/approval/execution authority.
 52. **REVIEW COMPLETE / IMPLEMENTATION BLOCKED — P9.8:** autonomous mutation policy architecture only; separate implementation and later live activation remain explicitly gated.
 53. **DONE — P10.1:** unified deterministic/read-only change timeline, issue #319 / PR #320 / merge `779b5a655dd04f60744d24ee373071a6a03dca23`; chronology/lineage only, no causal attribution or runtime activation.
-54. **NEXT SAFE BOUNDARY — P10.2:** action-to-page/query/category direct-attribution semantics over exact P10.1/source lineage; preserve unavailable associations and non-causal interpretation.
-55. **P10.3–P10.7 — PLANNED:** before/after windows/confounders, experiments, expected-vs-actual tracking, calibration and Impact workspace.
-56. **P11 —** enterprise hardening and certification.
-57. **P12 —** final production completion certification and program closeout.
+54. **DONE — P10.2:** direct action-to-page/query/category attribution, issue #322 / PR #323 / merge `34eb263c48b2c01920cb23df1b854d7df95b3bea`; exact action-ID-only association, provenance retention, unavailable-state preservation, fail-closed direct identity conflicts and no causal/runtime activation.
+55. **NEXT SAFE BOUNDARY — P10.3:** deterministic supplied before/after windows and confounder flags over exact P10.1/P10.2 lineage; preserve descriptive/non-causal semantics.
+56. **P10.4–P10.7 — PLANNED:** experiments, expected-vs-actual tracking, calibration and Impact workspace.
+57. **P11 —** enterprise hardening and certification.
+58. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 

@@ -67,7 +67,9 @@ Unless the user gives exact, specific authorization for a bounded action:
 
 - P10.1 unified-change-timeline artifacts are deterministic/read-only chronology and direct-lineage projections only. Do not infer missing page/query/category association, execution success, impact or causality from timestamp proximity or event ordering.
 - P10.1 unknown/unavailable facts must remain null/unavailable; exact source replay may dedupe, but conflicting replay for the same source identity must fail closed. Timeline ordering must never be treated as priority, risk, quality or execution preference.
-- Generic continuation into P10.2 may define deterministic direct action-to-page/query/category association over exact supplied P10.1/source lineage only. It does not authorize live Production loaders/writes, provider calls, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- P10.2 direct action attribution is deterministic/read-only. Only the same explicit non-null P10.1 `lineage.actionId` may bind page/query/category facts to an action; shared plan/opportunity/proposal, matching URL/path, timestamp proximity, event order or metric movement must never fill missing association.
+- P10.2 unavailable associations must remain unavailable. Direct page identity conflicts fail closed, and multiple explicit query/category values remain provenance-bound sets rather than confidence-ranked or semantically expanded associations.
+- P10.2 association is lineage, not causality or impact. Generic continuation into P10.3 may define deterministic supplied before/after windows and confounder flags over exact P10.1/P10.2 lineage only; it does not authorize live Production loaders/writes, provider calls, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 
 ## 4. Explicit execution boundaries
 

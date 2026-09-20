@@ -382,7 +382,27 @@ Permanent semantics:
 
 P10.1 has no Production/live database loader, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
 
-P10.2 may build direct action-to-page/query/category association only from exact lineage. Missing association must remain unavailable; chronology, association and causality remain separate concepts.
+
+### P10.2 direct action attribution
+
+P10.2 adds deterministic/read-only action-to-page/query/category direct association over an exact certified P10.1 report.
+
+Permanent semantics:
+- the supplied P10.1 report must rebuild exactly before P10.2 association;
+- explicit non-null `lineage.actionId` is the only action join key;
+- page association consumes only same-action `target.pageId` / `target.url`;
+- query/category association consumes only same-action `associations.query` / `associations.category`;
+- each association retains exact P10.1 event and source provenance;
+- absent direct evidence remains unavailable and never becomes “likely” or inferred;
+- page identity may enrich a missing ID/URL counterpart only through the same explicit page ID or same explicit URL;
+- contradictory direct page identity fails closed;
+- multiple explicit query/category values are deterministic sets, not ranked or semantically expanded;
+- shared opportunity, recommendation, action-plan, proposal, URL/path/resource kind, metric movement, timestamp proximity or event ordering cannot create association without the same explicit action ID;
+- direct association is lineage only and never establishes causal effect, impact, confidence or recommendation quality.
+
+P10.2 has no Production/live database loader, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
+
+P10.3 may build before/after windows and confounder flags over exact supplied P10.1/P10.2 lineage. Window membership and confounder observations must remain descriptive; neither action association nor time-window overlap proves causality.
 
 ## Measurement architecture
 
@@ -422,17 +442,18 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P10.1 complete**.
+The current engineering architecture checkpoint is **P10.2 complete**.
 
-- P10.1 issue #319 / implementation PR #320.
-- Exact tested implementation head/tree: `23d9f97fb3c644f62b41e7b6c8c0cf22c8755fb4` / `f321069813c95546d95ed253119b7bc8d79f2380`.
-- Exact-head CI #558 / run `35505049246` and post-merge main CI #559 / run `35505161647` passed.
-- Canonical implementation merge/tree: `779b5a655dd04f60744d24ee373071a6a03dca23` / `f321069813c95546d95ed253119b7bc8d79f2380`.
-- Replit was independently verified exact-aligned to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
-- P10.1 is deterministic/read-only chronology + exact lineage only; it performs no causal attribution, impact calculation, live loading, persistence or runtime activation.
-- P9.8 remains review-complete but implementation-blocked; P10.1 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P10.2 issue #322 / implementation PR #323.
+- Exact tested implementation head/tree: `4040632c297af50b5a7b49d5bcd1efcdf36bd711` / `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`.
+- Exact-head CI #563 / run `35507439693` and post-merge main CI #564 / run `35507555715` passed.
+- Canonical implementation merge/tree: `34eb263c48b2c01920cb23df1b854d7df95b3bea` / `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`.
+- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
+- P10.2 is deterministic/read-only direct lineage association only; it performs no causal attribution, impact calculation, live loading, persistence or runtime activation.
+- P10.1 chronology remains separate from P10.2 association, and both remain separate from future causal/impact analysis.
+- P9.8 remains review-complete but implementation-blocked; P10.2 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P10.2 — action-to-page/query/category attribution**, limited initially to deterministic direct-association semantics over exact P10.1/source lineage. Temporal proximity alone must not create association or causality.
+- Default next safe program boundary is **P10.3 — before/after windows and confounder flags**, limited initially to deterministic supplied-window/confounder semantics over exact P10.1/P10.2 lineage. Time-window overlap must not be treated as causal evidence.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
