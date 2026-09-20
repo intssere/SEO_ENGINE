@@ -320,6 +320,26 @@ Permanent semantics:
 
 P9.6 has no live worker, timer, scheduler, retry loop, durable control-state/queue/DLQ mutation, network request, Task #69/#70 execution, credential use, evidence persistence, Production DB operation or provider/public-site mutation.
 
+### P9.7 recommendation-generation review
+
+P9.7 adds deterministic/default-off recommendation generation above the canonical P6 opportunity pipeline and P9.6 control state.
+
+Permanent semantics:
+- exact P6.7 input/report must rebuild successfully, which transitively validates P6.1–P6.6;
+- P7.6 AI/GEO opportunities enter only through their canonical P6 integration; P9.7 never reaches into provider/model observations directly;
+- only P9.6 `running` permits recommendation generation review;
+- `recommend` opportunities in observed/active lifecycle may emit advisory review;
+- `approval` opportunities in observed/active lifecycle require at least one exact changed P6.6 preview before proposal-review guidance can be emitted;
+- informational/blocked actionability is withheld, deferred lifecycle is held, and dismissed/closed/superseded lifecycle remains terminal;
+- templates are deterministic internal review guidance, not customer-facing content, freeform model output, approval, execution, or outcome claims;
+- recommendation identity binds exact upstream opportunity/explanation/actionability/lifecycle/evidence/preview lineage and remains stable across temporary pause/resume or later observation of unchanged lineage;
+- P6.3 priority is preserved only as lineage; P9.7 serialization creates no new priority or worker-dispatch order;
+- the P8 governance handoff is projection-only and never creates a ProposalRecord, approval, execution authorization, Task #51 authorization, or public-write permission.
+
+P9.7 has no AI/model call, AI proposal runtime, live worker, timer/scheduler/retry loop, durable queue, recommendation/proposal persistence, database operation, Task #69/#70 or Task #51/#53/#54 execution, provider/crawl network request, or provider/public-site mutation.
+
+P9.8 remains a separate autonomous-mutation policy boundary. A generic continuation after P9.7 may review/define that policy architecture, but must not implement or activate autonomous mutation without a separate bounded authorization decision.
+
 ## Measurement architecture
 
 Persistent changes must eventually feed a measurement loop rather than being judged on deployment success alone. Intended evidence includes:
@@ -358,15 +378,15 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P9.6 complete**.
+The current engineering architecture checkpoint is **P9.7 complete**.
 
-- Canonical implementation merge: `6886c518cad989d14ea8f61ff02d20fbf2f771ab`.
-- Canonical implementation tree: `f0cbc84c274379e7b120edc6636187e8d741ff55`.
-- P9.6 exact-head CI #546 and post-merge main CI #547 passed.
+- Canonical implementation merge: `b7a64e860f7fbd7b15e9e87a5812e0cef442c104`.
+- Canonical implementation tree: `52dd4492d042fea27d9fb6ce7fb5dc040fff568e`.
+- P9.7 exact-head CI #550 and post-merge main CI #551 passed.
 - Replit was exact-aligned to the implementation merge/tree and passed recursive tests, full typecheck, full build and `git diff --check`.
-- P9.1–P9.6 remain engineering-only/default-off automation architecture; no live autonomous read or mutation worker is activated.
+- P9.1–P9.7 remain engineering-only/default-off automation architecture; no live autonomous recommendation, provider-read, or mutation worker is activated.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
-- Public-site/provider mutation remains disabled by default, AI proposal generation remains disabled, and Task #53/#54 live execution still requires its separate exact authorization.
-- Default next safe engineering boundary is P9.7 deterministic/default-off recommendation-generation worker architecture over supplied/synthetic evidence only.
+- Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and Task #51/#53/#54 live execution still requires its separate exact authorization.
+- Default next boundary is **P9.8 autonomous mutation policy REVIEW ONLY**; architecture/policy review may proceed safely, but implementation/activation of autonomous mutation is not authorized by generic continuation.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.

@@ -13,25 +13,25 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P9.6 worker observability and pause/drain/kill/resume controls v1 is complete and certified.
+**Current checkpoint:** P9.7 deterministic recommendation generation worker v1 is complete and certified.
 
-- P9.6 issue #310 / PR #311.
-- Base SHA/tree: `d44952fc57e29dd4289b24dfe14f198c2754e9d4` / `bdb704e93435db34c83852f59b8741cc024ccba4`.
-- Exact tested PR head/tree: `cf982342b540db6d2f73b8b4c8c5800f61e46c33` / `f0cbc84c274379e7b120edc6636187e8d741ff55`.
-- Exact-head PR CI #546 / run `35498483145`: success.
-- Implementation merge: `6886c518cad989d14ea8f61ff02d20fbf2f771ab`.
-- Implementation tree: `f0cbc84c274379e7b120edc6636187e8d741ff55`.
-- Post-merge main CI #547 / run `35498627966`: success.
+- P9.7 issue #313 / PR #314.
+- Base SHA/tree: `48a3e44fae0a320ad527e00ee06f5ee9eb2643a7` / `7e849723f7427009ecbd14a6d96dab7b32f94cb3`.
+- Exact tested PR head/tree: `9401c2b7e2598cde6e4a90ec50204c68c3e49ef2` / `52dd4492d042fea27d9fb6ce7fb5dc040fff568e`.
+- Exact-head PR CI #550 / run `35500244101`: success.
+- Implementation merge: `b7a64e860f7fbd7b15e9e87a5812e0cef442c104`.
+- Implementation tree: `52dd4492d042fea27d9fb6ce7fb5dc040fff568e`.
+- Post-merge main CI #551 / run `35500407071`: success.
 - Replit exact-aligned at implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked differences; recursive tests, full typecheck, full build and `git diff --check` passed.
-- Control precedence is kill > drain > pause > running.
-- Pause/drain block new claims and retry dispatch but allow pre-existing in-flight continuation; drain projects drained only at zero in-flight.
-- Kill blocks continuation and requires reconciliation: confirmed-not-started can only return to review after recovery while original window is open; started/uncertain work requires manual intervention.
-- Killed state cannot ordinary-resume; resume never resets P9.5 attempts/backoff/idempotency, extends windows, backfills missed work or revives dead letters.
-- In-flight attempt number/claim time is checked against exact P9.5 eligibility at claim time; heartbeat freshness/health is caller-time deterministic.
-- P9.3 no-work and P9.5 succeeded/dead-letter states remain terminal.
-- No live worker/scheduler/retry loop, durable control/queue/DLQ, Task #69/#70 execution, provider/crawl request, credentials, persistence, Production DB operation, Task #53/#54, provider/public-site mutation, deployment or publication was activated.
+- P9.7 rebuilds exact P6.7 and thereby P6.1–P6.6 lineage; P7.6 AI/GEO opportunities are accepted only after canonical P6 integration.
+- Generation is deterministic bounded review guidance only. No AI proposal runtime, model/provider call or freeform site copy.
+- `recommend` + observed/active can emit advisory review; `approval` additionally requires an exact changed P6.6 preview; informational/blocked/deferred/terminal states do not generate.
+- P9.6 non-running control modes hold otherwise eligible work.
+- Recommendation/idempotency identity binds exact upstream lineage and preview state but not temporary pause/resume or observation time.
+- P8 handoff is projection-only: no ProposalRecord, persistence, approval, execution, public write, automatic transition or Task #51 authorization is created.
+- No live worker/scheduler/retry loop, AI/model/provider call, AI proposal-generation gate change, durable queue, persistence, Task #69/#70, Production DB operation, Task #51/#53/#54 execution, provider/public-site mutation, deployment or publication was activated.
 - P8.3 media-alt implementation remains separately blocked pending explicit isolated `write_files` authorization.
-- Default next safe boundary: **P9.7 recommendation generation worker**. Generic continuation may define deterministic/default-off recommendation generation over supplied/synthetic evidence only; no live worker, AI/provider call, AI proposal-generation gate activation, durable queue mutation, persistence, mutation or publication.
+- Default next boundary: **P9.8 autonomous mutation policy engine REVIEW ONLY**. Generic continuation may define/review architecture and activation prerequisites only; it does not authorize autonomous mutation implementation or activation.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
