@@ -468,13 +468,13 @@ Existing Tasks #51–#54 remain the safety foundation.
 | P9.5 | failure/retry/dead-letter/idempotency controls | DONE — issue #307 / PR #308 / merge `83334cf68900bf779851f92056dc351811822533`; exact P9.1–P9.4 artifact binding, deterministic idempotency, supplied attempt-history dedupe/conflict detection, conservative failure taxonomy, bounded retry-review and dead-letter-review semantics; no live retry loop, durable queue/DLQ, worker, provider/crawl request, persistence or publication |
 | P9.6 | worker observability and pause/kill controls | DONE — issue #310 / PR #311 / merge `6886c518cad989d14ea8f61ff02d20fbf2f771ab`; deterministic pause/drain/kill/resume transitions, P9.5 claim-time eligibility, heartbeat health, kill reconciliation/manual-intervention recovery, terminal dead-letter/no-work preservation; no live worker/scheduler/retry loop, durable control/queue/DLQ, provider/crawl request, persistence or publication |
 | P9.7 | recommendation generation worker | DONE — issue #313 / PR #314 / merge `b7a64e860f7fbd7b15e9e87a5812e0cef442c104`; exact P6.1–P6.7 lineage rebuild, P9.6 running-control gate, deterministic advisory/proposal-review templates, changed-preview requirement for approval class, stable idempotency, P8 governance handoff projection; no live worker/AI/provider/persistence/execution/mutation/publication |
-| P9.8 | autonomous mutation policy engine | NEXT REVIEW BOUNDARY ONLY — define policy/eligible certified action classes/risk/approval/verification/rollback/kill-switch and activation prerequisites; generic continuation does not authorize autonomous-mutation implementation, Task #51/#53/#54 execution, new write scopes, provider/public-site mutation, persistence or publication |
+| P9.8 | autonomous mutation policy engine | REVIEW COMPLETE / IMPLEMENTATION BLOCKED — issue #316 / PR #317 / merge `84944e49cdc2e8dee0dde3b2abb723daf7c5a535`; selects product SEO `meta_description` as first future autonomous canary class; defines external immutable policy grants, separate policy-vs-human authorization provenance, policy-aware execution namespace, strict evidence/quality/risk/idempotency/quota/cooldown/kill safety and named implementation prerequisites; no autonomous code/runtime/provider/database/publication activation |
 
 ### Phase P10 — Measure, experiments and learning loop
 
 | ID | Work item | Status |
 |---|---|---|
-| P10.1 | unified change timeline | PLANNED |
+| P10.1 | unified change timeline | NEXT SAFE BOUNDARY — deterministic/read-only change timeline over existing supplied/persisted opportunity/proposal/action/deployment/verification/rollback/measurement lineage; no P9.8 implementation, provider writes, Production DB mutation or publication on generic continuation |
 | P10.2 | action-to-page/query/category attribution | PLANNED |
 | P10.3 | before/after windows and confounder flags | PLANNED |
 | P10.4 | experiment/holdout framework where practical | PLANNED |
