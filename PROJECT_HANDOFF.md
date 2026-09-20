@@ -13,29 +13,31 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P10.2 direct action-to-page/query/category attribution is complete and certified. P10.3 is the next safe engineering boundary.
+**Current checkpoint:** P10.3 before/after windows and confounder flags is complete and certified. P10.4 is the next safe engineering boundary.
 
-- P10.2 issue #322 / implementation PR #323.
-- Implementation base SHA/tree: `5046f1ed19fd93bbcee332934efcc9a967fd229c` / `d122b0f80a1789bef6863f3305cc6b5c7a55eacc`.
-- Exact tested implementation head/tree: `4040632c297af50b5a7b49d5bcd1efcdf36bd711` / `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`.
-- Exact-head PR CI #563 / run `35507439693`: success.
-- Implementation merge: `34eb263c48b2c01920cb23df1b854d7df95b3bea`.
-- Implementation tree: `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`.
-- Post-merge main CI #564 / run `35507555715`: success.
+- P10.3 issue #325 / implementation PR #326.
+- Implementation base SHA/tree: `2340f788dfc26bda65cd6ab5fb8891d4a9abf933` / `ef58daa82cbcfd355cc0cbe5ee64ee2d36d4b8ee`.
+- Exact tested implementation head/tree: `14d24e1c4186fafd5ef5f159d789f0e1cd05cd99` / `a6b4e87a607f9a2ea973c7d2f6f603d511669d53`.
+- Exact-head PR CI #567 / run `35508864497`: success.
+- Implementation merge: `7337cefde56bfecc11664f81fbba8adcc6130393`.
+- Implementation tree: `a6b4e87a607f9a2ea973c7d2f6f603d511669d53`.
+- Post-merge main CI #568 / run `35509022152`: success.
 - Replit was Git-only fast-forwarded to the exact implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift and zero diff against origin/main.
 - Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
-- P10.2 independently verifies the exact supplied P10.1 report before deriving any association.
-- Only explicit non-null P10.1 `lineage.actionId` joins events to an action.
-- Page association uses only exact same-action page ID/URL fields; query/category use only exact same-action association fields.
-- Missing association remains unavailable; P10.2 does not use temporal proximity, shared plan/opportunity/proposal, URL/path/resource kind, metric movement or semantic inference to fill gaps.
-- Direct page identity can enrich a missing counterpart only through the same page ID or the same URL; contradictory direct identity fails closed.
-- Multiple explicit query/category values are retained as deterministic sets with exact event provenance.
-- Association means exact lineage relationship only. P10.2 performs no causal attribution and no impact calculation.
-- P10.2 creates no proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
-- P10.2 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
-- P9.8 remains review-complete but implementation-blocked. P10.2 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new Shopify scopes.
+- P10.3 independently rebuilds exact supplied P10.2 attribution from exact supplied P10.1 chronology before analysis.
+- Only an exact same-action `verified_change_retained_live` event fingerprint can serve as the P10.3 measurement anchor.
+- Before/after bounds are caller-supplied canonical UTC timestamps; P10.3 does not infer window duration, lag, cooldown or significance thresholds.
+- Supplied observations are classified only when every supplied non-null scope dimension exactly matches P10.2 direct page/query/category/site association.
+- Missing anchor/window state remains unavailable; non-matching observations remain unassociated rather than being broadened or guessed.
+- Same-action uncertain write, rollback and manual intervention flags require exact timeline evidence inside a supplied window.
+- Overlapping-action flags require another exact retained-live action in a supplied window plus at least one exact shared P10.2 direct page/query/category association.
+- External confounder flags require explicit source identity, canonical interval, exact compatible scope and window overlap.
+- Window membership and confounder overlap are descriptive only. P10.3 performs no metric delta, confidence, recommendation, causal adjustment, causal attribution or impact calculation.
+- P10.3 creates no proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
+- P10.3 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
+- P9.8 remains review-complete but implementation-blocked. P10.3 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new provider scopes.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P10.3 — before/after windows and confounder flags**. Begin with deterministic supplied-window semantics over exact P10.1/P10.2 lineage and preserve association-vs-causality separation.
+- Default next safe boundary: **P10.4 — experiment/holdout framework where practical**. Begin with deterministic supplied experiment/holdout semantics over exact P10.1–P10.3 lineage; no live assignment or causal claim is authorized by generic continuation.
 - Generic `continue` does not authorize provider/public-site writes, Production DB changes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 

@@ -476,8 +476,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 |---|---|---|
 | P10.1 | unified change timeline | DONE — issue #319 / PR #320 / merge `779b5a655dd04f60744d24ee373071a6a03dca23`; deterministic/read-only direct-source chronology/lineage normalization, exact P6.7 transition adapter, replay dedupe/conflict fail-closed semantics, descriptive execution/measurement state and explicit non-causal guards; no live DB/provider/runtime/mutation/publication activation |
 | P10.2 | action-to-page/query/category attribution | DONE — issue #322 / PR #323 / merge `34eb263c48b2c01920cb23df1b854d7df95b3bea`; exact P10.1 integrity verification, explicit-action-ID-only page/query/category association, provenance retention, unavailable-state preservation, fail-closed lineage/page conflicts and explicit non-causal guards; no live DB/provider/runtime/mutation/publication activation |
-| P10.3 | before/after windows and confounder flags | NEXT SAFE BOUNDARY — define deterministic/read-only supplied before/after window membership and confounder flags over exact P10.1/P10.2 lineage; preserve association-vs-causality separation; no provider/runtime/public-write/Production DB mutation/publication on generic continuation |
-| P10.4 | experiment/holdout framework where practical | PLANNED |
+| P10.3 | before/after windows and confounder flags | DONE — issue #325 / PR #326 / merge `7337cefde56bfecc11664f81fbba8adcc6130393`; exact P10.1→P10.2 integrity, retained-live-only anchor, caller-supplied canonical windows, exact direct-scope observation membership, direct-evidence confounder flags, deterministic replay guards and explicit non-causal semantics; no live DB/provider/runtime/mutation/publication activation |
+| P10.4 | experiment/holdout framework where practical | NEXT SAFE BOUNDARY — define deterministic/read-only supplied experiment/holdout design and analysis semantics over exact P10.1–P10.3 lineage where practical; no live assignment, provider/runtime/public-write/Production DB mutation/publication or causal claim from timing alone on generic continuation |
 | P10.5 | expected-vs-actual outcome tracking | PLANNED |
 | P10.6 | recommendation calibration/learning signals | PLANNED |
 | P10.7 | Impact workspace v2 | PLANNED |
@@ -603,8 +603,8 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 52. **REVIEW COMPLETE / IMPLEMENTATION BLOCKED — P9.8:** autonomous mutation policy architecture only; separate implementation and later live activation remain explicitly gated.
 53. **DONE — P10.1:** unified deterministic/read-only change timeline, issue #319 / PR #320 / merge `779b5a655dd04f60744d24ee373071a6a03dca23`; chronology/lineage only, no causal attribution or runtime activation.
 54. **DONE — P10.2:** direct action-to-page/query/category attribution, issue #322 / PR #323 / merge `34eb263c48b2c01920cb23df1b854d7df95b3bea`; exact action-ID-only association, provenance retention, unavailable-state preservation, fail-closed direct identity conflicts and no causal/runtime activation.
-55. **NEXT SAFE BOUNDARY — P10.3:** deterministic supplied before/after windows and confounder flags over exact P10.1/P10.2 lineage; preserve descriptive/non-causal semantics.
-56. **P10.4–P10.7 — PLANNED:** experiments, expected-vs-actual tracking, calibration and Impact workspace.
+55. **DONE — P10.3:** before/after windows and confounder flags, issue #325 / PR #326 / merge `7337cefde56bfecc11664f81fbba8adcc6130393`; exact retained-live anchoring, supplied windows, exact direct-scope membership and descriptive confounder evidence with no causal/runtime activation.
+56. **NEXT SAFE BOUNDARY — P10.4:** deterministic supplied experiment/holdout framework where practical over exact P10.1–P10.3 lineage; no live assignment or causal claim from timing alone. **P10.5–P10.7 remain planned.**
 57. **P11 —** enterprise hardening and certification.
 58. **P12 —** final production completion certification and program closeout.
 

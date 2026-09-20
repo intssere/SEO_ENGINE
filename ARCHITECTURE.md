@@ -402,7 +402,29 @@ Permanent semantics:
 
 P10.2 has no Production/live database loader, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
 
-P10.3 may build before/after windows and confounder flags over exact supplied P10.1/P10.2 lineage. Window membership and confounder observations must remain descriptive; neither action association nor time-window overlap proves causality.
+### P10.3 before/after windows and confounder flags
+
+P10.3 adds deterministic/read-only supplied-window membership and descriptive confounder evidence over exact certified P10.1 chronology and P10.2 direct association.
+
+Permanent semantics:
+- supplied P10.2 attribution must rebuild exactly from the supplied P10.1 timeline before P10.3 analysis;
+- analysis is bound to one exact P10.2 action ID;
+- the only supported measurement anchor is an exact same-action `verified_change_retained_live` timeline event fingerprint;
+- before/after window bounds are caller-supplied canonical timestamps; no duration, lag, cooldown, significance threshold or preferred frame is inferred;
+- before ends strictly before the anchor, after begins strictly after it, and the anchor belongs to neither window;
+- missing anchor/window facts remain unavailable rather than inferred;
+- observation membership requires every supplied non-null site/page/query/category scope dimension to match exact P10.2 direct association;
+- fuzzy URL/path matching, semantic query/category expansion, shared opportunity/action-plan/proposal and temporal proximity cannot create scope association;
+- exact same-action uncertain-write, rollback and manual-intervention events may create descriptive confounder flags only when inside a supplied window;
+- another action creates an overlap flag only when it has exact retained-live evidence inside the window and at least one exact shared direct P10.2 page/query/category association;
+- external supplied confounders require explicit source identity, canonical interval, explicit exact-compatible scope and window overlap;
+- exact source replay dedupes and conflicting replay fails closed;
+- chronology, association, window membership and confounder overlap are four distinct descriptive layers and none establishes causal effect;
+- P10.3 calculates no metric delta, confidence, score, recommendation, causal adjustment or impact.
+
+P10.3 has no Production/live database loader, SQL, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
+
+P10.4 may define deterministic supplied experiment/holdout semantics where practical, but generic continuation does not activate live assignment, experimentation, Production/provider mutation or causal conclusions.
 
 ## Measurement architecture
 
@@ -442,18 +464,18 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P10.2 complete**.
+The current engineering architecture checkpoint is **P10.3 complete**.
 
-- P10.2 issue #322 / implementation PR #323.
-- Exact tested implementation head/tree: `4040632c297af50b5a7b49d5bcd1efcdf36bd711` / `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`.
-- Exact-head CI #563 / run `35507439693` and post-merge main CI #564 / run `35507555715` passed.
-- Canonical implementation merge/tree: `34eb263c48b2c01920cb23df1b854d7df95b3bea` / `99fed5c9fd8dc2df0d72076f0c05e35bde45212d`.
+- P10.3 issue #325 / implementation PR #326.
+- Exact tested implementation head/tree: `14d24e1c4186fafd5ef5f159d789f0e1cd05cd99` / `a6b4e87a607f9a2ea973c7d2f6f603d511669d53`.
+- Exact-head CI #567 / run `35508864497` and post-merge main CI #568 / run `35509022152` passed.
+- Canonical implementation merge/tree: `7337cefde56bfecc11664f81fbba8adcc6130393` / `a6b4e87a607f9a2ea973c7d2f6f603d511669d53`.
 - Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
-- P10.2 is deterministic/read-only direct lineage association only; it performs no causal attribution, impact calculation, live loading, persistence or runtime activation.
-- P10.1 chronology remains separate from P10.2 association, and both remain separate from future causal/impact analysis.
-- P9.8 remains review-complete but implementation-blocked; P10.2 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P10.1 chronology, P10.2 direct association and P10.3 window/confounder membership remain distinct deterministic/read-only layers.
+- P10.3 window membership and confounder overlap are descriptive and perform no causal attribution, causal adjustment, impact calculation or recommendation.
+- P9.8 remains review-complete but implementation-blocked; P10.3 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P10.3 — before/after windows and confounder flags**, limited initially to deterministic supplied-window/confounder semantics over exact P10.1/P10.2 lineage. Time-window overlap must not be treated as causal evidence.
+- Default next safe program boundary is **P10.4 — experiment/holdout framework where practical**, limited initially to deterministic supplied experiment/holdout semantics over exact P10.1–P10.3 lineage without live assignment or causal claims from timing alone.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
