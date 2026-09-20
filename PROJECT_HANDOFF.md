@@ -13,31 +13,30 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P10.3 before/after windows and confounder flags is complete and certified. P10.4 is the next safe engineering boundary.
+**Current checkpoint:** P10.4 supplied experiment/holdout framework is complete and certified. P10.5 is the next safe engineering boundary.
 
-- P10.3 issue #325 / implementation PR #326.
-- Implementation base SHA/tree: `2340f788dfc26bda65cd6ab5fb8891d4a9abf933` / `ef58daa82cbcfd355cc0cbe5ee64ee2d36d4b8ee`.
-- Exact tested implementation head/tree: `14d24e1c4186fafd5ef5f159d789f0e1cd05cd99` / `a6b4e87a607f9a2ea973c7d2f6f603d511669d53`.
-- Exact-head PR CI #567 / run `35508864497`: success.
-- Implementation merge: `7337cefde56bfecc11664f81fbba8adcc6130393`.
-- Implementation tree: `a6b4e87a607f9a2ea973c7d2f6f603d511669d53`.
-- Post-merge main CI #568 / run `35509022152`: success.
+- P10.4 issue #328 / implementation PR #329.
+- Implementation base SHA/tree: `7ec8706bf7320cff7a41a420f387f43eecbd1b13` / `ad0f09cd5fc7c2e0bf9f60705232e7cfc326ebb9`.
+- Exact tested implementation head/tree: `ce67cbbe5542e45ddd5f76204274555e2c5ea45a` / `d236693f98231e6aa991a3e39feb6a17e802187d`.
+- Exact-head PR CI #571 / run `35510122006`: success.
+- Implementation merge: `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e`.
+- Implementation tree: `d236693f98231e6aa991a3e39feb6a17e802187d`.
+- Post-merge main CI #572 / run `35510239165`: success.
 - Replit was Git-only fast-forwarded to the exact implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift and zero diff against origin/main.
 - Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
-- P10.3 independently rebuilds exact supplied P10.2 attribution from exact supplied P10.1 chronology before analysis.
-- Only an exact same-action `verified_change_retained_live` event fingerprint can serve as the P10.3 measurement anchor.
-- Before/after bounds are caller-supplied canonical UTC timestamps; P10.3 does not infer window duration, lag, cooldown or significance thresholds.
-- Supplied observations are classified only when every supplied non-null scope dimension exactly matches P10.2 direct page/query/category/site association.
-- Missing anchor/window state remains unavailable; non-matching observations remain unassociated rather than being broadened or guessed.
-- Same-action uncertain write, rollback and manual intervention flags require exact timeline evidence inside a supplied window.
-- Overlapping-action flags require another exact retained-live action in a supplied window plus at least one exact shared P10.2 direct page/query/category association.
-- External confounder flags require explicit source identity, canonical interval, exact compatible scope and window overlap.
-- Window membership and confounder overlap are descriptive only. P10.3 performs no metric delta, confidence, recommendation, causal adjustment, causal attribution or impact calculation.
-- P10.3 creates no proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
-- P10.3 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
-- P9.8 remains review-complete but implementation-blocked. P10.3 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new provider scopes.
+- P10.4 independently rebuilds exact P10.2 from supplied P10.1 and exact P10.3 treatment analysis from its supplied P10.3 input before projecting any experiment/holdout structure.
+- P10.4 v1 is deliberately bounded to one exact treatment action with an exact retained-live P10.3 anchor and both exact P10.3 before/after windows.
+- Holdouts are immutable caller-supplied analysis definitions with exact unit IDs, explicit assignment source fingerprints and exact scope; P10.4 does not create live assignments.
+- Zero holdouts remains `treatment_only`; P10.4 never invents a pseudo-control.
+- Declared assignment basis (`externally_randomized`, `externally_matched`, `externally_selected`, `observational`) is provenance only and is not proof of randomization, balance, matching quality, comparability or exchangeability.
+- Holdout observations must carry exact source identity and scope exactly equal to the declared holdout scope; membership is only before/after/outside against the exact treatment P10.3 windows.
+- Structural flags are descriptive only: cross-arm exact scope overlap, exact holdout-action overlap, treatment P10.3 confounder presence, and missing before/after holdout coverage.
+- P10.4 calculates no treatment effect, metric delta, confidence interval, statistical significance, causal attribution, experiment winner/success or rollout/retain/rollback recommendation.
+- P10.4 creates no proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
+- P10.4 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
+- P9.8 remains review-complete but implementation-blocked. P10.4 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new provider scopes.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P10.4 — experiment/holdout framework where practical**. Begin with deterministic supplied experiment/holdout semantics over exact P10.1–P10.3 lineage; no live assignment or causal claim is authorized by generic continuation.
+- Default next safe boundary: **P10.5 — expected-vs-actual outcome tracking**. Begin with deterministic supplied expected/outcome definitions and descriptive comparisons over exact P10.1–P10.4 lineage; no live provider loading or causal claims are authorized by generic continuation.
 - Generic `continue` does not authorize provider/public-site writes, Production DB changes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 

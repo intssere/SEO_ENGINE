@@ -75,7 +75,12 @@ Unless the user gives exact, specific authorization for a bounded action:
 - P10.3 observations may enter before/after membership only when every supplied non-null site/page/query/category scope dimension directly matches exact P10.2 association. Fuzzy URL/path matching, semantic query/category expansion, shared upstream lineage and timestamp proximity must not broaden scope.
 - P10.3 confounder flags are direct descriptive evidence only. Same-action uncertainty/rollback/manual-intervention and overlapping directly associated actions do not establish that a confounder affected an outcome and do not perform causal adjustment.
 - P10.3 must not calculate metric deltas, confidence, recommendation, causal effect or impact. Chronology, association, window membership, confounder overlap and future experiment/causal analysis remain separate layers.
-- Generic continuation into P10.4 may define deterministic supplied experiment/holdout design/analysis semantics only; it does not authorize live experiment assignment, Production loaders/writes, provider calls, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- P10.4 experiment/holdout analysis is deterministic/read-only. It must independently verify exact P10.1→P10.2→P10.3 treatment lineage and reuse the exact P10.3 retained-live anchor and supplied before/after windows.
+- P10.4 holdouts are caller-supplied analysis definitions only. The engine must never create a live assignment, invent a pseudo-control, broaden holdout scope, or infer a holdout from unrelated observations.
+- P10.4 assignment-basis labels are provenance only. `externally_randomized` and `externally_matched` do not mean the engine verified randomization, balance, matching quality, comparability or exchangeability.
+- P10.4 holdout observations must match exact declared unit scope. Cross-arm overlap, other-action overlap, treatment confounders and missing coverage are descriptive structural flags only and do not perform causal adjustment.
+- P10.4 must not calculate treatment effect, metric delta, confidence intervals, p-values/significance, experiment success/failure, winner/loser or rollout/retain/rollback recommendations. Chronology, association, window membership, confounders, experiment structure and future outcome/causal analysis remain separate layers.
+- Generic continuation into P10.5 may define deterministic supplied expected-vs-actual outcome tracking over exact P10.1–P10.4 lineage only; it does not authorize live outcome/provider loading, Production loaders/writes, provider calls, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 
 ## 4. Explicit execution boundaries
 
