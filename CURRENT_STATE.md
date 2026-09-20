@@ -13,9 +13,50 @@ Published application source:
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
 
-Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1–P9.4 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only; P9.3 is deterministic/default-off scheduled full/incremental crawl-policy review engineering only; P9.4 is deterministic/default-off bounded external-intelligence refresh-review engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
+Tasks #74, #75, roadmap P2 engineering foundations, P3.1–P3.6, P4.1–P4.8/P4.10, P5.1–P5.8, P6.1–P6.7, P7.1–P7.7, P8.1–P8.2 and P9.1–P9.5 have **not** been published as application releases. P3.6 changed only the separately authorized Production schema; P4.1–P4.8/P4.10 change engineering-source product navigation/design-system/workbench/evidence-inspection/Command-Center/audit-explorer/responsive/accessibility/browser-regression code only; P5.1–P5.8 are external-intelligence research/adapter/operational-report/frontend/telemetry engineering only; P6.1 is unified opportunity classification/evidence engineering only; P6.2 is deterministic transparent opportunity-scoring engineering only; P6.3 is deterministic collection conflict/dedupe/suppression/prioritization engineering only; P6.4 is deterministic explanation/evidence projection engineering only; P6.5 is deterministic actionability-classification engineering only; P6.6 is deterministic current-vs-proposed preview/diff engineering only; P6.7 is deterministic opportunity lifecycle/history engineering only; P7.1 is deterministic supplied-evidence AI crawler/bot accessibility-audit engineering only; P7.2 is deterministic supplied-definition prompt/topic-set modeling only; P7.3 is deterministic provider-neutral supplied-observation answer/brand/citation normalization engineering only; P7.4 is deterministic supplied-evidence citation/domain/competitor comparison engineering only; P7.5 is deterministic evidence-bound AI visibility scoring/history engineering only; P7.6 is deterministic P7→P6 AI/GEO opportunity-lineage integration engineering only; P7.7 is deterministic synthetic/read-only AI Visibility frontend workspace engineering only; P8.1 is deterministic/read-only governed opportunity → proposal → approval workspace engineering only; P8.2 is deterministic/read-only evidence/risk/preview/verification-availability/rollback-plan action-card engineering only; P8.3 is review/contract documentation only with implementation blocked; P9.1 is deterministic/default-off read-work scheduler/queue architecture engineering only; P9.2 is deterministic/default-off first-party refresh materialization-review engineering only; P9.3 is deterministic/default-off scheduled full/incremental crawl-policy review engineering only; P9.4 is deterministic/default-off bounded external-intelligence refresh-review engineering only; P9.5 is deterministic/default-off failure/retry/dead-letter/idempotency control-plane engineering only. P4.9 remains optional and unselected. Git synchronization, engineering merges and database DDL do not change the separately attested published application source.
 
-## Current engineering state — P9.4 complete
+## Current engineering state — P9.5 complete
+
+Roadmap **P9.5 — Failure/retry/dead-letter/idempotency controls v1** is complete under issue #307 / PR #308.
+
+P9.5 adds a pure deterministic/default-off control-plane layer over supplied/proposed P9.1–P9.4 artifacts:
+- independently validates exact P9.1 intent identity/safety plus P9.2/P9.3/P9.4 candidate identity/safety and exact candidate ↔ P9.1 schedule/intent/slot/expiry binding;
+- derives one stable idempotency identity per exact upstream artifact;
+- accepts only bounded caller-supplied attempt records with fixed failure codes and no raw provider/runner error text;
+- suppresses exact duplicate replayed attempt records while conflicting replay for one attempt number fails closed;
+- requires attempt histories to start at 1, remain contiguous, use strictly increasing timestamps, stay inside the original P9.1 work window and stop after success;
+- automatically marks retryable only explicit transient/throttled failures: `transport_timeout`, `provider_rate_limited`, `provider_unavailable`, and `dependency_unavailable`;
+- keeps generic `runner_failed`, `normalization_failed`, stale lineage, closed authorization, invalid input, identity collision, claim/manual-intervention, expiry, unsupported/already-consumed and unknown failures non-retryable by default;
+- applies bounded total-attempt and capped deterministic backoff policy using caller-supplied time only;
+- emits an inert `proposed_review` retry intent only while attempt budget and the original P9.1 work window both still allow it;
+- emits inert dead-letter review for non-retryable failures, attempt-budget exhaustion, retry-window expiry, or an unattempted artifact whose original work window expired;
+- successful supplied history is terminal and exact replay is suppressed;
+- never creates catch-up/backfill or extends the original P9.1 due window;
+- P9.3 `no_work` artifacts remain representable for control-plane lineage but gain no execution authority;
+- contains no timer/network/database/environment/Task #69/#70 execution primitive;
+- keeps retry loop, durable queue/reservation/dead-letter store, worker/batch execution, provider/crawl network access, crawl execution, credential/OAuth use, persistence, Production DB reads/writes, Task #53/#54, provider/public-site writes, automatic transition and publication explicitly false.
+
+Certification:
+- base SHA/tree: `91a2dcc1d94421964a6c16940fac4c12855a1676` / `df1a0f2ada77af20bbeae253fb69bffb07b15d55`;
+- exact tested PR head/tree: `bf4c69555eb7eb29deeff330e25db195d8533b72` / `3737d643751b0404a4fbd0837626b50eda839d90`;
+- exact-head PR CI #542 / run `35496786420`: success across schema, Task/P3.6 checks, all workspace tests, Playwright, typecheck and build;
+- implementation merge: `83334cf68900bf779851f92056dc351811822533`;
+- implementation tree: `3737d643751b0404a4fbd0837626b50eda839d90`;
+- post-merge main CI #543 / run `35496913783`: success;
+- Replit exact-aligned at the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero untracked;
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: passed.
+
+P9.5 is **unpublished**. It performed no live retry, timer/scheduler activation, durable queue/claim/dead-letter storage, worker/batch execution, Task #69 packet materialization, Task #70 execution, credential/OAuth use, provider/crawl network request, observation/evidence persistence, Production DB read/write/DDL/DML, Task #53/#54 execution, provider/public-site mutation, environment/secret/config mutation, deployment or publication.
+
+Detailed record:
+- issue #307 — `P9.5 — Failure/retry/dead-letter/idempotency controls v1`
+- PR #308 — `P9.5 — Failure/retry/dead-letter/idempotency controls v1`
+- `docs/p9-5-failure-retry-dead-letter-idempotency.md`
+- `.agents/memory/p9-5-failure-retry-dead-letter-idempotency-closeout.md`
+
+Default next safe boundary: **P9.6 — worker observability and pause/kill controls**. Generic continuation may define deterministic/default-off worker-state, health/observability, pause and kill-switch architecture over supplied/fake state only. It does **not** authorize worker activation, scheduler/retry-loop activation, durable queue changes, provider/crawl requests, Task #69/#70 execution, persistence, Production DB writes, provider/public-site writes, deployment or publication.
+
+## Previous engineering state — P9.4 complete
 
 Roadmap **P9.4 — Bounded external intelligence refresh architecture v1** is complete under issue #304 / PR #305.
 
