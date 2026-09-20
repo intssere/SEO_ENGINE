@@ -494,7 +494,26 @@ Permanent semantics:
 
 P10.6 has no recommendation persistence/update, model training/fine-tuning, live outcome loading, live experiment assignment, Production/live database loader, SQL, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
 
-P10.7 may define deterministic/read-only Impact workspace v2 projection and frontend presentation over exact P10.1–P10.6 artifacts, but generic continuation does not authorize causal verdicts, live provider/runtime activity, recommendation/model/policy mutation, autonomous execution or deployment/publication.
+### P10.7 Impact workspace v2
+
+P10.7 adds a deterministic synthetic/read-only presentation layer over explicit P10.1–P10.6 projection artifacts while deliberately avoiding a new live loader or backend route.
+
+Permanent semantics:
+- the `/impact` workspace must keep P10.1 chronology, P10.2 direct association, P10.3 window/confounder evidence, P10.4 experiment/holdout structure, P10.5 expected-vs-actual arithmetic and P10.6 directional calibration as distinct layers;
+- the initial workspace source is a bounded synthetic fixture only and must be labeled as such;
+- upstream layer versions and report fingerprints must be explicit, parent-linked and fail closed on malformed/duplicate/conflicting identity;
+- treatment recommendation and direct page/query/category association remain lineage facts only;
+- before/after windows, holdout definitions, assignment-basis provenance, structural flags and confounder counts remain descriptive analysis context only;
+- expected/actual values and signed differences remain P10.5 arithmetic only;
+- directional calibration rows must bind exact P10.5 actual/expectation identities and the exact treatment recommendation identity;
+- unavailable values/signals stay unavailable and must not be fabricated;
+- stable ordering and a deterministic presentation-model fingerprint are allowed; scoring, ranking, trend/confidence inference and causal aggregation are not;
+- UI text must not upgrade arithmetic relation or calibration direction into impact score, improvement/regression, success/failure, recommendation quality, reward/penalty, causal effect, winner/loser or rollout/retain/rollback advice;
+- P10.7 creates no live API/provider/outcome loading, Production DB access, recommendation/model/ranking/policy mutation, execution control or publication authority.
+
+The P10.7 frontend therefore contains no generated API-client binding for Impact, no direct network primitive, no Production database/runtime-secret access, no mutation hook and no scheduler/worker/execution path.
+
+P11.1 may define production performance budgets and profiling. Generic continuation is limited initially to deterministic build-time/local performance budgets and bounded synthetic/local profiling; it does not authorize live production load generation, provider calls, Production mutation, deployment or publication.
 
 ## Measurement architecture
 
@@ -534,18 +553,19 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P10.6 complete**.
+The current engineering architecture checkpoint is **P10.7 complete**, which closes the planned P10 measurement/experiments/learning engineering sequence.
 
-- P10.6 issue #334 / implementation PR #335.
-- Exact tested implementation head/tree: `e0dbd4d6fd01a6043bfb1b164c3c0a9d23fff25a` / `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
-- Exact-head CI #579 / run `35516046746` and post-merge main CI #580 / run `35516171732` passed.
-- Canonical implementation merge/tree: `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6` / `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
-- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests `1013/1013`, full typecheck, full build and `git diff --check`.
-- P10.1 chronology, P10.2 direct association, P10.3 window/confounder evidence, P10.4 experiment/holdout structure, P10.5 expected-vs-actual tracking and P10.6 directional calibration remain distinct deterministic/read-only layers.
-- P10.6 directional signals are not recommendation quality, reward, causal effect, model update, ranking/policy change or rollout decision.
-- P9.8 remains review-complete but implementation-blocked; P10.6 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P10.7 issue #337 / implementation PR #338.
+- Exact tested implementation head/tree: `5e81960b3c471de18f69d5770c3dcfeeab21b70a` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
+- Exact-head CI #583 / run `35521313230` and post-merge main CI #584 / run `35521463457` passed.
+- Canonical implementation merge/tree: `72cf75fb9248c750b485d212a8a0f9245d785809` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
+- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
+- P10.1 chronology, P10.2 direct association, P10.3 window/confounder evidence, P10.4 experiment/holdout structure, P10.5 expected-vs-actual arithmetic, P10.6 directional calibration and P10.7 presentation remain distinct deterministic/read-only layers.
+- The Impact workspace is synthetic/read-only and has no live Impact API binding or new backend route.
+- P10.7 does not establish causal impact, recommendation quality, reward, model/ranking/policy updates or execution authority.
+- P9.8 remains review-complete but implementation-blocked; P10.7 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P10.7 — Impact workspace v2**, limited initially to deterministic/read-only workspace projection/frontend presentation over exact supplied P10.1–P10.6 artifacts without causal verdicts, live provider loading or mutation authority.
+- Default next safe program boundary is **P11.1 — production performance budgets and profiling**, starting with build-time/local budgets and bounded synthetic/local profiling only.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
