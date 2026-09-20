@@ -609,8 +609,6 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 58. **NEXT SAFE BOUNDARY — P10.6:** deterministic supplied recommendation calibration/learning signals over exact P10.1–P10.5 lineage; no automatic reward/ranking/policy mutation or live provider loading. **P10.7 remains planned.**
 59. **P11 —** enterprise hardening and certification.
 60. **P12 —** final production completion certification and program closeout.
-58. **P11 —** enterprise hardening and certification.
-59. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
