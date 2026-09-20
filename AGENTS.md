@@ -58,7 +58,12 @@ Unless the user gives exact, specific authorization for a bounded action:
 
 - P9.7 recommendation-generation artifacts are review-only. They must use deterministic supplied/synthetic P6 lineage; do not call the AI proposal runtime, enable `AI_PROPOSAL_GENERATION_ENABLED`, persist proposals, grant approval, create Task #51 authorization, or execute provider/site changes from generic continuation.
 - P9.7 `proposal_review` is not a ProposalRecord and is not approval-ready by implication. A changed P6.6 preview is a prerequisite for approval-class review, not proof that the proposed state is better, safe, approved, or executable.
-- P9.8 autonomous mutation policy is a separate high-control boundary. After P9.7, generic `continue` may be used for review/architecture definition only; it does not authorize autonomous-mutation implementation/activation, Task #51/#53/#54 execution, new write credentials/scopes, public-site/provider mutation, Production DB writes, deployment, or publication.
+- P9.8 autonomous-mutation architecture review is complete, but implementation remains blocked. Generic `continue` does not authorize P9.8 implementation/activation, Task #51/#53/#54 execution, new write credentials/scopes, public-site/provider mutation, Production DB writes, deployment, or publication.
+- The first future P9.8 autonomous canary class is limited to Shopify **product SEO `meta_description`** under the existing isolated `write_products` authority. Collection metadata, SEO title, media alt, visible content, handles and new provider scopes remain outside that initial class.
+- A future autonomous worker must consume exact P9.7 `proposal_review` lineage through a separately certified governed-proposal materialization bridge. P9.7 review artifacts must never be treated directly as ProposalRecords or executable actions.
+- A future policy grant must be explicit, immutable/versioned, expiring/revocable and created outside the worker. The worker must never create, broaden, renew or self-approve its own mutation authority.
+- Future policy authorization must remain distinct from human approval provenance. Do not fabricate an `approvals` row or human actor to satisfy Task #51, and do not fabricate the current Task #54 `APPLY_AND_VERIFY_TASK54` confirmation to simulate human confirmation.
+- Mutation pause/drain/kill blocks new forward writes. If a provider side effect may already have occurred, independent reconciliation and the single bounded rollback path remain mandatory safety closure; uncertain closure enters manual intervention and blocks further autonomous mutation.
 
 ## 4. Explicit execution boundaries
 

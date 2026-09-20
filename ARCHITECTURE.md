@@ -340,6 +340,30 @@ P9.7 has no AI/model call, AI proposal runtime, live worker, timer/scheduler/ret
 
 P9.8 remains a separate autonomous-mutation policy boundary. A generic continuation after P9.7 may review/define that policy architecture, but must not implement or activate autonomous mutation without a separate bounded authorization decision.
 
+### P9.8 autonomous-mutation policy review
+
+P9.8 is architecture review only and is not an autonomous execution implementation.
+
+Review decision:
+- first future autonomous canary class is one Shopify **product SEO `meta_description`** at a time;
+- collection metadata, SEO title, media alt, visible content, handles, inventory/price/status, theme changes and any new write scope remain excluded from the initial class;
+- media alt remains separately blocked because current Shopify `fileUpdate` requires `write_files` or `write_themes`, outside the isolated `write_products` Task #53/#54 credential;
+- autonomous admission must originate from exact P9.7 `proposal_review` lineage and a deterministic changed preview, never from advisory review;
+- a worker may operate only under a separately created immutable/versioned policy grant and may never create, expand, renew or self-authorize that grant;
+- policy authorization must remain distinct from human approval provenance; future code must not fabricate human approval rows;
+- future autonomous execution must use a distinct policy-authorized execution namespace; it must not spoof the existing Task #54 human confirmation string;
+- the initial autonomous class requires deterministic/non-AI proposal material, no missing evidence, quality pass with proposed canary threshold >=90, low effective execution risk, exact provider stale-state match and zero unresolved site-level mutation incident;
+- durable policy decision/idempotency reservation is required before any provider write;
+- pause/drain/kill block new forward writes; after a possible/accepted side effect, mandatory provider/storefront verification and bounded rollback are safety closure and may continue so the system does not abandon an uncertain mutation;
+- kill does not retroactively roll back already completed/verified historical actions, but an in-flight write observed after kill should default to restoration unless it was already terminal before kill;
+- any unresolved write/rollback uncertainty blocks further autonomous mutation for the site.
+
+P9.8 implementation remains blocked pending a deterministic P9.7→governed-proposal bridge, durable policy grants/provenance/idempotency, policy-aware Task #51/#54-compatible authorization/execution contracts, mutation-control persistence, P8.4–P8.6 certification and separately authorized schema/config work.
+
+Initial future blast-radius proposal is shadow-only first, then at most one product-meta-description forward action per 24 hours/site with one active site mutation and a 14-day same-target cooldown. Expansion requires a new policy version and separate authorization; no stage automatically unlocks new fields/resources/scopes.
+
+P9.8 review completion does not authorize implementation or activation.
+
 ## Measurement architecture
 
 Persistent changes must eventually feed a measurement loop rather than being judged on deployment success alone. Intended evidence includes:
@@ -378,7 +402,7 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P9.7 complete**.
+The current engineering architecture checkpoint is **P9.8 review complete / implementation blocked**.
 
 - Canonical implementation merge: `b7a64e860f7fbd7b15e9e87a5812e0cef442c104`.
 - Canonical implementation tree: `52dd4492d042fea27d9fb6ce7fb5dc040fff568e`.
@@ -387,6 +411,7 @@ The current engineering architecture checkpoint is **P9.7 complete**.
 - P9.1–P9.7 remain engineering-only/default-off automation architecture; no live autonomous recommendation, provider-read, or mutation worker is activated.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and Task #51/#53/#54 live execution still requires its separate exact authorization.
-- Default next boundary is **P9.8 autonomous mutation policy REVIEW ONLY**; architecture/policy review may proceed safely, but implementation/activation of autonomous mutation is not authorized by generic continuation.
+- P9.8 review selects product SEO `meta_description` as the narrowest future autonomous canary class and leaves implementation blocked behind policy/provenance/idempotency/P8.4–P8.6 prerequisites.
+- Default next safe program boundary is **P10.1 — unified change timeline**; this does not unblock P9.8 implementation or live autonomous mutation.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
