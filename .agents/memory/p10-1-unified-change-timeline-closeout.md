@@ -127,7 +127,7 @@ The static contract test prevents importing the current operational DB loaders o
 
 ## Replit certification
 
-After GitHub post-merge CI succeeded, Replit was synchronized by an exact Git-only fast-forward to:
+After GitHub post-merge CI succeeded, Replit was independently verified exact-aligned at:
 
 - branch: `main`
 - HEAD: `779b5a655dd04f60744d24ee373071a6a03dca23`
@@ -145,7 +145,7 @@ Validation on that exact Replit tree:
 - full build: PASS
 - `git diff --check`: PASS
 
-Pre-sync inspection observed leftover recursive package-manager processes from an earlier Replit Agent operation, but Git remained clean. The P10.1 sync was explicitly constrained to fetch/fast-forward only and performed no dependency/lockfile update. Final validation remained clean.
+Validation used the existing workspace dependencies only; no dependency or lockfile installation/update was performed. No Git sync was required during the resumed closeout because Replit already matched canonical `main`.
 
 No config, secret, database, runtime-setting, deployment or publication change occurred.
 

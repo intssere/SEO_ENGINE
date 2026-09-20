@@ -46,9 +46,9 @@ Certification:
 - implementation merge: `779b5a655dd04f60744d24ee373071a6a03dca23`;
 - implementation tree: `f321069813c95546d95ed253119b7bc8d79f2380`;
 - post-merge main CI #559 / run `35505161647`: success;
-- Replit Git-only fast-forwarded to the exact implementation merge/tree with origin/main exact, ahead/behind `0/0`, clean index/worktree, zero tracked/untracked differences and zero diff against origin/main;
+- Replit was independently verified exact-aligned to the implementation merge/tree with origin/main exact, ahead/behind `0/0`, clean index/worktree, zero tracked/untracked differences and zero diff against origin/main;
 - Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS;
-- the Replit synchronization performed no dependency/lockfile update, config/secret/database/runtime change, deployment or publication.
+- Replit validation used existing dependencies only and performed no dependency/lockfile update, config/secret/database/runtime change, deployment or publication.
 
 P10.1 is **unpublished**. It performed no Production DB read/write/DDL/DML, provider/crawl request, credential/OAuth use, proposal/approval/action persistence, Task #51/#53/#54 execution, provider/public-site mutation, P9.8 implementation/activation, scheduler/worker/retry activation, environment/secret/config mutation, deployment or publication.
 

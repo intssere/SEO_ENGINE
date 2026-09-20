@@ -65,6 +65,10 @@ Unless the user gives exact, specific authorization for a bounded action:
 - Future policy authorization must remain distinct from human approval provenance. Do not fabricate an `approvals` row or human actor to satisfy Task #51, and do not fabricate the current Task #54 `APPLY_AND_VERIFY_TASK54` confirmation to simulate human confirmation.
 - Mutation pause/drain/kill blocks new forward writes. If a provider side effect may already have occurred, independent reconciliation and the single bounded rollback path remain mandatory safety closure; uncertain closure enters manual intervention and blocks further autonomous mutation.
 
+- P10.1 unified-change-timeline artifacts are deterministic/read-only chronology and direct-lineage projections only. Do not infer missing page/query/category association, execution success, impact or causality from timestamp proximity or event ordering.
+- P10.1 unknown/unavailable facts must remain null/unavailable; exact source replay may dedupe, but conflicting replay for the same source identity must fail closed. Timeline ordering must never be treated as priority, risk, quality or execution preference.
+- Generic continuation into P10.2 may define deterministic direct action-to-page/query/category association over exact supplied P10.1/source lineage only. It does not authorize live Production loaders/writes, provider calls, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+
 ## 4. Explicit execution boundaries
 
 ### Task #51 — Controlled Execution Foundation
