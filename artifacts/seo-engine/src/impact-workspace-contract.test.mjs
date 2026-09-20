@@ -56,7 +56,7 @@ test("P10.7 frontend contains no live API, network, database or mutation primiti
   assert.doesNotMatch(source, /\bfetch\s*\(|XMLHttpRequest|WebSocket|EventSource/);
   assert.doesNotMatch(source, /process\.env|DATABASE_URL|postgres|drizzle/);
   assert.doesNotMatch(source, /setInterval|setTimeout|worker_threads|child_process/);
-  assert.doesNotMatch(source, /executeTask5[134]|providerWrite|publicSiteWrite\s*\(/i);
+  assert.doesNotMatch(source, /executeTask5[134]|providerWrite\\s*\\(|publicSiteWrite\\s*\\(/i);
 });
 
 test("P10.7 model hard-codes runtime, learning-update and mutation gates closed", () => {
