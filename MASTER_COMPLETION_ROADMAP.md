@@ -480,13 +480,13 @@ Existing Tasks #51–#54 remain the safety foundation.
 | P10.4 | experiment/holdout framework where practical | DONE — issue #328 / PR #329 / merge `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e`; exact P10.1→P10.3 integrity, one bounded treatment action, exact shared P10.3 windows, caller-supplied holdouts/assignment provenance, exact-scope observations and descriptive structural contamination/coverage flags; no live assignment, statistics/causal calculation, DB/provider/runtime/mutation/publication activation |
 | P10.5 | expected-vs-actual outcome tracking | DONE — issue #331 / PR #332 / merge `d038fbb1b8cccc67366dec7eb79961e10e947507`; exact P10.4 rebuild/integrity, supplied metric/expectation/actual provenance, canonical-decimal BigInt subtraction, descriptive above/equal/below relation, unavailable-state/replay guards and explicit non-causal/non-statistical semantics; no live outcome/DB/provider/runtime/mutation/publication activation |
 | P10.6 | recommendation calibration/learning signals | DONE — issue #334 / PR #335 / merge `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6`; exact P10.5 rebuild/integrity, exact same-action recommendation lineage, caller-supplied treatment calibration definitions, independent per-actual directional signals and explicit non-reward/non-quality semantics; no model/ranking/policy/live DB/provider/runtime/mutation/publication activation |
-| P10.7 | Impact workspace v2 | NEXT SAFE BOUNDARY — define deterministic/read-only workspace projection and frontend presentation over exact supplied P10.1–P10.6 artifacts; preserve non-causal/non-reward semantics and no live provider loading, Production DB/public-write mutation, autonomous execution or publication on generic continuation |
+| P10.7 | Impact workspace v2 | DONE — issue #337 / PR #338 / merge `72cf75fb9248c750b485d212a8a0f9245d785809`; synthetic/read-only six-layer P10.1–P10.6 lineage projection, exact outcome/calibration binding validation, responsive Impact workspace and explicit non-causal/non-reward/no-execution semantics; no live API/provider/DB/model/ranking/policy/runtime/mutation/publication activation |
 
 ### Phase P11 — Enterprise hardening
 
 | ID | Work item | Status |
 |---|---|---|
-| P11.1 | production performance budgets and profiling | PLANNED |
+| P11.1 | production performance budgets and profiling | NEXT SAFE BOUNDARY — define deterministic/offline bundle/runtime performance budgets, synthetic/local profiling fixtures and regression thresholds against the engineering tree; no production load generation, deployment/runtime mutation, live provider contact, Production DB mutation or publication on generic continuation |
 | P11.2 | security review: auth, CSRF, SSRF, CSP, headers, secret handling, supply chain | CONTINUOUS + final pass |
 | P11.3 | observability: metrics/logs/traces/alerts/job health | PLANNED |
 | P11.4 | backup/recovery and disaster-runbook certification | PLANNED |
@@ -607,9 +607,10 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 56. **DONE — P10.4:** supplied experiment/holdout framework, issue #328 / PR #329 / merge `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e`; exact treatment lineage, supplied holdouts/assignment provenance, exact shared-window observations and descriptive contamination/coverage flags with no live assignment/statistical/causal/runtime activation.
 57. **DONE — P10.5:** expected-vs-actual outcome tracking, issue #331 / PR #332 / merge `d038fbb1b8cccc67366dec7eb79961e10e947507`; exact P10.4 lineage verification, supplied metric/expectation/actual provenance, canonical-decimal exact arithmetic and descriptive relations with no causal/statistical/runtime activation.
 58. **DONE — P10.6:** recommendation calibration/learning signals, issue #334 / PR #335 / merge `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6`; exact P10.5 integrity, exact treatment recommendation lineage, supplied calibration definitions and independent directional signals with no reward/scoring/model/ranking/policy/runtime activation.
-59. **NEXT SAFE BOUNDARY — P10.7:** deterministic/read-only Impact workspace v2 over exact supplied P10.1–P10.6 artifacts; no causal verdicts, live provider loading or mutation authority.
-60. **P11 —** enterprise hardening and certification.
-61. **P12 —** final production completion certification and program closeout.
+59. **DONE — P10.7:** Impact workspace v2, issue #337 / PR #338 / merge `72cf75fb9248c750b485d212a8a0f9245d785809`; deterministic synthetic/read-only P10.1–P10.6 projection with exact lineage validation, expected-vs-actual and directional-calibration presentation, and no causal/reward/runtime authority.
+60. **NEXT SAFE BOUNDARY — P11.1:** deterministic/offline production-performance budgets and profiling over the engineering tree; no production load, runtime mutation, provider contact or publication.
+61. **P11.2–P11.10 —** enterprise hardening items remain planned/continuous as listed above.
+62. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 

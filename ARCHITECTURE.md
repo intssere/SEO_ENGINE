@@ -494,7 +494,27 @@ Permanent semantics:
 
 P10.6 has no recommendation persistence/update, model training/fine-tuning, live outcome loading, live experiment assignment, Production/live database loader, SQL, network/provider runtime, credential use, timer, scheduler, live worker, retry runtime, mutation runtime, proposal/approval/execution authority, schema change, route activation, deployment or publication.
 
-P10.7 may define deterministic/read-only Impact workspace v2 projection and frontend presentation over exact P10.1–P10.6 artifacts, but generic continuation does not authorize causal verdicts, live provider/runtime activity, recommendation/model/policy mutation, autonomous execution or deployment/publication.
+### P10.7 Impact workspace v2
+
+P10.7 completes the Phase P10 safe frontend projection with a deterministic synthetic/read-only workspace over explicit P10.1–P10.6-shaped artifacts.
+
+Permanent semantics:
+- the `/impact` route must not depend on a live deployments/outcome API merely to present P10.7 evidence;
+- initial P10.7 state is a deterministic synthetic presentation fixture only;
+- the projection must visibly preserve P10.1 chronology, P10.2 direct association, P10.3 windows/confounders, P10.4 experiment/holdout structure, P10.5 expected-vs-actual arithmetic and P10.6 directional calibration as separate layers;
+- supported layer versions, SHA-256 report fingerprints, parent-report chain and canonical UTC anchor/window timestamps must validate before projection;
+- duplicate outcome/calibration identities and broken calibration→actual→expectation or recommendation lineage fail closed;
+- unavailable expected/actual/comparison/calibration states remain unavailable; UI must not invent values or substitute zero;
+- outcome rows remain independent and calibration rows remain independent;
+- P10.5 signed differences and above/equal/below relations remain arithmetic only;
+- P10.6 directional signals remain relationship evidence only and are not recommendation quality, reward/penalty, success/failure, ranking weight or rollout advice;
+- chronology, association, temporal windows, holdout presence, structural flags and confounder counts never become causal conclusions merely because they are displayed together;
+- summary cards may show availability/count/provenance facts but must not create an impact score, win/loss scorecard, confidence score or recommendation grade;
+- the workspace must visibly retain non-causal/non-execution guardrails.
+
+P10.7 has no generated API-client import on the Impact page, no live outcome/provider loader, Production/live database access, SQL, credential use, recommendation persistence/update, model training/weight update, ranking/policy/prompt mutation, timer/scheduler/live worker, retry runtime, Task #51/#53/#54 execution, provider/public-site write, P9.8 implementation, backend-route activation, deployment or publication.
+
+P11.1 may define deterministic/offline production-performance budgets and profiling contracts over the current engineering tree. Generic continuation may inspect static artifacts and use synthetic/local browser fixtures, but it does not authorize live production load generation, deployment/runtime mutation, provider contact, Production DB mutation or publication.
 
 ## Measurement architecture
 
@@ -534,18 +554,19 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P10.6 complete**.
+The current engineering architecture checkpoint is **P10.7 complete**.
 
-- P10.6 issue #334 / implementation PR #335.
-- Exact tested implementation head/tree: `e0dbd4d6fd01a6043bfb1b164c3c0a9d23fff25a` / `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
-- Exact-head CI #579 / run `35516046746` and post-merge main CI #580 / run `35516171732` passed.
-- Canonical implementation merge/tree: `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6` / `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
-- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests `1013/1013`, full typecheck, full build and `git diff --check`.
-- P10.1 chronology, P10.2 direct association, P10.3 window/confounder evidence, P10.4 experiment/holdout structure, P10.5 expected-vs-actual tracking and P10.6 directional calibration remain distinct deterministic/read-only layers.
-- P10.6 directional signals are not recommendation quality, reward, causal effect, model update, ranking/policy change or rollout decision.
-- P9.8 remains review-complete but implementation-blocked; P10.6 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P10.7 issue #337 / implementation PR #338.
+- Exact tested implementation head/tree: `5e81960b3c471de18f69d5770c3dcfeeab21b70a` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
+- Exact-head CI #583 / run `35521313230` and post-merge main CI #584 / run `35521463457` passed.
+- Canonical implementation merge/tree: `72cf75fb9248c750b485d212a8a0f9245d785809` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
+- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
+- P10.7 closes the Phase P10 safe projection by keeping P10.1 chronology, P10.2 association, P10.3 windows/confounders, P10.4 experiment/holdout structure, P10.5 expected-vs-actual arithmetic and P10.6 directional calibration visually and semantically distinct.
+- The Impact workspace uses a deterministic synthetic/read-only fixture and has no live deployments/outcome API binding.
+- No displayed arithmetic relation or directional calibration signal is causal impact, recommendation quality, reward, success/failure, rank/policy input or rollout advice.
+- P9.8 remains review-complete but implementation-blocked; P10.7 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P10.7 — Impact workspace v2**, limited initially to deterministic/read-only workspace projection/frontend presentation over exact supplied P10.1–P10.6 artifacts without causal verdicts, live provider loading or mutation authority.
+- Default next safe program boundary is **P11.1 — production performance budgets and profiling**, initially limited to deterministic/offline static budgets and synthetic/local profiling evidence without production load generation, runtime mutation, deployment or publication.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
