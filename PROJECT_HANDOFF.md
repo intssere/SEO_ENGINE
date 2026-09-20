@@ -13,31 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P10.6 recommendation calibration/learning signals is complete and certified. P10.7 is the next safe engineering boundary.
+**Current checkpoint:** P10.7 Impact workspace v2 is complete and certified. P11.1 is the next safe engineering boundary.
 
-- P10.6 issue #334 / implementation PR #335.
-- Implementation base SHA/tree: `73c7cbad06fe917d790ecd142bfef2210b27a064` / `2d388b480b99c4cf338a52b0b95853847cba4e87`.
-- Exact tested implementation head/tree: `e0dbd4d6fd01a6043bfb1b164c3c0a9d23fff25a` / `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
-- Exact-head PR CI #579 / run `35516046746`: success.
-- Implementation merge: `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6`.
-- Implementation tree: `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
-- Post-merge main CI #580 / run `35516171732`: success.
+- P10.7 issue #337 / implementation PR #338.
+- Implementation base SHA/tree: `6a28f58962d3c710cdc050ff4af3d37b01599a9d` / `9a6c24b10794a84a8516fe42344f3bfd39f82922`.
+- Exact tested implementation head/tree: `5e81960b3c471de18f69d5770c3dcfeeab21b70a` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
+- Detached Replit exact-head validation: P10.7 model tests `9/9`, contract tests `8/8`, full frontend tests PASS including model phase `55/55`, frontend typecheck/build and `git diff --check` PASS.
+- Exact-head PR CI #583 / run `35521313230`: success.
+- Implementation merge/tree: `72cf75fb9248c750b485d212a8a0f9245d785809` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
+- Post-merge main CI #584 / run `35521463457`: success.
 - Replit was Git-only fast-forwarded to the exact implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
-- Replit recursive workspace tests PASS `1013/1013`; full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
-- P10.6 independently rebuilds exact supplied P10.5 before producing any calibration projection, thereby retaining the exact P10.1→P10.4 integrity chain.
-- Calibration subject identity is exact same-action recommendation lineage only; no inference from opportunity/plan/proposal/page/query/category/time.
-- Caller supplies exact calibration key, recommendation ID/fingerprint, treatment expectation ID, role and source provenance.
-- Direct calibration is restricted to exact treatment expectations; holdout expectations cannot directly grade the treatment recommendation.
-- Roles `primary` / `secondary` / `diagnostic` are metadata only and create no weight, score, rank or authority.
-- Per-actual directional signals are bounded to `same_as_declared_direction`, `opposite_declared_direction`, `equal_expected`, `neutral_direction`, and `unavailable`.
-- Multiple actuals remain independent. No averaging, voting, scorecard, trend/confidence inference or overall recommendation grade exists.
-- Directional signals are not recommendation quality, reward/penalty, causal impact, success/failure, ranking weight or rollout advice.
-- P10.6 performs no reward/recommendation score, model parameter/weight update, policy update, prompt/template update, causal attribution or rollout decision.
-- P10.6 creates no recommendation persistence/update, model training/fine-tuning, live provider/outcome loading, proposal/approval/execution or autonomous authority.
-- P9.8 remains review-complete but implementation-blocked. P10.6 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new provider scopes.
+- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
+- Final merged build retained only a non-fatal Vite advisory: generated SEO Engine JavaScript chunk `589.41 kB` minified / `169.95 kB` gzip exceeds the 500 kB advisory threshold. This is an input to P11.1, not a P10.7 failure.
+- `/impact` is now a deterministic synthetic/read-only workspace rather than a live deployments-API measurement table.
+- P10.7 validates and visibly preserves P10.1 chronology, P10.2 association, P10.3 windows/confounders, P10.4 experiment/holdout structure, P10.5 expected-vs-actual arithmetic and P10.6 directional calibration as distinct layers.
+- Expected-vs-actual differences remain arithmetic only. Directional calibration remains non-reward/non-quality evidence only. Neither is causal impact or success/failure.
+- P10.7 introduced no backend API route, live provider/outcome loader, Production DB access, recommendation/model/ranking/policy mutation, execution or publication authority.
+- P9.8 remains review-complete but implementation-blocked. P10.7 did not unlock autonomous mutation, Task #51/#53/#54 execution or new provider scopes.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P10.7 — Impact workspace v2**. Begin with deterministic/read-only workspace projection/frontend presentation over exact supplied P10.1–P10.6 artifacts; no causal verdict, live provider loading, reward/ranking/policy mutation or execution authority is implied.
-- Generic `continue` does not authorize provider/public-site writes, Production DB changes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- Default next safe boundary: **P11.1 — production performance budgets and profiling**. Start with deterministic/offline budgets, static bundle/chunk analysis and synthetic browser profiling/regression contracts against the engineering tree; no production load, deployment/runtime mutation, live provider contact or publication is implied.
+- Generic `continue` does not authorize provider/public-site writes, Production DB changes, production traffic/load tests, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
