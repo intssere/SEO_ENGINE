@@ -8,7 +8,6 @@ import {
 } from "./market-category-intelligence.js";
 import {
   SIGNAL_SOURCE_REGISTRY_VERSION,
-  buildSignalRefreshPlan,
   classifyFreshness,
   normalizeSignalSourceDescriptor,
   signalSourceRegistryCapability,
@@ -32,7 +31,7 @@ import {
 } from "./read-scheduler-queue.js";
 import {
   P5_2_DATAFORSEO_SERP_ADAPTER_VERSION,
-  P5_2_DATAFORSEO_SERP_PROVIDER_KEY,
+  P5_2_DATAFORSEO_PROVIDER_KEY,
   P5_2_DATAFORSEO_SERP_SOURCE_KEY,
   dataForSeoSerpAdapterCapability,
 } from "./dataforseo-serp-adapter.js";
@@ -377,7 +376,7 @@ function classifyAdapter(
       adapterKind: "dataforseo_serp",
       adapterVersion: P5_2_DATAFORSEO_SERP_ADAPTER_VERSION,
       adapterCapabilityFingerprint: stableHash(capability),
-      providerKey: P5_2_DATAFORSEO_SERP_PROVIDER_KEY,
+      providerKey: P5_2_DATAFORSEO_PROVIDER_KEY,
       collectionMode: "provider_api",
     };
   }
@@ -580,7 +579,7 @@ function reviewDecision(input: {
       reviewBlockers.push("provider_review_stale");
     }
 
-    if (freshness === "unavailable") {
+    if (input.stream.rateLimit.state === "unavailable" || freshness === "unavailable") {
       reviewBlockers.push("rate_limit_unavailable");
     } else if (freshness === "stale") {
       reviewBlockers.push("rate_limit_snapshot_stale");
