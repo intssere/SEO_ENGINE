@@ -289,6 +289,37 @@ task branch
 
 Before publish, certify development and production schema parity. After publish, certify health/auth/write gates/version markers and absence of unexpected mutation activity.
 
+## Safe automation control-plane architecture
+
+P9.1–P9.6 deliberately separate deterministic control-plane review artifacts from runtime execution.
+
+### P9.1–P9.5 foundations
+
+- P9.1 defines schedule identity, due windows and proposed read-work intents without a live timer or durable queue.
+- P9.2–P9.4 bind first-party, crawl and external-intelligence review candidates to exact P9.1 lineage without executing provider/crawl work.
+- P9.5 binds exact P9.1–P9.4 artifacts into deterministic idempotency identities and supplied attempt history. Only explicit transient/throttled failures can produce bounded retry-review intent; success and dead-letter states are terminal for that history.
+
+### P9.6 worker control and observability
+
+P9.6 adds review-only worker control semantics over supplied/fake state.
+
+Control precedence is:
+
+`kill > drain > pause > running`
+
+Permanent semantics:
+- pause blocks new admission/claims/retry dispatch but permits work already in flight to continue;
+- drain has the same admission closure, permits in-flight completion and becomes effectively drained only when in-flight count reaches zero;
+- kill blocks admission, retry dispatch and in-flight continuation and requires deterministic reconciliation;
+- confirmed-not-started killed work may only return to review after a future recovery step while its original P9.1 window remains open;
+- execution-started or outcome-uncertain killed work requires manual intervention and is never automatically retried;
+- killed state cannot ordinary-resume; a future recovery boundary must reconcile uncertain work first;
+- resume never resets P9.5 attempts/backoff/idempotency, extends an original work window, creates catch-up/backfill or revives dead-letter/no-work items;
+- in-flight claim eligibility is checked against canonical P9.5 state at claim time;
+- heartbeat freshness and worker health are projections from caller-supplied timestamps only.
+
+P9.6 has no live worker, timer, scheduler, retry loop, durable control-state/queue/DLQ mutation, network request, Task #69/#70 execution, credential use, evidence persistence, Production DB operation or provider/public-site mutation.
+
 ## Measurement architecture
 
 Persistent changes must eventually feed a measurement loop rather than being judged on deployment success alone. Intended evidence includes:
@@ -327,18 +358,15 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-At the time this checkpoint was refreshed:
+The current engineering architecture checkpoint is **P9.6 complete**.
 
-- Task #55 authentication/RBAC is merged, live, enabled, and fully certified.
-- Task #56 risk-semantics alignment is merged to GitHub `main`.
-- Canonical `main` SHA: `8d1c65e630253a4e0f052076bfc6bf21fbf5679f`.
-- Canonical tree: `11bc62ba2545769d78f29c41a268423b1350545f`.
-- Task #56 PR CI #131 passed.
-- Post-merge main CI #132, run ID `34751384367`, passed.
-- Replit workspace is already aligned to the same `main` SHA/tree, clean, ahead/behind 0/0.
-- Development and production DBs remain 31/31 with Task #55 auth tables.
-- Auth enforcement remains enabled/configured.
-- Public-site writes and AI proposal generation are effectively false; Task #53/#54 dispatch/scheduler/batch write capabilities remain closed.
-- Production still serves the pre-Task-56 bundle. The remaining Task #56 release sequence is Replit merged-main validation -> explicit publish authorization -> publish -> read-only runtime certification -> Git reconciliation.
+- Canonical implementation merge: `6886c518cad989d14ea8f61ff02d20fbf2f771ab`.
+- Canonical implementation tree: `f0cbc84c274379e7b120edc6636187e8d741ff55`.
+- P9.6 exact-head CI #546 and post-merge main CI #547 passed.
+- Replit was exact-aligned to the implementation merge/tree and passed recursive tests, full typecheck, full build and `git diff --check`.
+- P9.1–P9.6 remain engineering-only/default-off automation architecture; no live autonomous read or mutation worker is activated.
+- Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
+- Public-site/provider mutation remains disabled by default, AI proposal generation remains disabled, and Task #53/#54 live execution still requires its separate exact authorization.
+- Default next safe engineering boundary is P9.7 deterministic/default-off recommendation-generation worker architecture over supplied/synthetic evidence only.
 
-For the exact mutable continuation state, use `PROJECT_HANDOFF.md`.
+For the exact mutable continuation state, use `CURRENT_STATE.md`.

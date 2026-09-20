@@ -13,24 +13,25 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P9.5 failure/retry/dead-letter/idempotency controls v1 is complete and certified.
+**Current checkpoint:** P9.6 worker observability and pause/drain/kill/resume controls v1 is complete and certified.
 
-- P9.5 issue #307 / PR #308.
-- Base SHA/tree: `91a2dcc1d94421964a6c16940fac4c12855a1676` / `df1a0f2ada77af20bbeae253fb69bffb07b15d55`.
-- Exact tested PR head/tree: `bf4c69555eb7eb29deeff330e25db195d8533b72` / `3737d643751b0404a4fbd0837626b50eda839d90`.
-- Exact-head PR CI #542 / run `35496786420`: success.
-- Implementation merge: `83334cf68900bf779851f92056dc351811822533`.
-- Implementation tree: `3737d643751b0404a4fbd0837626b50eda839d90`.
-- Post-merge main CI #543 / run `35496913783`: success.
-- Replit exact-aligned at implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero untracked; recursive tests, full typecheck, full build and `git diff --check` passed.
-- P9.5 validates exact P9.1 intents plus exact P9.2/P9.3/P9.4 candidate envelopes and candidate ↔ P9.1 binding before deriving one stable idempotency identity.
-- Attempt history is supplied/synthetic only. Exact duplicate attempt records are suppressed; conflicting replay, gaps, future timestamps, cross-window attempts and attempts after success fail closed.
-- Only explicit transient/throttled failures are retry-eligible. Generic runner failure, normalization/integrity failure, stale lineage, authorization-closed, identity/manual-intervention, expiry and unknown failures are non-retryable by default.
-- Retry review uses bounded max-attempt and capped deterministic backoff and never extends the original P9.1 due window.
-- Non-retryable/expired/exhausted work emits an inert dead-letter review only; success is terminal and replay-suppressed.
-- No timer/scheduler/live retry loop, durable queue/DLQ, worker/batch execution, Task #69/#70 execution, credential/OAuth use, provider/crawl network request, persistence, Production DB operation, Task #53/#54, provider/public-site mutation, deployment or publication was activated.
+- P9.6 issue #310 / PR #311.
+- Base SHA/tree: `d44952fc57e29dd4289b24dfe14f198c2754e9d4` / `bdb704e93435db34c83852f59b8741cc024ccba4`.
+- Exact tested PR head/tree: `cf982342b540db6d2f73b8b4c8c5800f61e46c33` / `f0cbc84c274379e7b120edc6636187e8d741ff55`.
+- Exact-head PR CI #546 / run `35498483145`: success.
+- Implementation merge: `6886c518cad989d14ea8f61ff02d20fbf2f771ab`.
+- Implementation tree: `f0cbc84c274379e7b120edc6636187e8d741ff55`.
+- Post-merge main CI #547 / run `35498627966`: success.
+- Replit exact-aligned at implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked differences; recursive tests, full typecheck, full build and `git diff --check` passed.
+- Control precedence is kill > drain > pause > running.
+- Pause/drain block new claims and retry dispatch but allow pre-existing in-flight continuation; drain projects drained only at zero in-flight.
+- Kill blocks continuation and requires reconciliation: confirmed-not-started can only return to review after recovery while original window is open; started/uncertain work requires manual intervention.
+- Killed state cannot ordinary-resume; resume never resets P9.5 attempts/backoff/idempotency, extends windows, backfills missed work or revives dead letters.
+- In-flight attempt number/claim time is checked against exact P9.5 eligibility at claim time; heartbeat freshness/health is caller-time deterministic.
+- P9.3 no-work and P9.5 succeeded/dead-letter states remain terminal.
+- No live worker/scheduler/retry loop, durable control/queue/DLQ, Task #69/#70 execution, provider/crawl request, credentials, persistence, Production DB operation, Task #53/#54, provider/public-site mutation, deployment or publication was activated.
 - P8.3 media-alt implementation remains separately blocked pending explicit isolated `write_files` authorization.
-- Default next safe boundary: **P9.6 worker observability and pause/kill controls**. Generic continuation may build deterministic/default-off worker-state/health/pause/kill-switch semantics over supplied/fake state only; no live worker/scheduler/retry loop, durable queue mutation, provider/crawl runtime, persistence or publication.
+- Default next safe boundary: **P9.7 recommendation generation worker**. Generic continuation may define deterministic/default-off recommendation generation over supplied/synthetic evidence only; no live worker, AI/provider call, AI proposal-generation gate activation, durable queue mutation, persistence, mutation or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
