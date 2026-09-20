@@ -479,8 +479,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 | P10.3 | before/after windows and confounder flags | DONE — issue #325 / PR #326 / merge `7337cefde56bfecc11664f81fbba8adcc6130393`; exact P10.1→P10.2 integrity, retained-live-only anchor, caller-supplied canonical windows, exact direct-scope observation membership, direct-evidence confounder flags, deterministic replay guards and explicit non-causal semantics; no live DB/provider/runtime/mutation/publication activation |
 | P10.4 | experiment/holdout framework where practical | DONE — issue #328 / PR #329 / merge `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e`; exact P10.1→P10.3 integrity, one bounded treatment action, exact shared P10.3 windows, caller-supplied holdouts/assignment provenance, exact-scope observations and descriptive structural contamination/coverage flags; no live assignment, statistics/causal calculation, DB/provider/runtime/mutation/publication activation |
 | P10.5 | expected-vs-actual outcome tracking | DONE — issue #331 / PR #332 / merge `d038fbb1b8cccc67366dec7eb79961e10e947507`; exact P10.4 rebuild/integrity, supplied metric/expectation/actual provenance, canonical-decimal BigInt subtraction, descriptive above/equal/below relation, unavailable-state/replay guards and explicit non-causal/non-statistical semantics; no live outcome/DB/provider/runtime/mutation/publication activation |
-| P10.6 | recommendation calibration/learning signals | NEXT SAFE BOUNDARY — define deterministic/read-only supplied recommendation-calibration and learning-signal semantics over exact P10.1–P10.5 lineage; no automatic model reward, ranking/policy mutation, live provider loading, autonomous execution, Production DB/public-write mutation or publication on generic continuation |
-| P10.7 | Impact workspace v2 | PLANNED |
+| P10.6 | recommendation calibration/learning signals | DONE — issue #334 / PR #335 / merge `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6`; exact P10.5 rebuild/integrity, exact same-action recommendation lineage, caller-supplied treatment calibration definitions, independent per-actual directional signals and explicit non-reward/non-quality semantics; no model/ranking/policy/live DB/provider/runtime/mutation/publication activation |
+| P10.7 | Impact workspace v2 | NEXT SAFE BOUNDARY — define deterministic/read-only workspace projection and frontend presentation over exact supplied P10.1–P10.6 artifacts; preserve non-causal/non-reward semantics and no live provider loading, Production DB/public-write mutation, autonomous execution or publication on generic continuation |
 
 ### Phase P11 — Enterprise hardening
 
@@ -606,9 +606,10 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 55. **DONE — P10.3:** before/after windows and confounder flags, issue #325 / PR #326 / merge `7337cefde56bfecc11664f81fbba8adcc6130393`; exact retained-live anchoring, supplied windows, exact direct-scope membership and descriptive confounder evidence with no causal/runtime activation.
 56. **DONE — P10.4:** supplied experiment/holdout framework, issue #328 / PR #329 / merge `50ef9fda7b9e0bdee2d48e1d2ba1400b8d9a5b7e`; exact treatment lineage, supplied holdouts/assignment provenance, exact shared-window observations and descriptive contamination/coverage flags with no live assignment/statistical/causal/runtime activation.
 57. **DONE — P10.5:** expected-vs-actual outcome tracking, issue #331 / PR #332 / merge `d038fbb1b8cccc67366dec7eb79961e10e947507`; exact P10.4 lineage verification, supplied metric/expectation/actual provenance, canonical-decimal exact arithmetic and descriptive relations with no causal/statistical/runtime activation.
-58. **NEXT SAFE BOUNDARY — P10.6:** deterministic supplied recommendation calibration/learning signals over exact P10.1–P10.5 lineage; no automatic reward/ranking/policy mutation or live provider loading. **P10.7 remains planned.**
-59. **P11 —** enterprise hardening and certification.
-60. **P12 —** final production completion certification and program closeout.
+58. **DONE — P10.6:** recommendation calibration/learning signals, issue #334 / PR #335 / merge `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6`; exact P10.5 integrity, exact treatment recommendation lineage, supplied calibration definitions and independent directional signals with no reward/scoring/model/ranking/policy/runtime activation.
+59. **NEXT SAFE BOUNDARY — P10.7:** deterministic/read-only Impact workspace v2 over exact supplied P10.1–P10.6 artifacts; no causal verdicts, live provider loading or mutation authority.
+60. **P11 —** enterprise hardening and certification.
+61. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 

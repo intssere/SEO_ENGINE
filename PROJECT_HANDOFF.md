@@ -13,32 +13,30 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P10.5 expected-vs-actual outcome tracking is complete and certified. P10.6 is the next safe engineering boundary.
+**Current checkpoint:** P10.6 recommendation calibration/learning signals is complete and certified. P10.7 is the next safe engineering boundary.
 
-- P10.5 issue #331 / implementation PR #332.
-- Implementation base SHA/tree: `e0fbb08f5f4995a5d691861a01a7a8c7dd8260fe` / `fe347637abdb7096b3b6a242e7e255add28ec7b6`.
-- Exact tested implementation head/tree: `a7e198e38118ac091907713812dd526d17bd448c` / `81354446398d038a6360502385982cd47166c38f`.
-- Exact-head PR CI #575 / run `35511781930`: success.
-- Implementation merge: `d038fbb1b8cccc67366dec7eb79961e10e947507`.
-- Implementation tree: `81354446398d038a6360502385982cd47166c38f`.
-- Post-merge main CI #576 / run `35511907628`: success.
+- P10.6 issue #334 / implementation PR #335.
+- Implementation base SHA/tree: `73c7cbad06fe917d790ecd142bfef2210b27a064` / `2d388b480b99c4cf338a52b0b95853847cba4e87`.
+- Exact tested implementation head/tree: `e0dbd4d6fd01a6043bfb1b164c3c0a9d23fff25a` / `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
+- Exact-head PR CI #579 / run `35516046746`: success.
+- Implementation merge: `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6`.
+- Implementation tree: `00fe887aefa4a607cc26ec622d47ba9126ef68fb`.
+- Post-merge main CI #580 / run `35516171732`: success.
 - Replit was Git-only fast-forwarded to the exact implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
-- Replit recursive workspace tests PASS, including API suite `991/991`; full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
-- P10.5 independently rebuilds exact supplied P10.4 before producing any outcome tracking, thereby retaining the exact P10.1→P10.3 verification already enforced by P10.4.
-- Metric definitions are caller supplied with exact key/unit/direction/source provenance; direction metadata never becomes a success/failure or good/bad judgment.
-- Expected outcomes bind only to the exact treatment action or exact holdout unit and exact after-window scope.
-- Actual records must bind to the exact expectation metric/target/scope and lie inside the exact P10.4 after window.
-- Numeric values are bounded canonical decimal strings; subtraction uses exact BigInt-aligned decimal arithmetic rather than floating-point value math.
-- The only derived values are exact signed difference and descriptive `above_expected` / `equal_expected` / `below_expected`.
-- Null or missing expected/actual values remain unavailable; P10.5 never imputes values.
-- Multiple actuals are preserved independently; no averaging, trend inference, percentage change, uplift, treatment-vs-holdout effect or difference-in-differences is calculated.
-- P10.4 structural flags and P10.3 treatment confounders are preserved as context only and never weight/discount outcome arithmetic.
-- P10.5 performs no statistical significance/confidence interval, causal attribution, recommendation-quality judgment or rollout/retain/rollback decision.
-- P10.5 creates no live outcome loading, proposal, approval, authorization, execution, provider/public-site write or autonomous authority.
-- P10.5 contains no live Production DB loader, provider/network runtime, scheduler/worker/retry runtime, route activation, deployment or publication.
-- P9.8 remains review-complete but implementation-blocked. P10.5 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new provider scopes.
+- Replit recursive workspace tests PASS `1013/1013`; full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
+- P10.6 independently rebuilds exact supplied P10.5 before producing any calibration projection, thereby retaining the exact P10.1→P10.4 integrity chain.
+- Calibration subject identity is exact same-action recommendation lineage only; no inference from opportunity/plan/proposal/page/query/category/time.
+- Caller supplies exact calibration key, recommendation ID/fingerprint, treatment expectation ID, role and source provenance.
+- Direct calibration is restricted to exact treatment expectations; holdout expectations cannot directly grade the treatment recommendation.
+- Roles `primary` / `secondary` / `diagnostic` are metadata only and create no weight, score, rank or authority.
+- Per-actual directional signals are bounded to `same_as_declared_direction`, `opposite_declared_direction`, `equal_expected`, `neutral_direction`, and `unavailable`.
+- Multiple actuals remain independent. No averaging, voting, scorecard, trend/confidence inference or overall recommendation grade exists.
+- Directional signals are not recommendation quality, reward/penalty, causal impact, success/failure, ranking weight or rollout advice.
+- P10.6 performs no reward/recommendation score, model parameter/weight update, policy update, prompt/template update, causal attribution or rollout decision.
+- P10.6 creates no recommendation persistence/update, model training/fine-tuning, live provider/outcome loading, proposal/approval/execution or autonomous authority.
+- P9.8 remains review-complete but implementation-blocked. P10.6 did not unlock autonomous mutation, policy persistence, Task #51/#53/#54 execution or new provider scopes.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P10.6 — recommendation calibration/learning signals**. Begin with deterministic supplied calibration/learning-signal semantics over exact P10.1–P10.5 lineage, with no automatic reward/policy/ranking mutation and no causal inference from outcome differences.
+- Default next safe boundary: **P10.7 — Impact workspace v2**. Begin with deterministic/read-only workspace projection/frontend presentation over exact supplied P10.1–P10.6 artifacts; no causal verdict, live provider loading, reward/ranking/policy mutation or execution authority is implied.
 - Generic `continue` does not authorize provider/public-site writes, Production DB changes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
