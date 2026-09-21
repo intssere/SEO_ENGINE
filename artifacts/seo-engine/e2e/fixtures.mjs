@@ -234,6 +234,9 @@ const governanceProposalFixture = {
   revisions: [],
   draft_revision_token: "fixture-revision-token",
   proposal_fingerprint: "fixture-proposal-fingerprint",
+  proposal_generation_method: "deterministic",
+  ai_assisted: false,
+  ai_generation_audit: null,
   semantic_provenance: [],
   rationale: "Synthetic rationale",
   expected_benefit: "Synthetic expected benefit",
@@ -246,17 +249,26 @@ const governanceProposalFixture = {
   quality_status: "pass",
   quality_score: 96,
   quality_approval_eligible: true,
-  quality_checks: [],
+  quality_checks: [
+    {
+      id: "fixture-quality-check",
+      label: "Synthetic quality check",
+      status: "pass",
+      score: 100,
+      summary: "Synthetic browser fixture passes the quality contract.",
+      evidenceIds: ["ev-1"],
+    },
+  ],
   quality_blocking_reasons: [],
   quality_warnings: [],
   quality_evidence_ids: ["ev-1", "ev-2", "ev-3"],
   decision: "approved",
-  decision_reason: null,
-  decided_by: "synthetic-reviewer",
-  decided_at: "2026-09-21T10:00:00.000Z",
+  decision_reason: "Synthetic review decision",
+  decided_by: "browser-fixture",
+  decided_at: "2026-09-19T00:00:00.000Z",
   revision_requested: false,
-  updated_at: "2026-09-21T10:00:00.000Z",
-};
+  updated_at: "2026-09-19T00:00:00.000Z",
+}
 
 const governanceProposalListFixture = { readiness, rows: [governanceProposalFixture] };
 
