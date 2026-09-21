@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-async function text(relativePath) {
+async function text(relativePath: string) {
   return readFile(new URL(relativePath, import.meta.url), "utf8");
 }
 
