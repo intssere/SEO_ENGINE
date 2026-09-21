@@ -324,3 +324,30 @@ No schema migration, backup utility, storage SDK, API route, runtime configurati
 P11.4 engineering may be merged and Git-synchronized after CI certification.
 
 It does not authorize deployment or publication.
+
+
+## Certification
+
+P11.4 is complete and certified as a deterministic/offline recovery-planning and synthetic disaster-runbook milestone.
+
+- Issue: #351 — `P11.4 — offline backup/recovery contracts and disaster-runbook certification`
+- Implementation PR: #352 — `P11.4 — offline backup/recovery contracts and disaster-runbook certification`
+- Base SHA/tree: `1ad2efa3b194183e245724ac69f0863a4504df21` / `4a0ca940dfa811d63e91b5f0f12166b4fcc63377`
+- Final exact tested implementation head/tree: `7905b2db758e2af5e0187c238d121abb26927bcb` / `b50bdc0b8ad256fc7f022c9edbf933d660cb22ae`
+- Detached Replit final exact-head validation: 16/16 focused tests, 1,054/1,054 API tests, API typecheck and diff integrity PASS
+- Exact-head PR CI: #607 / run `35586999609` — success
+- Implementation merge/tree: `41329684f56f16e6da1645cd6c29339e038cf1c7` / `b50bdc0b8ad256fc7f022c9edbf933d660cb22ae`
+- Post-merge main CI: #608 / run `35587257845` — success
+- Replit exact Git alignment: same merge/tree, origin/main exact, ahead/behind `0/0`, clean
+- Replit validation: 1,210 reported tests passed / 0 failed, full typecheck PASS, full build PASS, P11.1 budget gate PASS, `git diff --check` PASS
+- No deployment or publication
+
+Intermediate branch checks exposed only documentation-contract test fixture problems: Markdown-sensitive assertion matching and one malformed test edit. These were corrected before the final tested head; no recovery logic, production backup, database, storage or runtime operation failed or was attempted.
+
+P11.4 does not establish that production backups exist or are restorable. Operational backup catalog/retention/PITR/snapshot verification and real restore exercises remain separately authorized future acceptance work.
+
+## Next safe boundary
+
+**P11.5 — accessibility WCAG 2.2 AA certification**
+
+Generic continuation may begin with deterministic source/static review and local/synthetic browser accessibility testing/remediation. It does not authorize production crawl/scan, provider/public-site mutation, Production DB/storage activity, secret/runtime/deployment changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.

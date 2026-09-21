@@ -554,21 +554,21 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P11.3 complete**.
+The current engineering architecture checkpoint is **P11.4 complete**.
 
-- P11.3 issue #348 / implementation PR #349.
-- Exact tested implementation head/tree: `350c6463a4466574d181bfe8c543f32fe73eb0ac` / `6759f50bd55bd89409939a275f92cabd7b0dce9c`.
-- Exact-head CI #600 / run `35583135013` and post-merge main CI #601 / run `35583379204` passed, including the canonical Ubuntu/Chromium browser suite.
-- Canonical implementation merge/tree: `e2cd22ae0e8e072be04bb6d31369e27e9f8ee040` / `6759f50bd55bd89409939a275f92cabd7b0dce9c`.
-- P11.3 adds a pure `p11.3-observability-v1` projection over supplied synthetic/local evidence: structured logs, descriptive metrics, trace/correlation integrity, exact P9.1/P9.6 job-health evidence and deterministic local alert candidates.
-- Event replay conflicts, secret-bearing attributes, broken trace parents, duplicate spans, lineage cycles and tampered P9.1/P9.6 projections fail closed.
-- P11.3 metrics are descriptive arithmetic only; they do not create SLO/SLA, production-user-impact, causal or deployment verdicts.
-- Alert candidates have no delivery or incident authority. No production telemetry sink/exporter or alert integration was added.
-- Replit is exact-synced to the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed 1,194 reported tests, full typecheck, full build/P11.1 budget gate and `git diff --check` using existing dependencies.
-- P11.3 does not certify production end-to-end observability; runtime telemetry emission, backends, alert delivery, retention/querying and incident detection remain outside this offline milestone.
-- P9.8 remains review-complete but implementation-blocked; P11.3 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P11.4 issue #351 / implementation PR #352.
+- Final exact tested implementation head/tree: `7905b2db758e2af5e0187c238d121abb26927bcb` / `b50bdc0b8ad256fc7f022c9edbf933d660cb22ae`.
+- Exact-head CI #607 / run `35586999609` and post-merge main CI #608 / run `35587257845` passed, including the canonical Ubuntu/Chromium browser suite.
+- Canonical implementation merge/tree: `41329684f56f16e6da1645cd6c29339e038cf1c7` / `b50bdc0b8ad256fc7f022c9edbf933d660cb22ae`.
+- P11.4 adds pure `p11.4-backup-recovery-v1` planning/certification over supplied synthetic fixtures: recovery inventory, supplied RPO/RTO, immutable manifest identity, exact migration/P3.6 schema lineage, ordered restore evidence and scenario classification.
+- PostgreSQL backup scope is explicit: core, auth/audit and P3.6 observation/evidence state. Canonical source/migrations recover from Git; external secret values and provider/public-site state remain separate manual dependencies.
+- Incomplete/unverified/stale/domain-incomplete/schema-lineage-invalid/post-incident-created backup evidence fails closed, as do restore-stage ordering/dependency violations.
+- `certified_synthetic` is a fixture/runbook result only and does not certify production backup existence, retention/PITR/snapshot configuration or restore readiness.
+- Replit is exact-synced to the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed 1,210 reported tests, full typecheck, full build/P11.1 budget gate and `git diff --check` using existing dependencies.
+- No production backup discovery/read/export, restore/PITR/snapshot/storage operation, Production DB/storage mutation, secret/provider/runtime/failover/cutover mutation, deployment or publication occurred.
+- P9.8 remains review-complete but implementation-blocked; P11.4 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P11.4 — backup/recovery and disaster-runbook certification**, initially limited to deterministic/offline backup/recovery contracts, synthetic restore fixtures, integrity verification and runbook tests without production backup access/export/restore, Production DB/storage mutation, runtime/deployment changes or publication.
+- Default next safe program boundary is **P11.5 — accessibility WCAG 2.2 AA certification**, initially limited to deterministic source/static and local/synthetic browser accessibility review/remediation without production crawl/scan, runtime/deployment mutation or publication.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
