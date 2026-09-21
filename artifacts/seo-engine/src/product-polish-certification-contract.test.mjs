@@ -56,6 +56,7 @@ test("P11.6 certifies four representative responsive viewport classes", () => {
 test("P11.6 checks overflow, clipping, interactive overlap and internal table scrolling", () => {
   assert.ok(polish.includes("document.documentElement.scrollWidth"));
   assert.ok(polish.includes("document.body.scrollWidth"));
+  assert.ok(polish.includes("isVisuallyHidden"));
   assert.ok(polish.includes("clippingFailures"));
   assert.ok(polish.includes("overlapFailures"));
   assert.ok(polish.includes("scrollRegionFailures"));
@@ -79,6 +80,7 @@ test("P11.6 preserves the P4.7 responsive presentation foundation", () => {
   assert.ok(css.includes("min-height: 44px"));
   assert.ok(css.includes(".dataGridWrap table"));
   assert.ok(css.includes("min-width: 720px"));
+  assert.ok(css.includes(".linkButton {\n    min-height: 44px;"));
 });
 
 test("P11.6 does not weaken the P11.5 accessibility certification contract", () => {
