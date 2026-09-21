@@ -40,6 +40,7 @@ const expectedRoutes = [
   "/search-intelligence",
   "/learning",
   "/impact",
+  "/reports",
   "/connections",
   "/settings",
 ];

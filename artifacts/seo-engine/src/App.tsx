@@ -32,6 +32,7 @@ import ExperimentsPage from './pages/experiments';
 import SearchIntelligencePage from './pages/search-intelligence';
 import LearningPage from './pages/learning';
 import ImpactPage from './pages/impact';
+import ReportsPage from './pages/reports';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +64,7 @@ function Router() {
           <Route path="/search-intelligence" component={SearchIntelligencePage} />
           <Route path="/learning" component={LearningPage} />
           <Route path="/impact" component={ImpactPage} />
+          <Route path="/reports" component={ReportsPage} />
 
           <Route path="/connections" component={ConnectionsPage} />
           <Route path="/settings" component={SettingsPage} />
