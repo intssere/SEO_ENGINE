@@ -499,20 +499,20 @@ Existing Tasks #51–#54 remain the safety foundation.
 
 ### Phase P12 — Final production completion certification
 
-**P11 enterprise hardening is complete. P12 is now the active program phase. Generic continuation starts with a criterion-by-criterion readiness/gap review; live proofs remain separately authorized.**
+**P11 enterprise hardening is complete and the P12 entry/readiness review is certified under issue #375 / PR #376. P12.1 is the next safe engineering boundary; every live proof remains separately authorized.**
 
 | ID | Work item | Status |
 |---|---|---|
-| P12.1 | no primary placeholder screens | NOT READY |
-| P12.2 | full-site crawl complete and repeatable | NOT READY |
-| P12.3 | live first-party data integrations certified | NOT READY |
-| P12.4 | live external intelligence certified | NOT READY |
-| P12.5 | opportunity engine certified against real evidence | NOT READY |
-| P12.6 | governed execution/rollback certified | PARTIAL FOUNDATION ONLY |
-| P12.7 | read automation certified | NOT READY |
-| P12.8 | measurement/impact learning loop certified | NOT READY |
-| P12.9 | UX/accessibility/performance/security acceptance passes | NOT READY |
-| P12.10 | final release publication + runtime certification + program issue #139 closeout | NOT READY |
+| P12.1 | no primary placeholder screens | NEXT SAFE ENGINEERING — primary-surface placeholder/production-state audit and bounded remediation; no live provider/runtime activation |
+| P12.2 | full-site crawl complete and repeatable | LIVE PROOF BLOCKED — engineering/25k scale foundation exists; requires explicitly authorized real full-site + repeat + incremental production proof |
+| P12.3 | live first-party data integrations certified | LIVE PROVIDER ACTIVATION BLOCKED — GSC/first-party engineering exists; real GSC/analytics/catalog production proof remains |
+| P12.4 | live external intelligence certified | LIVE PROVIDER ACTIVATION BLOCKED — supplied-result adapters exist; selected real external source certification remains |
+| P12.5 | opportunity engine certified against real evidence | ENGINEERING READY / REAL-EVIDENCE BLOCKED — depends on persisted real evidence from P12.2–P12.4 |
+| P12.6 | governed execution/rollback certified | PARTIAL FOUNDATION ONLY — integrated persistent action/verification/audit/rollback proof and P8.4–P8.8 remain |
+| P12.7 | read automation certified | ENGINEERING READY / LIVE SCHEDULER PROOF BLOCKED — P9 foundations default-off |
+| P12.8 | measurement/impact learning loop certified | ENGINEERING READY / REAL-OUTCOME BLOCKED — P10 foundation exists; real governed action/outcome evidence remains |
+| P12.9 | UX/accessibility/performance/security acceptance passes | LOCAL ENGINEERING SUBSTANTIALLY READY / PRODUCTION RC ACCEPTANCE BLOCKED |
+| P12.10 | final release publication + runtime certification + program issue #139 closeout | BLOCKED — requires P12.1–P12.9 + applicable P11.9 blockers + explicit publication/runtime proof |
 
 ---
 
