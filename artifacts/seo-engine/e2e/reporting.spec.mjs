@@ -66,7 +66,7 @@ test("P11.7 report section and audience controls serialize only URL view state",
     }),
   ).toBeVisible();
 
-  await page.getByLabel("KPIs").uncheck();
+  await page.getByRole("checkbox", { name: "KPIs" }).uncheck();
   await expect(page).toHaveURL(/sections=summary%2Chighlights%2Cguardrails/);
   await expect(
     page.getByRole("heading", { name: "Executive KPIs", level: 2 }),
