@@ -14,18 +14,6 @@
       {
         "label": "Opportunities",
         "path": "/opportunities"
-      },
-      {
-        "label": "Rankings",
-        "path": "/rankings"
-      },
-      {
-        "label": "Search Intelligence",
-        "path": "/search-intelligence"
-      },
-      {
-        "label": "AI Visibility",
-        "path": "/ai-visibility"
       }
     ]
   },
@@ -35,10 +23,6 @@
       {
         "label": "Technical SEO",
         "path": "/technical-seo"
-      },
-      {
-        "label": "Internal Links",
-        "path": "/internal-links"
       }
     ]
   },
@@ -69,23 +53,6 @@
       {
         "label": "Performance",
         "path": "/performance"
-      },
-      {
-        "label": "Impact",
-        "path": "/impact"
-      },
-      {
-        "label": "Reports",
-        "path": "/reports"
-      },
-      {
-        "label": "Experiments",
-        "path": "/experiments"
-      },
-      {
-        "label": "Learning",
-        "path": "/learning",
-        "status": "planned"
       }
     ]
   },
