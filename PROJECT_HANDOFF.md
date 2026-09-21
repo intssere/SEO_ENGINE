@@ -21,7 +21,7 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 - Exact-head PR CI #674 / run `35652034114`: success.
 - Implementation merge/tree: `0981daad1da5737ac4a4ec04d97ad6cf6659057d` / `782f65af18516791421f20bcc9b198a7b8fc515a`.
 - Post-merge main CI #675 / run `35652518058`: success.
-- Canonical post-merge gates: **1,273 workspace tests / 0 failures**; API **1,072/1,072 PASS**; P11.10 scale PASS; Chromium **111/111 PASS**; typecheck PASS; build/P11.1 budget PASS.
+- Canonical post-merge gates: **1,264 workspace tests / 0 failures**; DB bootstrap **7/7 PASS**; P3.6 migration checks **2/2 PASS**; API **1,072/1,072 PASS**; P11.10 scale PASS; Chromium **111/111 PASS**; typecheck PASS; build/P11.1 budget PASS.
 - Post-merge assets: JS 610,807 raw / 175,245 gzip; CSS 186,332 raw / 31,020 gzip.
 - The bridge is Diamond Shelf-only at canonical origin `https://diamondshelf.us`.
 - Sitemap acquisition, robots evaluation, page transport, clock and persistence are injected interfaces; there is no bundled HTTP/fetch/PostgreSQL/Drizzle/timer/scheduler implementation.
@@ -29,7 +29,7 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 - Existing P2.1–P2.6 planning/inventory/execution/checkpoint/certification/history/incremental semantics remain authoritative and unchanged.
 - Raw response bodies, page content and raw sitemap XML are excluded from the persistence contract.
 - Replit is Git-only exact-synced to the implementation merge/tree, origin/main exact, `0/0`, clean, zero tracked/untracked files, zero locks and zero active repository writers.
-- A follow-up Replit non-browser validation request was not queued because its Agent channel remained busy; do not invent a separate Replit test-run result. GitHub CI is canonical.
+- Replit Git state was independently re-verified after the sync at the exact merge/tree; no separate Replit non-browser test run was performed. GitHub CI remains canonical for full test/browser certification.
 - No live website/sitemap/robots request, Production DB/storage read/write/DDL/DML, observation/evidence persistence activation, provider/public-site mutation, scheduler/worker activation, autonomous mutation, credential/secret change, destructive retention, Task #51/#53/#54 execution, deployment or publication occurred.
 - Published production remains the separate Task #73 source/deployment.
 - **P12.2 next live proof requires fresh explicit authorization** naming the Diamond Shelf site identity, concrete sitemap/robots/page adapters, concrete Production persistence target, crawl limits, abort/safety procedure and allowed evidence writes.
