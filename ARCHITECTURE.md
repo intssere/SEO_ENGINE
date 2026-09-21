@@ -592,6 +592,9 @@ The current engineering architecture checkpoint is **P11.4 complete**.
 - P11.10 adds a dedicated local/synthetic scale-certification gate over real pure functions at the current architectural envelope: 25,000 URLs/site, 100,000 page-query signals, 25,000 materialized candidates, 100 crawl batches and 100 read schedules. The final exact-head profile completed in 739.787 ms combined with 96.42 MiB maximum observed heap on the shared runner.
 - P11.10 performance budgets are catastrophic-regression guards, not production SLOs. No production crawl, provider request, Production DB benchmark, scheduler/worker execution, mutation, deployment or publication is part of the certification.
 - **P11 enterprise hardening is complete.**
-- Default next safe program boundary is **P12 final production completion certification entry/readiness review**. Start by mapping P12.1–P12.10 to current evidence and explicit missing live proofs. Do not infer live authorization from P11 completion.
+- The P12 entry/readiness review is certified under issue #375 / PR #376 and maps all P12.1–P12.10 criteria to current engineering evidence and explicit missing production proofs.
+- P12.1 is the next safe engineering boundary: remove/relocate primary placeholders and make route data-state semantics honest without activating providers or production persistence.
+- P12.2–P12.4 are live-proof lanes; P12.5 consumes their real evidence; P12.6/P12.8 form the governed execution/outcome lane; P12.7 is the live read-automation lane; P12.9 is final release-candidate acceptance; P12.10 is explicit publication/runtime/program closeout.
+- No P12 review or local prerequisite grants authority for provider/OAuth calls, production crawl, DB/storage mutation, persistence activation, provider/public-site writes, scheduler/worker activation, autonomous mutation, credentials, destructive retention, deployment or publication.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
