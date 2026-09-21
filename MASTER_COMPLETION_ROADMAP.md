@@ -499,12 +499,12 @@ Existing Tasks #51–#54 remain the safety foundation.
 
 ### Phase P12 — Final production completion certification
 
-**P11 enterprise hardening and P12.1 primary-surface remediation are complete. P12.2–P12.4 are the next dependency lanes and require separate live production/provider authorization; no generic continuation grants that authority.**
+**P11 enterprise hardening, P12.1 primary-surface remediation, and the default-off P12.2 crawl execution/persistence bridge are complete. P12.2 still requires its separately authorized live production proof; P12.3–P12.4 remain separate provider-activation lanes. No generic continuation grants live authority.**
 
 | ID | Work item | Status |
 |---|---|---|
 | P12.1 | no primary placeholder screens | DONE — issue #379 / PR #380 / merge `4bc2bfcead3f7eaece1e0143e4546110580984f1`; primary navigation is operational-only while eight fixture/placeholder engineering routes remain mounted but non-primary; exact-head CI #668 + post-merge CI #669; 1,264 workspace tests, P11.10 scale PASS, Chromium 111/111, typecheck/build budgets green; no live provider/DB/crawl/runtime/deployment/publication activation |
-| P12.2 | full-site crawl complete and repeatable | LIVE PROOF BLOCKED — engineering/25k scale foundation exists; requires explicitly authorized real full-site + repeat + incremental production proof |
+| P12.2 | full-site crawl complete and repeatable | ENGINEERING BRIDGE COMPLETE / LIVE PROOF BLOCKED — issue #382 / PR #383 / merge `0981daad1da5737ac4a4ec04d97ad6cf6659057d`; Diamond Shelf-only injected/default-off sitemap+robots+page+persistence bridge preserves P2.1–P2.6 contracts; exact-head CI #674 + post-merge CI #675, 1,264 workspace tests + DB bootstrap 7/7 + P3.6 migration 2/2, Chromium 111/111, typecheck/build green; still requires separately authorized real full-site + interruption/resume + repeat/reconciliation + incremental + persisted Production evidence proof |
 | P12.3 | live first-party data integrations certified | LIVE PROVIDER ACTIVATION BLOCKED — GSC/first-party engineering exists; real GSC/analytics/catalog production proof remains |
 | P12.4 | live external intelligence certified | LIVE PROVIDER ACTIVATION BLOCKED — supplied-result adapters exist; selected real external source certification remains |
 | P12.5 | opportunity engine certified against real evidence | ENGINEERING READY / REAL-EVIDENCE BLOCKED — depends on persisted real evidence from P12.2–P12.4 |

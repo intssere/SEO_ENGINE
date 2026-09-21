@@ -200,3 +200,28 @@ Issue #382 engineering does **not** authorize:
 - destructive retention;
 - Task #51/#53/#54 execution;
 - deployment or publication.
+
+
+## Engineering certification
+
+Certified implementation lineage:
+
+- base SHA/tree: `2b17be98c750dcba30eeedb657587bb49748867f` / `8af93afa0c3c7fc6bdbaab7adb55fe77e865e869`;
+- final exact tested head/tree: `dbeadef4b18dabeac37e82535e791b8e7eb733c2` / `782f65af18516791421f20bcc9b198a7b8fc515a`;
+- exact-head PR CI #674 / run `35652034114`: success;
+- implementation merge/tree: `0981daad1da5737ac4a4ec04d97ad6cf6659057d` / `782f65af18516791421f20bcc9b198a7b8fc515a`;
+- post-merge main CI #675 / run `35652518058`: success;
+- workspace tests: **1,264 PASS / 0 failures**;
+- DB bootstrap: **7/7 PASS**;
+- P3.6 migration checks: **2/2 PASS**;
+- API tests: **1,072/1,072 PASS**;
+- P11.10 synthetic scale: PASS at 25,000 URLs / 100,000 query signals / 25,000 opportunity candidates / 100 schedules;
+- Chromium: **111/111 PASS**;
+- typecheck/build/P11.1 budget: PASS;
+- JS: 610,807 raw / 175,245 gzip;
+- CSS: 186,332 raw / 31,020 gzip;
+- Replit Git-only sync and independent Git-state verification: exact merge/tree, origin/main exact, `0/0`, clean, zero tracked/untracked files, zero locks and zero active repository writers.
+
+This certification is engineering-only and unpublished. It does not authorize or claim a request to Diamond Shelf, Production persistence, scheduler/worker activation, provider/public-site mutation, deployment or publication.
+
+The next P12.2 step is the separately authorized live full-crawl/resume/reconciliation/incremental/persistence proof described above.
