@@ -278,7 +278,11 @@ test("trace parent integrity, duplicate spans and lineage cycles fail closed", (
   assert.throws(() => build(missing), /trace_parent_missing/);
 
   const duplicate = events();
-  duplicate[2] = { ...duplicate[2]!, spanId: duplicate[1]!.spanId };
+  duplicate[2] = {
+    ...duplicate[2]!,
+    spanId: duplicate[1]!.spanId,
+    parentSpanId: duplicate[0]!.spanId,
+  };
   assert.throws(() => build(duplicate), /duplicate_trace_span/);
 
   const cycle = events();

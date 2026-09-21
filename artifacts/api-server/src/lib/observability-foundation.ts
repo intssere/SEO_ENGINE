@@ -599,6 +599,8 @@ function exactProjection<T>(
 ): T {
   const rebuilt = rebuild(input);
   if (stableJson(rebuilt) !== stableJson(supplied)) {
+    if (label === "scheduler") throw new Error("scheduler_projection_mismatch");
+    if (label === "worker") throw new Error("worker_projection_mismatch");
     throw new Error(label + "_projection_mismatch");
   }
   return rebuilt;
