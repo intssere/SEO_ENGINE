@@ -3251,6 +3251,10 @@ td:first-child {
   .content form.flex > a {
     min-height: 44px;
   }
+  .linkButton {
+    min-height: 44px;
+    padding-block: 6px;
+  }
   .auditUrlValue,
   .opportunityIdentity small,
   .proposalChange small {
