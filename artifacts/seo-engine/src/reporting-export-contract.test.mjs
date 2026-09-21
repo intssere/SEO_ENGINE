@@ -17,14 +17,12 @@ const polish = read("../e2e/product-polish.spec.mjs");
 const browser = read("../e2e/reporting.spec.mjs");
 const packageJson = read("../package.json");
 
-test("P11.7 exposes Reports inside Measure and routes it explicitly", () => {
+test("P11.7 preserves Reports as a routed engineering surface after P12.1", () => {
   const parsed = JSON.parse(nav);
-  const measure = parsed.find((group) => group.domain === "Measure");
-  assert.ok(measure);
-  assert.deepEqual(
-    measure.items.find((item) => item.path === "/reports"),
-    { label: "Reports", path: "/reports" },
+  const primaryPaths = parsed.flatMap((group) =>
+    group.items.map((item) => item.path),
   );
+  assert.equal(primaryPaths.includes("/reports"), false);
   assert.match(app, /import ReportsPage from ['"]\.\/pages\/reports['"]/);
   assert.match(app, /<Route path="\/reports" component=\{ReportsPage\} \/>/);
 });
