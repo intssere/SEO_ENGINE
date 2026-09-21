@@ -13,27 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P11.10 synthetic load/scale certification is complete and certified; **P11 enterprise hardening is complete**. P12 final production completion certification is now the active program phase.
+**Current checkpoint:** P12 entry/readiness review is complete and certified. P12.1 primary-surface placeholder / production-state audit and bounded remediation is the next safe engineering task.
 
-- P11.10 issue #371 / implementation PR #372.
-- Implementation base SHA/tree: `4aad63e82d2ec41d80328b63c9a1a7b8737b3d9e` / `79a1420043c2aad16138e54679506f2320b708d8`.
-- Final exact tested implementation head/tree: `0b1cb915ac54cc56c26aeb841662f26d6de052f4` / `16a453f80ba5577416d3060696a56e027762952c`.
-- Exact-head PR CI #658 / run `35627543198`: success.
-- Implementation merge/tree: `fbf1abd2e1f04de649b9c54b29b74873098ccdb9` / `16a453f80ba5577416d3060696a56e027762952c`.
-- Post-merge main CI #659 / run `35627981015`: success.
-- Canonical workspace tests: **1,250 / 0 failures**; API **1,063/1,063**.
-- Canonical Chromium: **110/110 PASS**.
-- Typecheck/build/P11.1 budgets: PASS; JS 611,156 raw / 175,333 gzip; CSS 186,332 raw / 31,020 gzip.
-- Final P11.10 synthetic profile: 25k URLs, 100k query signals, 25k materialized candidates, 100 crawl batches and 100 schedules; **739.787 ms combined**; highest observed heap **96.42 MiB**; certification fingerprint `99c9910efd2474573f5ffd060bd24cea276aa337adfdf57140679e6ae6fdb20c`.
-- These measurements are shared-runner engineering regression evidence, not a production SLA/capacity/concurrency claim.
-- Replit is Git-only exact-synced to the P11.10 implementation merge/tree, origin/main exact, `0/0`, clean, no locks/writers.
-- P11.10 performed no production load, public-site crawl, provider/API load, Production DB benchmark/mutation, retention deletion, worker/scheduler activation, Task #51/#53/#54 execution, P9.8 activation, config/secret mutation, deployment or publication.
-- P11.9's ten privacy/compliance blockers remain independently open for affected live/commercial flows.
-- Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source.
-- P12.1–P12.10 are not automatically satisfied by P11 completion. Current roadmap still requires production/live evidence for full-site crawl, first-party integrations, external intelligence, real-evidence opportunities, governed execution/rollback, read automation, impact learning, final acceptance and release/runtime certification.
-- Default next safe boundary: **P12 entry/readiness review**. Reconcile every P12 criterion against current evidence and identify which exact proofs can be completed locally/read-only vs which need separate live authorization.
-- Generic `continue` does not authorize live provider/public-site mutation, Production DB/storage mutation, destructive retention, credential changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
-- P4.9 remains optional and unselected.
+- P11 enterprise hardening is complete.
+- P12 entry issue #375 / review PR #376.
+- Review base SHA/tree: `22cb4855075fd9d4cb3924c5a45f81ebefa758aa` / `128a04d639b82630ecd38367e666e0f8b8fe3fa6`.
+- Exact reviewed head/tree: `b694af1343e4bf281cc804b38d7a4114a5c5a896` / `de48471a111f4bdebd01395d895473984b611b63`.
+- Exact-head CI #662 / run `35634208467`: success.
+- Review merge/tree: `a586894e6fab859befda7d5e011a80a367d4752f` / `de48471a111f4bdebd01395d895473984b611b63`.
+- Post-merge main CI #663 / run `35634679592`: success.
+- Replit is Git-only exact-synced to the review merge/tree, origin/main exact, `0/0`, clean, zero tracked/untracked files, zero locks and no active writer.
+- P12.1 is the only immediate P12 criterion with broad safe/default-off engineering available. Current primary navigation still exposes `Learning` as a planned route, and every primary route must be classified as production-bound, honest disconnected/empty state, or intentionally non-primary synthetic/demo surface.
+- P12.2/P12.3/P12.4 require separately authorized live crawl/provider proof.
+- P12.5 depends on real persisted evidence from those lanes.
+- P12.6 remains partial; no first persistent Task #54 apply has been certified.
+- P12.7/P12.8 have strong engineering foundations but still require live scheduled-read and real-outcome evidence.
+- P12.9 needs exact final release-candidate production acceptance.
+- P12.10 remains blocked until P12.1–P12.9 and applicable P11.9 blockers are complete, followed by explicit deployment/publication/runtime certification and program issue #139 closeout.
+- The ten P11.9 privacy/compliance blockers remain active.
+- Published production remains the separate Task #73 source.
+- Generic `continue` may advance P12.1 frontend/source/test work only. It does not authorize live provider/OAuth activity, production crawling, Production DB/storage mutation, persistence activation, provider/public-site writes, schedulers/workers, autonomous mutation, credential changes, destructive retention, Task #51/#53/#54 execution, deployment or publication.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
 
