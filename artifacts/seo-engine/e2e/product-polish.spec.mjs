@@ -133,6 +133,21 @@ async function collectPolishState(page, viewport) {
       expectedCompact: width <= 820,
     };
 
+    const isVisuallyHidden = (element) => {
+      if (!(element instanceof HTMLElement)) return false;
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      const clipped =
+        (style.clip && style.clip !== "auto") ||
+        (style.clipPath && style.clipPath !== "none");
+      return (
+        rect.width <= 1.5 &&
+        rect.height <= 1.5 &&
+        style.overflow === "hidden" &&
+        (style.position === "absolute" || clipped)
+      );
+    };
+
     const clippingCandidates = [
       ...document.querySelectorAll(
         [
@@ -149,7 +164,9 @@ async function collectPolishState(page, viewport) {
           ".statusBadge",
         ].join(","),
       ),
-    ].filter(visible);
+    ]
+      .filter(visible)
+      .filter((element) => !isVisuallyHidden(element));
 
     const clippingFailures = clippingCandidates.flatMap((element) => {
       if (!(element instanceof HTMLElement)) return [];
