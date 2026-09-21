@@ -236,7 +236,8 @@ for (let index = 0; index < gscSignals.length; index += 1) {
   const pageIndex = index % P11_10_LOAD_SCALE_TARGETS.urlsPerSite;
   const suffix = padded(pageIndex);
   const materialize =
-    index < P11_10_LOAD_SCALE_TARGETS.maxMaterializedOpportunityCandidates;
+    index <
+    P11_10_LOAD_SCALE_TARGETS.maxMaterializedOpportunityCandidates / 2;
   gscSignals[index] = {
     pageId: "page-" + suffix,
     queryId: "query-" + String(index).padStart(6, "0"),
@@ -272,16 +273,26 @@ const opportunityRun = timed(
       candidates.length,
       P11_10_LOAD_SCALE_TARGETS.maxMaterializedOpportunityCandidates,
     );
-    assert.ok(
-      candidates.every(
-        (candidate) => candidate.opportunityType === "striking_distance",
-      ),
+    const typeCounts = candidates.reduce<Record<string, number>>(
+      (counts, candidate) => {
+        counts[candidate.opportunityType] =
+          (counts[candidate.opportunityType] ?? 0) + 1;
+        return counts;
+      },
+      {},
     );
+    assert.deepEqual(typeCounts, {
+      internal_link:
+        P11_10_LOAD_SCALE_TARGETS.maxMaterializedOpportunityCandidates / 2,
+      striking_distance:
+        P11_10_LOAD_SCALE_TARGETS.maxMaterializedOpportunityCandidates / 2,
+    });
     return {
       result: candidates,
       outputRows: candidates.length,
       correctness: {
         count: candidates.length,
+        typeCounts,
         first: candidates[0]
           ? {
               key: candidates[0].generationKey,
