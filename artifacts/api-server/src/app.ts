@@ -12,6 +12,7 @@ import {
 } from "./middlewares/auth-security.js";
 
 const app: Express = express();
+app.disable("x-powered-by");
 app.set("trust proxy", 1);
 
 app.use(
