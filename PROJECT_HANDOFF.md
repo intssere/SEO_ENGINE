@@ -13,135 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P10.7 Impact workspace v2 is complete and certified. P11.1 is the next safe engineering boundary.
+**Current checkpoint:** P11.1 production performance budgets and offline profiling is complete and certified. P11.2 is the next safe engineering boundary.
 
-- P10.7 issue #337 / implementation PR #338.
-- Implementation base SHA/tree: `6a28f58962d3c710cdc050ff4af3d37b01599a9d` / `9a6c24b10794a84a8516fe42344f3bfd39f82922`.
-- Exact tested implementation head/tree: `5e81960b3c471de18f69d5770c3dcfeeab21b70a` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
-- Detached Replit exact-head validation: P10.7 model tests `9/9`, contract tests `8/8`, full frontend tests PASS including model phase `55/55`, frontend typecheck/build and `git diff --check` PASS.
-- Exact-head PR CI #583 / run `35521313230`: success.
-- Implementation merge/tree: `72cf75fb9248c750b485d212a8a0f9245d785809` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
-- Post-merge main CI #584 / run `35521463457`: success.
-- Replit was Git-only fast-forwarded to the exact implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
-- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
-- Final merged build retained only a non-fatal Vite advisory: generated SEO Engine JavaScript chunk `589.41 kB` minified / `169.95 kB` gzip exceeds the 500 kB advisory threshold. This is an input to P11.1, not a P10.7 failure.
-- `/impact` is now a deterministic synthetic/read-only workspace rather than a live deployments-API measurement table.
-- P10.7 validates and visibly preserves P10.1 chronology, P10.2 association, P10.3 windows/confounders, P10.4 experiment/holdout structure, P10.5 expected-vs-actual arithmetic and P10.6 directional calibration as distinct layers.
-- Expected-vs-actual differences remain arithmetic only. Directional calibration remains non-reward/non-quality evidence only. Neither is causal impact or success/failure.
-- P10.7 introduced no backend API route, live provider/outcome loader, Production DB access, recommendation/model/ranking/policy mutation, execution or publication authority.
-- P9.8 remains review-complete but implementation-blocked. P10.7 did not unlock autonomous mutation, Task #51/#53/#54 execution or new provider scopes.
-- Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P11.1 — production performance budgets and profiling**. Start with deterministic/offline budgets, static bundle/chunk analysis and synthetic browser profiling/regression contracts against the engineering tree; no production load, deployment/runtime mutation, live provider contact or publication is implied.
-- Generic `continue` does not authorize provider/public-site writes, Production DB changes, production traffic/load tests, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
-- P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
-
-The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
-
-**Task #56 — Risk Semantics Alignment & Effective-Risk Diagnostics v1 was fully merged, published, production-certified, and closed.**
-
-### Task #56 application history
-
-- Issue: `https://github.com/intssere/SEO_ENGINE/issues/62`
-- PR: `https://github.com/intssere/SEO_ENGINE/pull/63`
-- Tested PR head: `115709335c5cd1fb118cdceda56b1a6740ae5be2`
-- PR CI #131 / run `34751293138`: **success**
-- Application merge SHA: `8d1c65e630253a4e0f052076bfc6bf21fbf5679f`
-- Application tree: `11bc62ba2545769d78f29c41a268423b1350545f`
-- Post-merge application main CI #132 / run `34751384367`: **success**
-
-### Release source and publication
-
-The repository continuity/docs commits after the Task #56 application merge changed documentation only. Immediately before Task #56 publication, canonical GitHub `main` was:
-
-- SHA: `0c5213d98ece0406aeaab059233c3af6373e0459`
-- Tree: `16b63fca211cd8fe54fdcdaaadb1f99d06774fc0`
-- CI #139 / run `34752925093`: **success**
-
-Replit was exact-synced to that source and passed merged-main validation before publication:
-
-- API codegen/generated-client consistency: pass, zero generated diff
-- API tests: **180/180 passed**
-- focused Task #56 frontend risk tests: **3/3 passed**
-- API typecheck: pass
-- frontend typecheck: pass
-- API production build and production-bundle safety-marker verification: pass
-- frontend production build: pass; existing non-fatal tooltip sourcemap warning only
-- `git diff --check`: pass
-- Replit branch/HEAD/tree aligned to canonical main
-- ahead/behind `0/0`
-- working tree clean
-
-The user then explicitly authorized publication of only that certified source, with no DB DDL, provider/public-site mutation, or Task #53/#54 execution.
-
-Publication to the existing Replit autoscale deployment completed successfully.
-
-### Production certification
-
-Post-publication certification used GET/SELECT/log/static-artifact inspection only and passed:
-
-- `/api/healthz`: healthy
-- auth configured: yes
-- auth enforcement enabled: yes
-- Google OIDC configured: yes
-- allowlist-only: yes
-- public registration disabled: yes
-- development DB: **31** public base tables
-- production DB: **31** public base tables
-- `auth_sessions`: present in both
-- `auth_audit_events`: present in both
-- all six Task #55 auth indexes present in both
-- production frontend contains `evaluatorRisk`
-- production frontend contains `planControlRisk`
-- production frontend contains `effectiveExecutionRisk`
-- production UI contains labels `Evaluator risk`, `Plan control`, `Effective execution risk`
-- `PUBLIC_SITE_WRITES_ENABLED` effectively false
-- `AI_PROPOSAL_GENERATION_ENABLED` effectively false
-- Task #53 provider-write dispatch disabled
-- Task #54 provider-write dispatch disabled
-- Task #53 scheduler disabled
-- Task #54 scheduler disabled
-- Task #54 batch execution disabled
-- no evidence of unexpected POST/PUT/PATCH/DELETE provider operations, Shopify mutation, public-site mutation, autonomous execution, Task #53 execution, or Task #54 apply around the deployment
-
-No new interactive login/logout certification was performed because Task #55 authentication behavior did not change. Protected proposal-record API behavior was not re-tested through a newly created login session; public health/auth status, schema continuity, same-release deployment, live frontend Task #56 markers, and safety-state checks passed.
-
-### Post-publish Replit Git reconciliation
-
-Publication generated one empty local Replit commit:
-
-- SHA: `a6f8822d7ff00cf65c25383ae088e1ca500caed0`
-- Parent: `0c5213d98ece0406aeaab059233c3af6373e0459`
-- Subject: `Published your App`
-- Tree: `16b63fca211cd8fe54fdcdaaadb1f99d06774fc0`
-- Changed files: none
-
-Because it was metadata-only and tree-identical to canonical GitHub main, Replit was reconciled to canonical main without republishing.
-
-Final certified Replit state before this documentation closeout:
-
-- branch: `main`
-- HEAD: `0c5213d98ece0406aeaab059233c3af6373e0459`
-- tree: `16b63fca211cd8fe54fdcdaaadb1f99d06774fc0`
-- locally known `origin/main`: same
-- current remote main at that checkpoint: same
-- ahead/behind: `0/0`
-- working tree: clean
-- changed files: none
-- untracked files: none
-- production deployment remained successful
-
-Because this handoff update itself will advance GitHub history after merge, always resolve the actual current `main` SHA/tree independently instead of assuming `0c5213d...` is still the repository tip.
-
-### Exact first action in a new chat
-
-1. Read `CURRENT_STATE.md` first.
-2. Resolve current GitHub `main` SHA/tree and current main CI.
-3. Read `AGENTS.md`, this handoff, `ARCHITECTURE.md`, project skill, memory index, and relevant memory note.
-4. Inspect Replit branch/HEAD/tree/ahead-behind/working tree before sync or publish.
-5. Re-confirm development/production schema parity before any future publish.
-6. Re-confirm auth and all write/AI/execution gates before any high-control step.
-7. Do **not** re-publish Task #56; it is already production-certified.
-8. Do **not** start Task #53/#54 execution from a generic `continue`.
+- P11.1 issue #341 / implementation PR #342.
+- Implementation base SHA/tree: `accea205784a1ba5a99d4627f807e52742d3fb84` / `b7e1782f9a2fe4e20ea4e60ce0ed9ab9b52d7d46`.
+- Exact tested implementation head/tree: `a3e6eb9ec03f090ac8c18da4d0ff3f8823fff635` / `47346f32708af927b8b9394b82c892b3caa00318`.
+- Exact-head PR CI #588 / run `35572373801`: success.
+- Implementation merge/tree: `b43d10f5662862cb6467edd056b1e8adf96c2aa5` / `47346f32708af927b8b9394b82c892b3caa00318`.
+- Post-merge main CI #589 / run `35572567203`: success.
+- Build budgets are explicit: JS `620000` raw / `180000` gzip; CSS `190000` raw / `33000` gzip, enforced per asset and in total.
+- Canonical post-merge build measured JS `589405` raw / `170018` gzip and CSS `179974` raw / `29944` gzip; `P11_1_BUDGET_PASS`.
+- Vite's existing >500 kB advisory remains intentionally visible; P11.1 did not raise/suppress the warning threshold.
+- Synthetic-local browser profiles cover seven critical routes, keep unavailable timings null, and use a reviewed `1.25x` plus `100 ms` regression boundary for supplied-profile comparison only.
+- Browser profiling remains local/synthetic and network-closed; it is not production RUM, Core Web Vitals certification or load testing.
+- Replit is exact-aligned to the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean and zero tracked/untracked drift.
+- Replit tests/typecheck/build/budget gate/`git diff --check`: PASS using existing dependencies only. Replit-local Playwright was skipped because Chromium shared libraries were unavailable; canonical GitHub Ubuntu/Chromium passed on both PR and post-merge runs.
+- P11.1 is unpublished and added no provider, database, credential, scheduler/worker, execution, runtime/deployment or publication authority.
+- P9.8 remains review-complete but implementation-blocked; P11.1 did not change Task #51/#53/#54 authorization boundaries.
+- Published production remains the separately certified Task #73 application source; engineering main is not implied published.
+- Default next safe boundary: **P11.2 — security review: auth, CSRF, SSRF, CSP, headers, secret handling and supply chain**. Begin with deterministic/offline source/config/dependency review and bounded test-based hardening only; no intrusive production scanning, secret retrieval/rotation, provider scope change, Production DB mutation, deployment/runtime mutation or publication is implied.
+- Generic `continue` does not authorize provider/public-site writes, Production DB changes, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 
 ---
 
