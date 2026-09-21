@@ -257,6 +257,21 @@ async function collectPolishState(page, viewport) {
               if (!(element instanceof HTMLElement)) return [];
               if (element.closest(".dataGridWrap")) return [];
               const rect = element.getBoundingClientRect();
+              if (
+                element instanceof HTMLInputElement &&
+                ["checkbox", "radio"].includes(element.type)
+              ) {
+                const label = element.closest("label");
+                if (label instanceof HTMLElement) {
+                  const labelRect = label.getBoundingClientRect();
+                  if (
+                    labelRect.width + EPSILON >= 44 &&
+                    labelRect.height + EPSILON >= 44
+                  ) {
+                    return [];
+                  }
+                }
+              }
               return rect.height + EPSILON < 44
                 ? [describe(element)]
                 : [];
