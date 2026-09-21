@@ -69,6 +69,8 @@ test("P11.5 browser contract includes 320px reflow and 24px target-size checks",
   assert.ok(cert.includes("document.body.scrollWidth"));
   assert.ok(cert.includes("width < 24 || height < 24"));
   assert.ok(cert.includes("isInlineTextLinkException"));
+  assert.ok(cert.includes("hasSpacingException"));
+  assert.ok(cert.includes("circleIntersectsRect"));
   assert.ok(cert.includes("Scroll horizontally") === false);
 });
 
