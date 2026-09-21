@@ -82,6 +82,53 @@ test("compact mobile navigation closes with Escape and restores toggle focus", a
   assertBrowserClean(errors);
 });
 
+test("P12.1 primary navigation excludes engineering-only routes while direct engineering access stays honest", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/");
+
+  const primary = page.locator(".sidebar .primaryNav");
+  for (const label of [
+    "Overview",
+    "Opportunities",
+    "Technical SEO",
+    "Governance",
+    "Actions",
+    "Approvals",
+    "Deployments",
+    "Performance",
+    "Connections",
+    "Settings",
+  ]) {
+    await expect(primary.getByRole("link", { name: new RegExp("^" + label) })).toBeVisible();
+  }
+
+  for (const label of [
+    "Rankings",
+    "Search Intelligence",
+    "AI Visibility",
+    "Internal Links",
+    "Impact",
+    "Reports",
+    "Experiments",
+    "Learning",
+  ]) {
+    await expect(primary.getByRole("link", { name: new RegExp("^" + label) })).toHaveCount(0);
+  }
+
+  await page.goto("/search-intelligence");
+  await expect(
+    page.getByRole("heading", { name: "Competitor intelligence workspace" }),
+  ).toBeVisible();
+  await expect(page.getByText("SYNTHETIC READ-ONLY")).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Primary navigation" }).first(),
+  ).not.toContainText("Search Intelligence");
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
 test("Audit DataGrid is keyboard-scrollable and search/sort behavior is deterministic", async ({
   page,
 }) => {
