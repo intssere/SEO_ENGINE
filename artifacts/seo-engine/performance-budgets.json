@@ -1,0 +1,29 @@
+{
+  "version": "p11.1.v1",
+  "buildAssets": {
+    "js": {
+      "minAssetCount": 1,
+      "maxAssetRawBytes": 620000,
+      "maxAssetGzipBytes": 180000,
+      "maxTotalRawBytes": 620000,
+      "maxTotalGzipBytes": 180000
+    },
+    "css": {
+      "minAssetCount": 1,
+      "maxAssetRawBytes": 190000,
+      "maxAssetGzipBytes": 33000,
+      "maxTotalRawBytes": 190000,
+      "maxTotalGzipBytes": 33000
+    }
+  },
+  "syntheticProfile": {
+    "maxRegressionRatio": 1.25,
+    "noiseFloorMs": 100,
+    "regressionMetrics": [
+      "domContentLoadedMs",
+      "loadEventMs",
+      "firstContentfulPaintMs",
+      "mainContentReadyMs"
+    ]
+  }
+}
