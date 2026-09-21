@@ -30,6 +30,7 @@ const ROUTES = [
   "/search-intelligence",
   "/learning",
   "/impact",
+  "/reports",
   "/connections",
   "/settings",
   "/__p11-5-not-found",
