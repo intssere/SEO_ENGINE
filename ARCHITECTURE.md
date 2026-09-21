@@ -554,19 +554,20 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P10.7 complete**.
+The current engineering architecture checkpoint is **P11.1 complete**.
 
-- P10.7 issue #337 / implementation PR #338.
-- Exact tested implementation head/tree: `5e81960b3c471de18f69d5770c3dcfeeab21b70a` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
-- Exact-head CI #583 / run `35521313230` and post-merge main CI #584 / run `35521463457` passed.
-- Canonical implementation merge/tree: `72cf75fb9248c750b485d212a8a0f9245d785809` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
-- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
-- P10.7 closes the Phase P10 safe projection by keeping P10.1 chronology, P10.2 association, P10.3 windows/confounders, P10.4 experiment/holdout structure, P10.5 expected-vs-actual arithmetic and P10.6 directional calibration visually and semantically distinct.
-- The Impact workspace uses a deterministic synthetic/read-only fixture and has no live deployments/outcome API binding.
-- No displayed arithmetic relation or directional calibration signal is causal impact, recommendation quality, reward, success/failure, rank/policy input or rollout advice.
-- P9.8 remains review-complete but implementation-blocked; P10.7 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P11.1 issue #341 / implementation PR #342.
+- Exact tested implementation head/tree: `a3e6eb9ec03f090ac8c18da4d0ff3f8823fff635` / `47346f32708af927b8b9394b82c892b3caa00318`.
+- Exact-head CI #588 / run `35572373801` and post-merge main CI #589 / run `35572567203` passed, including the canonical Ubuntu/Chromium browser suite.
+- Canonical implementation merge/tree: `b43d10f5662862cb6467edd056b1e8adf96c2aa5` / `47346f32708af927b8b9394b82c892b3caa00318`.
+- P11.1 adds explicit versioned JS/CSS raw+gzip budgets and a hard post-build gate without raising or suppressing Vite's existing >500 kB advisory.
+- P11.1 synthetic-local browser profiles preserve unavailable values and keep DCL/load/FCP/main-content timing comparisons independent; they are not production RUM/CWV, load tests, scores or deployment verdicts.
+- Canonical GitHub build measured JS `589,405` raw / `170,018` gzip and CSS `179,974` raw / `29,944` gzip, within the explicit ceilings.
+- Replit was Git-only exact-synced to the merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build/budget gate and `git diff --check` using existing dependencies.
+- Replit-local Chromium lacks `libglib-2.0.so.0`; the project therefore retains GitHub Ubuntu/Chromium as the canonical browser runner rather than modifying the Replit system image.
+- P9.8 remains review-complete but implementation-blocked; P11.1 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P11.1 — production performance budgets and profiling**, initially limited to deterministic/offline static budgets and synthetic/local profiling evidence without production load generation, runtime mutation, deployment or publication.
+- Default next safe program boundary is **P11.2 — security review**, initially limited to deterministic source/static/dependency inspection and network-free tests/remediation without secret rotation, production/provider activity, runtime/deployment mutation or publication.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.

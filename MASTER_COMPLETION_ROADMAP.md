@@ -486,8 +486,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 
 | ID | Work item | Status |
 |---|---|---|
-| P11.1 | production performance budgets and profiling | NEXT SAFE BOUNDARY — define deterministic/offline bundle/runtime performance budgets, synthetic/local profiling fixtures and regression thresholds against the engineering tree; no production load generation, deployment/runtime mutation, live provider contact, Production DB mutation or publication on generic continuation |
-| P11.2 | security review: auth, CSRF, SSRF, CSP, headers, secret handling, supply chain | CONTINUOUS + final pass |
+| P11.1 | production performance budgets and profiling | DONE — issue #341 / PR #342 / merge `b43d10f5662862cb6467edd056b1e8adf96c2aa5`; explicit JS/CSS raw+gzip budgets, hard post-build gate, normalized synthetic-local profile contracts and supplied-profile regression semantics; canonical GitHub browser/budget CI and Replit non-browser/build certification; no production load/provider/DB/runtime/deployment/publication activation |
+| P11.2 | security review: auth, CSRF, SSRF, CSP, headers, secret handling, supply chain | NEXT SAFE BOUNDARY / CONTINUOUS + final pass — begin deterministic source/static/dependency review and network-free tests; no secret rotation, live provider/Production DB activity, runtime/deployment mutation or publication on generic continuation |
 | P11.3 | observability: metrics/logs/traces/alerts/job health | PLANNED |
 | P11.4 | backup/recovery and disaster-runbook certification | PLANNED |
 | P11.5 | accessibility WCAG 2.2 AA certification | PLANNED |
@@ -608,9 +608,10 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 57. **DONE — P10.5:** expected-vs-actual outcome tracking, issue #331 / PR #332 / merge `d038fbb1b8cccc67366dec7eb79961e10e947507`; exact P10.4 lineage verification, supplied metric/expectation/actual provenance, canonical-decimal exact arithmetic and descriptive relations with no causal/statistical/runtime activation.
 58. **DONE — P10.6:** recommendation calibration/learning signals, issue #334 / PR #335 / merge `255ec1058a01bf20f0db0e04f45d1c981b7c2ac6`; exact P10.5 integrity, exact treatment recommendation lineage, supplied calibration definitions and independent directional signals with no reward/scoring/model/ranking/policy/runtime activation.
 59. **DONE — P10.7:** Impact workspace v2, issue #337 / PR #338 / merge `72cf75fb9248c750b485d212a8a0f9245d785809`; deterministic synthetic/read-only P10.1–P10.6 projection with exact lineage validation, expected-vs-actual and directional-calibration presentation, and no causal/reward/runtime authority.
-60. **NEXT SAFE BOUNDARY — P11.1:** deterministic/offline production-performance budgets and profiling over the engineering tree; no production load, runtime mutation, provider contact or publication.
-61. **P11.2–P11.10 —** enterprise hardening items remain planned/continuous as listed above.
-62. **P12 —** final production completion certification and program closeout.
+60. **DONE — P11.1:** production performance budgets and offline profiling, issue #341 / PR #342 / merge `b43d10f5662862cb6467edd056b1e8adf96c2aa5`; hard raw/gzip build budgets plus synthetic-local profiling contracts with no production load/runtime activation.
+61. **NEXT SAFE BOUNDARY — P11.2:** deterministic source/static/dependency security review for auth, CSRF, SSRF, CSP/headers, secret handling and supply chain; no live credential/provider/runtime/deployment mutation on generic continuation.
+62. **P11.3–P11.10 —** remaining enterprise hardening items stay planned/continuous as listed above.
+63. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 
