@@ -311,3 +311,60 @@ The same exact-head CI also passed:
   - CSS 186,332 raw / 31,020 gzip.
 
 These measurements are engineering evidence from one GitHub shared-runner execution. They are not production latency, throughput, capacity, concurrency, SLA or hosting-size guarantees.
+
+## Final exact-head and post-merge certification
+
+The earlier optimized-head evidence above is retained as stabilization history. Final certification uses the exact PR head that was actually merged.
+
+Final exact tested implementation:
+
+- base SHA/tree: `4aad63e82d2ec41d80328b63c9a1a7b8737b3d9e` / `79a1420043c2aad16138e54679506f2320b708d8`;
+- exact tested head/tree: `0b1cb915ac54cc56c26aeb841662f26d6de052f4` / `16a453f80ba5577416d3060696a56e027762952c`;
+- exact-head PR CI #658 / run `35627543198`: success;
+- implementation merge/tree: `fbf1abd2e1f04de649b9c54b29b74873098ccdb9` / `16a453f80ba5577416d3060696a56e027762952c`;
+- post-merge main CI #659 / run `35627981015`: success.
+
+Final exact-head scale profile:
+
+| Scenario | Input rows | Output rows | Elapsed | Heap used |
+|---|---:|---:|---:|---:|
+| Sitemap inventory | 25,000 | 25,000 | 234.623 ms | 54.49 MiB |
+| Crawl execution plan | 25,000 | 100 batches | 58.501 ms | 54.80 MiB |
+| URL Explorer | 25,000 | 500-page output | 193.964 ms | 33.71 MiB |
+| Opportunity engine | 100,000 | 25,000 candidates | 238.407 ms | 96.42 MiB |
+| Read scheduler | 100 | 100 schedules | 14.292 ms | 95.40 MiB |
+
+Combined measured scenario time: **739.787 ms**.
+
+Highest observed heap-used measurement: **96.42 MiB**.
+
+Certification fingerprint:
+
+`99c9910efd2474573f5ffd060bd24cea276aa337adfdf57140679e6ae6fdb20c`
+
+Every scenario passed with zero blockers.
+
+The same exact-head gate passed:
+
+- **1,250 workspace tests / 0 failures** across the reported workspace package groups;
+- API package: **1,063/1,063**;
+- canonical Chromium: **110/110**;
+- full typecheck;
+- full build;
+- P11.1 asset budgets:
+  - JS 611,156 raw / 175,333 gzip;
+  - CSS 186,332 raw / 31,020 gzip.
+
+Replit is Git-only exact-synced to the implementation merge/tree with branch `main`, origin/main exact, ahead/behind `0/0`, zero tracked/untracked files, clean worktree, zero Git locks and no active repository writer or validation process at reconciliation.
+
+These values remain shared-runner engineering evidence only. They do not establish production latency, capacity, concurrency, database throughput, provider quota sufficiency, worker throughput, hosting size, uptime or SLA.
+
+## P11 phase completion
+
+With P11.10 certified, **P11 enterprise hardening is complete**.
+
+The ten P11.9 privacy/compliance blockers remain open prerequisites for affected live/commercial flows and are not waived by this scale result.
+
+No production load, provider traffic, Production DB benchmarking/mutation, destructive retention, scheduler/worker activation, Task #51/#53/#54 execution, P9.8 activation, runtime/config/secret mutation, deployment or publication occurred.
+
+The next safe boundary is **P12 final production completion certification entry/readiness review**. P12 live proofs remain separately governed and require their own authorization.
