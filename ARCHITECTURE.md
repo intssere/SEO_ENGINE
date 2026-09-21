@@ -514,7 +514,23 @@ Permanent semantics:
 
 P10.7 has no generated API-client import on the Impact page, no live outcome/provider loader, Production/live database access, SQL, credential use, recommendation persistence/update, model training/weight update, ranking/policy/prompt mutation, timer/scheduler/live worker, retry runtime, Task #51/#53/#54 execution, provider/public-site write, P9.8 implementation, backend-route activation, deployment or publication.
 
-P11.1 may define deterministic/offline production-performance budgets and profiling contracts over the current engineering tree. Generic continuation may inspect static artifacts and use synthetic/local browser fixtures, but it does not authorize live production load generation, deployment/runtime mutation, provider contact, Production DB mutation or publication.
+### P11.1 performance budgets and offline profiling
+
+P11.1 hardens the engineering tree with two deliberately separate performance evidence layers:
+
+- emitted-asset budgets: deterministic raw/gzip byte ceilings for JavaScript and CSS, enforced after the frontend build;
+- synthetic-local browser profiles: normalized local Navigation/Paint/main-content readiness observations collected through the existing Playwright synthetic-network boundary.
+
+Permanent semantics:
+- build budgets are versioned reviewed limits, not a mechanism for suppressing Vite diagnostics;
+- both per-asset and total ceilings apply, so code splitting cannot hide aggregate bundle growth;
+- missing profile metrics remain unavailable/null and are never converted to zero;
+- supplied-profile regression comparison uses reviewed relative and absolute-noise thresholds and keeps metrics independent;
+- synthetic-local timings are not production RUM, Core Web Vitals certification, load/scale evidence, ranking signals, causal evidence or a user-experience score;
+- external-origin requests and unmocked API calls remain blocked in browser profiling;
+- P11.1 introduces no provider network activity, Production DB access, credentials, scheduler/worker/retry runtime, mutation authority, deployment/runtime mutation or publication.
+
+P11.2 may perform deterministic/offline source/config/dependency security review and bounded test-based hardening, but generic continuation does not authorize intrusive production scanning, exploitation, secret retrieval/rotation, provider-scope changes, Production DB mutation, deployment/runtime mutation or publication.
 
 ## Measurement architecture
 
@@ -554,19 +570,19 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P10.7 complete**.
+The current engineering architecture checkpoint is **P11.1 complete**.
 
-- P10.7 issue #337 / implementation PR #338.
-- Exact tested implementation head/tree: `5e81960b3c471de18f69d5770c3dcfeeab21b70a` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
-- Exact-head CI #583 / run `35521313230` and post-merge main CI #584 / run `35521463457` passed.
-- Canonical implementation merge/tree: `72cf75fb9248c750b485d212a8a0f9245d785809` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
-- Replit was Git-only exact-synced to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed recursive workspace tests, full typecheck, full build and `git diff --check`.
-- P10.7 closes the Phase P10 safe projection by keeping P10.1 chronology, P10.2 association, P10.3 windows/confounders, P10.4 experiment/holdout structure, P10.5 expected-vs-actual arithmetic and P10.6 directional calibration visually and semantically distinct.
-- The Impact workspace uses a deterministic synthetic/read-only fixture and has no live deployments/outcome API binding.
-- No displayed arithmetic relation or directional calibration signal is causal impact, recommendation quality, reward, success/failure, rank/policy input or rollout advice.
-- P9.8 remains review-complete but implementation-blocked; P10.7 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- P11.1 issue #341 / implementation PR #342.
+- Exact tested implementation head/tree: `a3e6eb9ec03f090ac8c18da4d0ff3f8823fff635` / `47346f32708af927b8b9394b82c892b3caa00318`.
+- Exact-head CI #588 / run `35572373801` and post-merge main CI #589 / run `35572567203` passed.
+- Canonical implementation merge/tree: `b43d10f5662862cb6467edd056b1e8adf96c2aa5` / `47346f32708af927b8b9394b82c892b3caa00318`.
+- Replit is exact-aligned to that merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed workspace tests, full typecheck, full build, P11.1 budget enforcement and `git diff --check`.
+- Canonical GitHub Chromium remains the designated browser runner and passed the seven-route synthetic-local profile suite on both exact-head and post-merge CI.
+- JS/CSS bundle budgets are hard build gates; the existing Vite >500 kB advisory remains visible rather than being suppressed.
+- Synthetic-local timing profiles remain descriptive local evidence only and are not production RUM/Core Web Vitals/load certification.
+- P9.8 remains review-complete but implementation-blocked; P11.1 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P11.1 — production performance budgets and profiling**, initially limited to deterministic/offline static budgets and synthetic/local profiling evidence without production load generation, runtime mutation, deployment or publication.
+- Default next safe program boundary is **P11.2 — security review**, initially limited to deterministic/offline source/config/dependency review and bounded test-based hardening with no intrusive production scanning, secret/runtime mutation, deployment or publication.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
