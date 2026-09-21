@@ -81,6 +81,7 @@ test("P11.6 preserves the P4.7 responsive presentation foundation", () => {
   assert.ok(css.includes(".dataGridWrap table"));
   assert.ok(css.includes("min-width: 720px"));
   assert.ok(css.includes(".linkButton {\n    min-height: 44px;"));
+  assert.ok(css.includes(".filters select {\n    min-height: 44px;"));
 });
 
 test("P11.6 does not weaken the P11.5 accessibility certification contract", () => {
