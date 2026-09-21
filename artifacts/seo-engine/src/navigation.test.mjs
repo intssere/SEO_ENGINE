@@ -24,7 +24,7 @@ const expectedDomains = [
   "System",
 ];
 
-const expectedRoutes = [
+const expectedPrimaryRoutes = [
   "/",
   "/opportunities",
   "/governance",
@@ -33,6 +33,11 @@ const expectedRoutes = [
   "/performance",
   "/deployments",
   "/technical-seo",
+  "/connections",
+  "/settings",
+];
+
+const engineeringOnlyRoutes = [
   "/rankings",
   "/internal-links",
   "/ai-visibility",
@@ -41,41 +46,45 @@ const expectedRoutes = [
   "/learning",
   "/impact",
   "/reports",
-  "/connections",
-  "/settings",
+];
+
+const expectedRoutedPaths = [
+  ...expectedPrimaryRoutes,
+  ...engineeringOnlyRoutes,
 ];
 
 const items = navigation.flatMap((group) =>
   group.items.map((item) => ({ ...item, domain: group.domain })),
 );
 
-test("P4.1 exposes exactly the six primary navigation domains in order", () => {
+test("P4.1 preserves exactly the six primary navigation domains in order", () => {
   assert.deepEqual(
     navigation.map((group) => group.domain),
     expectedDomains,
   );
 });
 
-test("P4.1 preserves every existing route exactly once", () => {
+test("P12.1 primary navigation exposes only production-operational surfaces", () => {
   const paths = items.map((item) => item.path);
   assert.equal(new Set(paths).size, paths.length);
-  assert.deepEqual([...paths].sort(), [...expectedRoutes].sort());
+  assert.deepEqual([...paths].sort(), [...expectedPrimaryRoutes].sort());
+  assert.equal(items.some((item) => item.status === "planned"), false);
 
+  for (const route of engineeringOnlyRoutes) {
+    assert.equal(paths.includes(route), false, route);
+  }
+});
+
+test("P12.1 engineering-only surfaces remain routed for direct certification", () => {
   const routedPaths = [...appSource.matchAll(/<Route path="([^"]+)"/g)].map(
     (match) => match[1],
   );
-  assert.deepEqual([...routedPaths].sort(), [...expectedRoutes].sort());
-});
+  assert.equal(new Set(routedPaths).size, routedPaths.length);
+  assert.deepEqual([...routedPaths].sort(), [...expectedRoutedPaths].sort());
 
-test("Learning is subordinate to Measure and honestly marked planned", () => {
-  const learning = items.find((item) => item.path === "/learning");
-  assert.deepEqual(learning, {
-    label: "Learning",
-    path: "/learning",
-    status: "planned",
-    domain: "Measure",
-  });
-  assert.equal(expectedDomains.includes("Learning"), false);
+  for (const route of engineeringOnlyRoutes) {
+    assert.ok(routedPaths.includes(route), route);
+  }
 });
 
 test("active route and mobile accessibility contracts remain explicit", () => {

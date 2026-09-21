@@ -12,11 +12,12 @@ const app = readFileSync(join(here, "App.tsx"), "utf8");
 const navigation = JSON.parse(readFileSync(join(here, "navigation.json"), "utf8"));
 const packageJson = JSON.parse(readFileSync(join(here, "..", "package.json"), "utf8"));
 
-test("P10.7 preserves the existing Impact route and Measure navigation", () => {
+test("P10.7 preserves the Impact route while P12.1 keeps it engineering-only", () => {
   assert.match(app, /<Route path="\/impact" component=\{ImpactPage\}/);
-  const measure = navigation.find((group) => group.domain === "Measure");
-  assert.ok(measure);
-  assert.ok(measure.items.some((item) => item.path === "/impact" && item.label === "Impact"));
+  const primaryPaths = navigation.flatMap((group) =>
+    group.items.map((item) => item.path),
+  );
+  assert.equal(primaryPaths.includes("/impact"), false);
 });
 
 test("P10.7 is visibly synthetic, read-only, non-causal and non-executable", () => {
