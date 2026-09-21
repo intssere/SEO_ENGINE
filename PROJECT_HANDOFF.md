@@ -13,25 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P11.8 multi-site/project abstraction review is complete and certified. P11.9 retention/privacy/provider terms and compliance review is the next safe boundary.
+**Current checkpoint:** P11.9 retention/privacy/provider terms and compliance review is complete and certified. P11.10 load/scale testing for target URL/query volumes is the next safe engineering boundary.
 
-- P11.8 issue #364 / review PR #365.
-- Review base SHA/tree: `b3cdad0f1b7c2853e3f80b1624072e2be65fbdae` / `2bb00656cac0685f43a07ffe2cbcbff280832fb0`.
-- Exact reviewed head/tree: `893ff51157cfbc9db05ff89cc569e3d1024078e5` / `009a4225e9825c763b01f64d5aa5ef14a09007a9`.
-- Exact-head PR CI #646 / run `35615799086`: success.
-- Review merge/tree: `7a47acfeede05b3e9a4ab7a1dd1f6ce670245bc7` / `009a4225e9825c763b01f64d5aa5ef14a09007a9`.
-- Post-merge main CI #647 / run `35616390237`: success.
-- Canonical browser matrix remains **110/110 PASS**.
-- Architecture decision: **Organization = tenant/account; Site = SEO workspace/project; no separate Project entity for v1.**
-- Existing schema is multi-site-capable, but current runtime remains single-site and hard-bound to Diamond Shelf in dashboard/readiness/OAuth paths.
-- True multi-site activation is blocked until server-authoritative membership, explicit fail-closed site request scope, site-scoped loaders, site-bound OAuth/connection persistence, cross-site execution checks, site-aware jobs, frontend switching/context and deterministic cross-site isolation tests exist.
-- Current auth principal remains global subject/email/role only; no organization/site membership is present.
-- Replit is Git-only exact-synced to the P11.8 review merge/tree, origin/main exact, `0/0`, clean, zero tracked/untracked files, zero locks and no active repo writer.
-- A follow-up Replit non-browser validation request was not queued because its Agent channel became busy; do not invent a P11.8 Replit test-run result. GitHub CI is canonical.
-- P11.8 is review-only and unpublished: no schema migration, Production DB/storage mutation, tenant provisioning, auth/runtime/frontend implementation, OAuth/provider request, worker/scheduler activation, Task #51/#53/#54 execution, deployment or publication occurred.
+- P11.9 issue #367 / review PR #368.
+- Review base SHA/tree: `03cd3c7e15ac1bbc804f283c81f2c95a0c5e670d` / `d15b1fcd8e34f8755493b0c170f2b894f16669e0`.
+- Exact reviewed head/tree: `2668467168bb7a272c6fc2873e6c8b80ea7da2b4` / `8176334f53bb166cfbe36cc2ef3eca0d8d9c9ef0`.
+- Exact-head PR CI #650 / run `35621237576`: success.
+- Review merge/tree: `9ed6377963d052a4beccd9a43c102dcddbd798c7` / `8176334f53bb166cfbe36cc2ef3eca0d8d9c9ef0`.
+- Post-merge main CI #651 / run `35621913456`: success.
+- Canonical validation: **1,241 workspace tests / 0 failures**, **110/110 Chromium**, typecheck PASS, build/P11.1 budget PASS.
+- Asset diagnostics: JS 611,156 raw / 175,333 gzip; CSS 186,332 raw / 31,020 gzip.
+- P11.9 is an engineering/provider-policy review, **not legal advice or a legal-compliance certification**.
+- Existing controls include encrypted OAuth token persistence, exact/minimized provider scopes, hashed session/security identifiers, secret-redacting logs and default-disabled destructive retention execution.
+- Ten fail-closed pre-production blockers remain: external privacy/context disclosures; provider revoke/delete lifecycle; Shopify compliance deletion path where required; retention execution; P3.6 erasure; auth/audit retention; backup deletion semantics; provider/DPA/subprocessor register; outgoing-data classification for AI/external providers; jurisdiction-specific legal review.
+- Replit is Git-only exact-synced to the P11.9 review merge/tree, origin/main exact, `0/0`, clean, no locks/writers.
+- A follow-up Replit non-browser validation request was not queued because the Agent channel became busy; do not invent a Replit test result. GitHub full CI is canonical.
+- P11.9 performed no data deletion/prune/archive, Production DB/storage mutation, provider-token revocation, secret rotation/deletion, Shopify webhook deployment, provider request/account change, worker/scheduler activation, Task #51/#53/#54 execution, deployment or publication.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source.
-- Default next safe boundary: **P11.9 — retention/privacy/provider terms and compliance review**. Start with inventory/review only: data categories, retention/deletion semantics, privacy exposure, auth/OAuth credential handling, logs/audit/evidence history, provider policy/terms constraints and gaps. Do not delete/migrate production data or rotate/revoke credentials on generic continuation.
-- Generic `continue` still does not authorize live provider/public-site mutation, Production DB/storage mutation, secret/runtime changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- Default next safe boundary: **P11.10 — load/scale testing for target URL/query volumes**. Use generated/local fixtures and explicit capacity targets only; no production-site crawling, provider traffic or Production DB stress testing on generic continuation.
+- P11.9 compliance blockers remain prerequisites for the affected commercial/live flows and are not waived by later scale testing.
+- Generic `continue` still does not authorize live provider/public-site mutation, Production DB/storage mutation, destructive retention, credential changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
