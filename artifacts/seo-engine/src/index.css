@@ -1461,7 +1461,11 @@ h2 {
   font-size: 12px;
   cursor: pointer;
   transition: color 0.2s ease;
-  padding: 0;
+  padding: 0 4px;
+  min-width: 24px;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
 }
 .linkButton:hover {
   color: #244e99;
@@ -1561,6 +1565,7 @@ h2 {
 }
 .dataGridSortButton {
   width: 100%;
+  min-height: 24px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -1568,7 +1573,7 @@ h2 {
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 0;
+  padding: 3px 0;
   font: inherit;
   text-align: left;
   cursor: pointer;
