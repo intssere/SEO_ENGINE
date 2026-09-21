@@ -147,3 +147,27 @@ P11.5 is complete only after:
 P11.5 is an engineering certification, not a legal or universal conformance claim.
 
 Manual testing with representative screen readers, magnification, speech input, switch access and a broader browser/OS matrix remains useful before a commercial accessibility statement. Production accessibility must also be re-certified after the engineering tree is separately authorized and published.
+
+## Final implementation certification
+
+Certified implementation lineage:
+
+- base SHA/tree: `82e6ef687b1de176a02070baea10acc464748bf3` / `981f7889825ea40e334221a6c3b9df85781f6df8`;
+- final exact tested head/tree: `8698aea5b0cf9124156364a40d05c8d084a2b05c` / `7263db76f570cfe03722ec43437be6b3361a579a`;
+- exact-head PR CI #622 / run `35594233934`: success;
+- implementation merge/tree: `11d4d0d363bac9e1d6da8d5f4ee21c49eb1c0ed0` / `7263db76f570cfe03722ec43437be6b3361a579a`;
+- post-merge main CI #623 / run `35594621574`: success;
+- canonical GitHub Chromium: 81/81 PASS, comprising 57 P11.5 accessibility tests, 13 critical-path tests, 7 performance-profile tests and 4 visual-regression tests;
+- workspace package tests: 1,218 PASS / 0 failures;
+- GitHub build budgets: JS 589,405 raw / 170,018 gzip; CSS 180,021 raw / 29,945 gzip; `P11_1_BUDGET_PASS`;
+- Replit exact Git sync: merge SHA/tree above, origin/main exact, `0/0`, clean;
+- Replit non-browser validation: 1,218 workspace tests PASS / 0 failures, typecheck PASS, build/P11.1 budget PASS and `git diff --check` PASS;
+- Replit discovered 81 Chromium tests but could not launch Chromium because required shared libraries are unavailable in that environment, so no Replit browser assertion result is claimed.
+
+The initial stricter CI #611 was intentionally informative: it exposed real target-size and contrast problems plus an incomplete synthetic proposal fixture. Those findings were repaired on the same implementation branch before final exact-head certification. The closeout preserves that stabilization history rather than treating the first audit failure as a production incident.
+
+## Next boundary
+
+P11.5 is complete for the engineering tree and remains unpublished.
+
+The next safe engineering boundary is **P11.6 — responsive/product polish**. Generic continuation is limited to bounded source/local-synthetic browser work that preserves the P11.5 accessibility gates. Production provider/runtime activation, Production DB/storage mutation, secrets/config changes, workers/schedulers, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment and publication remain separately gated.

@@ -569,6 +569,10 @@ The current engineering architecture checkpoint is **P11.4 complete**.
 - P9.8 remains review-complete but implementation-blocked; P11.4 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
 - Published production remains the separately certified Task #73 application source; current engineering main is not implied published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P11.5 — accessibility WCAG 2.2 AA certification**, initially limited to deterministic source/static and local/synthetic browser accessibility review/remediation without production crawl/scan, runtime/deployment mutation or publication.
+- P11.5 adds a deterministic/local-synthetic frontend certification layer over P4.8/P4.10: every routed surface plus not-found is included in the all-impact WCAG 2.2 A/AA axe gate, 320px document reflow, bounded target-size/spacing checks, focus visibility/transfer and reduced-motion verification.
+- P11.5 keeps the browser harness network-closed: external origins and unmocked API requests fail closed; its synthetic proposal fixture is presentation/test data only and grants no provider, approval, execution or persistence authority.
+- P11.5 bounded CSS remediation is presentation-only and does not alter API/schema/provider/runtime capability. GitHub Ubuntu/Chromium is the canonical browser runner; Replit remains valid for non-browser test/type/build/budget/diff certification when Chromium system libraries are unavailable.
+- P11.5 certification applies only to the exact engineering tree and deterministic browser conditions; it does not certify published Task #73 production, every assistive-technology/browser/OS combination or future runtime content.
+- Default next safe program boundary is **P11.6 — responsive/product polish**, limited on generic continuation to bounded engineering-source/local-synthetic UX and responsive remediation that preserves P11.5 accessibility and does not activate live provider/runtime/deployment/publication paths.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
