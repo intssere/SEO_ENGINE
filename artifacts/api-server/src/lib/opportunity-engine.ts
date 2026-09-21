@@ -211,11 +211,14 @@ export function generateOpportunityCandidates(input: OpportunityEngineInput): Op
     if (row.position >= 8 && row.position <= 20 && row.impressions >= 30) {
       const target = normalizedUrl(row.url);
       const terms = significantQueryTerms(row.query);
-       const sources = eligibleCrawlPages.filter((source) =>
-        source.pageId !== row.pageId
-        && terms.some((term) => source.contentText.toLowerCase().includes(term))
-        && !source.links.some((link) => normalizedUrl(link) === target),
-      ).slice(0, 3);
+       const sources: CrawlPageSignal[] = [];
+      for (const source of eligibleCrawlPages) {
+        if (source.pageId === row.pageId) continue;
+        if (!terms.some((term) => source.contentText.toLowerCase().includes(term))) continue;
+        if (source.links.some((link) => normalizedUrl(link) === target)) continue;
+        sources.push(source);
+        if (sources.length === 3) break;
+      }
       if (sources.length > 0) {
         const evidence = [page.evidenceId, ...sources.map((source) => source.evidenceId)];
         candidates.push(candidate({
