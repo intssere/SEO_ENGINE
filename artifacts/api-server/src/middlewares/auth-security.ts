@@ -15,9 +15,9 @@ import {
 
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
-function requestIp(req: Request): string | null {
-  const forwarded = req.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwarded || req.socket.remoteAddress || null;
+export function trustedRequestIp(req: Request): string | null {
+  const resolved = typeof req.ip === "string" ? req.ip.trim() : "";
+  return resolved || req.socket.remoteAddress || null;
 }
 
 function requestId(req: Request): string | null {
@@ -40,6 +40,8 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
   res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
   res.setHeader("Content-Security-Policy", "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; form-action 'self'");
   if (process.env.NODE_ENV === "production") {
@@ -74,7 +76,7 @@ export function requireApiAuthentication(req: Request, res: Response, next: Next
       eventType: "api_authentication_required",
       outcome: "denied",
       requestId: requestId(req),
-      ip: requestIp(req),
+      ip: trustedRequestIp(req),
       config,
       metadata: { method: req.method, path: req.path },
     });
@@ -88,7 +90,7 @@ export function requireApiAuthentication(req: Request, res: Response, next: Next
       outcome: "denied",
       principal: req.auth,
       requestId: requestId(req),
-      ip: requestIp(req),
+      ip: trustedRequestIp(req),
       config,
       metadata: { method: req.method, path: req.path, requiredRole },
     });
@@ -106,7 +108,7 @@ export function requireApiAuthentication(req: Request, res: Response, next: Next
         outcome: "denied",
         principal: req.auth,
         requestId: requestId(req),
-        ip: requestIp(req),
+        ip: trustedRequestIp(req),
         config,
         metadata: { method: req.method, path: req.path },
       });
@@ -139,7 +141,7 @@ export function fixedWindowRateLimit(input: {
     const now = Date.now();
     const identity = input.roleAware && req.auth
       ? `subject:${req.auth.subject}`
-      : `ip:${requestIp(req) ?? "unknown"}`;
+      : `ip:${trustedRequestIp(req) ?? "unknown"}`;
     const key = `${input.name}:${identity}`;
     const current = rateBuckets.get(key);
     const bucket = !current || current.resetAt <= now ? { resetAt: now + input.windowMs, count: 0 } : current;
