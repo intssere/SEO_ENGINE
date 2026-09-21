@@ -499,11 +499,11 @@ Existing Tasks #51–#54 remain the safety foundation.
 
 ### Phase P12 — Final production completion certification
 
-**P11 enterprise hardening is complete and the P12 entry/readiness review is certified under issue #375 / PR #376. P12.1 is the next safe engineering boundary; every live proof remains separately authorized.**
+**P11 enterprise hardening and P12.1 primary-surface remediation are complete. P12.2–P12.4 are the next dependency lanes and require separate live production/provider authorization; no generic continuation grants that authority.**
 
 | ID | Work item | Status |
 |---|---|---|
-| P12.1 | no primary placeholder screens | NEXT SAFE ENGINEERING — primary-surface placeholder/production-state audit and bounded remediation; no live provider/runtime activation |
+| P12.1 | no primary placeholder screens | DONE — issue #379 / PR #380 / merge `4bc2bfcead3f7eaece1e0143e4546110580984f1`; primary navigation is operational-only while eight fixture/placeholder engineering routes remain mounted but non-primary; exact-head CI #668 + post-merge CI #669; 1,264 workspace tests, P11.10 scale PASS, Chromium 111/111, typecheck/build budgets green; no live provider/DB/crawl/runtime/deployment/publication activation |
 | P12.2 | full-site crawl complete and repeatable | LIVE PROOF BLOCKED — engineering/25k scale foundation exists; requires explicitly authorized real full-site + repeat + incremental production proof |
 | P12.3 | live first-party data integrations certified | LIVE PROVIDER ACTIVATION BLOCKED — GSC/first-party engineering exists; real GSC/analytics/catalog production proof remains |
 | P12.4 | live external intelligence certified | LIVE PROVIDER ACTIVATION BLOCKED — supplied-result adapters exist; selected real external source certification remains |
