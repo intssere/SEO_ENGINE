@@ -3100,6 +3100,9 @@ td:first-child {
     margin-left: 0;
     flex-wrap: wrap;
   }
+  .filters select {
+    min-height: 44px;
+  }
   .commandCenterFilters label {
     flex: 1 1 150px;
     min-width: 0;
@@ -3250,6 +3253,10 @@ td:first-child {
   .content form.flex > button,
   .content form.flex > a {
     min-height: 44px;
+  }
+  .linkButton {
+    min-height: 44px;
+    padding-block: 6px;
   }
   .auditUrlValue,
   .opportunityIdentity small,
