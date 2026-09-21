@@ -11,7 +11,9 @@ P12.2 engineering prerequisite — default-off first-party full-site crawl execu
 - exact-head CI: #674 / run `35652034114` — success
 - implementation merge/tree: `0981daad1da5737ac4a4ec04d97ad6cf6659057d` / `782f65af18516791421f20bcc9b198a7b8fc515a`
 - post-merge main CI: #675 / run `35652518058` — success
-- workspace tests: **1,273 PASS / 0 failures**
+- workspace tests: **1,264 PASS / 0 failures**
+- DB bootstrap: **7/7 PASS**
+- P3.6 migration checks: **2/2 PASS**
 - API tests: **1,072/1,072 PASS**
 - P11.10 synthetic scale: PASS
 - canonical Chromium: **111/111 PASS**
@@ -106,7 +108,7 @@ Replit was Git-only reconciled to the implementation merge:
 - Git locks zero;
 - active repository writers zero.
 
-A separate non-browser validation request was not queued because the Replit Agent channel remained busy. No additional Replit test-run claim is made.
+Replit Git state was independently re-verified after the sync at the exact merge/tree. No separate Replit non-browser test run was performed; GitHub CI remains canonical for full test/browser certification.
 
 ## Boundaries preserved
 
