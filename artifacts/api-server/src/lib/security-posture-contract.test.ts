@@ -19,6 +19,11 @@ test("supply-chain baseline keeps release-age, frozen-lockfile, and read-only CI
   assert.match(ci, /^permissions:\s*\n\s+contents:\s+read\s*$/m);
   assert.match(ci, /pnpm install --frozen-lockfile/);
   assert.doesNotMatch(ci, /pull_request_target\s*:/);
+  assert.match(ci, /uses: actions\\/checkout@[0-9a-f]{40}/);
+  assert.match(ci, /uses: pnpm\\/action-setup@[0-9a-f]{40}/);
+  assert.match(ci, /uses: actions\\/setup-node@[0-9a-f]{40}/);
+  assert.match(ci, /uses: actions\\/upload-artifact@[0-9a-f]{40}/);
+  assert.doesNotMatch(ci, /uses: [^\\s]+@v\\d+(?:\\s|$)/);
 });
 
 test("HTTP/logging posture suppresses framework disclosure and query/secret logging", async () => {
