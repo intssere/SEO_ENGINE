@@ -68,7 +68,17 @@ async function collectPolishState(page, viewport) {
       if (!(element instanceof HTMLElement)) return false;
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
+      const visuallyHidden =
+        style.position === "absolute" &&
+        rect.width <= 2 &&
+        rect.height <= 2 &&
+        (["hidden", "clip"].includes(style.overflow) ||
+          ["hidden", "clip"].includes(style.overflowX) ||
+          ["hidden", "clip"].includes(style.overflowY) ||
+          style.clip !== "auto" ||
+          style.clipPath !== "none");
       return (
+        !visuallyHidden &&
         style.display !== "none" &&
         style.visibility !== "hidden" &&
         Number(style.opacity) !== 0 &&
