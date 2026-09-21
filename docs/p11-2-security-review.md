@@ -123,11 +123,14 @@ Existing controls retained:
 - explicit `onlyBuiltDependencies`;
 - GitHub Actions workflow permissions limited to `contents: read`;
 - no `pull_request_target` workflow trigger;
+- third-party GitHub Actions pinned to immutable 40-character commit SHAs while retaining version comments;
 - committed lockfile and pinned/overridden sensitive build-tool versions.
 
 A network-free security-posture contract protects those source controls from accidental removal.
 
 This offline milestone does not query a current vulnerability/advisory service. A future explicitly scoped dependency-advisory review may add time-sensitive vulnerability intelligence; P11.2 does not infer "no vulnerabilities" from the static controls alone.
+
+Residual infrastructure note: the CI PostgreSQL service still uses the reviewed image tag `postgres:17-alpine` rather than a registry digest. P11.2 does not change container provenance policy because no registry-digest verification mechanism is currently part of this repository workflow.
 
 ## Bounded hardening changes
 
