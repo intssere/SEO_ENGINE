@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Request, Response } from "express";
-import { requireApiAuthentication, securityHeaders, verifiedActorId } from "./auth-security.js";
+import { requireApiAuthentication, securityHeaders, trustedRequestIp, verifiedActorId } from "./auth-security.js";
 import { sha256, type AuthPrincipal } from "../lib/auth-foundation.js";
 
 const AUTH_ENV = {
@@ -55,6 +55,7 @@ function mockRequest(input: {
   auth?: AuthPrincipal;
   headers?: Record<string, string>;
   body?: Record<string, unknown>;
+  ip?: string;
 }) {
   const headers = Object.fromEntries(Object.entries(input.headers ?? {}).map(([k, v]) => [k.toLowerCase(), v]));
   return {
@@ -62,6 +63,7 @@ function mockRequest(input: {
     path: input.path,
     auth: input.auth,
     body: input.body ?? {},
+    ip: input.ip,
     socket: { remoteAddress: "127.0.0.1" },
     get(name: string) { return headers[name.toLowerCase()]; },
   } as unknown as Request;
@@ -153,7 +155,20 @@ test("verified actor ignores caller-supplied identity and comes from the session
   assert.equal(verifiedActorId(req), "google-operator:operator@example.com");
 }));
 
-test("security middleware emits baseline browser/API hardening headers", () => {
+test("trusted request IP uses Express proxy resolution and ignores raw forwarded parsing", () => {
+  const req = mockRequest({
+    method: "GET",
+    path: "/dashboard",
+    ip: "203.0.113.9",
+    headers: { "x-forwarded-for": "198.51.100.77, 203.0.113.9" },
+  });
+  assert.equal(trustedRequestIp(req), "203.0.113.9");
+
+  const fallback = mockRequest({ method: "GET", path: "/dashboard" });
+  assert.equal(trustedRequestIp(fallback), "127.0.0.1");
+});
+
+test("security middleware emits browser/API hardening headers", () => {
   const req = mockRequest({ method: "GET", path: "/dashboard" });
   const { res, state } = mockResponse();
   let nextCalled = false;
@@ -161,6 +176,30 @@ test("security middleware emits baseline browser/API hardening headers", () => {
   assert.equal(nextCalled, true);
   assert.equal(state.headers.get("x-content-type-options"), "nosniff");
   assert.equal(state.headers.get("x-frame-options"), "DENY");
+  assert.equal(state.headers.get("referrer-policy"), "no-referrer");
+  assert.equal(state.headers.get("cross-origin-opener-policy"), "same-origin");
+  assert.equal(state.headers.get("cross-origin-resource-policy"), "same-origin");
+  assert.match(state.headers.get("content-security-policy") ?? "", /default-src 'self'/);
   assert.match(state.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
+  assert.match(state.headers.get("content-security-policy") ?? "", /connect-src 'self'/);
   assert.match(state.headers.get("permissions-policy") ?? "", /geolocation=\(\)/);
+});
+
+test("production security middleware emits HSTS without weakening baseline headers", () => {
+  const previous = process.env.NODE_ENV;
+  process.env.NODE_ENV = "production";
+  try {
+    const req = mockRequest({ method: "GET", path: "/dashboard" });
+    const { res, state } = mockResponse();
+    securityHeaders(req, res, () => undefined);
+    assert.equal(
+      state.headers.get("strict-transport-security"),
+      "max-age=31536000; includeSubDomains",
+    );
+    assert.equal(state.headers.get("cross-origin-opener-policy"), "same-origin");
+    assert.equal(state.headers.get("x-frame-options"), "DENY");
+  } finally {
+    if (previous === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previous;
+  }
 });

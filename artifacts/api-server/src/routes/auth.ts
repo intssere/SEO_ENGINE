@@ -23,6 +23,7 @@ import {
   authCookieOptions,
   authEndpointRateLimit,
   clearAuthCookies,
+  trustedRequestIp,
 } from "../middlewares/auth-security.js";
 
 const router: IRouter = Router();
@@ -32,10 +33,6 @@ router.use((_req, res, next) => {
   res.setHeader("Pragma", "no-cache");
   next();
 });
-
-function requestIp(req: Request): string | null {
-  return req.get("x-forwarded-for")?.split(",")[0]?.trim() || req.socket.remoteAddress || null;
-}
 
 function requestId(req: Request): string | null {
   const candidate = (req as Request & { id?: string | number }).id;
@@ -105,7 +102,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
       eventType: "login_callback_invalid_state",
       outcome: "failure",
       requestId: requestId(req),
-      ip: requestIp(req),
+      ip: trustedRequestIp(req),
       config,
     });
     return authErrorRedirect(res, "invalid_login_state");
@@ -119,7 +116,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
       eventType: "login_callback_rejected",
       outcome: "failure",
       requestId: requestId(req),
-      ip: requestIp(req),
+      ip: trustedRequestIp(req),
       config,
       metadata: { providerError: Boolean(oauthError), stateMatched: state === flow.state },
     });
@@ -134,7 +131,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
         eventType: "login_allowlist_denied",
         outcome: "denied",
         requestId: requestId(req),
-        ip: requestIp(req),
+        ip: trustedRequestIp(req),
         config,
         metadata: { emailDomain: identity.email.split("@")[1] ?? null },
       });
@@ -148,7 +145,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
       displayName: identity.displayName,
       role,
       userAgent: req.get("user-agent") ?? null,
-      ip: requestIp(req),
+      ip: trustedRequestIp(req),
       config,
     });
     res.cookie(AUTH_SESSION_COOKIE, session.token, authCookieOptions(true, AUTH_SESSION_TTL_MS));
@@ -158,7 +155,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
       outcome: "success",
       principal: session.principal,
       requestId: requestId(req),
-      ip: requestIp(req),
+      ip: trustedRequestIp(req),
       config,
     });
     return res.redirect(302, flow.returnTo);
@@ -167,7 +164,7 @@ router.get("/auth/google/callback", authEndpointRateLimit, async (req, res) => {
       eventType: "login_failure",
       outcome: "failure",
       requestId: requestId(req),
-      ip: requestIp(req),
+      ip: trustedRequestIp(req),
       config,
       metadata: { category: error instanceof Error ? error.message.slice(0, 80) : "unknown" },
     });
@@ -192,7 +189,7 @@ router.post("/auth/logout", authEndpointRateLimit, async (req, res) => {
     outcome: "success",
     principal: req.auth ?? null,
     requestId: requestId(req),
-    ip: requestIp(req),
+    ip: trustedRequestIp(req),
     config,
   });
   clearAuthCookies(res);

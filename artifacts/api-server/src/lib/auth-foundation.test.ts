@@ -5,6 +5,7 @@ import {
   buildGoogleLoginUrl,
   createAuthFlow,
   loadAuthConfig,
+  normalizeAuthReturnTo,
   requiredRoleForApiRequest,
   roleAllows,
   roleForEmail,
@@ -33,6 +34,18 @@ test("auth configuration defaults disabled and fails closed when enabled without
   assert.equal(enabled.enabled, true);
   assert.equal(enabled.configured, false);
   assert.ok(enabled.issues.includes("AUTH_SESSION_SECRET_missing_or_too_short"));
+});
+
+test("auth return targets remain local and reject ambiguous redirect forms", () => {
+  assert.equal(normalizeAuthReturnTo("/actions?tab=review#row"), "/actions?tab=review#row");
+  assert.equal(normalizeAuthReturnTo("/"), "/");
+  assert.equal(normalizeAuthReturnTo("https://evil.example/actions"), "/");
+  assert.equal(normalizeAuthReturnTo("//evil.example/actions"), "/");
+  assert.equal(normalizeAuthReturnTo("/\\\\evil.example/actions"), "/");
+  assert.equal(normalizeAuthReturnTo("/\nevil"), "/");
+  assert.equal(normalizeAuthReturnTo("javascript:alert(1)"), "/");
+  assert.equal(normalizeAuthReturnTo(""), "/");
+  assert.equal(normalizeAuthReturnTo("/" + "a".repeat(2048)), "/");
 });
 
 test("configured auth uses exact HTTPS origin and invite-only role allowlists", () => {

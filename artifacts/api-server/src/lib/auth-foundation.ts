@@ -143,8 +143,23 @@ export type AuthFlow = {
   expiresAt: number;
 };
 
+export function normalizeAuthReturnTo(value: string): string {
+  if (!value || value.length > 2048) return "/";
+  if (!value.startsWith("/") || value.startsWith("//")) return "/";
+  if (/[\\\u0000-\u001f\u007f]/.test(value)) return "/";
+
+  try {
+    const base = new URL("https://seo-engine.invalid/");
+    const parsed = new URL(value, base);
+    if (parsed.origin !== base.origin) return "/";
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return "/";
+  }
+}
+
 export function createAuthFlow(returnTo = "/", now = Date.now()): AuthFlow {
-  const safeReturnTo = returnTo.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/";
+  const safeReturnTo = normalizeAuthReturnTo(returnTo);
   return {
     state: randomToken(24),
     nonce: randomToken(24),
