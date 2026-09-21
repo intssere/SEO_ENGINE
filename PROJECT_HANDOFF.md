@@ -13,24 +13,25 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P11.4 offline backup/recovery contracts and synthetic disaster-runbook certification are complete and certified. P11.5 WCAG 2.2 AA accessibility certification is the next safe engineering boundary.
+**Current checkpoint:** P11.5 WCAG 2.2 AA accessibility certification is complete and certified for the engineering tree. P11.6 responsive/product polish is the next safe engineering boundary.
 
-- P11.4 issue #351 / implementation PR #352.
-- Implementation base SHA/tree: `1ad2efa3b194183e245724ac69f0863a4504df21` / `4a0ca940dfa811d63e91b5f0f12166b4fcc63377`.
-- Final exact tested implementation head/tree: `7905b2db758e2af5e0187c238d121abb26927bcb` / `b50bdc0b8ad256fc7f022c9edbf933d660cb22ae`.
-- Detached Replit exact-head validation: focused P11.4 tests 16/16 PASS, API tests 1,054/1,054 PASS, API typecheck and `git diff --check` PASS.
-- Exact-head PR CI #607 / run `35586999609`: success across schema/bootstrap checks, all workspace tests, Chromium browser suite, typecheck and build/P11.1 budget gate.
-- Implementation merge/tree: `41329684f56f16e6da1645cd6c29339e038cf1c7` / `b50bdc0b8ad256fc7f022c9edbf933d660cb22ae`.
-- Post-merge main CI #608 / run `35587257845`: success.
+- P11.5 issue #355 / implementation PR #356.
+- Implementation base SHA/tree: `82e6ef687b1de176a02070baea10acc464748bf3` / `981f7889825ea40e334221a6c3b9df85781f6df8`.
+- Final exact tested implementation head/tree: `8698aea5b0cf9124156364a40d05c8d084a2b05c` / `7263db76f570cfe03722ec43437be6b3361a579a`.
+- Exact-head PR CI #622 / run `35594233934`: success.
+- Implementation merge/tree: `11d4d0d363bac9e1d6da8d5f4ee21c49eb1c0ed0` / `7263db76f570cfe03722ec43437be6b3361a579a`.
+- Post-merge main CI #623 / run `35594621574`: success across schema/bootstrap checks, workspace tests, Chromium browser suite, typecheck and build/P11.1 budget gate.
+- Canonical GitHub Chromium: 81/81 tests PASS — 57 P11.5 accessibility, 13 critical-path, 7 performance-profile, 4 visual-regression.
+- P11.5 covers every explicit routed application surface plus not-found with all-impact WCAG 2.0/2.1/2.2 A/AA axe blocking, 320 CSS-pixel page-level reflow, SC 2.5.8 target-size/spacing, focus visibility/focus transfer and reduced-motion checks.
+- Initial CI #611 intentionally exposed real target-size/contrast issues plus incomplete synthetic proposal data; the branch retained bounded remediation and fixture completion until the final exact head passed.
 - Replit is Git-only exact-synced to the implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
-- Replit recursive workspace tests PASS with 1,210 reported passes / 0 failures; full typecheck, full build/P11.1 budget gate and `git diff --check` all PASS using existing dependencies only.
-- P11.4 defines explicit recovery inventory, supplied RPO/RTO objectives, immutable synthetic backup manifests, exact migration/P3.6 schema-lineage checks, ordered restore evidence and scenario-specific external/manual dependencies.
-- P11.4 synthetic certification does not establish that production backups exist or are restorable; no production backup catalog, retention/PITR/snapshot configuration or restore was inspected/executed.
-- External secret values and provider/public-site state remain explicitly outside PostgreSQL-backup recovery scope.
-- P11.4 is unpublished and made no production backup discovery/read/export, backup creation, restore/PITR/snapshot/storage call, Production DB/storage mutation, secret/provider/runtime/failover/cutover change, scheduler/worker activation, P9.8 activation or Task #51/#53/#54 execution.
+- Replit non-browser validation: 1,218 workspace tests PASS / 0 failures, typecheck PASS, build/P11.1 budget PASS and `git diff --check` PASS.
+- Replit cannot launch Chromium because required shared libraries are unavailable; it discovered the same 81 tests, but browser assertions did not run there. GitHub Ubuntu/Chromium remains the canonical browser runner.
+- P11.5 is an engineering/local-synthetic certification only, not a legal/universal accessibility claim and not a certification of the separately published Task #73 application.
+- P11.5 is unpublished and made no production crawl/scan, provider/public-site request/write, Production DB/storage mutation, secret/config/runtime change, scheduler/worker activation, P9.8 activation or Task #51/#53/#54 execution.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P11.5 — accessibility WCAG 2.2 AA certification**. Start with deterministic source/static review and local/synthetic browser accessibility tests/remediation only; no production crawl/scan, provider/public-site mutation, Production DB/storage activity, runtime/deployment change or publication is implied.
-- Generic `continue` does not authorize production provider/public-site mutation, Production DB/storage mutation, production security/load/recovery operations, secret/runtime changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- Default next safe boundary: **P11.6 — responsive/product polish**. Use bounded source/local-synthetic browser review for layout density, wrapping/overflow, touch/keyboard interaction, breakpoint consistency, hierarchy and loading/empty/error-state polish while preserving P11.5 accessibility.
+- Generic `continue` still does not authorize live provider/public-site mutation, Production DB/storage mutation, secret/runtime changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
