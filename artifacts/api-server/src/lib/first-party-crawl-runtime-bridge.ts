@@ -305,17 +305,19 @@ function normalizeBinding(binding: FirstPartyCrawlBridgeBinding): {
 
 function adapterConfigured(options: FirstPartyCrawlBridgeOptions): boolean {
   return Boolean(
-    options.sitemapAcquirer?.load &&
-    options.robotsEvaluator?.evaluate &&
-    options.pageTransport?.get &&
-    options.clock?.sleep &&
-    options.persistence?.loadCheckpoint &&
-    options.persistence?.saveCheckpoint &&
-    options.persistence?.loadLatestCompleted &&
-    options.persistence?.saveCompletedRun &&
-    options.persistence?.saveIncrementalRun
+    options.sitemapAcquirer &&
+    options.robotsEvaluator &&
+    options.pageTransport &&
+    options.clock &&
+    options.persistence
   );
 }
+
+type ExecutableCrawlAdapters = {
+  robotsEvaluator: FirstPartyRobotsEvaluator;
+  pageTransport: FirstPartyPageTransport;
+  clock: FirstPartyCrawlClock;
+};
 
 export function firstPartyCrawlBridgeReadiness(
   options: FirstPartyCrawlBridgeOptions = {},
@@ -473,7 +475,7 @@ async function executeCanonicalUrl(input: {
   siteId: string;
   plan: FullSiteCrawlExecutionPlan;
   canonicalUrl: string;
-  options: Required<Pick<FirstPartyCrawlBridgeOptions, "robotsEvaluator" | "pageTransport" | "clock">>;
+  options: ExecutableCrawlAdapters;
   requestState: { pageRequestsStarted: number };
 }): Promise<SuppliedCrawlUrlOutcome> {
   let robotsAllowed: boolean;
@@ -512,7 +514,7 @@ async function checkpointOutcomes(input: {
   siteId: string;
   plan: FullSiteCrawlExecutionPlan;
   checkpoint: FullSiteCrawlCheckpoint;
-  options: Required<Pick<FirstPartyCrawlBridgeOptions, "robotsEvaluator" | "pageTransport" | "clock">>;
+  options: ExecutableCrawlAdapters;
   requestState: { pageRequestsStarted: number };
 }): Promise<SuppliedCrawlUrlOutcome[]> {
   assertFullSiteCrawlCheckpointIntegrity(input.plan, input.checkpoint);
@@ -731,7 +733,7 @@ async function executeIncrementalUrl(input: {
   siteId: string;
   plan: FullSiteCrawlExecutionPlan;
   canonicalUrl: string;
-  options: Required<Pick<FirstPartyCrawlBridgeOptions, "robotsEvaluator" | "pageTransport" | "clock">>;
+  options: ExecutableCrawlAdapters;
   requestState: { pageRequestsStarted: number };
 }): Promise<IncrementalCrawlUrlReceipt> {
   let attempt = 1;
