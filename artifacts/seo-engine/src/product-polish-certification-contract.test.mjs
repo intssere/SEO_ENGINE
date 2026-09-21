@@ -29,6 +29,7 @@ const EXPECTED_ROUTES = [
   "/search-intelligence",
   "/learning",
   "/impact",
+  "/reports",
   "/connections",
   "/settings",
 ];
