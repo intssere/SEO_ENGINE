@@ -491,8 +491,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 | P11.3 | observability: metrics/logs/traces/alerts/job health | DONE — issue #348 / PR #349 / merge `e2cd22ae0e8e072be04bb6d31369e27e9f8ee040`; deterministic structured events/logs, descriptive metric rollups, exact trace/correlation integrity, exact P9.1/P9.6 job-health evidence and non-delivering alert candidates; exact-head/post-merge CI + Replit certification; no production telemetry sink/ingestion/alert/runtime/deployment/publication activation |
 | P11.4 | backup/recovery and disaster-runbook certification | DONE — issue #351 / PR #352 / merge `41329684f56f16e6da1645cd6c29339e038cf1c7`; deterministic recovery inventory/RPO-RTO/synthetic backup manifest/restore-stage/runbook certification with exact migration/P3.6 schema lineage and external-dependency preservation; exact-head/post-merge CI + Replit certification; no production backup/restore/DB/storage/secret/provider/runtime/deployment/publication activation |
 | P11.5 | accessibility WCAG 2.2 AA certification | DONE — issue #355 / PR #356 / merge `11d4d0d363bac9e1d6da8d5f4ee21c49eb1c0ed0`; all routed surfaces, all-impact WCAG 2.2 A/AA axe gate, 320px reflow, target-size/spacing, focus and reduced-motion certification; GitHub canonical Chromium 81/81 green; no production scan/runtime/deployment/publication activation |
-| P11.6 | responsive/product polish | NEXT SAFE BOUNDARY — bounded engineering-source/local-synthetic product polish while preserving P11.5; no live provider/runtime/Production DB/storage/deployment/publication activation on generic continuation |
-| P11.7 | reporting/export/shareable executive views | PLANNED |
+| P11.6 | responsive/product polish | DONE — issue #358 / PR #359 / merge `93ccd007c9fb152f60e88daefe6c727afed3fb71`; all routed surfaces + not-found across 1440/1024/768/390 viewports with overflow/geometry/clipping/overlap/internal-scroll/compact-shell/touch certification; canonical GitHub Chromium 100/100 green; P11.5 preserved; no production/runtime/deployment/publication activation |
+| P11.7 | reporting/export/shareable executive views | NEXT SAFE BOUNDARY — bounded deterministic/read-only engineering reporting/export/share UX first; no production data delivery/exfiltration, external share/publication, provider/runtime/Production DB/storage mutation, deployment or publication on generic continuation |
 | P11.8 | multi-site/project abstraction if required for v1 commercial scope | REVIEW before final scope lock |
 | P11.9 | retention/privacy/provider terms and compliance review | PLANNED |
 | P11.10 | load/scale testing for target URL/query volumes | PLANNED |
@@ -613,8 +613,10 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 62. **DONE — P11.3:** offline observability contracts, correlation and job-health projection, issue #348 / PR #349 / merge `e2cd22ae0e8e072be04bb6d31369e27e9f8ee040`; deterministic structured logs/metrics/trace lineage/exact P9.1+P9.6 health/non-delivering alert candidates with no production telemetry/runtime activation.
 63. **DONE — P11.4:** offline backup/recovery and disaster-runbook certification, issue #351 / PR #352 / merge `41329684f56f16e6da1645cd6c29339e038cf1c7`; explicit recovery inventory, supplied RPO/RTO, immutable synthetic manifests, exact migration/P3.6 lineage and ordered synthetic restore evidence with no production backup/restore/DB/storage/runtime activation.
 64. **DONE — P11.5:** deterministic/local-synthetic WCAG 2.2 AA engineering certification under issue #355 / PR #356 / merge `11d4d0d363bac9e1d6da8d5f4ee21c49eb1c0ed0`; canonical GitHub Chromium 81/81 green.
-65. **NEXT SAFE BOUNDARY — P11.6:** bounded responsive/product polish over engineering source and local/synthetic browser fixtures; P11.7–P11.10 remain planned/reviewed as listed above.
-66. **P12 —** final production completion certification and program closeout.
+65. **DONE — P11.6:** route-wide local/synthetic responsive/product-polish certification under issue #358 / PR #359 / merge `93ccd007c9fb152f60e88daefe6c727afed3fb71`; canonical GitHub Chromium 100/100 green with P11.5 preserved.
+66. **NEXT SAFE BOUNDARY — P11.7:** deterministic/read-only reporting/export/shareable executive-view engineering over bounded supplied/read-only evidence; external delivery/publication remains separately gated.
+67. **P11.8–P11.10 —** remaining scope/compliance/load hardening stays planned/reviewed as listed above.
+68. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 

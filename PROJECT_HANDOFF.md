@@ -13,25 +13,24 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P11.5 WCAG 2.2 AA accessibility certification is complete and certified for the engineering tree. P11.6 responsive/product polish is the next safe engineering boundary.
+**Current checkpoint:** P11.6 route-wide responsive/product-polish certification is complete and certified for the engineering tree. P11.7 reporting/export/shareable executive views is the next safe engineering boundary.
 
-- P11.5 issue #355 / implementation PR #356.
-- Implementation base SHA/tree: `82e6ef687b1de176a02070baea10acc464748bf3` / `981f7889825ea40e334221a6c3b9df85781f6df8`.
-- Final exact tested implementation head/tree: `8698aea5b0cf9124156364a40d05c8d084a2b05c` / `7263db76f570cfe03722ec43437be6b3361a579a`.
-- Exact-head PR CI #622 / run `35594233934`: success.
-- Implementation merge/tree: `11d4d0d363bac9e1d6da8d5f4ee21c49eb1c0ed0` / `7263db76f570cfe03722ec43437be6b3361a579a`.
-- Post-merge main CI #623 / run `35594621574`: success across schema/bootstrap checks, workspace tests, Chromium browser suite, typecheck and build/P11.1 budget gate.
-- Canonical GitHub Chromium: 81/81 tests PASS — 57 P11.5 accessibility, 13 critical-path, 7 performance-profile, 4 visual-regression.
-- P11.5 covers every explicit routed application surface plus not-found with all-impact WCAG 2.0/2.1/2.2 A/AA axe blocking, 320 CSS-pixel page-level reflow, SC 2.5.8 target-size/spacing, focus visibility/focus transfer and reduced-motion checks.
-- Initial CI #611 intentionally exposed real target-size/contrast issues plus incomplete synthetic proposal data; the branch retained bounded remediation and fixture completion until the final exact head passed.
-- Replit is Git-only exact-synced to the implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
-- Replit non-browser validation: 1,218 workspace tests PASS / 0 failures, typecheck PASS, build/P11.1 budget PASS and `git diff --check` PASS.
-- Replit cannot launch Chromium because required shared libraries are unavailable; it discovered the same 81 tests, but browser assertions did not run there. GitHub Ubuntu/Chromium remains the canonical browser runner.
-- P11.5 is an engineering/local-synthetic certification only, not a legal/universal accessibility claim and not a certification of the separately published Task #73 application.
-- P11.5 is unpublished and made no production crawl/scan, provider/public-site request/write, Production DB/storage mutation, secret/config/runtime change, scheduler/worker activation, P9.8 activation or Task #51/#53/#54 execution.
+- P11.6 issue #358 / implementation PR #359.
+- Implementation base SHA/tree: `75294652c5ddcf8f4b16873e78678b5c991dece6` / `d8fe375deff44bcc6fdaca8b37123d9ebe689f40`.
+- Final exact tested implementation head/tree: `d3695e9467f26c4a1501acc27715f1b2c85fc2f3` / `6e55d861c171a3e412ef93d37318677285f6cb9e`.
+- Audit stabilization is intentionally retained: CI #626 exposed visually-hidden-label clipping false positives plus real 36px mobile action links; CI #629 then isolated three 28px Performance phone filter selects; only bounded test semantics/CSS touch-target remediation followed.
+- Exact-head PR CI #631 / run `35605218166`: success with 1,225 workspace tests / 0 failures, 100/100 canonical GitHub Chromium tests, typecheck/build/P11.1 budget PASS.
+- Implementation merge/tree: `93ccd007c9fb152f60e88daefe6c727afed3fb71` / `6e55d861c171a3e412ef93d37318677285f6cb9e`.
+- Post-merge main CI #632 / run `35605748067`: success across the same full gate.
+- P11.6 certifies every explicit app route plus not-found at 1440×1000, 1024×900, 768×1024 and 390×844 for page overflow, shell/content geometry, unintended visible-copy clipping, interactive overlap, internal table scrolling, compact-shell state and phone touch ergonomics.
+- P11.5 remains fully preserved inside the 100-test browser suite; no accessibility gate was relaxed.
+- Replit is Git-only exact-synced to the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift, zero Git locks and no active repository writer.
+- Replit non-browser validation: 1,225 workspace tests PASS / 0 failures, typecheck PASS, build/P11.1 budget PASS and `git diff --check` PASS.
+- GitHub remains the canonical Chromium runner because the Replit environment previously lacks required Chromium shared libraries.
+- P11.6 is unpublished and made no production crawl/scan, provider/public-site request/write, Production DB/storage mutation, secret/config/runtime change, scheduler/worker activation, P9.8 activation or Task #51/#53/#54 execution.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P11.6 — responsive/product polish**. Use bounded source/local-synthetic browser review for layout density, wrapping/overflow, touch/keyboard interaction, breakpoint consistency, hierarchy and loading/empty/error-state polish while preserving P11.5 accessibility.
-- Generic `continue` still does not authorize live provider/public-site mutation, Production DB/storage mutation, secret/runtime changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- Default next safe boundary: **P11.7 — reporting/export/shareable executive views**. Begin with deterministic/read-only engineering architecture and local/synthetic presentation/export/share UX over bounded existing evidence; no real external delivery, public sharing, production data export/exfiltration or publication is implied.
+- Generic `continue` still does not authorize provider/public-site mutation, Production DB/storage mutation, external data/file delivery, secret/runtime changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
