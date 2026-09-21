@@ -85,9 +85,9 @@ Complex two-dimensional DataGrid content remains allowed to use its own independ
 
 ### Target size
 
-Visible interactive targets that require target-size treatment are required to measure at least 24 by 24 CSS pixels.
+Visible interactive targets are certified against WCAG 2.2 SC 2.5.8. A target passes when it is at least 24 by 24 CSS pixels or when the criterion's spacing exception is satisfied by a centered 24 CSS-pixel circle that does not intersect another target (or another undersized target's equivalent circle).
 
-The test applies the WCAG 2.2 inline-text-link exception only to actual inline anchors contained in text/list contexts. It does not broadly exempt navigation or button-like links.
+The test also applies the inline-target exception only to actual inline anchors contained in text/list contexts. It does not broadly exempt navigation or button-like links.
 
 ### Focus visibility and focus not obscured
 
