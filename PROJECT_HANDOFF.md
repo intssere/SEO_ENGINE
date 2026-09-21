@@ -13,26 +13,24 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P11.7 deterministic reporting/export/shareable executive views is complete and certified on GitHub. P11.8 multi-site/project abstraction review is the next safe engineering boundary.
+**Current checkpoint:** P11.8 multi-site/project abstraction review is complete and certified. P11.9 retention/privacy/provider terms and compliance review is the next safe boundary.
 
-- P11.7 issue #361 / implementation PR #362.
-- Implementation base SHA/tree: `8730b8187a4892ee5bd184dde92a129f316ccffb` / `6061918e6eaa3ec5feddf586444bc0bbaf7fb951`.
-- Final exact tested implementation head/tree: `ddfe1d355331a08d28a9b6eb990b02741ca7fdf1` / `a3c4a9fc201acc297b7e60b3cdabb7c06693dd14`.
-- Exact-head PR CI #642 / run `35611326688`: success.
-- Implementation merge/tree: `83ea7efde2e78f5ccf59ee5bec7ecf7ba791c9d4` / `a3c4a9fc201acc297b7e60b3cdabb7c06693dd14`.
-- Post-merge main CI #643 / run `35611813846`: success.
-- Canonical GitHub Chromium: **110/110 PASS**.
-- Workspace packages: **1,241 tests / 0 failures**.
-- Typecheck PASS; build/P11.1 budget PASS.
-- GitHub budget diagnostics: JS 611,156 raw / 175,333 gzip; CSS 186,332 raw / 31,020 gzip.
-- New `/reports` Measure workspace is deterministic synthetic/read-only only.
-- Report core provides stable ordering/fingerprint, local CSV/JSON/print projection, spreadsheet-formula neutralization, bounded view/section URL state and explicit no-delivery/no-publication capabilities.
-- `/reports` is covered by the inherited P11.5 accessibility and P11.6 responsive route matrices.
-- Stabilization history is retained: CI #636/#637 were CSV test-expectation errors; CI #638 exposed effective checkbox-target, focused locator and export-status semantics; exact-head #642 is green after bounded corrections.
-- Replit remains intentionally untouched at the last certified clean P11.6 state while its Agent channel is occupied by an earlier operation. P11.7 Git-only fast-forward/non-browser validation remains pending; do not claim Replit P11.7 alignment until independently verified.
-- P11.7 is unpublished and grants no production report loader, production data export/exfiltration, external file/email/Slack/webhook/cloud delivery, public share publication, provider/public-site activity, Production DB/storage mutation, worker/scheduler activation, deployment or publication authority.
+- P11.8 issue #364 / review PR #365.
+- Review base SHA/tree: `b3cdad0f1b7c2853e3f80b1624072e2be65fbdae` / `2bb00656cac0685f43a07ffe2cbcbff280832fb0`.
+- Exact reviewed head/tree: `893ff51157cfbc9db05ff89cc569e3d1024078e5` / `009a4225e9825c763b01f64d5aa5ef14a09007a9`.
+- Exact-head PR CI #646 / run `35615799086`: success.
+- Review merge/tree: `7a47acfeede05b3e9a4ab7a1dd1f6ce670245bc7` / `009a4225e9825c763b01f64d5aa5ef14a09007a9`.
+- Post-merge main CI #647 / run `35616390237`: success.
+- Canonical browser matrix remains **110/110 PASS**.
+- Architecture decision: **Organization = tenant/account; Site = SEO workspace/project; no separate Project entity for v1.**
+- Existing schema is multi-site-capable, but current runtime remains single-site and hard-bound to Diamond Shelf in dashboard/readiness/OAuth paths.
+- True multi-site activation is blocked until server-authoritative membership, explicit fail-closed site request scope, site-scoped loaders, site-bound OAuth/connection persistence, cross-site execution checks, site-aware jobs, frontend switching/context and deterministic cross-site isolation tests exist.
+- Current auth principal remains global subject/email/role only; no organization/site membership is present.
+- Replit is Git-only exact-synced to the P11.8 review merge/tree, origin/main exact, `0/0`, clean, zero tracked/untracked files, zero locks and no active repo writer.
+- A follow-up Replit non-browser validation request was not queued because its Agent channel became busy; do not invent a P11.8 Replit test-run result. GitHub CI is canonical.
+- P11.8 is review-only and unpublished: no schema migration, Production DB/storage mutation, tenant provisioning, auth/runtime/frontend implementation, OAuth/provider request, worker/scheduler activation, Task #51/#53/#54 execution, deployment or publication occurred.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source.
-- Default next safe boundary: **P11.8 — multi-site/project abstraction review before final scope lock**. Start with architecture/domain review only: tenant/site/project identity, existing organization/site tables, routing/UX needs, scoping guarantees and commercial necessity. Do not migrate schema or provision live tenants on generic continuation.
+- Default next safe boundary: **P11.9 — retention/privacy/provider terms and compliance review**. Start with inventory/review only: data categories, retention/deletion semantics, privacy exposure, auth/OAuth credential handling, logs/audit/evidence history, provider policy/terms constraints and gaps. Do not delete/migrate production data or rotate/revoke credentials on generic continuation.
 - Generic `continue` still does not authorize live provider/public-site mutation, Production DB/storage mutation, secret/runtime changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
