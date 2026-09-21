@@ -94,7 +94,7 @@ test("P11.5 browser contract verifies reduced-motion rendering", () => {
 });
 
 test("P11.5 locks the audited contrast remediations", () => {
-  assert.ok(css.includes(".draftQuality.pass {\n  color: #14764a;"));
+  assert.ok(css.includes(".draftQuality.pass {\n  color: var(--status-success-fg);"));
   assert.ok(css.includes(".decisionHistory p,\n.decisionHistory small {\n  margin: 4px 0 0;\n  color: #647087;"));
   assert.ok(impactCss.includes(".impactLineageItem small{color:#647087;"));
 });
