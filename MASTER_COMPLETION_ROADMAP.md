@@ -495,9 +495,11 @@ Existing Tasks #51–#54 remain the safety foundation.
 | P11.7 | reporting/export/shareable executive views | DONE — issue #361 / PR #362 / merge `83ea7efde2e78f5ccf59ee5bec7ecf7ba791c9d4`; deterministic synthetic/read-only `/reports` workspace, stable report fingerprinting, local CSV/JSON/print, bounded URL share-state, inherited P11.5/P11.6 gates; canonical GitHub Chromium 110/110 green; no production export/external delivery/runtime/deployment/publication activation |
 | P11.8 | multi-site/project abstraction if required for v1 commercial scope | DONE — issue #364 / PR #365 / merge `7a47acfeede05b3e9a4ab7a1dd1f6ce670245bc7`; review selects Organization=tenant/account and Site=workspace/project, rejects a duplicate v1 Project entity, and keeps true multi-site runtime blocked behind membership/request/OAuth/UI/isolation prerequisites; no schema/runtime/data/provider/deployment/publication change |
 | P11.9 | retention/privacy/provider terms and compliance review | DONE — issue #367 / PR #368 / merge `9ed6377963d052a4beccd9a43c102dcddbd798c7`; engineering/provider-policy review inventories data/retention/deletion/credential/provider obligations and records ten fail-closed pre-production blockers; exact-head/post-merge CI + canonical Chromium 110/110; no legal-compliance claim, production deletion/revocation/provider/runtime/deployment/publication action |
-| P11.10 | load/scale testing for target URL/query volumes | NEXT SAFE BOUNDARY — deterministic/local/synthetic scale fixtures and capacity profiling only; no production crawl/provider/DB load generation, mutation, runtime activation, deployment or publication on generic continuation |
+| P11.10 | load/scale testing for target URL/query volumes | DONE — issue #371 / PR #372 / merge `fbf1abd2e1f04de649b9c54b29b74873098ccdb9`; exact-head CI #658 + post-merge CI #659; synthetic pure-function certification at 25k URLs, 100k query signals, 25k candidates and 100 schedules, 739.787 ms combined / 96.42 MiB max observed heap on the final canonical run; 1,250 workspace tests + 110/110 Chromium; no production/provider/DB load, runtime activation, deployment or publication |
 
 ### Phase P12 — Final production completion certification
+
+**P11 enterprise hardening is complete. P12 is now the active program phase. Generic continuation starts with a criterion-by-criterion readiness/gap review; live proofs remain separately authorized.**
 
 | ID | Work item | Status |
 |---|---|---|
