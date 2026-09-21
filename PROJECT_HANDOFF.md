@@ -13,22 +13,24 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P11.2 offline security review and bounded source hardening is complete and certified. P11.3 observability is the next safe engineering boundary.
+**Current checkpoint:** P11.3 offline observability foundation is complete and certified. P11.4 backup/recovery and disaster-runbook certification is the next safe engineering boundary.
 
-- P11.2 issue #345 / implementation PR #346.
-- Implementation base SHA/tree: `841c10c4a0fbe06fcd97d3c3fbcc84357dd18790` / `12036420976ac3f1ddc9413a070b3c71533abdd4`.
-- Exact tested implementation head/tree: `6b1380efebccea980123f293b550e599b65b22ba` / `e42872ed4887c48698ddd0358089931f166a4e9a`.
-- Exact-head PR CI #596 / run `35574991295`: success across schema/bootstrap checks, all workspace tests including P11.2 security contracts and existing SSRF transport coverage, Chromium browser suite, typecheck and build/budget gate.
-- Implementation merge/tree: `cdf1ca8d9c1138dc8dd9fed4d41c1d6e31f5b7cb` / `e42872ed4887c48698ddd0358089931f166a4e9a`.
-- Post-merge main CI #597 / run `35579001011`: success.
-- P11.2 hardens trusted-proxy request identity, OIDC return-target normalization, Express disclosure, COOP/CORP headers, security regression coverage and GitHub Actions pinning while preserving the existing SSRF-hardened competitor transport.
-- P11.2 explicitly does not claim dependency-vulnerability absence; no live advisory service or production/public-site scan was used. Residual review items include the tagged rather than digest-pinned CI PostgreSQL image, current CSP compatibility allowances and the need to revisit `trust proxy` if deployment topology changes.
-- Replit was Git-only exact-synced to the implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
-- Replit recursive workspace tests PASS with 1,182 reported passes / 0 failures; full typecheck, full build, P11.1 budget gate and `git diff --check` all PASS using existing dependencies only.
-- P11.2 is unpublished and made no secret/credential retrieval or rotation, live OAuth/provider call, Production DB change, dependency/lockfile change, runtime/deployment mutation, scheduler/worker activation, P9.8 activation, Task #51/#53/#54 execution or public-site/provider write.
+- P11.3 issue #348 / implementation PR #349.
+- Implementation base SHA/tree: `a246f021a1eb0a511d0b27b7a3dbdb8256a77d3a` / `2c7ad666e86a13a9de7415d23d1a2f0941b4e015`.
+- Exact tested implementation head/tree: `350c6463a4466574d181bfe8c543f32fe73eb0ac` / `6759f50bd55bd89409939a275f92cabd7b0dce9c`.
+- Detached Replit exact-head validation: focused P11.3 tests 12/12 PASS, API tests 1,038/1,038 PASS, API typecheck and `git diff --check` PASS.
+- Exact-head PR CI #600 / run `35583135013`: success across schema/bootstrap checks, all workspace tests, Chromium browser suite, typecheck and build/P11.1 budget gate.
+- Implementation merge/tree: `e2cd22ae0e8e072be04bb6d31369e27e9f8ee040` / `6759f50bd55bd89409939a275f92cabd7b0dce9c`.
+- Post-merge main CI #601 / run `35583379204`: success.
+- P11.3 adds deterministic structured-event/log projection, descriptive metrics, exact trace/correlation integrity, exact P9.1/P9.6 rebuild-bound job health and caller-threshold alert candidates.
+- Alert records are candidates only: no telemetry sink/exporter, production ingestion, Slack/email/PagerDuty/webhook delivery or incident creation is configured.
+- P11.3 does not claim production end-to-end observability; live telemetry backends, production emission, alert delivery and incident-detection certification remain future explicitly authorized runtime work.
+- Replit is Git-only exact-synced to the implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
+- Replit recursive workspace tests PASS with 1,194 reported passes / 0 failures; full typecheck, full build/P11.1 budget gate and `git diff --check` all PASS using existing dependencies only.
+- P11.3 is unpublished and made no provider/public-site request/write, Production DB change, secret/config/runtime mutation, telemetry exporter/sink configuration, alert delivery, scheduler/worker activation, P9.8 activation or Task #51/#53/#54 execution.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P11.3 — observability: metrics/logs/traces/alerts/job health**. Start with deterministic/offline contracts, local/synthetic instrumentation and regression tests only; no production telemetry sink or alert credentials/configuration, live provider/DB activity, deployment or publication is implied.
-- Generic `continue` does not authorize provider/public-site writes, Production DB changes, production traffic/load tests, secret/credential changes, production telemetry integrations, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- Default next safe boundary: **P11.4 — backup/recovery and disaster-runbook certification**. Start with deterministic/offline backup inventory/recovery-contract design, synthetic restore fixtures, integrity verification and runbook tests only; no production backup access/export, production restore/failover, Production DB/storage mutation, secret/runtime/deployment change or publication is implied.
+- Generic `continue` does not authorize production backup retrieval/export/restore/failover, Production DB/storage mutation, provider/public-site activity, secret/credential/runtime changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.

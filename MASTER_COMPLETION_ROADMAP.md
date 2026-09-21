@@ -488,8 +488,8 @@ Existing Tasks #51–#54 remain the safety foundation.
 |---|---|---|
 | P11.1 | production performance budgets and profiling | DONE — issue #341 / PR #342 / merge `b43d10f5662862cb6467edd056b1e8adf96c2aa5`; explicit JS/CSS raw+gzip budgets, hard post-build gate, normalized synthetic-local profile contracts and supplied-profile regression semantics; canonical GitHub browser/budget CI and Replit non-browser/build certification; no production load/provider/DB/runtime/deployment/publication activation |
 | P11.2 | security review: auth, CSRF, SSRF, CSP, headers, secret handling, supply chain | DONE / CONTINUOUS + final pass — issue #345 / PR #346 / merge `cdf1ca8d9c1138dc8dd9fed4d41c1d6e31f5b7cb`; trusted-proxy/auth-return/header/supply-chain hardening plus network-free posture contracts while preserving existing SSRF transport; exact-head/post-merge CI + Replit certification; no live scan/credential/provider/DB/runtime/deployment/publication activation; final security pass still required before P12 |
-| P11.3 | observability: metrics/logs/traces/alerts/job health | NEXT SAFE BOUNDARY — deterministic/offline observability contracts and local/synthetic instrumentation first; no production telemetry/alert credentials or sinks, provider/Production DB activity, runtime/deployment mutation or publication on generic continuation |
-| P11.4 | backup/recovery and disaster-runbook certification | PLANNED |
+| P11.3 | observability: metrics/logs/traces/alerts/job health | DONE — issue #348 / PR #349 / merge `e2cd22ae0e8e072be04bb6d31369e27e9f8ee040`; deterministic structured events/logs, descriptive metric rollups, exact trace/correlation integrity, exact P9.1/P9.6 job-health evidence and non-delivering alert candidates; exact-head/post-merge CI + Replit certification; no production telemetry sink/ingestion/alert/runtime/deployment/publication activation |
+| P11.4 | backup/recovery and disaster-runbook certification | NEXT SAFE BOUNDARY — deterministic/offline backup inventory/recovery contracts, synthetic restore fixtures, integrity verification and runbook/checklist tests first; no production backup access/export/restore/failover, Production DB/storage mutation, runtime/deployment change or publication on generic continuation |
 | P11.5 | accessibility WCAG 2.2 AA certification | PLANNED |
 | P11.6 | responsive/product polish | PLANNED |
 | P11.7 | reporting/export/shareable executive views | PLANNED |
@@ -610,9 +610,10 @@ Unless a newly discovered dependency forces a reviewed change, the recommended n
 59. **DONE — P10.7:** Impact workspace v2, issue #337 / PR #338 / merge `72cf75fb9248c750b485d212a8a0f9245d785809`; deterministic synthetic/read-only P10.1–P10.6 projection with exact lineage validation, expected-vs-actual and directional-calibration presentation, and no causal/reward/runtime authority.
 60. **DONE — P11.1:** production performance budgets and offline profiling, issue #341 / PR #342 / merge `b43d10f5662862cb6467edd056b1e8adf96c2aa5`; hard raw/gzip build budgets plus synthetic-local profiling contracts with no production load/runtime activation.
 61. **DONE — P11.2:** offline security review and bounded source hardening, issue #345 / PR #346 / merge `cdf1ca8d9c1138dc8dd9fed4d41c1d6e31f5b7cb`; trusted-proxy/auth-return/header/supply-chain hardening and network-free posture regression contracts with no live scan/provider/DB/runtime/deployment activation.
-62. **NEXT SAFE BOUNDARY — P11.3:** deterministic/offline observability contracts and local/synthetic instrumentation for metrics/logs/traces/alerts/job health; no production telemetry sink or alert credentials/configuration on generic continuation.
-63. **P11.4–P11.10 —** remaining enterprise hardening items stay planned/continuous as listed above.
-64. **P12 —** final production completion certification and program closeout.
+62. **DONE — P11.3:** offline observability contracts, correlation and job-health projection, issue #348 / PR #349 / merge `e2cd22ae0e8e072be04bb6d31369e27e9f8ee040`; deterministic structured logs/metrics/trace lineage/exact P9.1+P9.6 health/non-delivering alert candidates with no production telemetry/runtime activation.
+63. **NEXT SAFE BOUNDARY — P11.4:** deterministic/offline backup/recovery contracts, synthetic restore fixtures, integrity verification and disaster-runbook certification; no production backup retrieval/export/restore/failover or Production DB/storage mutation on generic continuation.
+64. **P11.5–P11.10 —** remaining enterprise hardening items stay planned/continuous as listed above.
+65. **P12 —** final production completion certification and program closeout.
 
 This sequence intentionally brings the full-site crawler and professional UX forward instead of waiting until all backend integrations are finished.
 

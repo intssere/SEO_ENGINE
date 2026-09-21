@@ -554,21 +554,21 @@ The engine should derive gaps and strategies from evidence, never copy competito
 
 ## Current architectural checkpoint
 
-The current engineering architecture checkpoint is **P11.2 complete**.
+The current engineering architecture checkpoint is **P11.3 complete**.
 
-- P11.2 issue #345 / implementation PR #346.
-- Exact tested implementation head/tree: `6b1380efebccea980123f293b550e599b65b22ba` / `e42872ed4887c48698ddd0358089931f166a4e9a`.
-- Exact-head CI #596 / run `35574991295` and post-merge main CI #597 / run `35579001011` passed, including the canonical Ubuntu/Chromium browser suite.
-- Canonical implementation merge/tree: `cdf1ca8d9c1138dc8dd9fed4d41c1d6e31f5b7cb` / `e42872ed4887c48698ddd0358089931f166a4e9a`.
-- Auth security now centralizes client identity on Express `req.ip` under the explicit one-hop trusted-proxy policy and constrains OIDC return targets to bounded local application paths.
-- Browser/API response hardening retains CSP/HSTS/frame/content/referrer/permissions controls, adds COOP/CORP and disables Express framework disclosure.
-- A network-free source contract protects CI release-age/frozen-lockfile/read-only-permission/immutable-Action-pin controls plus logging/redaction and header invariants.
-- Existing competitor SSRF transport remains connection-level hardened and unchanged; P11.2 did not activate any live collection or provider request.
-- P11.2 is an offline source/security pass, not a claim of zero vulnerabilities. No live advisory lookup or production scan occurred; documented residuals remain for final security acceptance.
-- Replit is exact-synced to the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed 1,182 reported tests, full typecheck, full build/P11.1 budget gate and `git diff --check` using existing dependencies.
-- P9.8 remains review-complete but implementation-blocked; P11.2 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
-- Published production remains the separately certified Task #73 application source; current engineering main is not implied to be published.
+- P11.3 issue #348 / implementation PR #349.
+- Exact tested implementation head/tree: `350c6463a4466574d181bfe8c543f32fe73eb0ac` / `6759f50bd55bd89409939a275f92cabd7b0dce9c`.
+- Exact-head CI #600 / run `35583135013` and post-merge main CI #601 / run `35583379204` passed, including the canonical Ubuntu/Chromium browser suite.
+- Canonical implementation merge/tree: `e2cd22ae0e8e072be04bb6d31369e27e9f8ee040` / `6759f50bd55bd89409939a275f92cabd7b0dce9c`.
+- P11.3 adds a pure `p11.3-observability-v1` projection over supplied synthetic/local evidence: structured logs, descriptive metrics, trace/correlation integrity, exact P9.1/P9.6 job-health evidence and deterministic local alert candidates.
+- Event replay conflicts, secret-bearing attributes, broken trace parents, duplicate spans, lineage cycles and tampered P9.1/P9.6 projections fail closed.
+- P11.3 metrics are descriptive arithmetic only; they do not create SLO/SLA, production-user-impact, causal or deployment verdicts.
+- Alert candidates have no delivery or incident authority. No production telemetry sink/exporter or alert integration was added.
+- Replit is exact-synced to the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, and passed 1,194 reported tests, full typecheck, full build/P11.1 budget gate and `git diff --check` using existing dependencies.
+- P11.3 does not certify production end-to-end observability; runtime telemetry emission, backends, alert delivery, retention/querying and incident detection remain outside this offline milestone.
+- P9.8 remains review-complete but implementation-blocked; P11.3 does not unlock autonomous mutation or change Task #51/#53/#54 authorization boundaries.
+- Published production remains the separately certified Task #73 application source; current engineering main is not implied published.
 - Public-site/provider mutation remains disabled by default, `AI_PROPOSAL_GENERATION_ENABLED` remains disabled, and live execution still requires separate exact authorization.
-- Default next safe program boundary is **P11.3 — observability**, initially limited to deterministic/offline metrics/logs/traces/alerts/job-health contracts and local/synthetic instrumentation without production telemetry credentials/sinks, runtime/deployment mutation or publication.
+- Default next safe program boundary is **P11.4 — backup/recovery and disaster-runbook certification**, initially limited to deterministic/offline backup/recovery contracts, synthetic restore fixtures, integrity verification and runbook tests without production backup access/export/restore, Production DB/storage mutation, runtime/deployment changes or publication.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.

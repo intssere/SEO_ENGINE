@@ -233,3 +233,28 @@ Existing dependencies only. No database migration, lockfile change, telemetry ex
 P11.3 engineering may be merged and Git-synchronized after CI certification.
 
 It does not authorize deployment or publication.
+
+
+## Certification
+
+P11.3 is complete and certified as a deterministic/offline engineering observability milestone.
+
+- Issue: #348 — `P11.3 — offline observability contracts, correlation and job-health projection`
+- Implementation PR: #349 — `P11.3 — offline observability contracts, correlation and job-health projection`
+- Base SHA/tree: `a246f021a1eb0a511d0b27b7a3dbdb8256a77d3a` / `2c7ad666e86a13a9de7415d23d1a2f0941b4e015`
+- Exact tested implementation head/tree: `350c6463a4466574d181bfe8c543f32fe73eb0ac` / `6759f50bd55bd89409939a275f92cabd7b0dce9c`
+- Detached Replit exact-head validation: 12/12 focused P11.3 tests PASS; 1,038/1,038 API tests PASS; API typecheck and `git diff --check` PASS
+- Exact-head PR CI: #600 / run `35583135013` — success
+- Implementation merge/tree: `e2cd22ae0e8e072be04bb6d31369e27e9f8ee040` / `6759f50bd55bd89409939a275f92cabd7b0dce9c`
+- Post-merge main CI: #601 / run `35583379204` — success
+- Replit exact Git alignment: same merge/tree, origin/main exact, ahead/behind `0/0`, clean
+- Replit validation: 1,194 reported tests passed / 0 failed, full typecheck PASS, full build/P11.1 budget gate PASS, `git diff --check` PASS
+- No deployment or publication
+
+P11.3 remains an offline/local-synthetic observability contract and does not certify production telemetry emission, exporter/backend configuration, alert delivery, retention/querying or incident detection.
+
+## Next safe boundary
+
+**P11.4 — backup/recovery and disaster-runbook certification**
+
+Generic continuation may begin with deterministic/offline backup inventory and recovery contracts, synthetic restore/recovery fixtures, integrity verification and disaster-runbook/checklist tests. It does not authorize production backup retrieval/export, production restore/failover, Production DB/storage mutation, secret/runtime/deployment changes, provider/public-site activity, scheduler/worker activation, Task #51/#53/#54 execution, P9.8 implementation/activation, deployment or publication.
