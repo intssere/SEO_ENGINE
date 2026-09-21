@@ -351,3 +351,43 @@ This review performs no:
 After this review is certified and closed, the next roadmap stage is:
 
 **P11.9 — retention/privacy/provider terms and compliance review.**
+
+## Final review certification
+
+Certified review lineage:
+
+- base SHA/tree: `b3cdad0f1b7c2853e3f80b1624072e2be65fbdae` / `2bb00656cac0685f43a07ffe2cbcbff280832fb0`;
+- exact reviewed head/tree: `893ff51157cfbc9db05ff89cc569e3d1024078e5` / `009a4225e9825c763b01f64d5aa5ef14a09007a9`;
+- exact-head PR CI #646 / run `35615799086`: success;
+- review merge/tree: `7a47acfeede05b3e9a4ab7a1dd1f6ce670245bc7` / `009a4225e9825c763b01f64d5aa5ef14a09007a9`;
+- post-merge main CI #647 / run `35616390237`: success;
+- canonical GitHub Chromium matrix: **110/110 PASS**;
+- full typecheck: PASS;
+- full build/P11.1 budget gate: PASS.
+
+Replit was Git-only fast-forwarded to the exact review merge/tree with:
+
+- branch `main`;
+- origin/main exact;
+- ahead/behind `0/0`;
+- tracked changes 0;
+- untracked files 0;
+- clean worktree;
+- Git locks 0;
+- no active repository writer.
+
+A subsequent Replit non-browser validation request was not queued because the Replit Agent channel became busy again. No additional P11.8 Replit test-run result is claimed. GitHub remains the canonical full CI/browser certification environment.
+
+## Final scope-lock decision
+
+P11.8 closes with **no Project entity and no schema migration**.
+
+For v1:
+
+- Organization is the tenant/account;
+- Site is the SEO workspace/project;
+- runtime remains single-site unless a later separately governed implementation explicitly delivers and certifies the multi-site prerequisites in this document.
+
+The review does not certify the current application as multi-tenant or multi-site at runtime.
+
+The next safe roadmap stage is **P11.9 — retention/privacy/provider terms and compliance review**.
