@@ -137,3 +137,37 @@ After P12.1 certification, the next roadmap work is constrained by live-proof de
 - P12.4 requires live external-intelligence activation.
 
 No live step is authorized by P12.1.
+
+## Final implementation certification
+
+Certified lineage:
+
+- implementation base SHA/tree: `6f4dd2a11f0f347e2ac6ba9823d90f299fa00dd6` / `af57d67916ff62354e49f643428aca5833a217c5`;
+- final exact tested head/tree: `be143b4084823786ecc42440dbcd722af2fac39b` / `a47387c152b25b63a4256b33f6390fe24d13f20b`;
+- exact-head PR CI #668 / run `35645253660`: success;
+- implementation merge/tree: `4bc2bfcead3f7eaece1e0143e4546110580984f1` / `a47387c152b25b63a4256b33f6390fe24d13f20b`;
+- post-merge main CI #669 / run `35645749969`: success;
+- workspace packages: **1,264 PASS / 0 failures**;
+- P11.10 synthetic scale profile: PASS;
+- canonical Chromium: **111/111 PASS**;
+- typecheck: PASS;
+- build/P11.1 asset budget: PASS;
+- JS: 610,807 raw / 175,245 gzip;
+- CSS: 186,332 raw / 31,020 gzip.
+
+The first implementation CI (#666) correctly exposed two historical assumptions that Impact and Reports must remain primary-nav items. P12.1 did not weaken those workspaces: the contracts were updated to preserve their routes and existing accessibility/responsive/reporting/impact certification while recognizing them as engineering-only until production-bound.
+
+Replit was Git-only fast-forwarded to the exact implementation merge/tree with `0/0` ahead/behind, zero tracked/untracked changes, clean worktree, zero Git locks and zero active repository writers. A follow-up non-browser validation request was not queued because the Replit Agent channel became busy; no separate Replit test-run result is claimed.
+
+## P12.1 closeout decision
+
+P12.1 is complete for the engineering source tree:
+
+- no primary navigation item is planned;
+- no placeholder-only route is primary;
+- no synthetic fixture-only workspace is primary;
+- engineering-only routes remain available for direct/internal certification and are still visibly honest about their data state.
+
+This does not complete any live-proof criterion.
+
+P12.2, P12.3 and P12.4 remain separately authorized live-proof/provider-activation lanes. Generic continuation may inspect prerequisites and prepare runbooks but must not execute those live steps without fresh explicit authorization.

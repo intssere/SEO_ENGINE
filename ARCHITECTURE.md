@@ -593,8 +593,9 @@ The current engineering architecture checkpoint is **P11.4 complete**.
 - P11.10 performance budgets are catastrophic-regression guards, not production SLOs. No production crawl, provider request, Production DB benchmark, scheduler/worker execution, mutation, deployment or publication is part of the certification.
 - **P11 enterprise hardening is complete.**
 - The P12 entry/readiness review is certified under issue #375 / PR #376 and maps all P12.1–P12.10 criteria to current engineering evidence and explicit missing production proofs.
-- P12.1 is the next safe engineering boundary: remove/relocate primary placeholders and make route data-state semantics honest without activating providers or production persistence.
-- P12.2–P12.4 are live-proof lanes; P12.5 consumes their real evidence; P12.6/P12.8 form the governed execution/outcome lane; P12.7 is the live read-automation lane; P12.9 is final release-candidate acceptance; P12.10 is explicit publication/runtime/program closeout.
+- P12.1 is complete. Primary navigation is now operational-only; placeholder/fixture-only engineering routes remain mounted and certified but non-primary until they have a production-bound state contract.
+- P12.1 deliberately separates **route availability** from **primary product exposure**: engineering routes may remain directly routable for deterministic certification without being represented as production-ready navigation destinations.
+- P12.2–P12.4 are now the next dependency lanes and are live-proof/provider-activation gated; P12.5 consumes their real evidence; P12.6/P12.8 form the governed execution/outcome lane; P12.7 is the live read-automation lane; P12.9 is final release-candidate acceptance; P12.10 is explicit publication/runtime/program closeout.
 - No P12 review or local prerequisite grants authority for provider/OAuth calls, production crawl, DB/storage mutation, persistence activation, provider/public-site writes, scheduler/worker activation, autonomous mutation, credentials, destructive retention, deployment or publication.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
