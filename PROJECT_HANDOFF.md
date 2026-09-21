@@ -13,32 +13,36 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P12.1 primary-surface production-state remediation is complete and certified. P12.2–P12.4 are the next dependency lanes, but each requires separate explicit live authorization.
+**Current checkpoint:** the P12.2 default-off full-site crawl execution/persistence bridge is implemented and certified. P12.2 itself is **not production-complete**; the next P12.2 step is the separately authorized Diamond Shelf live proof.
 
-- P12.1 issue #379 / implementation PR #380.
-- Implementation base SHA/tree: `6f4dd2a11f0f347e2ac6ba9823d90f299fa00dd6` / `af57d67916ff62354e49f643428aca5833a217c5`.
-- Final exact tested head/tree: `be143b4084823786ecc42440dbcd722af2fac39b` / `a47387c152b25b63a4256b33f6390fe24d13f20b`.
-- Exact-head PR CI #668 / run `35645253660`: success.
-- Implementation merge/tree: `4bc2bfcead3f7eaece1e0143e4546110580984f1` / `a47387c152b25b63a4256b33f6390fe24d13f20b`.
-- Post-merge main CI #669 / run `35645749969`: success.
-- Canonical post-merge gates: 1,264 workspace tests / 0 failures; P11.10 scale PASS; Chromium **111/111 PASS**; typecheck PASS; build/P11.1 budget PASS.
-- Primary navigation is now limited to Overview, Opportunities, Technical SEO, Governance, Actions, Approvals, Deployments, Performance, Connections and Settings.
-- Engineering-only routes `/rankings`, `/internal-links`, `/ai-visibility`, `/experiments`, `/search-intelligence`, `/learning`, `/impact` and `/reports` remain mounted/directly testable and continue P11.5/P11.6 certification, but are not primary product navigation until production-bound.
-- Replit is Git-only exact-synced to the implementation merge/tree, origin/main exact, `0/0`, clean, zero tracked/untracked files, zero locks and zero active writers.
-- Replit follow-up non-browser validation was not queued because its Agent channel became busy; do not invent a separate Replit test-run result.
-- P12.1 is unpublished and performed no provider/OAuth call, production crawl, Production DB/storage mutation, evidence persistence activation, provider/public-site mutation, scheduler/worker activation, autonomous mutation, credential change, destructive retention, Task #51/#53/#54 execution, deployment or publication.
-- P12.2 requires explicitly authorized production full-site + repeat/reconciliation + incremental crawl proof.
-- P12.3 requires explicitly authorized live GSC plus required analytics/catalog proof.
-- P12.4 requires explicitly authorized selected external-intelligence provider proof.
+- P12.2 issue #382 / implementation PR #383.
+- Implementation base SHA/tree: `2b17be98c750dcba30eeedb657587bb49748867f` / `8af93afa0c3c7fc6bdbaab7adb55fe77e865e869`.
+- Final exact tested head/tree: `dbeadef4b18dabeac37e82535e791b8e7eb733c2` / `782f65af18516791421f20bcc9b198a7b8fc515a`.
+- Exact-head PR CI #674 / run `35652034114`: success.
+- Implementation merge/tree: `0981daad1da5737ac4a4ec04d97ad6cf6659057d` / `782f65af18516791421f20bcc9b198a7b8fc515a`.
+- Post-merge main CI #675 / run `35652518058`: success.
+- Canonical post-merge gates: **1,273 workspace tests / 0 failures**; API **1,072/1,072 PASS**; P11.10 scale PASS; Chromium **111/111 PASS**; typecheck PASS; build/P11.1 budget PASS.
+- Post-merge assets: JS 610,807 raw / 175,245 gzip; CSS 186,332 raw / 31,020 gzip.
+- The bridge is Diamond Shelf-only at canonical origin `https://diamondshelf.us`.
+- Sitemap acquisition, robots evaluation, page transport, clock and persistence are injected interfaces; there is no bundled HTTP/fetch/PostgreSQL/Drizzle/timer/scheduler implementation.
+- Network and persistence execution require explicit configured adapters plus `networkReady`, `liveExecutionAuthorized`, `persistenceReady` and `persistenceAuthorized`; defaults remain closed.
+- Existing P2.1–P2.6 planning/inventory/execution/checkpoint/certification/history/incremental semantics remain authoritative and unchanged.
+- Raw response bodies, page content and raw sitemap XML are excluded from the persistence contract.
+- Replit is Git-only exact-synced to the implementation merge/tree, origin/main exact, `0/0`, clean, zero tracked/untracked files, zero locks and zero active repository writers.
+- A follow-up Replit non-browser validation request was not queued because its Agent channel remained busy; do not invent a separate Replit test-run result. GitHub CI is canonical.
+- No live website/sitemap/robots request, Production DB/storage read/write/DDL/DML, observation/evidence persistence activation, provider/public-site mutation, scheduler/worker activation, autonomous mutation, credential/secret change, destructive retention, Task #51/#53/#54 execution, deployment or publication occurred.
+- Published production remains the separate Task #73 source/deployment.
+- **P12.2 next live proof requires fresh explicit authorization** naming the Diamond Shelf site identity, concrete sitemap/robots/page adapters, concrete Production persistence target, crawl limits, abort/safety procedure and allowed evidence writes.
+- That live proof must demonstrate: first full crawl + P2.4 whole-site certification; interruption/resume; repeat/reconciliation + P2.5 comparison; one bounded P2.6 incremental cycle; persisted/inspectable lineage; and no safety-fuse violation.
+- P12.3 remains separately gated on live GSC + required analytics/catalog proof.
+- P12.4 remains separately gated on selected external-intelligence provider proof.
 - P12.5 remains blocked on real persisted evidence from P12.2–P12.4.
 - P12.6 remains partial; P8.4–P8.8/integrated persistent action-verification-audit-rollback proof remain.
 - P12.7/P12.8 still require live scheduled-read and real-outcome proof.
 - P12.9 still needs exact release-candidate production acceptance.
 - P12.10 still requires P12.1–P12.9, applicable P11.9 blockers, explicit deployment/publication/runtime proof and program issue #139 closeout.
 - The ten P11.9 privacy/compliance blockers remain active.
-- Published production remains the separate Task #73 source.
-- Generic `continue` may perform read-only preflight/runbook/dependency verification for P12.2–P12.4 only; it does not authorize a live crawl/provider/OAuth request, Production DB/storage mutation/persistence, workers/schedulers, public-site/provider writes, credential mutation, destructive retention, deployment or publication.
-
+- Generic `continue` does not authorize the P12.2 live crawl, Production persistence, provider/OAuth activity, scheduler/worker activation, provider/public-site writes, credential mutation, destructive retention, deployment or publication.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
 
