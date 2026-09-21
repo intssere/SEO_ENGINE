@@ -396,12 +396,12 @@ test("incremental bridge preserves P2 retry limits and robots exclusions", async
       return { allowed: request.canonicalUrl !== robotsUrl };
     },
   };
+  let incrementalRetryAttempts = 0;
   state.options.pageTransport = {
     async get(request) {
       if (request.canonicalUrl !== retryUrl) return { kind: "success" };
-      const previous = state.calls.pages.filter((url) => url === retryUrl).length;
-      state.calls.pages.push(request.canonicalUrl);
-      return previous < 2
+      incrementalRetryAttempts += 1;
+      return incrementalRetryAttempts < 3
         ? { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } }
         : { kind: "success" };
     },
