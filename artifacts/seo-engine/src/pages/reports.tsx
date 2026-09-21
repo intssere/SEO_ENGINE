@@ -367,7 +367,7 @@ export default function ReportsPage() {
             ) : null}
           </div>
 
-          <p className="reportsExportStatus" aria-live="polite">
+          <p className="reportsExportStatus" role="status" aria-live="polite">
             {exportStatus || "No local export generated in this session."}
           </p>
 
