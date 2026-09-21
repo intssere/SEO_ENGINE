@@ -73,7 +73,7 @@ test("P11.7 CSV is canonical, quoted and protects spreadsheet formulas", () => {
   assert.ok(csv.startsWith('"section","key","label","value","detail","source"\r\n'));
   assert.match(csv, /"'=HYPERLINK\(""https:\/\/example\.test"",\""?x/);
   assert.ok(csv.endsWith("\r\n"));
-  assert.doesNotMatch(csv, /\n(?!$)/);
+  assert.equal(csv.replaceAll("\r\n", "").includes("\n"), false);
 });
 
 test("P11.7 JSON export exposes safety and never mutates the model", () => {
