@@ -240,3 +240,74 @@ P11.10 is complete only when:
 After P11.10 closes, the safe roadmap boundary advances to **P12 — final production certification**.
 
 P12 remains separately governed. Completing P11.10 does not authorize any live integration, production crawl, provider activation, autonomous execution, deployment or publication.
+
+## Canonical implementation certification evidence
+
+The first canonical PR run intentionally exposed a real scale defect rather than being hidden by relaxed budgets.
+
+### Stabilization history
+
+Initial CI #654 / run `35626527851`:
+
+- legacy/schema/bootstrap checks: PASS;
+- normal workspace tests: PASS;
+- P11.10 scale gate: FAIL before Chromium/typecheck/build;
+- observed assertion: **50,000 materialized candidates vs 25,000 target**;
+- the run spent roughly 58 seconds before the assertion surfaced.
+
+Root cause analysis found two separate facts:
+
+1. the first stress fixture caused each qualifying page-query signal to produce both a striking-distance and an internal-link candidate, so the fixture produced 50,000 valid candidates rather than the intended 25,000;
+2. more importantly, internal-link source selection used `eligibleCrawlPages.filter(...).slice(0, 3)`, which scanned every eligible crawl page for every qualifying query even though only the first three matching source pages were required.
+
+The performance repair replaced that full-array scan with an ordered loop that stops after three matching sources. This preserves the exact previous first-three selection semantics while preventing unnecessary whole-inventory scanning after the required three matches are found.
+
+A dedicated regression test proves that when five matching source pages are available, the same first three crawl-page/evidence records are selected in original order.
+
+The stress fixture was also corrected so 12,500 qualifying query rows each produce exactly:
+
+- one `striking_distance` candidate; and
+- one `internal_link` candidate;
+
+for a total of 25,000 bounded candidates while all 100,000 query-signal rows are still scanned.
+
+### Optimized exact-head evidence
+
+Exact implementation head:
+
+- SHA: `a59854b5e5663adcf282120d058f4a167cb8cfc7`;
+- tree: `561fc249c2f91de8b1b9a3e9e93c8a5091c0283b`;
+- exact-head CI #657 / run `35627054602`: **success** before this documentation-only evidence append.
+
+Canonical P11.10 profile from CI #657:
+
+| Scenario | Input rows | Output rows | Elapsed | Heap used |
+|---|---:|---:|---:|---:|
+| Sitemap inventory | 25,000 | 25,000 | 231.322 ms | 54.55 MiB |
+| Crawl execution plan | 25,000 | 100 batches | 66.784 ms | 54.94 MiB |
+| URL Explorer | 25,000 | 500-page output | 196.240 ms | 33.73 MiB |
+| Opportunity engine | 100,000 | 25,000 candidates | 230.854 ms | 98.56 MiB |
+| Read scheduler | 100 | 100 schedules | 12.524 ms | 91.50 MiB |
+
+Combined measured scenario time: **737.724 ms**.
+
+Highest observed heap-used measurement: **98.56 MiB**, well below the 768 MiB catastrophic-regression guard.
+
+Certification fingerprint:
+
+`99c9910efd2474573f5ffd060bd24cea276aa337adfdf57140679e6ae6fdb20c`
+
+All scale scenarios reported zero blockers and `certifiedSynthetic=true`.
+
+The same exact-head CI also passed:
+
+- **1,250 workspace tests / 0 failures** across the reported package groups;
+- API package: **1,063/1,063**;
+- canonical Chromium: **110/110**;
+- full typecheck;
+- full build;
+- P11.1 asset budgets:
+  - JS 611,156 raw / 175,333 gzip;
+  - CSS 186,332 raw / 31,020 gzip.
+
+These measurements are engineering evidence from one GitHub shared-runner execution. They are not production latency, throughput, capacity, concurrency, SLA or hosting-size guarantees.
