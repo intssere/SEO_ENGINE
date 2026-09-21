@@ -118,8 +118,11 @@ Unless the user gives exact, specific authorization for a bounded action:
 - OAuth token encryption, hash/HMAC protections and secret-redacting logs do not waive deletion/revocation/retention obligations. P3.3 remains planning-only, P3.6 requires explicit erasure semantics before persisted evidence can participate in account/site deletion, and production backup deletion behavior remains uncertified.
 - P11.10 synthetic load/scale certification is complete at the bounded engineering envelope. Treat its time/heap budgets as catastrophic-regression guards only, never as production latency, capacity, throughput, hosting-size or SLA claims.
 - P11 enterprise hardening is complete, but P11.9 privacy/compliance blockers remain independently open for affected live/commercial flows.
-- Generic continuation into P12 must begin with criterion-by-criterion readiness/gap review and deterministic/read-only evidence reconciliation. It may complete local/static/synthetic prerequisites, but it does not authorize live provider activation, production crawling, Production DB/storage mutation, destructive retention, provider/public-site writes, autonomous mutation, scheduler/worker activation, credential changes, Task #51/#53/#54 execution, deployment or publication.
-- Each P12 live proof keeps its existing separate authorization boundary. Do not use P11 completion as standing authority for production actions.
+- The P12 entry/readiness review is complete. Generic continuation now advances only **P12.1 — primary-surface placeholder / production-state audit and bounded remediation** unless a different P12 live proof is explicitly authorized.
+- P12.1 may change frontend/navigation/source/tests to remove planned primary destinations, prevent synthetic/demo fixtures from appearing as live production state, and add honest disconnected/empty/loading/error/stale/permission semantics while preserving P11.5/P11.6/P11.7/P11.10 gates.
+- P12.1 does not authorize provider/OAuth calls, production crawling, Production DB/storage mutation, observation/evidence persistence activation, destructive retention, provider/public-site writes, autonomous mutation, scheduler/worker activation, credential changes, Task #51/#53/#54 execution, deployment or publication.
+- P12.2–P12.8 live proofs each retain their existing separate authorization boundaries. P12.9 cannot be completed without exact release-candidate production acceptance, and P12.10 requires explicit deployment/publication authorization plus program issue #139 closeout.
+- Preserve all ten P11.9 compliance blockers; P12 progress does not waive them.
 
 ## 4. Explicit execution boundaries
 
