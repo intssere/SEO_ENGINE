@@ -145,3 +145,28 @@ P11.2 changes only engineering source/tests/docs:
 - this review record.
 
 No dependency, lockfile, database, credential, provider, scheduler, execution, deployment or publication change is part of this milestone.
+
+
+## Certification
+
+P11.2 is complete and certified as a deterministic/offline engineering security milestone.
+
+- Issue: #345 — `P11.2 — offline security review and bounded source hardening`
+- Implementation PR: #346 — `P11.2 — offline security review and bounded source hardening`
+- Base SHA/tree: `841c10c4a0fbe06fcd97d3c3fbcc84357dd18790` / `12036420976ac3f1ddc9413a070b3c71533abdd4`
+- Exact tested implementation head/tree: `6b1380efebccea980123f293b550e599b65b22ba` / `e42872ed4887c48698ddd0358089931f166a4e9a`
+- Exact-head PR CI: #596 / run `35574991295` — success
+- Implementation merge/tree: `cdf1ca8d9c1138dc8dd9fed4d41c1d6e31f5b7cb` / `e42872ed4887c48698ddd0358089931f166a4e9a`
+- Post-merge main CI: #597 / run `35579001011` — success
+- Replit exact Git alignment: same merge/tree, origin/main exact, ahead/behind `0/0`, clean
+- Replit validation: 1,182 reported tests passed / 0 failed, full typecheck PASS, full build PASS, P11.1 budget gate PASS, `git diff --check` PASS
+- Canonical browser coverage: exact-head CI #596 and post-merge CI #597 both passed Chromium Playwright
+- No deployment or publication
+
+P11.2 remains an offline/source security pass and does not claim zero vulnerabilities. Final production security acceptance must re-check time-sensitive dependency advisories, deployment topology, current runtime headers/configuration and other P11/P12 acceptance criteria.
+
+## Next safe boundary
+
+**P11.3 — observability: metrics/logs/traces/alerts/job health**
+
+Generic continuation may begin with deterministic/offline observability contracts, local/synthetic instrumentation and regression tests. It does not authorize production telemetry/alert credentials or sink configuration, Production DB mutation, provider/public-site activity, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.

@@ -13,23 +13,22 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P11.1 production performance budgets and offline profiling is complete and certified. P11.2 security review is the next safe engineering boundary.
+**Current checkpoint:** P11.2 offline security review and bounded source hardening is complete and certified. P11.3 observability is the next safe engineering boundary.
 
-- P11.1 issue #341 / implementation PR #342.
-- Implementation base SHA/tree: `accea205784a1ba5a99d4627f807e52742d3fb84` / `b7e1782f9a2fe4e20ea4e60ce0ed9ab9b52d7d46`.
-- Exact tested implementation head/tree: `a3e6eb9ec03f090ac8c18da4d0ff3f8823fff635` / `47346f32708af927b8b9394b82c892b3caa00318`.
-- Exact-head PR CI #588 / run `35572373801`: success across schema/bootstrap checks, workspace tests, Chromium browser suite, typecheck and build/budget gate.
-- Implementation merge/tree: `b43d10f5662862cb6467edd056b1e8adf96c2aa5` / `47346f32708af927b8b9394b82c892b3caa00318`.
-- Post-merge main CI #589 / run `35572567203`: success.
-- P11.1 adds explicit JS/CSS raw+gzip budgets, a hard post-build asset gate, normalized synthetic-local profile contracts and supplied-profile regression semantics while retaining the existing Vite >500 kB advisory.
-- Canonical GitHub P11.1 build: JS `589,405` raw / `170,018` gzip; CSS `179,974` raw / `29,944` gzip; budget PASS.
+- P11.2 issue #345 / implementation PR #346.
+- Implementation base SHA/tree: `841c10c4a0fbe06fcd97d3c3fbcc84357dd18790` / `12036420976ac3f1ddc9413a070b3c71533abdd4`.
+- Exact tested implementation head/tree: `6b1380efebccea980123f293b550e599b65b22ba` / `e42872ed4887c48698ddd0358089931f166a4e9a`.
+- Exact-head PR CI #596 / run `35574991295`: success across schema/bootstrap checks, all workspace tests including P11.2 security contracts and existing SSRF transport coverage, Chromium browser suite, typecheck and build/budget gate.
+- Implementation merge/tree: `cdf1ca8d9c1138dc8dd9fed4d41c1d6e31f5b7cb` / `e42872ed4887c48698ddd0358089931f166a4e9a`.
+- Post-merge main CI #597 / run `35579001011`: success.
+- P11.2 hardens trusted-proxy request identity, OIDC return-target normalization, Express disclosure, COOP/CORP headers, security regression coverage and GitHub Actions pinning while preserving the existing SSRF-hardened competitor transport.
+- P11.2 explicitly does not claim dependency-vulnerability absence; no live advisory service or production/public-site scan was used. Residual review items include the tagged rather than digest-pinned CI PostgreSQL image, current CSP compatibility allowances and the need to revisit `trust proxy` if deployment topology changes.
 - Replit was Git-only exact-synced to the implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
-- Replit recursive workspace tests, full typecheck, full build/budget gate and `git diff --check`: PASS using existing dependencies only. Replit's zlib emitted JS `169,557` gzip and CSS `29,929` gzip, both within the same ceilings.
-- Replit-local Chromium is unavailable because `libglib-2.0.so.0` is absent; no system dependency was installed. Canonical GitHub Ubuntu/Chromium browser runs #588 and #589 both passed.
-- P11.1 is unpublished and made no production traffic/load request, provider call, Production DB change, credential/config/runtime mutation, scheduler/worker activation, P9.8 activation, Task #51/#53/#54 execution or public-site/provider write.
+- Replit recursive workspace tests PASS with 1,182 reported passes / 0 failures; full typecheck, full build, P11.1 budget gate and `git diff --check` all PASS using existing dependencies only.
+- P11.2 is unpublished and made no secret/credential retrieval or rotation, live OAuth/provider call, Production DB change, dependency/lockfile change, runtime/deployment mutation, scheduler/worker activation, P9.8 activation, Task #51/#53/#54 execution or public-site/provider write.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P11.2 — security review: auth, CSRF, SSRF, CSP/headers, secret handling and supply chain**. Start with deterministic source/static/dependency review and network-free tests; no secret rotation, provider request, Production DB mutation, runtime/deployment change or publication is implied.
-- Generic `continue` does not authorize provider/public-site writes, Production DB changes, production traffic/load tests, secret/credential rotation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- Default next safe boundary: **P11.3 — observability: metrics/logs/traces/alerts/job health**. Start with deterministic/offline contracts, local/synthetic instrumentation and regression tests only; no production telemetry sink or alert credentials/configuration, live provider/DB activity, deployment or publication is implied.
+- Generic `continue` does not authorize provider/public-site writes, Production DB changes, production traffic/load tests, secret/credential changes, production telemetry integrations, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
