@@ -13,24 +13,27 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P11.6 route-wide responsive/product-polish certification is complete and certified for the engineering tree. P11.7 reporting/export/shareable executive views is the next safe engineering boundary.
+**Current checkpoint:** P11.7 deterministic reporting/export/shareable executive views is complete and certified on GitHub. P11.8 multi-site/project abstraction review is the next safe engineering boundary.
 
-- P11.6 issue #358 / implementation PR #359.
-- Implementation base SHA/tree: `75294652c5ddcf8f4b16873e78678b5c991dece6` / `d8fe375deff44bcc6fdaca8b37123d9ebe689f40`.
-- Final exact tested implementation head/tree: `d3695e9467f26c4a1501acc27715f1b2c85fc2f3` / `6e55d861c171a3e412ef93d37318677285f6cb9e`.
-- Audit stabilization is intentionally retained: CI #626 exposed visually-hidden-label clipping false positives plus real 36px mobile action links; CI #629 then isolated three 28px Performance phone filter selects; only bounded test semantics/CSS touch-target remediation followed.
-- Exact-head PR CI #631 / run `35605218166`: success with 1,225 workspace tests / 0 failures, 100/100 canonical GitHub Chromium tests, typecheck/build/P11.1 budget PASS.
-- Implementation merge/tree: `93ccd007c9fb152f60e88daefe6c727afed3fb71` / `6e55d861c171a3e412ef93d37318677285f6cb9e`.
-- Post-merge main CI #632 / run `35605748067`: success across the same full gate.
-- P11.6 certifies every explicit app route plus not-found at 1440×1000, 1024×900, 768×1024 and 390×844 for page overflow, shell/content geometry, unintended visible-copy clipping, interactive overlap, internal table scrolling, compact-shell state and phone touch ergonomics.
-- P11.5 remains fully preserved inside the 100-test browser suite; no accessibility gate was relaxed.
-- Replit is Git-only exact-synced to the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift, zero Git locks and no active repository writer.
-- Replit non-browser validation: 1,225 workspace tests PASS / 0 failures, typecheck PASS, build/P11.1 budget PASS and `git diff --check` PASS.
-- GitHub remains the canonical Chromium runner because the Replit environment previously lacks required Chromium shared libraries.
-- P11.6 is unpublished and made no production crawl/scan, provider/public-site request/write, Production DB/storage mutation, secret/config/runtime change, scheduler/worker activation, P9.8 activation or Task #51/#53/#54 execution.
-- Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P11.7 — reporting/export/shareable executive views**. Begin with deterministic/read-only engineering architecture and local/synthetic presentation/export/share UX over bounded existing evidence; no real external delivery, public sharing, production data export/exfiltration or publication is implied.
-- Generic `continue` still does not authorize provider/public-site mutation, Production DB/storage mutation, external data/file delivery, secret/runtime changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- P11.7 issue #361 / implementation PR #362.
+- Implementation base SHA/tree: `8730b8187a4892ee5bd184dde92a129f316ccffb` / `6061918e6eaa3ec5feddf586444bc0bbaf7fb951`.
+- Final exact tested implementation head/tree: `ddfe1d355331a08d28a9b6eb990b02741ca7fdf1` / `a3c4a9fc201acc297b7e60b3cdabb7c06693dd14`.
+- Exact-head PR CI #642 / run `35611326688`: success.
+- Implementation merge/tree: `83ea7efde2e78f5ccf59ee5bec7ecf7ba791c9d4` / `a3c4a9fc201acc297b7e60b3cdabb7c06693dd14`.
+- Post-merge main CI #643 / run `35611813846`: success.
+- Canonical GitHub Chromium: **110/110 PASS**.
+- Workspace packages: **1,241 tests / 0 failures**.
+- Typecheck PASS; build/P11.1 budget PASS.
+- GitHub budget diagnostics: JS 611,156 raw / 175,333 gzip; CSS 186,332 raw / 31,020 gzip.
+- New `/reports` Measure workspace is deterministic synthetic/read-only only.
+- Report core provides stable ordering/fingerprint, local CSV/JSON/print projection, spreadsheet-formula neutralization, bounded view/section URL state and explicit no-delivery/no-publication capabilities.
+- `/reports` is covered by the inherited P11.5 accessibility and P11.6 responsive route matrices.
+- Stabilization history is retained: CI #636/#637 were CSV test-expectation errors; CI #638 exposed effective checkbox-target, focused locator and export-status semantics; exact-head #642 is green after bounded corrections.
+- Replit remains intentionally untouched at the last certified clean P11.6 state while its Agent channel is occupied by an earlier operation. P11.7 Git-only fast-forward/non-browser validation remains pending; do not claim Replit P11.7 alignment until independently verified.
+- P11.7 is unpublished and grants no production report loader, production data export/exfiltration, external file/email/Slack/webhook/cloud delivery, public share publication, provider/public-site activity, Production DB/storage mutation, worker/scheduler activation, deployment or publication authority.
+- Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source.
+- Default next safe boundary: **P11.8 — multi-site/project abstraction review before final scope lock**. Start with architecture/domain review only: tenant/site/project identity, existing organization/site tables, routing/UX needs, scoping guarantees and commercial necessity. Do not migrate schema or provision live tenants on generic continuation.
+- Generic `continue` still does not authorize live provider/public-site mutation, Production DB/storage mutation, secret/runtime changes, scheduler/worker activation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.

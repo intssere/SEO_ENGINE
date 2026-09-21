@@ -171,3 +171,34 @@ It does not certify:
 - public sharing;
 - a production reporting SLA;
 - the separately published Task #73 application.
+
+## Final implementation certification
+
+Certified implementation lineage:
+
+- base SHA/tree: `8730b8187a4892ee5bd184dde92a129f316ccffb` / `6061918e6eaa3ec5feddf586444bc0bbaf7fb951`;
+- final exact tested head/tree: `ddfe1d355331a08d28a9b6eb990b02741ca7fdf1` / `a3c4a9fc201acc297b7e60b3cdabb7c06693dd14`;
+- exact-head PR CI #642 / run `35611326688`: success;
+- implementation merge/tree: `83ea7efde2e78f5ccf59ee5bec7ecf7ba791c9d4` / `a3c4a9fc201acc297b7e60b3cdabb7c06693dd14`;
+- post-merge main CI #643 / run `35611813846`: success;
+- canonical GitHub Chromium: **110/110 PASS**;
+- workspace package tests: **1,241 PASS / 0 failures**;
+- typecheck PASS;
+- build/P11.1 budget PASS;
+- JS: 611,156 raw / 175,333 gzip;
+- CSS: 186,332 raw / 31,020 gzip.
+
+Stabilization history is intentionally retained:
+
+- CI #636 and #637 identified CSV line-ending test-expectation mistakes; the serializer output itself was canonical;
+- CI #638 reached Chromium and isolated three integration issues: effective checkbox/radio touch-target measurement, an ambiguous KPI checkbox locator and missing explicit export-status semantics;
+- subsequent commits defined associated >=44px labels as the effective checkbox/radio product target, locked that semantics, targeted the KPI checkbox by role/name and added `role="status"` to export feedback;
+- exact-head CI #642 passed the complete gate.
+
+Replit P11.7 Git-only reconciliation remains pending while the Replit Agent channel is occupied by an earlier operation. No Replit P11.7 test/alignment claim is made until that state can be independently inspected.
+
+## Next boundary
+
+P11.7 is complete and unpublished on GitHub.
+
+The next safe engineering boundary is **P11.8 — multi-site/project abstraction review before final scope lock**. The first task is review-only: determine whether v1 commercial scope actually requires a first-class multi-site/project abstraction, what existing organization/site primitives already satisfy, and what schema/API/UX implications would follow. No schema/data/runtime mutation is authorized by generic continuation.
