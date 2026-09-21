@@ -13,26 +13,23 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** P10.7 Impact workspace v2 is complete and certified. P11.1 is the next safe engineering boundary.
+**Current checkpoint:** P11.1 production performance budgets and offline profiling is complete and certified. P11.2 security review is the next safe engineering boundary.
 
-- P10.7 issue #337 / implementation PR #338.
-- Implementation base SHA/tree: `6a28f58962d3c710cdc050ff4af3d37b01599a9d` / `9a6c24b10794a84a8516fe42344f3bfd39f82922`.
-- Exact tested implementation head/tree: `5e81960b3c471de18f69d5770c3dcfeeab21b70a` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
-- Detached Replit exact-head validation: P10.7 model tests `9/9`, contract tests `8/8`, full frontend tests PASS including model phase `55/55`, frontend typecheck/build and `git diff --check` PASS.
-- Exact-head PR CI #583 / run `35521313230`: success.
-- Implementation merge/tree: `72cf75fb9248c750b485d212a8a0f9245d785809` / `5b31ddd3c9fa44f8507833752c6b50b1e6a26f81`.
-- Post-merge main CI #584 / run `35521463457`: success.
-- Replit was Git-only fast-forwarded to the exact implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
-- Replit recursive workspace tests, full typecheck, full build and `git diff --check`: PASS using existing dependencies only.
-- Final merged build retained only a non-fatal Vite advisory: generated SEO Engine JavaScript chunk `589.41 kB` minified / `169.95 kB` gzip exceeds the 500 kB advisory threshold. This is an input to P11.1, not a P10.7 failure.
-- `/impact` is now a deterministic synthetic/read-only workspace rather than a live deployments-API measurement table.
-- P10.7 validates and visibly preserves P10.1 chronology, P10.2 association, P10.3 windows/confounders, P10.4 experiment/holdout structure, P10.5 expected-vs-actual arithmetic and P10.6 directional calibration as distinct layers.
-- Expected-vs-actual differences remain arithmetic only. Directional calibration remains non-reward/non-quality evidence only. Neither is causal impact or success/failure.
-- P10.7 introduced no backend API route, live provider/outcome loader, Production DB access, recommendation/model/ranking/policy mutation, execution or publication authority.
-- P9.8 remains review-complete but implementation-blocked. P10.7 did not unlock autonomous mutation, Task #51/#53/#54 execution or new provider scopes.
+- P11.1 issue #341 / implementation PR #342.
+- Implementation base SHA/tree: `accea205784a1ba5a99d4627f807e52742d3fb84` / `b7e1782f9a2fe4e20ea4e60ce0ed9ab9b52d7d46`.
+- Exact tested implementation head/tree: `a3e6eb9ec03f090ac8c18da4d0ff3f8823fff635` / `47346f32708af927b8b9394b82c892b3caa00318`.
+- Exact-head PR CI #588 / run `35572373801`: success across schema/bootstrap checks, workspace tests, Chromium browser suite, typecheck and build/budget gate.
+- Implementation merge/tree: `b43d10f5662862cb6467edd056b1e8adf96c2aa5` / `47346f32708af927b8b9394b82c892b3caa00318`.
+- Post-merge main CI #589 / run `35572567203`: success.
+- P11.1 adds explicit JS/CSS raw+gzip budgets, a hard post-build asset gate, normalized synthetic-local profile contracts and supplied-profile regression semantics while retaining the existing Vite >500 kB advisory.
+- Canonical GitHub P11.1 build: JS `589,405` raw / `170,018` gzip; CSS `179,974` raw / `29,944` gzip; budget PASS.
+- Replit was Git-only exact-synced to the implementation merge/tree; branch/main and origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked drift.
+- Replit recursive workspace tests, full typecheck, full build/budget gate and `git diff --check`: PASS using existing dependencies only. Replit's zlib emitted JS `169,557` gzip and CSS `29,929` gzip, both within the same ceilings.
+- Replit-local Chromium is unavailable because `libglib-2.0.so.0` is absent; no system dependency was installed. Canonical GitHub Ubuntu/Chromium browser runs #588 and #589 both passed.
+- P11.1 is unpublished and made no production traffic/load request, provider call, Production DB change, credential/config/runtime mutation, scheduler/worker activation, P9.8 activation, Task #51/#53/#54 execution or public-site/provider write.
 - Published production remains the separately certified **Task #73 — GSC First-Live-Read Pilot Readiness v1** source; engineering main is not implied published.
-- Default next safe boundary: **P11.1 — production performance budgets and profiling**. Start with deterministic/offline budgets, static bundle/chunk analysis and synthetic browser profiling/regression contracts against the engineering tree; no production load, deployment/runtime mutation, live provider contact or publication is implied.
-- Generic `continue` does not authorize provider/public-site writes, Production DB changes, production traffic/load tests, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
+- Default next safe boundary: **P11.2 — security review: auth, CSRF, SSRF, CSP/headers, secret handling and supply chain**. Start with deterministic source/static/dependency review and network-free tests; no secret rotation, provider request, Production DB mutation, runtime/deployment change or publication is implied.
+- Generic `continue` does not authorize provider/public-site writes, Production DB changes, production traffic/load tests, secret/credential rotation, P9.8 implementation/activation, Task #51/#53/#54 execution, deployment or publication.
 - P4.9 remains optional and unselected; live provider/runtime activation remains separately authorized.
 
 The Task #56 material below is retained as historical publication/certification context, not as the current mutable release or database checkpoint.
