@@ -862,7 +862,7 @@
   font-weight: 700;
 }
 .draftQuality.pass {
-  color: #1b8b5f;
+  color: #14764a;
 }
 .draftQuality.warning {
   color: #b57916;
@@ -1079,7 +1079,7 @@
 .decisionHistory p,
 .decisionHistory small {
   margin: 4px 0 0;
-  color: #69768a;
+  color: #647087;
   font-size: 11px;
   line-height: 1.45;
 }
