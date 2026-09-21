@@ -577,6 +577,10 @@ The current engineering architecture checkpoint is **P11.4 complete**.
 - P11.6 remediation remains presentation-only: shared mobile action links and compact Performance selects use 44px minimum targets; no API/schema/provider/runtime authority changed.
 - The P11.6 test harness semantically excludes standard visually-hidden accessibility labels from visible-copy clipping checks while retaining P11.5's independent accessible-name/axe/focus contracts.
 - GitHub Ubuntu/Chromium remains canonical for the 100-test browser matrix; Replit remains the exact-tree non-browser test/type/build/budget/diff verifier where browser system libraries are unavailable.
-- Default next safe program boundary is **P11.7 — reporting/export/shareable executive views**, initially limited to deterministic/read-only engineering projections and local/synthetic export/share UX over bounded existing evidence, with real external delivery/publication and production data export separately gated.
+- P11.7 adds a deterministic synthetic/read-only reporting layer under Measure at `/reports`, backed by a pure report projection model with stable ordering/fingerprinting, local CSV/JSON/print serialization, spreadsheet-formula neutralization and bounded URL view-state only.
+- P11.7 has no report API, persistence, server export job, email/Slack/webhook/cloud delivery or public-share publication path. Its capability contract explicitly denies production export, provider/DB activity, execution, deployment and publication.
+- The `/reports` route is part of both P11.5 accessibility and P11.6 responsive certification matrices. Checkbox/radio product-touch evaluation may use an associated >=44px label as the effective target while P11.5's independent WCAG target-size contract remains unchanged.
+- GitHub Ubuntu/Chromium is canonical for the 110-test browser matrix. Replit P11.7 alignment remains a pending mechanical Git-only step while its Agent channel is occupied; do not infer it from GitHub certification.
+- Default next safe program boundary is **P11.8 — multi-site/project abstraction review before final scope lock**, initially architecture/domain-model review only with no schema/data/runtime migration or live tenant provisioning.
 
 For the exact mutable continuation state, use `CURRENT_STATE.md`.
