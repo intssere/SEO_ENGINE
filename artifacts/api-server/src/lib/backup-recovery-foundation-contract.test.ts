@@ -62,7 +62,7 @@ test("P11.4 documentation states synthetic certification and production-recovery
   const doc = await source("../../../../docs/p11-4-backup-recovery.md");
 
   assert.match(doc, /deterministic\/offline/i);
-  assert.match(doc, /does \\*\\*not\\*\\* prove/i);\n  assert.match(doc, /production backups exist/i);
+  assert.ok(doc.includes("does **not** prove that production backups exist"));
   assert.match(doc, /RPO/i);
   assert.match(doc, /RTO/i);
   assert.match(doc, /external secrets/i);
