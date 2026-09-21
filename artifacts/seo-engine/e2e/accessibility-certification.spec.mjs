@@ -139,7 +139,7 @@ for (const route of ROUTES) {
       { width: 390, height: 844 },
     );
 
-    const undersized = await page.evaluate(() => {
+    const failures = await page.evaluate(() => {
       const selector = [
         "button:not([disabled])",
         "input:not([type='hidden']):not([disabled])",
@@ -177,29 +177,75 @@ for (const route of ROUTES) {
         );
       };
 
-      return [...document.querySelectorAll(selector)]
+      const targets = [...document.querySelectorAll(selector)]
         .filter((element) => element instanceof HTMLElement)
         .filter(isVisible)
-        .filter((element) => !isInlineTextLinkException(element))
         .map((element) => {
           const rect = element.getBoundingClientRect();
           return {
-            tag: element.tagName.toLowerCase(),
-            role: element.getAttribute("role"),
-            text: (element.getAttribute("aria-label") || element.textContent || "")
+            element,
+            rect,
+            width: rect.width,
+            height: rect.height,
+            centerX: rect.left + rect.width / 2,
+            centerY: rect.top + rect.height / 2,
+          };
+        });
+
+      const circleIntersectsRect = (centerX, centerY, radius, rect) => {
+        const nearestX = Math.max(rect.left, Math.min(centerX, rect.right));
+        const nearestY = Math.max(rect.top, Math.min(centerY, rect.bottom));
+        const dx = centerX - nearestX;
+        const dy = centerY - nearestY;
+        return dx * dx + dy * dy < radius * radius;
+      };
+
+      const hasSpacingException = (target, targetIndex) =>
+        targets.every((other, otherIndex) => {
+          if (otherIndex === targetIndex) return true;
+
+          const otherIsUndersized = other.width < 24 || other.height < 24;
+          if (otherIsUndersized) {
+            const dx = target.centerX - other.centerX;
+            const dy = target.centerY - other.centerY;
+            return Math.hypot(dx, dy) >= 24;
+          }
+
+          return !circleIntersectsRect(
+            target.centerX,
+            target.centerY,
+            12,
+            other.rect,
+          );
+        });
+
+      return targets.flatMap((target, index) => {
+        if (target.width >= 24 && target.height >= 24) return [];
+        if (isInlineTextLinkException(target.element)) return [];
+        if (hasSpacingException(target, index)) return [];
+
+        return [
+          {
+            tag: target.element.tagName.toLowerCase(),
+            role: target.element.getAttribute("role"),
+            text: (
+              target.element.getAttribute("aria-label") ||
+              target.element.textContent ||
+              ""
+            )
               .trim()
               .replace(/\s+/g, " ")
               .slice(0, 100),
-            width: Math.round(rect.width * 100) / 100,
-            height: Math.round(rect.height * 100) / 100,
-          };
-        })
-        .filter(({ width, height }) => width < 24 || height < 24);
+            width: Math.round(target.width * 100) / 100,
+            height: Math.round(target.height * 100) / 100,
+          },
+        ];
+      });
     });
 
     expect(
-      undersized,
-      "WCAG 2.2 target-size candidates below 24x24 CSS px",
+      failures,
+      "WCAG 2.2 target-size candidates fail both 24x24 sizing and the spacing exception",
     ).toEqual([]);
 
     assertNetworkBoundary(boundary);
