@@ -10,6 +10,7 @@ const read = (relativePath) => readFileSync(join(here, relativePath), "utf8");
 const app = read("App.tsx");
 const cert = read("../e2e/accessibility-certification.spec.mjs");
 const css = read("index.css");
+const impactCss = read("pages/impact.css");
 const packageJson = read("../package.json");
 
 const EXPECTED_ROUTES = [
@@ -90,6 +91,12 @@ test("P11.5 browser contract verifies reduced-motion rendering", () => {
   assert.ok(css.includes("@media (prefers-reduced-motion: reduce)"));
   assert.ok(css.includes("animation-duration: 0.01ms !important"));
   assert.ok(css.includes("transition-duration: 0.01ms !important"));
+});
+
+test("P11.5 locks the audited contrast remediations", () => {
+  assert.ok(css.includes(".draftQuality.pass {\n  color: #14764a;"));
+  assert.ok(css.includes(".decisionHistory p,\n.decisionHistory small {\n  margin: 4px 0 0;\n  color: #647087;"));
+  assert.ok(impactCss.includes(".impactLineageItem small{color:#647087;"));
 });
 
 test("P11.5 Playwright suite is part of the existing browser command without dependency expansion", () => {
