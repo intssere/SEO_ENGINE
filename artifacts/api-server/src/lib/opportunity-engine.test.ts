@@ -69,6 +69,38 @@ test("technical and internal-link opportunities require matching crawl evidence"
   assert.equal(generateOpportunityCandidates(input({ technicalFindings: [{ findingId: "orphan", pageId: "missing", title: "Orphan", severity: "high", evidenceId: "e" }] })).length, 0);
 });
 
+test("internal-link source selection preserves the first three matching crawl pages", () => {
+  const sources = Array.from({ length: 5 }, (_, index) => ({
+    ...page,
+    pageId: `source-${index + 1}`,
+    url: `https://diamondshelf.us/guides/${index + 1}`,
+    evidenceId: `evidence-source-${index + 1}`,
+    contentText: "Engagement rings buying guide.",
+    links: [] as string[],
+  }));
+  const candidates = generateOpportunityCandidates(input({
+    crawlPages: [page, ...sources],
+    gsc: [{
+      pageId: "page-1",
+      queryId: "q-three-sources",
+      query: "engagement rings",
+      url: page.url,
+      clicks: 1,
+      impressions: 80,
+      ctr: 0.0125,
+      position: 12,
+    }],
+  }));
+  const internal = candidates.find((item) => item.opportunityType === "internal_link");
+  assert.deepEqual(internal?.sourceEvidenceIds, [
+    "evidence-page-1",
+    "evidence-source-1",
+    "evidence-source-2",
+    "evidence-source-3",
+  ]);
+  assert.equal(internal?.metrics.sourcePages, 3);
+});
+
 test("non-indexable and utility pages fail closed for every opportunity class", () => {
   const variants = [
     { ...page, indexable: false },

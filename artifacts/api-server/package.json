@@ -9,6 +9,7 @@
     "build:production": "pnpm run build",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "test": "pnpm --filter @seo-engine/oauth-connection-manager build && AI_PROPOSAL_GENERATION_ENABLED=false AI_INTEGRATIONS_OPENAI_BASE_URL=http://127.0.0.1:9 AI_INTEGRATIONS_OPENAI_API_KEY=ci-test-key tsx --test src/lib/*.test.ts src/middlewares/*.test.ts",
+    "test:scale": "tsx src/lib/load-scale-profile.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "pilot:run": "node --enable-source-maps ./dist/pilot-runner.mjs"
   },
