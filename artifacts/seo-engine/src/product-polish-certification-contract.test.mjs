@@ -71,6 +71,8 @@ test("P11.6 retains compact-shell and 44px primary touch-control assertions", ()
   assert.ok(polish.includes("viewport.width <= 420"));
   assert.ok(polish.includes("touchFailures"));
   assert.ok(polish.includes("rect.height + EPSILON < 44"));
+  assert.ok(polish.includes('["checkbox", "radio"].includes(element.type)'));
+  assert.ok(polish.includes("labelRect.height + EPSILON >= 44"));
   assert.ok(polish.includes("mobile navigation panel remains viewport-safe"));
 });
 
