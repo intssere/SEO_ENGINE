@@ -19,7 +19,8 @@ import {
 
 export const DIAMOND_SHELF_SITE_ID = "eb1da9ee-539c-4200-8f04-f64ccaea7768" as const;
 export const P12_2_LIVE_ADAPTER_VERSION = "p12-2-first-party-live-adapters-v1" as const;
-export const P12_2_ABSOLUTE_TRANSIENT_PAGE_BYTES = 5_000_000;
+export const P12_2_ABSOLUTE_TRANSIENT_PAGE_BYTES = 1_048_576;
+export const P12_2_DEFAULT_TRANSIENT_PAGE_BYTES = 262_144;
 export const P12_2_ROBOTS_MAX_BYTES = 1_000_000;
 export const P12_2_SITEMAP_REDIRECT_LIMIT = 3;
 
