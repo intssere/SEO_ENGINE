@@ -499,7 +499,7 @@ Existing Tasks #51–#54 remain the safety foundation.
 
 ### Phase P12 — Final production completion certification
 
-**P11 enterprise hardening, P12.1 primary-surface remediation, and the default-off P12.2 crawl execution/persistence bridge are complete. P12.2 still requires its separately authorized live production proof; P12.3–P12.4 remain separate provider-activation lanes. No generic continuation grants live authority.**
+**P11 enterprise hardening, P12.1 primary-surface remediation, and the default-off P12.2 crawl execution/persistence bridge are complete. The canonical current-main application through that checkpoint has also been published and post-publication certified on the existing Replit production deployment, with all live provider/crawl/mutation gates remaining closed. This intermediate publication does not satisfy P12.2 live proof or P12.10 final program completion. P12.2 still requires its separately authorized live production proof; P12.3–P12.4 remain separate provider-activation lanes. No generic continuation grants live authority.**
 
 | ID | Work item | Status |
 |---|---|---|
