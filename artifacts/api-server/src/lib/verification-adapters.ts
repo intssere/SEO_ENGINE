@@ -193,6 +193,55 @@ function baseResult(input: VerificationAdapterInput, entry: VerificationAdapterR
   };
 }
 
+export function verificationAdapterResultFingerprint(
+  result: Omit<VerificationAdapterResult, "resultFingerprint">,
+): string {
+  const normalized = {
+    ...result,
+    failureCategories: [...new Set(result.failureCategories)].sort(),
+  };
+  return hash(normalized);
+}
+
+export function verificationAdapterIntegrityIssues(result: VerificationAdapterResult): string[] {
+  const issues: string[] = [];
+  if (result.version !== P8_4_VERIFICATION_ADAPTER_VERSION) {
+    issues.push("verification_version_mismatch");
+  }
+  const entry = resolveVerificationMutationClass(result.resource.kind, result.field);
+  if (!entry || result.mutationClass !== entry.mutationClass) {
+    issues.push("verification_mutation_class_mismatch");
+  }
+  if (!entry || result.adapterFingerprint !== entry.adapterFingerprint) {
+    issues.push("verification_adapter_fingerprint_mismatch");
+  }
+  if (executionStateFingerprint(result.field, result.expected.value) !== result.expected.fingerprint) {
+    issues.push("verification_expected_fingerprint_mismatch");
+  }
+  if (
+    result.providerWritePerformed !== false ||
+    result.databaseMutationPerformed !== false ||
+    result.automaticTransition !== false
+  ) {
+    issues.push("verification_side_effect_marker_invalid");
+  }
+  const categories = [...new Set(result.failureCategories)].sort();
+  if (JSON.stringify(categories) !== JSON.stringify(result.failureCategories)) {
+    issues.push("verification_failure_categories_not_canonical");
+  }
+  if (
+    result.status === "verified" &&
+    (!result.providerVerified || !result.storefrontVerified || categories.length !== 0)
+  ) {
+    issues.push("verification_verified_state_inconsistent");
+  }
+  const { resultFingerprint: _ignored, ...withoutFingerprint } = result;
+  if (verificationAdapterResultFingerprint(withoutFingerprint) !== result.resultFingerprint) {
+    issues.push("verification_result_fingerprint_mismatch");
+  }
+  return [...new Set(issues)].sort();
+}
+
 function finalize(result: MutableResult): VerificationAdapterResult {
   const failureCategories = [...new Set(result.failureCategories)].sort();
   const normalized: MutableResult = {
@@ -201,7 +250,7 @@ function finalize(result: MutableResult): VerificationAdapterResult {
   };
   return {
     ...normalized,
-    resultFingerprint: hash(normalized),
+    resultFingerprint: verificationAdapterResultFingerprint(normalized),
   };
 }
 
