@@ -325,7 +325,7 @@ export function createFirstPartySitemapAcquirer(
         if (response.status !== 200) throw new Error("p12_2_live_sitemap_http_status");
         const xml = await readBoundedText(response, request.maxDocumentBytes, "p12_2_live_sitemap_document_oversize");
         const parsed = parseSitemapXml(xml);
-        documents.push({ url: currentUrl, xml });
+        documents.push({ url: item.url, xml });
 
         if (parsed.root === "sitemapindex") {
           for (const rawChild of [...parsed.sitemapLocations].sort()) {
@@ -356,19 +356,25 @@ export function createFirstPartyRobotsEvaluator(
   const loadPolicy = () => {
     if (!cached) {
       cached = (async () => {
-        const robotsUrl = DIAMOND_SHELF_CANONICAL_ORIGIN + "/robots.txt";
-        const response = await fetchImpl(robotsUrl, {
-          method: "GET",
-          redirect: "manual",
-          headers: {
-            accept: "text/plain,*/*;q=0.1",
-            "user-agent": P12_2_ROBOTS_USER_AGENT,
-          },
-        });
-        if (REDIRECT_STATUSES.has(response.status)) {
-          const target = statusRedirectTarget(response, robotsUrl, 2_048);
-          if (!target || target !== robotsUrl) throw new Error("p12_2_live_robots_redirect_rejected");
-          throw new Error("p12_2_live_robots_redirect_not_followed");
+        let currentUrl = DIAMOND_SHELF_CANONICAL_ORIGIN + "/robots.txt";
+        let redirects = 0;
+        let response: Response;
+        while (true) {
+          response = await fetchImpl(currentUrl, {
+            method: "GET",
+            redirect: "manual",
+            headers: {
+              accept: "text/plain,*/*;q=0.1",
+              "user-agent": P12_2_ROBOTS_USER_AGENT,
+            },
+          });
+          const target = statusRedirectTarget(response, currentUrl, 2_048);
+          if (!target) break;
+          redirects += 1;
+          if (redirects > P12_2_SITEMAP_REDIRECT_LIMIT) {
+            throw new Error("p12_2_live_robots_redirect_limit_exceeded");
+          }
+          currentUrl = target;
         }
         if (response.status !== 200) throw new Error("p12_2_live_robots_unavailable");
         const text = await readBoundedText(response, P12_2_ROBOTS_MAX_BYTES, "p12_2_live_robots_oversize");
