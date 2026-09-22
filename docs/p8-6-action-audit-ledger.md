@@ -246,3 +246,21 @@ Tests use supplied/fake evidence only. No provider, storefront, database, schedu
 P8.7 remains the first persistent live low-risk action pilot.
 
 P8.6 does not authorize P8.7, P8.8 or P12.6 completion. Those remain separately governed.
+
+
+## Engineering certification
+
+P8.6 is certified complete.
+
+- issue: #399;
+- PR: #400;
+- exact tested head/tree: `d5ba916453f5c6700793c95718183fba2c16fdf8` / `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
+- exact-head CI #698 / run `35747808402`: success;
+- merge/tree: `57f5da59200b54ed12426f79b8977618bf212b08` / `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
+- post-merge main CI #699 / run `35748504397`: success.
+
+Canonical CI passed the legacy/core/auth/P3.6 schema lanes, P12.2 crawl-state migration/persistence checks, all current workspace packages, P11.10 synthetic scale, Chromium critical paths, typecheck and build.
+
+Certification is engineering-only. No database/provider/runtime/deployment/publication activity occurred.
+
+P8.7 remains the first persistent live low-risk action pilot and requires separate explicit authorization.
