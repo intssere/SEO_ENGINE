@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import postgres from "postgres";
 import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
@@ -5,72 +6,78 @@ import {
   assertFullSiteCrawlBridgeSnapshotIntegrity,
   assertIncrementalCrawlBridgeReceiptIntegrity,
   type CrawlCheckpointPersistenceRecord,
-  type FirstPartyCrawlPersistence,
+  type FirstPartyCrawlPersistence as FirstPartyCrawlPersistenceContract,
   type FullSiteCrawlBridgeSnapshot,
   type IncrementalCrawlBridgeReceipt,
 } from "./first-party-crawl-runtime-bridge.js";
-import type { FullSiteCrawlCheckpoint } from "./full-site-crawl-control.js";
+import {
+  assertFullSiteCrawlCheckpointFingerprintIntegrity,
+  type FullSiteCrawlCheckpoint,
+} from "./full-site-crawl-control.js";
 import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
 
 export const P12_2_CRAWL_PERSISTENCE_VERSION = "p12-2-crawl-persistence-v1" as const;
+export const P12_2_TABLE_COUNT = 37;
 
 type Sql = ReturnType<typeof postgres>;
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 const FORBIDDEN_CONTENT_KEYS = new Set([
   "rawresponsebody",
-  "responsebody",
   "rawsitemapxml",
-  "sitemapxml",
+  "rawpage",
   "pagecontent",
+  "content",
   "contenttext",
   "html",
   "xml",
+  "responsebody",
   "bodytext",
-  "rawbody",
-  "documentxml",
 ]);
 
-const EXPECTED_SCHEMA: Record<string, readonly string[]> = Object.freeze({
-  first_party_crawl_checkpoint_revisions: Object.freeze([
+const EXPECTED_COLUMNS: Record<string, readonly string[]> = Object.freeze({
+  first_party_crawl_checkpoints: Object.freeze([
+    "checkpoint_id",
     "site_id",
     "run_id",
-    "bridge_version",
     "canonical_origin",
-    "observed_at",
     "execution_plan_fingerprint",
-    "checkpoint_sequence",
     "checkpoint_fingerprint",
-    "checkpoint_status",
+    "checkpoint_revision",
+    "observed_at",
     "checkpoint_payload",
   ]),
   first_party_crawl_completed_runs: Object.freeze([
+    "completed_run_id",
     "site_id",
     "run_id",
-    "bridge_version",
     "canonical_origin",
-    "observed_at",
     "execution_plan_fingerprint",
-    "inventory_fingerprint",
-    "checkpoint_fingerprint",
-    "certification_fingerprint",
     "snapshot_fingerprint",
-    "whole_site_certified",
+    "observed_at",
     "snapshot_payload",
   ]),
   first_party_crawl_incremental_receipts: Object.freeze([
+    "receipt_id",
     "site_id",
     "run_id",
-    "bridge_version",
     "canonical_origin",
-    "observed_at",
     "incremental_plan_fingerprint",
     "execution_plan_fingerprint",
-    "receipt_fingerprint",
-    "selected_urls",
+    "observed_at",
     "receipt_payload",
   ]),
 });
+
+function stableSerialize(value: unknown): string {
+  if (value === undefined) return "null";
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return "[" + value.map(stableSerialize).join(",") + "]";
+  const object = value as Record<string, unknown>;
+  return "{" + Object.keys(object).sort()
+    .map((key) => JSON.stringify(key) + ":" + stableSerialize(object[key]))
+    .join(",") + "}";
+}
 
 function requireRunId(value: string): string {
   const normalized = value.normalize("NFKC").trim();
@@ -100,25 +107,87 @@ function requireBinding(siteId: string, canonicalOrigin: string): void {
   }
 }
 
-export function assertNoForbiddenCrawlContent(value: unknown): void {
+export function assertFirstPartyCrawlUrlPolicy(value: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error("p12_2_persistence_url_invalid");
+  }
+  if (
+    parsed.protocol !== "https:" ||
+    parsed.origin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+    parsed.username ||
+    parsed.password ||
+    parsed.search ||
+    parsed.hash
+  ) {
+    throw new Error("p12_2_persistence_url_policy_rejected");
+  }
+  return parsed.toString();
+}
+
+function isPersistedStatusKey(key: string): boolean {
+  return key.toLowerCase().endsWith("persisted");
+}
+
+function validatePotentialUrl(key: string, value: unknown): void {
+  const normalized = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+  if (normalized === "canonicalorigin") {
+    if (value !== DIAMOND_SHELF_CANONICAL_ORIGIN) {
+      throw new Error("p12_2_persistence_origin_mismatch");
+    }
+    return;
+  }
+
+  const singleUrl = new Set([
+    "url",
+    "canonicalurl",
+    "rootsitemapurl",
+    "redirecttarget",
+    "sourcesitemap",
+  ]);
+  const urlArray = new Set([
+    "urls",
+    "canonicalurls",
+    "sourcesitemaps",
+    "missingsupplied",
+  ]);
+
+  if (singleUrl.has(normalized) && typeof value === "string") {
+    assertFirstPartyCrawlUrlPolicy(value);
+  } else if (urlArray.has(normalized) && Array.isArray(value)) {
+    for (const item of value) {
+      if (typeof item !== "string") throw new Error("p12_2_persistence_url_array_invalid");
+      assertFirstPartyCrawlUrlPolicy(item);
+    }
+  }
+}
+
+export function assertNoForbiddenContent(value: unknown): void {
   const seen = new Set<object>();
-  const visit = (node: unknown): void => {
-    if (node === null || typeof node !== "object") return;
+  const visit = (node: unknown, key = ""): void => {
+    if (node === null || typeof node !== "object") {
+      validatePotentialUrl(key, node);
+      return;
+    }
     if (seen.has(node as object)) throw new Error("p12_2_persistence_cyclic_payload");
     seen.add(node as object);
     if (Array.isArray(node)) {
+      validatePotentialUrl(key, node);
       for (const item of node) visit(item);
-      seen.delete(node);
+      seen.delete(node as object);
       return;
     }
-    for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
-      const normalized = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
-      if (FORBIDDEN_CONTENT_KEYS.has(normalized)) {
+    for (const [childKey, child] of Object.entries(node as Record<string, unknown>)) {
+      const normalized = childKey.replace(/[^a-z0-9]/gi, "").toLowerCase();
+      if (FORBIDDEN_CONTENT_KEYS.has(normalized) && !isPersistedStatusKey(childKey)) {
         throw new Error("p12_2_persistence_forbidden_content_key");
       }
-      visit(child);
+      validatePotentialUrl(childKey, child);
+      visit(child, childKey);
     }
-    seen.delete(node);
+    seen.delete(node as object);
   };
   visit(value);
 }
@@ -132,29 +201,26 @@ function assertCheckpointRecord(record: CrawlCheckpointPersistenceRecord): void 
   if (record.rawResponseBodyPersisted !== false || record.rawSitemapXmlPersisted !== false) {
     throw new Error("p12_2_persistence_raw_content_forbidden");
   }
-  const checkpoint = record.checkpoint;
   if (
-    checkpoint.siteId !== record.siteId ||
-    checkpoint.canonicalOrigin !== record.canonicalOrigin ||
-    checkpoint.planFingerprint !== record.executionPlanFingerprint ||
-    !Number.isInteger(checkpoint.sequence) ||
-    checkpoint.sequence < 0
+    record.checkpoint.siteId !== record.siteId ||
+    record.checkpoint.canonicalOrigin !== record.canonicalOrigin ||
+    record.checkpoint.planFingerprint !== record.executionPlanFingerprint
   ) throw new Error("p12_2_persistence_checkpoint_lineage_invalid");
-  requireHex(checkpoint.fingerprint, "p12_2_persistence_checkpoint_fingerprint_invalid");
-  assertNoForbiddenCrawlContent(record);
+  assertFullSiteCrawlCheckpointFingerprintIntegrity(record.checkpoint);
+  assertNoForbiddenContent(record);
 }
 
-export type PostgresFirstPartyCrawlPersistenceOptions = {
+export type FirstPartyCrawlPersistenceOptions = {
   databaseUrl?: string | null;
   sqlFactory?: ((databaseUrl: string) => Sql) | null;
 };
 
-export class PostgresFirstPartyCrawlPersistence implements FirstPartyCrawlPersistence {
+export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceContract {
   readonly version = P12_2_CRAWL_PERSISTENCE_VERSION;
   private readonly databaseUrl: string;
   private readonly sqlFactory: (databaseUrl: string) => Sql;
 
-  constructor(options: PostgresFirstPartyCrawlPersistenceOptions = {}) {
+  constructor(options: FirstPartyCrawlPersistenceOptions = {}) {
     this.databaseUrl = options.databaseUrl?.trim() ?? "";
     this.sqlFactory = options.sqlFactory ?? ((databaseUrl) => postgres(databaseUrl, {
       max: 1,
@@ -176,23 +242,33 @@ export class PostgresFirstPartyCrawlPersistence implements FirstPartyCrawlPersis
   }
 
   private async assertSchemaAndIdentity(sql: Sql): Promise<void> {
+    const counts = await sql<{ count: number }[]>`
+      SELECT COUNT(*)::int AS count
+      FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+    `;
+    if (Number(counts[0]?.count ?? 0) !== P12_2_TABLE_COUNT) {
+      throw new Error("p12_2_persistence_schema_table_count_mismatch");
+    }
+
     const columns = await sql<{ table_name: string; column_name: string }[]>`
       SELECT table_name, column_name
       FROM information_schema.columns
       WHERE table_schema = 'public'
         AND table_name IN (
-          'first_party_crawl_checkpoint_revisions',
+          'first_party_crawl_checkpoints',
           'first_party_crawl_completed_runs',
           'first_party_crawl_incremental_receipts'
         )
       ORDER BY table_name, ordinal_position
     `;
-    for (const [table, expected] of Object.entries(EXPECTED_SCHEMA)) {
+    for (const [table, expected] of Object.entries(EXPECTED_COLUMNS)) {
       const actual = columns.filter((row) => row.table_name === table).map((row) => row.column_name);
       if (actual.length !== expected.length || actual.some((name, index) => name !== expected[index])) {
         throw new Error("p12_2_persistence_schema_mismatch");
       }
     }
+
     const identity = await sql<{ id: string }[]>`
       SELECT id::text AS id
       FROM sites
@@ -218,15 +294,18 @@ export class PostgresFirstPartyCrawlPersistence implements FirstPartyCrawlPersis
     const runId = requireRunId(input.runId);
     requireBinding(input.siteId, input.canonicalOrigin);
     requireHex(input.executionPlanFingerprint, "p12_2_persistence_execution_fingerprint_invalid");
+
     return this.withSql(async (sql) => {
-      const rows = await sql<{ checkpoint_payload: FullSiteCrawlCheckpoint; checkpoint_fingerprint: string }[]>`
-        SELECT checkpoint_payload, checkpoint_fingerprint
-        FROM first_party_crawl_checkpoint_revisions
+      const rows = await sql<{
+        checkpoint_fingerprint: string;
+        checkpoint_payload: FullSiteCrawlCheckpoint;
+      }[]>`
+        SELECT checkpoint_fingerprint, checkpoint_payload
+        FROM first_party_crawl_checkpoints
         WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
           AND run_id = ${runId}
           AND canonical_origin = ${DIAMOND_SHELF_CANONICAL_ORIGIN}
           AND execution_plan_fingerprint = ${input.executionPlanFingerprint}
-        ORDER BY checkpoint_sequence DESC
         LIMIT 1
       `;
       const row = rows[0];
@@ -234,7 +313,8 @@ export class PostgresFirstPartyCrawlPersistence implements FirstPartyCrawlPersis
       if (row.checkpoint_payload.fingerprint !== row.checkpoint_fingerprint) {
         throw new Error("p12_2_persistence_checkpoint_storage_mismatch");
       }
-      assertNoForbiddenCrawlContent(row.checkpoint_payload);
+      assertFullSiteCrawlCheckpointFingerprintIntegrity(row.checkpoint_payload);
+      assertNoForbiddenContent(row.checkpoint_payload);
       return row.checkpoint_payload;
     });
   }
@@ -242,48 +322,62 @@ export class PostgresFirstPartyCrawlPersistence implements FirstPartyCrawlPersis
   async saveCheckpoint(record: CrawlCheckpointPersistenceRecord): Promise<void> {
     assertCheckpointRecord(record);
     const runId = requireRunId(record.runId);
+
     await this.withSql(async (sql) => {
       await sql.begin(async (tx) => {
-        await tx`SELECT pg_advisory_xact_lock(hashtext('p12_2_checkpoint'), hashtext(${runId}))`;
-        const latest = await tx<{
-          checkpoint_sequence: number;
+        await tx`
+          SELECT pg_advisory_xact_lock(
+            hashtext('p12_2_checkpoint:' || ${DIAMOND_SHELF_SITE_ID}),
+            hashtext(${runId})
+          )
+        `;
+        const existing = await tx<{
+          checkpoint_revision: number;
           checkpoint_fingerprint: string;
-          execution_plan_fingerprint: string;
+          checkpoint_payload: FullSiteCrawlCheckpoint;
         }[]>`
-          SELECT checkpoint_sequence, checkpoint_fingerprint, execution_plan_fingerprint
-          FROM first_party_crawl_checkpoint_revisions
-          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid AND run_id = ${runId}
-          ORDER BY checkpoint_sequence DESC
-          LIMIT 1
+          SELECT checkpoint_revision, checkpoint_fingerprint, checkpoint_payload
+          FROM first_party_crawl_checkpoints
+          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+            AND run_id = ${runId}
+            AND execution_plan_fingerprint = ${record.executionPlanFingerprint}
           FOR UPDATE
         `;
-        const current = latest[0];
+        const current = existing[0];
         if (!current) {
-          if (record.checkpoint.sequence !== 0) throw new Error("p12_2_persistence_checkpoint_initial_sequence_invalid");
-        } else {
-          if (current.execution_plan_fingerprint !== record.executionPlanFingerprint) {
-            throw new Error("p12_2_persistence_checkpoint_plan_conflict");
-          }
-          if (record.checkpoint.sequence === current.checkpoint_sequence) {
-            if (record.checkpoint.fingerprint === current.checkpoint_fingerprint) return;
-            throw new Error("p12_2_persistence_checkpoint_conflicting_replay");
-          }
-          if (record.checkpoint.sequence !== current.checkpoint_sequence + 1) {
-            throw new Error("p12_2_persistence_checkpoint_stale_or_out_of_order");
-          }
+          await tx`
+            INSERT INTO first_party_crawl_checkpoints (
+              checkpoint_id, site_id, run_id, canonical_origin,
+              execution_plan_fingerprint, checkpoint_fingerprint,
+              checkpoint_revision, observed_at, checkpoint_payload
+            ) VALUES (
+              ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${runId},
+              ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${record.executionPlanFingerprint},
+              ${record.checkpoint.fingerprint}, ${record.checkpoint.sequence}::bigint,
+              ${record.observedAt}::timestamptz, ${tx.json(record.checkpoint)}
+            )
+          `;
+          return;
         }
+
+        const exactReplay =
+          Number(current.checkpoint_revision) === record.checkpoint.sequence &&
+          current.checkpoint_fingerprint === record.checkpoint.fingerprint &&
+          stableSerialize(current.checkpoint_payload) === stableSerialize(record.checkpoint);
+        if (exactReplay) return;
+        if (record.checkpoint.sequence <= Number(current.checkpoint_revision)) {
+          throw new Error("p12_2_persistence_checkpoint_stale_or_conflicting");
+        }
+
         await tx`
-          INSERT INTO first_party_crawl_checkpoint_revisions (
-            site_id, run_id, bridge_version, canonical_origin, observed_at,
-            execution_plan_fingerprint, checkpoint_sequence, checkpoint_fingerprint,
-            checkpoint_status, checkpoint_payload
-          ) VALUES (
-            ${DIAMOND_SHELF_SITE_ID}::uuid, ${runId}, ${record.version},
-            ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${record.observedAt}::timestamptz,
-            ${record.executionPlanFingerprint}, ${record.checkpoint.sequence},
-            ${record.checkpoint.fingerprint}, ${record.checkpoint.status},
-            ${tx.json(record.checkpoint)}
-          )
+          UPDATE first_party_crawl_checkpoints
+          SET checkpoint_fingerprint = ${record.checkpoint.fingerprint},
+              checkpoint_revision = ${record.checkpoint.sequence}::bigint,
+              observed_at = ${record.observedAt}::timestamptz,
+              checkpoint_payload = ${tx.json(record.checkpoint)}
+          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+            AND run_id = ${runId}
+            AND execution_plan_fingerprint = ${record.executionPlanFingerprint}
         `;
       });
     });
@@ -296,14 +390,17 @@ export class PostgresFirstPartyCrawlPersistence implements FirstPartyCrawlPersis
   }): Promise<FullSiteCrawlBridgeSnapshot | null> {
     if (input.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("p12_2_persistence_version_mismatch");
     requireBinding(input.siteId, input.canonicalOrigin);
+
     return this.withSql(async (sql) => {
-      const rows = await sql<{ snapshot_payload: FullSiteCrawlBridgeSnapshot; snapshot_fingerprint: string }[]>`
-        SELECT snapshot_payload, snapshot_fingerprint
+      const rows = await sql<{
+        snapshot_fingerprint: string;
+        snapshot_payload: FullSiteCrawlBridgeSnapshot;
+      }[]>`
+        SELECT snapshot_fingerprint, snapshot_payload
         FROM first_party_crawl_completed_runs
         WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
           AND canonical_origin = ${DIAMOND_SHELF_CANONICAL_ORIGIN}
-          AND whole_site_certified = true
-        ORDER BY observed_at DESC, run_id DESC
+        ORDER BY observed_at DESC, completed_run_id DESC
         LIMIT 1
       `;
       const row = rows[0];
@@ -311,8 +408,8 @@ export class PostgresFirstPartyCrawlPersistence implements FirstPartyCrawlPersis
       if (row.snapshot_payload.fingerprint !== row.snapshot_fingerprint) {
         throw new Error("p12_2_persistence_snapshot_storage_mismatch");
       }
-      assertNoForbiddenCrawlContent(row.snapshot_payload);
       assertFullSiteCrawlBridgeSnapshotIntegrity(row.snapshot_payload);
+      assertNoForbiddenContent(row.snapshot_payload);
       return row.snapshot_payload;
     });
   }
@@ -325,32 +422,44 @@ export class PostgresFirstPartyCrawlPersistence implements FirstPartyCrawlPersis
     if (!snapshot.certification.certification.wholeSiteCertified) {
       throw new Error("p12_2_persistence_completed_run_not_certified");
     }
-    assertNoForbiddenCrawlContent(snapshot);
+    assertNoForbiddenContent(snapshot);
+
     await this.withSql(async (sql) => {
       await sql.begin(async (tx) => {
-        await tx`SELECT pg_advisory_xact_lock(hashtext('p12_2_completed'), hashtext(${snapshot.runId}))`;
-        const existing = await tx<{ snapshot_fingerprint: string }[]>`
-          SELECT snapshot_fingerprint
+        await tx`
+          SELECT pg_advisory_xact_lock(
+            hashtext('p12_2_completed:' || ${DIAMOND_SHELF_SITE_ID}),
+            hashtext(${snapshot.runId})
+          )
+        `;
+        const existing = await tx<{
+          snapshot_fingerprint: string;
+          snapshot_payload: FullSiteCrawlBridgeSnapshot;
+        }[]>`
+          SELECT snapshot_fingerprint, snapshot_payload
           FROM first_party_crawl_completed_runs
-          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid AND run_id = ${snapshot.runId}
+          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+            AND run_id = ${snapshot.runId}
           FOR UPDATE
         `;
         if (existing[0]) {
-          if (existing[0].snapshot_fingerprint === snapshot.fingerprint) return;
+          if (
+            existing[0].snapshot_fingerprint === snapshot.fingerprint &&
+            stableSerialize(existing[0].snapshot_payload) === stableSerialize(snapshot)
+          ) return;
           throw new Error("p12_2_persistence_completed_run_conflicting_replay");
         }
+
         await tx`
           INSERT INTO first_party_crawl_completed_runs (
-            site_id, run_id, bridge_version, canonical_origin, observed_at,
-            execution_plan_fingerprint, inventory_fingerprint, checkpoint_fingerprint,
-            certification_fingerprint, snapshot_fingerprint, whole_site_certified,
-            snapshot_payload
+            completed_run_id, site_id, run_id, canonical_origin,
+            execution_plan_fingerprint, snapshot_fingerprint,
+            observed_at, snapshot_payload
           ) VALUES (
-            ${DIAMOND_SHELF_SITE_ID}::uuid, ${snapshot.runId}, ${snapshot.version},
-            ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${snapshot.observedAt}::timestamptz,
-            ${snapshot.executionPlan.fingerprint}, ${snapshot.inventory.fingerprint},
-            ${snapshot.checkpoint.fingerprint}, ${snapshot.certification.fingerprint},
-            ${snapshot.fingerprint}, true, ${tx.json(snapshot)}
+            ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${snapshot.runId},
+            ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${snapshot.executionPlan.fingerprint},
+            ${snapshot.fingerprint}, ${snapshot.observedAt}::timestamptz,
+            ${tx.json(snapshot)}
           )
         `;
       });
@@ -362,30 +471,41 @@ export class PostgresFirstPartyCrawlPersistence implements FirstPartyCrawlPersis
     requireObservedAt(receipt.observedAt);
     requireBinding(receipt.siteId, receipt.canonicalOrigin);
     assertIncrementalCrawlBridgeReceiptIntegrity(receipt);
-    assertNoForbiddenCrawlContent(receipt);
+    assertNoForbiddenContent(receipt);
+
     await this.withSql(async (sql) => {
       await sql.begin(async (tx) => {
-        await tx`SELECT pg_advisory_xact_lock(hashtext('p12_2_incremental'), hashtext(${receipt.runId}))`;
-        const existing = await tx<{ receipt_fingerprint: string }[]>`
-          SELECT receipt_fingerprint
+        await tx`
+          SELECT pg_advisory_xact_lock(
+            hashtext('p12_2_incremental:' || ${DIAMOND_SHELF_SITE_ID}),
+            hashtext(${receipt.runId} || ':' || ${receipt.incrementalPlanFingerprint})
+          )
+        `;
+        const existing = await tx<{
+          receipt_payload: IncrementalCrawlBridgeReceipt;
+        }[]>`
+          SELECT receipt_payload
           FROM first_party_crawl_incremental_receipts
-          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid AND run_id = ${receipt.runId}
+          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+            AND run_id = ${receipt.runId}
+            AND incremental_plan_fingerprint = ${receipt.incrementalPlanFingerprint}
           FOR UPDATE
         `;
         if (existing[0]) {
-          if (existing[0].receipt_fingerprint === receipt.fingerprint) return;
+          if (stableSerialize(existing[0].receipt_payload) === stableSerialize(receipt)) return;
           throw new Error("p12_2_persistence_incremental_conflicting_replay");
         }
+
         await tx`
           INSERT INTO first_party_crawl_incremental_receipts (
-            site_id, run_id, bridge_version, canonical_origin, observed_at,
+            receipt_id, site_id, run_id, canonical_origin,
             incremental_plan_fingerprint, execution_plan_fingerprint,
-            receipt_fingerprint, selected_urls, receipt_payload
+            observed_at, receipt_payload
           ) VALUES (
-            ${DIAMOND_SHELF_SITE_ID}::uuid, ${receipt.runId}, ${receipt.version},
-            ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${receipt.observedAt}::timestamptz,
-            ${receipt.incrementalPlanFingerprint}, ${receipt.executionPlanFingerprint},
-            ${receipt.fingerprint}, ${receipt.selectedUrls}, ${tx.json(receipt)}
+            ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${receipt.runId},
+            ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${receipt.incrementalPlanFingerprint},
+            ${receipt.executionPlanFingerprint}, ${receipt.observedAt}::timestamptz,
+            ${tx.json(receipt)}
           )
         `;
       });
@@ -398,10 +518,9 @@ export function firstPartyCrawlPersistenceCapability() {
     version: P12_2_CRAWL_PERSISTENCE_VERSION,
     siteId: DIAMOND_SHELF_SITE_ID,
     canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
-    schemaRequired: true,
+    expectedPublicTableCount: P12_2_TABLE_COUNT,
     lazyDatabaseConnection: true,
     checkpointRevisioned: true,
-    checkpointOptimisticConflictDetection: true,
     completedRunCertifiedOnly: true,
     incrementalReceiptsIdempotent: true,
     rawResponseBodyPersistence: false,
