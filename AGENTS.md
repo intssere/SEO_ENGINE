@@ -63,6 +63,13 @@ Unless the user gives exact, specific authorization for a bounded action:
 - Duplicate/conflicting rollback attempts, rollback rejection/uncertainty, exhausted unavailable restore verification, and provider/storefront disagreement must never be auto-retried or silently closed.
 - Generic `continue` after P8.5 may advance P8.6 action-history/audit-ledger engineering only; it does not authorize P8.7/P8.8 live/policy execution, provider/public-site writes, Production DB mutation, scheduler/worker activation, deployment or publication.
 
+- P8.6 action-history/audit-ledger artifacts are deterministic read-only evidence projections only. They must reuse P10.1 chronology and certified P8.4/P8.5 integrity; do not create a second persistence/event authority from them.
+- Every P8.6 source must bind directly to the exact action ID. Shared plan/deployment/target/fingerprint values, timestamp proximity or ordering must never fill missing action lineage.
+- P8.6 exact replay may collapse, but conflicting replay for the same source/evidence identity must fail closed; later timestamps never win a conflict.
+- P8.6 hash-chain ordering is serialization/tamper evidence only. It must never be treated as current state, approval, execution success, recommendation quality, priority, causality or provider-write authority.
+- P8.6 `rollback_verified_closed`, manual-intervention and unavailable evidence remain descriptive facts only; the ledger must never invoke Task #51/#53/#54, rollback, persistence or an automatic transition.
+- P8.7 is the first persistent live low-risk action pilot and is an explicit-authorization boundary. Generic `continue` after P8.6 must not activate P8.7/P8.8, provider/public-site writes, Production DB writes, scheduler/worker execution, deployment or publication.
+
 - P9.6 worker-control artifacts are review-only. A generic `continue` never activates a worker, scheduler, retry loop, durable pause/kill state, queue claim, provider/crawl request, persistence, deployment, or publication.
 - Worker-control precedence is `kill > drain > pause > running`. Pause/drain may allow already in-flight work to continue, but cannot admit new claims or reset P9.5 history.
 - A killed worker state cannot ordinary-resume. Started or outcome-uncertain killed work requires manual-intervention reconciliation; dead-letter/no-work items must never be revived through resume.
