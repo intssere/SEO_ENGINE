@@ -13,7 +13,7 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** the P12.2 default-off full-site crawl execution/persistence bridge is implemented and certified. P12.2 itself is **not production-complete**; the next P12.2 step is the separately authorized Diamond Shelf live proof.
+**Current checkpoint:** canonical current main through the P12.2 engineering bridge has now been **published to the existing Replit production deployment and post-publication certified**. P12.2 itself is still **not production-complete**; the next P12.2 step remains the separately authorized Diamond Shelf live proof.
 
 - P12.2 issue #382 / implementation PR #383.
 - Implementation base SHA/tree: `2b17be98c750dcba30eeedb657587bb49748867f` / `8af93afa0c3c7fc6bdbaab7adb55fe77e865e869`.
@@ -31,7 +31,12 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 - Replit is Git-only exact-synced to the implementation merge/tree, origin/main exact, `0/0`, clean, zero tracked/untracked files, zero locks and zero active repository writers.
 - Replit Git state was independently re-verified after the sync at the exact merge/tree; no separate Replit non-browser test run was performed. GitHub CI remains canonical for full test/browser certification.
 - No live website/sitemap/robots request, Production DB/storage read/write/DDL/DML, observation/evidence persistence activation, provider/public-site mutation, scheduler/worker activation, autonomous mutation, credential/secret change, destructive retention, Task #51/#53/#54 execution, deployment or publication occurred.
-- Published production remains the separate Task #73 source/deployment.
+- Published production is now the certified current-main release source `d84496c5aef727ac492d2bc17083a5e7a09de8ae` / tree `eebf1b2aca85a8dc5df3fff0127d046711effc67` on deployment `fbef9788-c08d-475d-a85d-88ede16e92c7` at `https://dsseoengine.replit.app`.
+- Post-publication certification passed health/auth/root/protected-route checks, live P12.1 navigation verification, source/bundle attestation, safety-gate inspection, 34↔34 Development/Production schema verification and unexpected-activity audit.
+- All public/provider write, Task #53/#54 dispatch, competitor execution/persistence/dry-run, AI proposal generation, signal collection, GSC runtime, scheduler, worker/autonomous mutation and P12.2 crawl runtime execution/persistence gates remained false.
+- Replit's metadata-only publication marker `0a6046e9cbc8b8b9a984d0cff77ce359400b384b` had parent `d84496c5...`, the identical authorized tree and zero changed files; it was reconciled Git-only back to canonical source without republishing.
+- Development P3.6 was aligned prepublication to the exact 34-table Production contract using only the canonical additive migration; final managed schema diff was zero statements / zero destructive changes.
+- The local recursive-pnpm workflow failure was repaired with a Git-ignored Corepack shim only; tracked `.replit`, package metadata, lockfile, application code and deployment settings remained unchanged.
 - **P12.2 next live proof requires fresh explicit authorization** naming the Diamond Shelf site identity, concrete sitemap/robots/page adapters, concrete Production persistence target, crawl limits, abort/safety procedure and allowed evidence writes.
 - That live proof must demonstrate: first full crawl + P2.4 whole-site certification; interruption/resume; repeat/reconciliation + P2.5 comparison; one bounded P2.6 incremental cycle; persisted/inspectable lineage; and no safety-fuse violation.
 - P12.3 remains separately gated on live GSC + required analytics/catalog proof.
