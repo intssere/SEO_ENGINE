@@ -183,3 +183,23 @@ P8.5 does not authorize or perform:
 - deployment or publication.
 
 P8.6 action history/audit ledger remains the next safe engineering boundary after P8.5 certification. P8.7/P8.8 remain separate live/policy authorization boundaries.
+
+
+## Engineering certification
+
+P8.5 is certified complete.
+
+- issue: #395;
+- PR: #396;
+- exact tested head: `61717d2e99528636d66b35c5f78303073e449417`;
+- exact-head CI #694 / run `35739798444`, attempt 2: success;
+- merge: `6ef508a0a14c68aa4462b5af3b8aa1f3276cfc4a`;
+- post-merge main CI #695 / run `35742915788`: success.
+
+Canonical CI passed legacy/core/auth/P3.6 schema validation, P12.2 crawl-state migration/persistence checks, all current workspace packages, P11.10 synthetic scale, Chromium critical paths, typecheck and build.
+
+The first CI attempt had one existing P11.6 `/connections` phone touch-target failure. The unchanged exact head passed the entire Chromium suite on attempt 2, so no P8.5 code change was made for that runner-specific failure.
+
+Certification is engineering-only. No live provider/network call, provider/public-site write, rollback mutation, database mutation/persistence, automatic transition, OAuth scope change, scheduler/worker activation, deployment or publication occurred.
+
+The next safe engineering boundary is P8.6 action history and audit ledger.
