@@ -2,28 +2,41 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.4 verification adapters certified / P8.5 next
+## Active engineering checkpoint — P8.5 rollback/manual-intervention certified / P8.6 next
 
-Issue #391 / PR #392 is complete.
+Issue #395 / PR #396 is complete.
 
-Certified P8.4 engineering:
-- exact tested head: `0016f3b93842f295cb4b3bf88ce935c9c0860fdd`;
-- exact-head PR CI #690 / run `35732605837`: success;
-- merge: `c956c14bbb990090bca79391a77fe527c0d49675`;
-- merge tree: `759174ed4404e0aa4b8500bc6a2fdc6bbb8569a0`;
-- post-merge main CI #691 / run `35733144418`: success.
+Certified P8.5 engineering:
+- exact tested head: `61717d2e99528636d66b35c5f78303073e449417`;
+- exact-head CI #694 / run `35739798444`, attempt 2: success;
+- merge: `6ef508a0a14c68aa4462b5af3b8aa1f3276cfc4a`;
+- post-merge main CI #695 / run `35742915788`: success.
 
-P8.4 now provides a deterministic read-only verification-adapter layer for exactly the four currently certified execution classes:
+P8.5 now provides a deterministic, pure/default-off rollback and manual-intervention workflow layer over certified P8.4 verification evidence for exactly the four bounded execution classes:
 - Shopify product SEO `title`;
 - Shopify product SEO `meta_description`;
 - Shopify collection SEO `title`;
 - Shopify collection SEO `meta_description`.
 
-The adapters reuse the existing Task #53 provider/storefront read primitives, require independent provider + storefront agreement for `verified`, distinguish authoritative `failed` from read-surface `unavailable`, expose deterministic failure/result fingerprints, and explicitly perform no provider write, database mutation or automatic transition.
+The workflow emits exactly one of:
+- `no_rollback_needed`;
+- `rollback_ready`;
+- `rollback_verification_pending`;
+- `rollback_verified_closed`;
+- `manual_intervention_required`.
 
-P8.4 does **not** broaden the mutation surface. Product media alt text and `write_files` remain separately blocked under P8.3. P8.7 live execution and P8.8 progressive/autonomous execution remain separately authorization-gated.
+P8.5 recomputes state fingerprints, validates P8.4 result integrity and exact mutation/resource/target/field lineage, permits only one bounded rollback attempt representation, requires independent provider + storefront restore agreement for verified closure, and fails closed to manual intervention on write uncertainty, unavailable exhausted evidence, restore corruption, rollback rejection/uncertainty, provider/storefront disagreement, duplicate/conflicting rollback attempts, or any incompatible supplied state.
 
-**Next safe engineering boundary:** P8.5 — deterministic rollback/manual-intervention workflows over the existing bounded execution/verification classes. Generic `continue` may advance this safe/default-off engineering lane, but does not authorize live Task #53/#54 execution, provider/public-site mutation, new OAuth scopes/credentials, Production DB mutation, scheduler/worker activation, deployment or publication.
+P8.5 is planning/evidence engineering only. Every result explicitly records:
+- `providerWritePerformed:false`;
+- `rollbackWritePerformed:false`;
+- `databaseMutationPerformed:false`;
+- `automaticTransition:false`;
+- `liveExecutionAuthorized:false`.
+
+It performs no Shopify/provider/network request, rollback write, persistence, action/plan/deployment transition, scheduler/worker activation, OAuth scope expansion, deployment or publication.
+
+**Next safe engineering boundary:** P8.6 — action history and audit ledger over the existing governed proposal/approval/execution/verification/rollback evidence model. Generic `continue` may advance this default-off engineering lane only; it does not authorize P8.7/P8.8 live/policy execution, Task #53/#54 provider writes, Production DB mutation, scheduler/worker activation, deployment or publication.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 

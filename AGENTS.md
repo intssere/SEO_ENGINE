@@ -56,6 +56,13 @@ Unless the user gives exact, specific authorization for a bounded action:
 - P8.4 `unavailable` must remain distinct from authoritative `failed`; do not promote unavailable evidence to success or infer provider/storefront convergence.
 - P8.4 does not authorize media-alt/`write_files`, provider writes, verification persistence, automatic transitions, or P8.7/P8.8 live/policy execution.
 
+- P8.5 rollback/manual-intervention workflow artifacts are pure/default-off planning evidence, not rollback authority. They remain closed to the same P8.4 product/collection SEO `title`/`meta_description` classes only.
+- P8.5 `rollback_ready` never grants write permission and must never itself invoke provider mutation, Task #53/#54 execution, persistence, or an automatic action/plan/deployment transition.
+- P8.5 `rollback_verified_closed` requires exactly one rollback attempt plus independent provider and storefront verification of the exact captured pre-change fingerprint. Mutation receipts, lifecycle labels, or one-sided reads are insufficient.
+- If a provider/public write may have occurred and authoritative forward or restore state is unavailable/uncertain, or if restore/lineage integrity is missing/conflicting, P8.5 must fail closed to `manual_intervention_required`.
+- Duplicate/conflicting rollback attempts, rollback rejection/uncertainty, exhausted unavailable restore verification, and provider/storefront disagreement must never be auto-retried or silently closed.
+- Generic `continue` after P8.5 may advance P8.6 action-history/audit-ledger engineering only; it does not authorize P8.7/P8.8 live/policy execution, provider/public-site writes, Production DB mutation, scheduler/worker activation, deployment or publication.
+
 - P9.6 worker-control artifacts are review-only. A generic `continue` never activates a worker, scheduler, retry loop, durable pause/kill state, queue claim, provider/crawl request, persistence, deployment, or publication.
 - Worker-control precedence is `kill > drain > pause > running`. Pause/drain may allow already in-flight work to continue, but cannot admit new claims or reset P9.5 history.
 - A killed worker state cannot ordinary-resume. Started or outcome-uncertain killed work requires manual-intervention reconciliation; dead-letter/no-work items must never be revived through resume.
