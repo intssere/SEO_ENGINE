@@ -13,21 +13,20 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest safe engineering checkpoint:** P8.5 rollback/manual-intervention workflows are **certified complete** under issue #395 / PR #396.
+**Newest safe engineering checkpoint:** P8.6 action history/audit ledger is **certified complete** under issue #399 / PR #400.
 
-- exact tested head: `61717d2e99528636d66b35c5f78303073e449417`;
-- exact-head CI #694 / run `35739798444`, attempt 2: success;
-- merge: `6ef508a0a14c68aa4462b5af3b8aa1f3276cfc4a`;
-- post-merge main CI #695 / run `35742915788`: success;
-- scope remains exactly product/collection × SEO `title`/`meta_description`;
-- workflow dispositions are `no_rollback_needed`, `rollback_ready`, `rollback_verification_pending`, `rollback_verified_closed`, `manual_intervention_required`;
-- rollback closure requires independent provider + storefront agreement on the exact pre-change fingerprint;
-- write/outcome uncertainty, exhausted unavailable evidence, restore corruption, lineage mismatch, rollback rejection/uncertainty or duplicate attempts fail closed to deterministic manual intervention;
-- workflow is pure/default-off and performs zero provider write, rollback write, DB mutation, automatic transition or live execution;
-- media-alt/`write_files` remains blocked under P8.3;
-- P12.6 remains partial because P8.6 plus later P8.7/P8.8 live/policy proof remain.
+- exact tested head/tree: `d5ba916453f5c6700793c95718183fba2c16fdf8` / `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
+- exact-head CI #698 / run `35747808402`: success;
+- merge/tree: `57f5da59200b54ed12426f79b8977618bf212b08` / `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
+- post-merge main CI #699 / run `35748504397`: success;
+- ledger reuses P10.1 + P8.4 + P8.5 and creates no parallel persistence model;
+- exact direct action-ID lineage is mandatory;
+- replay conflicts, target conflicts and P8.4/P8.5 integrity failures fail closed;
+- ordered entries form a deterministic hash chain with independent ledger integrity verification;
+- unavailable/manual-intervention/rollback-verified evidence stays descriptive and never implies execution authority;
+- zero DB read/write/persistence, provider/network request/write, rollback execution, automatic transition, scheduler/worker activation, deployment or publication occurred.
 
-**Next safe task:** P8.6 — action history and audit ledger. Generic `continue` may advance only that default-off engineering work, not live mutation/runtime activation.
+**Next boundary:** P8.7 — first persistent live low-risk action pilot. This boundary requires separate explicit authorization and must not be entered from generic `continue`. P8.8 and P12.6 remain incomplete/separately gated.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
