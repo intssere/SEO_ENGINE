@@ -2,6 +2,29 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
+## Active engineering checkpoint — P8.4 verification adapters certified / P8.5 next
+
+Issue #391 / PR #392 is complete.
+
+Certified P8.4 engineering:
+- exact tested head: `0016f3b93842f295cb4b3bf88ce935c9c0860fdd`;
+- exact-head PR CI #690 / run `35732605837`: success;
+- merge: `c956c14bbb990090bca79391a77fe527c0d49675`;
+- merge tree: `759174ed4404e0aa4b8500bc6a2fdc6bbb8569a0`;
+- post-merge main CI #691 / run `35733144418`: success.
+
+P8.4 now provides a deterministic read-only verification-adapter layer for exactly the four currently certified execution classes:
+- Shopify product SEO `title`;
+- Shopify product SEO `meta_description`;
+- Shopify collection SEO `title`;
+- Shopify collection SEO `meta_description`.
+
+The adapters reuse the existing Task #53 provider/storefront read primitives, require independent provider + storefront agreement for `verified`, distinguish authoritative `failed` from read-surface `unavailable`, expose deterministic failure/result fingerprints, and explicitly perform no provider write, database mutation or automatic transition.
+
+P8.4 does **not** broaden the mutation surface. Product media alt text and `write_files` remain separately blocked under P8.3. P8.7 live execution and P8.8 progressive/autonomous execution remain separately authorization-gated.
+
+**Next safe engineering boundary:** P8.5 — deterministic rollback/manual-intervention workflows over the existing bounded execution/verification classes. Generic `continue` may advance this safe/default-off engineering lane, but does not authorize live Task #53/#54 execution, provider/public-site mutation, new OAuth scopes/credentials, Production DB mutation, scheduler/worker activation, deployment or publication.
+
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
 Issue #387 / PR #388 is complete.
@@ -108,7 +131,7 @@ P12 criterion readiness after the P12.2 bridge:
 - **P12.3 — LIVE PROVIDER ACTIVATION BLOCKED:** requires real GSC plus required first-party analytics/catalog production proof.
 - **P12.4 — LIVE PROVIDER ACTIVATION BLOCKED:** requires selected real external-intelligence provider certification.
 - **P12.5 — ENGINEERING READY / REAL-EVIDENCE BLOCKED:** depends on persisted evidence from P12.2–P12.4.
-- **P12.6 — PARTIAL FOUNDATION ONLY:** governed execution still requires the remaining P8.4–P8.8/integrated persistent action-verification-audit-rollback proof.
+- **P12.6 — PARTIAL FOUNDATION ONLY:** P8.4 verification adapters are certified; governed execution still requires P8.5/P8.6 plus later P8.7/P8.8 live/policy execution proof.
 - **P12.7 — ENGINEERING READY / LIVE SCHEDULER PROOF BLOCKED.**
 - **P12.8 — ENGINEERING READY / REAL-OUTCOME BLOCKED.**
 - **P12.9 — LOCAL ENGINEERING SUBSTANTIALLY READY / PRODUCTION RC ACCEPTANCE BLOCKED.**
