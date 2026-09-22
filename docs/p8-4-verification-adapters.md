@@ -108,3 +108,22 @@ P8.4 engineering does not authorize:
 - deployment or publication.
 
 P8.7 live execution and P8.8 progressive policy-authorized execution remain separately gated.
+
+
+## Engineering certification
+
+P8.4 is certified complete.
+
+- issue: #391;
+- PR: #392;
+- exact tested head: `0016f3b93842f295cb4b3bf88ce935c9c0860fdd`;
+- exact-head PR CI #690 / run `35732605837`: success;
+- merge: `c956c14bbb990090bca79391a77fe527c0d49675`;
+- merge tree: `759174ed4404e0aa4b8500bc6a2fdc6bbb8569a0`;
+- post-merge main CI #691 / run `35733144418`: success.
+
+The canonical CI passed schema validation, all workspace packages, P11.10 synthetic scale, Chromium critical paths, typecheck and build.
+
+Certification is engineering-only. No live provider call, provider/public-site write, database persistence/mutation, OAuth scope change, scheduler/worker activation, deployment or publication occurred.
+
+The next safe engineering boundary is P8.5 deterministic rollback/manual-intervention workflows.
