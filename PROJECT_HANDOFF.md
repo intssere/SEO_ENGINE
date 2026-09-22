@@ -13,6 +13,23 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
+**Newest safe engineering checkpoint:** P8.4 verification adapters are **certified complete** under issue #391 / PR #392.
+
+- exact tested head: `0016f3b93842f295cb4b3bf88ce935c9c0860fdd`;
+- exact-head CI #690 / run `35732605837`: success;
+- merge: `c956c14bbb990090bca79391a77fe527c0d49675`;
+- merge tree: `759174ed4404e0aa4b8500bc6a2fdc6bbb8569a0`;
+- post-merge main CI #691 / run `35733144418`: success;
+- scope remains exactly product/collection × SEO `title`/`meta_description`;
+- provider + storefront reads are independent; `verified` requires both exact fingerprints;
+- adapters are read-only and perform no provider write, database mutation or automatic transition;
+- media-alt/`write_files` remains blocked under P8.3;
+- P12.6 remains partial because P8.5/P8.6 and later P8.7/P8.8 live/policy proof remain.
+
+**Next safe task:** P8.5 — deterministic rollback/manual-intervention workflows. Generic `continue` may advance only that default-off engineering work, not live mutation/runtime activation.
+
+
+
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
 - Exact tested adapter head/tree: `f7210f7c7d7b7ff3e079403ec107acefbf4f9cc0` / `317675fd81f3a83a0336be56c4e4c1f816ff82d9`.
@@ -54,7 +71,7 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 - P12.3 remains separately gated on live GSC + required analytics/catalog proof.
 - P12.4 remains separately gated on selected external-intelligence provider proof.
 - P12.5 remains blocked on real persisted evidence from P12.2–P12.4.
-- P12.6 remains partial; P8.4–P8.8/integrated persistent action-verification-audit-rollback proof remain.
+- P12.6 remains partial; P8.4 verification adapters are complete, while P8.5/P8.6 and later P8.7/P8.8 live/policy proof remain.
 - P12.7/P12.8 still require live scheduled-read and real-outcome proof.
 - P12.9 still needs exact release-candidate production acceptance.
 - P12.10 still requires P12.1–P12.9, applicable P11.9 blockers, explicit deployment/publication/runtime proof and program issue #139 closeout.
