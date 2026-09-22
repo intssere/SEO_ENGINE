@@ -13,22 +13,21 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest safe engineering checkpoint:** P8.4 verification adapters are **certified complete** under issue #391 / PR #392.
+**Newest safe engineering checkpoint:** P8.5 rollback/manual-intervention workflows are **certified complete** under issue #395 / PR #396.
 
-- exact tested head: `0016f3b93842f295cb4b3bf88ce935c9c0860fdd`;
-- exact-head CI #690 / run `35732605837`: success;
-- merge: `c956c14bbb990090bca79391a77fe527c0d49675`;
-- merge tree: `759174ed4404e0aa4b8500bc6a2fdc6bbb8569a0`;
-- post-merge main CI #691 / run `35733144418`: success;
+- exact tested head: `61717d2e99528636d66b35c5f78303073e449417`;
+- exact-head CI #694 / run `35739798444`, attempt 2: success;
+- merge: `6ef508a0a14c68aa4462b5af3b8aa1f3276cfc4a`;
+- post-merge main CI #695 / run `35742915788`: success;
 - scope remains exactly product/collection × SEO `title`/`meta_description`;
-- provider + storefront reads are independent; `verified` requires both exact fingerprints;
-- adapters are read-only and perform no provider write, database mutation or automatic transition;
+- workflow dispositions are `no_rollback_needed`, `rollback_ready`, `rollback_verification_pending`, `rollback_verified_closed`, `manual_intervention_required`;
+- rollback closure requires independent provider + storefront agreement on the exact pre-change fingerprint;
+- write/outcome uncertainty, exhausted unavailable evidence, restore corruption, lineage mismatch, rollback rejection/uncertainty or duplicate attempts fail closed to deterministic manual intervention;
+- workflow is pure/default-off and performs zero provider write, rollback write, DB mutation, automatic transition or live execution;
 - media-alt/`write_files` remains blocked under P8.3;
-- P12.6 remains partial because P8.5/P8.6 and later P8.7/P8.8 live/policy proof remain.
+- P12.6 remains partial because P8.6 plus later P8.7/P8.8 live/policy proof remain.
 
-**Next safe task:** P8.5 — deterministic rollback/manual-intervention workflows. Generic `continue` may advance only that default-off engineering work, not live mutation/runtime activation.
-
-
+**Next safe task:** P8.6 — action history and audit ledger. Generic `continue` may advance only that default-off engineering work, not live mutation/runtime activation.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
