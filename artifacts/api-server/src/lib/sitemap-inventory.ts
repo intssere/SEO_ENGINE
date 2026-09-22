@@ -98,7 +98,7 @@ export type SitemapInventoryResult = {
   fingerprint: string;
 };
 
-type ParsedSitemapDocument = {
+export type ParsedSitemapDocument = {
   root: "sitemapindex" | "urlset";
   sitemapLocations: string[];
   urlLocations: Array<{ loc: string; lastmod: string | null }>;
@@ -183,7 +183,7 @@ function validateAttributes(raw: string): void {
   }
 }
 
-function parseSitemapXml(xmlInput: string): ParsedSitemapDocument {
+export function parseSitemapXml(xmlInput: string): ParsedSitemapDocument {
   const xml = xmlInput.replace(/^\uFEFF/, "");
   if (/<!DOCTYPE\b/i.test(xml) || /<!ENTITY\b/i.test(xml)) throw new Error("sitemap_xml_dtd_or_entity_not_allowed");
 
