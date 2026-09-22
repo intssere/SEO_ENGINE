@@ -13,27 +13,28 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest safe execution checkpoint:** P8.7 first persistent live low-risk action pilot is complete and tracked by issue #404.
+**Newest certified execution checkpoint:** P8.7 first persistent live low-risk action pilot is complete under issue #404 / PR #405.
 
-- exact plan/action: `f35d29f6-e0da-45fb-a98c-d36a28eb7403` / `48a8237b-9b71-4a43-84e1-0fc291f4cc35`;
-- target: Diamond Shelf collection `gid://shopify/Collection/335423963335`, field `meta_description`;
-- exact before fingerprint: `3d9c5c368a99141b37890291afa6d16da2d33b45c418d0fb060a27d145ca7b29`;
-- exact after fingerprint: `cdecc199596be9bca5d0a4960d892774a88c97a210ba6d7e6173aa7ae4f27dbd`;
-- final authorization fingerprint: `d468009fec625521e4c1ae247b7a75cf84a51032c34893db197629cfdc330235`;
-- final Task #54 preflight fingerprint: `dc4fcc32ab126e476ca3aafeb50393921cc3e9d2c9bba57bdf45bf5f7a4c2904`;
-- one completed deployment: `a1b5f5cd-8ead-4a6e-bbb5-4b2347dff209`;
-- one verified forward verification: `7c74b5e4-c014-48db-8d2b-c3184818adfe`;
-- provider and storefront verification both passed;
-- final lifecycle: `production_change_verified_live`;
-- `publicWriteOccurred=true`, `measurementEligible=true`;
-- zero rollback rows and no manual intervention;
-- exactly one action and one deployment; no duplicate/parallel execution;
-- P8.4 verification semantics were satisfied by exact independent provider + storefront agreement;
-- P8.5 rollback/manual-intervention safety remained available but was not exercised;
-- P8.6 remains the read-only audit/history projection layer; no competing live ledger was added;
-- after success, secure `PUBLIC_SITE_WRITES_ENABLED` was returned to `false` and canonical source `78f8e69d07aa4e853ab0c815e7ba24d284d93e97` / tree `271d82d2c3e3a1bef5eeca567e96f924189166f7` was successfully republished to the existing autoscale deployment.
+- exact tested closeout head: `7a7747d50b8f6bfd4286390e2025dbab7b62d4fd`;
+- exact-head CI #702 / run `35774922578`: success;
+- merge/tree: `f7967fc0b494dec0fc9eab74f556469efcceee06` / `d3ecdbd5596e60348f0ad7dc550b15752b608cc7`;
+- post-merge main CI #703 / run `35775514185`: success;
+- Replit exact Git-only sync: merge/tree exact, `0/0`, clean, zero tracked/untracked changes, no republish;
+- live pilot itself had one action/one deployment/one verified forward result, independent provider + storefront verification, no rollback/manual intervention, and the production public-write gate was returned to closed.
 
-**Next boundary:** P8.8 — progressive policy-authorized low-risk execution. Generic continuation does not authorize P8.8 implementation/activation, autonomous mutation, repeated/bulk provider writes, scheduler/worker mutation, policy-created authorization, new mutation classes/scopes, P12.2 live crawl work, Production DDL or publication.
+**Active safe boundary:** P8.8 specification/review under issue #406. Implementation and activation are blocked.
+
+P8.8 specification fixes the initial future policy class at Shopify Product SEO `meta_description` only and requires:
+- distinct policy authorization provenance;
+- immutable/versioned policy grants;
+- exact P9.7 proposal materialization;
+- deterministic evidence/quality/risk/quota/cooldown/control admission;
+- durable reservation/idempotency;
+- separate policy execution namespace;
+- Task #54-equivalent forward/verification/rollback safety;
+- Stage 0 shadow before any Stage 1 live canary.
+
+Generic continuation at this checkpoint may advance only specification/review work. It does not authorize W01 implementation, Production schema changes, worker/scheduler activation, policy activation, provider/public-site mutation, Task #51/#53/#54 execution, credential/scope changes, deployment or publication.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 

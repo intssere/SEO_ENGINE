@@ -2,39 +2,43 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.7 first persistent live low-risk action pilot complete / P8.8 next boundary
+## Active engineering checkpoint — P8.8 specification/review active / implementation blocked
 
-P8.7 live execution is complete and tracked by issue #404.
+P8.7 is certified complete under issue #404 / PR #405.
 
-Certified live-pilot evidence:
-- site: Diamond Shelf / `https://diamondshelf.us`;
-- action plan: `f35d29f6-e0da-45fb-a98c-d36a28eb7403`;
-- action: `48a8237b-9b71-4a43-84e1-0fc291f4cc35`;
-- target: Shopify collection `gid://shopify/Collection/335423963335`, `meta_description`;
-- before fingerprint: `3d9c5c368a99141b37890291afa6d16da2d33b45c418d0fb060a27d145ca7b29`;
-- after fingerprint: `cdecc199596be9bca5d0a4960d892774a88c97a210ba6d7e6173aa7ae4f27dbd`;
-- final authorization fingerprint: `d468009fec625521e4c1ae247b7a75cf84a51032c34893db197629cfdc330235`;
-- final Task #54 preflight fingerprint: `dc4fcc32ab126e476ca3aafeb50393921cc3e9d2c9bba57bdf45bf5f7a4c2904`;
-- persistent deployment: `a1b5f5cd-8ead-4a6e-bbb5-4b2347dff209`;
-- forward verification: `7c74b5e4-c014-48db-8d2b-c3184818adfe`;
-- provider verification: passed;
-- storefront verification: passed;
-- final lifecycle: `production_change_verified_live`;
-- `publicWriteOccurred=true`;
-- `measurementEligible=true`;
-- rollback count: 0;
-- manual intervention: not required;
-- exactly one action and one deployment; no duplicate/parallel execution.
+Final P8.7 repository certification:
+- exact tested closeout head: `7a7747d50b8f6bfd4286390e2025dbab7b62d4fd`;
+- exact-head CI #702 / run `35774922578`: success;
+- merge: `f7967fc0b494dec0fc9eab74f556469efcceee06`;
+- merge tree: `d3ecdbd5596e60348f0ad7dc550b15752b608cc7`;
+- post-merge main CI #703 / run `35775514185`: success;
+- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, no republish/runtime/provider/database/config action.
 
-The approved live value is:
+P8.8 specification/review is now tracked by issue #406.
 
-`The Home Fragrance collection combines Candles, Diffusers, and Other Home Fragrance, placing these related product types together for easier comparison.`
+The P8.8 specification converts the completed P9.8 architecture review plus P8.7 live-pilot evidence into a staged implementation contract while preserving all existing execution safeguards.
 
-P8.4 semantics were satisfied by independent provider + storefront agreement on the exact approved after state. P8.5 rollback/manual-intervention safety remained available but was not exercised because forward verification succeeded. P8.6 remains the read-only action-history/audit projection layer; P8.7 introduced no competing event authority.
+Initial policy class remains exactly:
+- Shopify Product only;
+- action `update_meta_description`;
+- field `meta_description`;
+- exact Product GID + `diamondshelf.us/products/...` URL;
+- existing isolated `write_products` authority only;
+- no collections, titles, media/file-alt, handles, content, inventory, price, publication, theme or new provider scopes.
 
-After the successful pilot, secure `PUBLIC_SITE_WRITES_ENABLED` was returned to `false` and canonical source `78f8e69d07aa4e853ab0c815e7ba24d284d93e97` / tree `271d82d2c3e3a1bef5eeca567e96f924189166f7` was successfully republished to the existing autoscale deployment. No additional Task #51/#53/#54 call, Production DB mutation, Shopify/provider request, rollback, migration, scheduler/worker activation or public-site mutation occurred during gate closure.
+The specification requires:
+- provenance-distinct `policy_authorization` rather than fabricated human approval;
+- immutable/versioned/expiring/revocable external policy grants;
+- exact P9.7 → governed proposal materialization with no new generated text;
+- deterministic admission over evidence, quality, risk, target, quota, cooldown and worker-control state;
+- durable reservation/idempotency before provider dispatch;
+- a separate policy execution namespace that cannot spoof the human Task #54 confirmation;
+- preservation of one-forward-mutation maximum, independent provider + storefront verification, one deterministic rollback and manual-intervention fail-closed semantics;
+- staged rollout: Stage 0 shadow → Stage 1 single-action canary → separately reviewed Stage 2 expansion.
 
-**Next boundary:** P8.8 — progressive policy-authorized low-risk execution. P8.7 does not authorize autonomous execution, repeated/bulk provider writes, scheduler/worker mutation, policy-created authorization, additional mutation classes/scopes, P12.2 live crawling, Production DDL or P8.8 activation. Any P8.8 implementation/live policy execution remains separately gated.
+P8.8 is **specification/review only** at this checkpoint. It authorizes no policy-engine implementation, Production schema/storage work, scheduler/worker activation, provider/public-site write, Task #51/#53/#54 execution, credential/scope change, `PUBLIC_SITE_WRITES_ENABLED` change, deployment or publication.
+
+**Next safe boundary after specification certification:** W01 — pure policy grant/evaluation contracts only, and only under a separate implementation authorization. W01 must remain deterministic, network-free, persistence-free and default-off.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
