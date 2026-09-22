@@ -90,7 +90,8 @@ test("manual runtime is pinned to exact Diamond Shelf identity and explicit boun
         ...base.limits,
         executionPolicy: {
           ...base.limits.executionPolicy,
-          concurrency: base.limits.executionPolicy.batchSize + 1,
+          batchSize: 2,
+          concurrency: 3,
         },
       },
     }),
