@@ -2,27 +2,36 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P12.2 live adapters / issue #387
+## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
-Issue #387 is the active engineering task on branch `p12-2-live-adapter-engineering`.
+Issue #387 / PR #388 is complete.
 
-Engineering scope now present on the task branch:
-- production-capable but default-off first-party sitemap, robots, page and pacing-clock adapters for exact site `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `https://diamondshelf.us`;
-- SSRF/DNS-rebinding controls reuse the pinned secure transport model with fresh public-address resolution, address pinning, TLS/SNI preservation and manual redirect revalidation;
-- dedicated migration source `0004_first_party_crawl_execution_state.sql` with three crawl execution-state tables;
-- lazy PostgreSQL persistence adapter with exact site/origin/schema binding, replay/idempotency and checkpoint-revision conflict controls;
+Certified engineering:
+- exact tested implementation head: `f7210f7c7d7b7ff3e079403ec107acefbf4f9cc0`;
+- tree: `317675fd81f3a83a0336be56c4e4c1f816ff82d9`;
+- exact-head PR CI #686 / run `35713158875`: success;
+- merge: `cfdb21f3853f6a6c604686d750016c08c7f43492`;
+- post-merge main CI #687 / run `35713968607`: success;
+- Replit Git-only sync: exact merge/tree, origin/main exact, `0/0`, clean, zero locks/writers.
+
+The merged engineering layer provides:
+- exact Diamond Shelf production-capable but default-off sitemap, robots, page and pacing-clock adapters for site `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `https://diamondshelf.us`;
+- SSRF/DNS-rebinding protection using fresh public-address resolution, address pinning, TLS/SNI preservation, ambient-proxy exclusion and manual redirect revalidation;
+- migration source `0004_first_party_crawl_execution_state.sql` with three dedicated crawl execution-state tables;
+- lazy PostgreSQL persistence with exact site/origin/schema binding, replay/idempotency, advisory-lock concurrency controls and checkpoint-revision conflict protection;
 - manual composition requiring exact confirmation `AUTHORIZE:P12_2_LIVE_CRAWL:eb1da9ee-539c-4200-8f04-f64ccaea7768` plus all four independent network/execution/persistence gates;
 - inspection-only CLI; no HTTP route, startup hook, scheduler or worker binding;
 - migration/persistence integration tests isolated to `P12_2_EPHEMERAL_DATABASE_URL` and forbidden from falling back to generic `DATABASE_URL`.
 
-**Certification is still pending PR/exact-head CI. P12.2 live proof remains blocked.** No external crawl/provider request, Production DB mutation, deployment or publication is authorized by this engineering task.
+**P12.2 live proof is still blocked.** Merge did not authorize or perform live crawl execution, Production schema migration, live persistence, deployment, publication, scheduler/worker activation, provider/public-site mutation or credential changes.
 
-Schema reality after an implementation-test incident must remain explicit:
-- Production remains at the certified 34-table P3.6 schema and was not written by issue #387;
-- Replit Development was unintentionally advanced from 34 to 37 tables when an early local migration test inherited generic `DATABASE_URL` and applied the then-local 0004 once;
-- the three new Development tables were empty when detected;
-- no compensating DDL has been attempted or authorized;
-- schema reconciliation is a separate future authorization after the final merged 0004 contract is certified.
+Schema reality must remain explicit:
+- Production remains at the certified 34-table P3.6 schema;
+- Replit Development is at 37 tables because an early local issue #387 migration test incorrectly inherited generic `DATABASE_URL` before the dedicated isolation safeguard was added;
+- the three new Development crawl-state tables were empty when detected;
+- no compensating DDL/rollback has been attempted;
+- migration 0004 remains unapplied to Production;
+- Production schema application, deployment/runtime activation and the live proof each require separate explicit authorization.
 
 ## Published production
 
