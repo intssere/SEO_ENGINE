@@ -39,14 +39,19 @@ test("fully initialized runtime schema skips migrations and allows idempotent si
 });
 
 test("current P3.6 and future P12.2 schemas are recognized without automatic migration", () => {
-  for (const count of [EXPECTED_CURRENT_TABLE_COUNT, EXPECTED_P12_2_TABLE_COUNT]) {
-    const plan = planRuntimeBootstrap(count);
-    assert.equal(plan.schemaState, "ready");
-    assert.equal(plan.blocked, false);
-    assert.equal(plan.applyCoreMigration, false);
-    assert.equal(plan.applyAuthMigration, false);
-    assert.equal(plan.upsertDiamondShelf, true);
-  }
+  const current = planRuntimeBootstrap(EXPECTED_CURRENT_TABLE_COUNT);
+  assert.equal(current.schemaState, "ready");
+  assert.equal(current.blocked, false);
+  assert.equal(current.applyCoreMigration, false);
+  assert.equal(current.applyAuthMigration, false);
+  assert.equal(current.upsertDiamondShelf, true);
+
+  const p12 = planRuntimeBootstrap(EXPECTED_P12_2_TABLE_COUNT);
+  assert.equal(p12.schemaState, "p12_2_ready");
+  assert.equal(p12.blocked, false);
+  assert.equal(p12.applyCoreMigration, false);
+  assert.equal(p12.applyAuthMigration, false);
+  assert.equal(p12.upsertDiamondShelf, true);
 });
 
 test("unrecognized partial or unsupported future schema states fail closed", () => {
