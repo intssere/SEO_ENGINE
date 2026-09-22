@@ -13,8 +13,15 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** canonical current main through the P12.2 engineering bridge has now been **published to the existing Replit production deployment and post-publication certified**. P12.2 itself is still **not production-complete**; the next P12.2 step remains the separately authorized Diamond Shelf live proof.
+**Current checkpoint:** issue #387 is implementing the final default-off P12.2 live-adapter/persistence engineering layer on branch `p12-2-live-adapter-engineering`; PR/CI certification is pending. The previously published current-main application remains live and safe, but P12.2 itself is still **not production-complete** and no live crawl is authorized.
 
+
+- Active issue #387 adds exact-site production-capable sitemap/robots/page/clock adapters, dedicated 0004 crawl-state schema source, lazy PostgreSQL persistence, and manual composition with all live gates default-off.
+- Exact future site binding: `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `https://diamondshelf.us`.
+- Exact manual confirmation: `AUTHORIZE:P12_2_LIVE_CRAWL:eb1da9ee-539c-4200-8f04-f64ccaea7768`; confirmation alone is insufficient because all four readiness/authorization booleans must also be true.
+- No API/startup/job/scheduler/worker binding is added; bundled CLI is inspection-only and direct execution is blocked.
+- Migration tests now use only `P12_2_EPHEMERAL_DATABASE_URL` and may never inherit generic `DATABASE_URL`.
+- During the first local implementation validation, an early test did inherit generic `DATABASE_URL` and applied then-local 0004 once to Replit Development, moving it 34→37 tables. All three new tables were empty; Production remained 34 and untouched. No compensating DDL is authorized or attempted. Reconciliation is a separate future gate after merged-contract certification.
 - P12.2 issue #382 / implementation PR #383.
 - Implementation base SHA/tree: `2b17be98c750dcba30eeedb657587bb49748867f` / `8af93afa0c3c7fc6bdbaab7adb55fe77e865e869`.
 - Final exact tested head/tree: `dbeadef4b18dabeac37e82535e791b8e7eb733c2` / `782f65af18516791421f20bcc9b198a7b8fc515a`.
