@@ -428,6 +428,145 @@ function finalize(
   };
 }
 
+export function rollbackWorkflowResultFingerprint(
+  result: Omit<RollbackWorkflowResult, "resultFingerprint">,
+): string {
+  return hash({
+    ...result,
+    reasonCodes: normalizeReasons(result.reasonCodes),
+  });
+}
+
+export function rollbackWorkflowIntegrityIssues(result: RollbackWorkflowResult): string[] {
+  const issues: string[] = [];
+  if (result.version !== P8_5_ROLLBACK_WORKFLOW_VERSION) {
+    issues.push("rollback_workflow_version_mismatch");
+  }
+
+  const entry = resolveRollbackWorkflow(
+    result.mutationClass,
+    result.resource.kind,
+    result.field,
+  );
+  if (!entry) {
+    issues.push("rollback_workflow_mutation_class_mismatch");
+  } else if (result.workflowFingerprint !== entry.workflowFingerprint) {
+    issues.push("rollback_workflow_registry_fingerprint_mismatch");
+  }
+
+  if (executionStateFingerprint(result.field, result.before.value) !== result.before.fingerprint) {
+    issues.push("rollback_workflow_before_fingerprint_mismatch");
+  }
+  if (executionStateFingerprint(result.field, result.after.value) !== result.after.fingerprint) {
+    issues.push("rollback_workflow_after_fingerprint_mismatch");
+  }
+
+  const canonicalReasons = normalizeReasons(result.reasonCodes);
+  if (JSON.stringify(canonicalReasons) !== JSON.stringify(result.reasonCodes)) {
+    issues.push("rollback_workflow_reason_codes_not_canonical");
+  }
+
+  if (!rollbackWorkflowDispositions.includes(result.disposition)) {
+    issues.push("rollback_workflow_disposition_invalid");
+  }
+  if (!Number.isInteger(result.rollbackAttemptCount) || result.rollbackAttemptCount < 0) {
+    issues.push("rollback_workflow_attempt_count_invalid");
+  }
+  if (
+    result.rollbackAttemptFingerprint !== null &&
+    !/^[0-9a-f]{64}$/.test(result.rollbackAttemptFingerprint)
+  ) {
+    issues.push("rollback_workflow_attempt_fingerprint_invalid");
+  }
+  if (
+    result.rollbackVerificationFingerprint !== null &&
+    !/^[0-9a-f]{64}$/.test(result.rollbackVerificationFingerprint)
+  ) {
+    issues.push("rollback_workflow_verification_fingerprint_invalid");
+  }
+
+  if (
+    result.providerWritePerformed !== false ||
+    result.rollbackWritePerformed !== false ||
+    result.databaseMutationPerformed !== false ||
+    result.automaticTransition !== false ||
+    result.liveExecutionAuthorized !== false
+  ) {
+    issues.push("rollback_workflow_side_effect_marker_invalid");
+  }
+
+  if (result.disposition === "manual_intervention_required") {
+    if (!result.manualIntervention) {
+      issues.push("rollback_workflow_manual_artifact_missing");
+    }
+  } else if (result.manualIntervention !== null) {
+    issues.push("rollback_workflow_manual_artifact_unexpected");
+  }
+
+  if (result.manualIntervention) {
+    const artifact = result.manualIntervention;
+    if (artifact.version !== P8_5_ROLLBACK_WORKFLOW_VERSION) {
+      issues.push("rollback_workflow_manual_artifact_version_mismatch");
+    }
+    if (
+      artifact.mutationClass !== result.mutationClass ||
+      !sameResource(artifact.resource, result.resource) ||
+      artifact.targetUrl !== result.targetUrl ||
+      artifact.field !== result.field
+    ) {
+      issues.push("rollback_workflow_manual_artifact_identity_mismatch");
+    }
+    if (artifact.rollbackAttemptCount !== result.rollbackAttemptCount) {
+      issues.push("rollback_workflow_manual_artifact_attempt_count_mismatch");
+    }
+    if (
+      artifact.providerWritePerformed !== false ||
+      artifact.rollbackWritePerformed !== false ||
+      artifact.databaseMutationPerformed !== false ||
+      artifact.automaticTransition !== false ||
+      artifact.liveExecutionAuthorized !== false
+    ) {
+      issues.push("rollback_workflow_manual_artifact_side_effect_marker_invalid");
+    }
+    const artifactReasons = normalizeReasons(artifact.reasonCodes);
+    if (JSON.stringify(artifactReasons) !== JSON.stringify(artifact.reasonCodes)) {
+      issues.push("rollback_workflow_manual_artifact_reasons_not_canonical");
+    }
+    const requiredEvidence = [...new Set(artifact.requiredEvidence)].sort();
+    if (JSON.stringify(requiredEvidence) !== JSON.stringify(artifact.requiredEvidence)) {
+      issues.push("rollback_workflow_manual_artifact_required_evidence_not_canonical");
+    }
+    const { artifactFingerprint: _artifactFingerprint, ...artifactWithoutFingerprint } = artifact;
+    if (hash(artifactWithoutFingerprint) !== artifact.artifactFingerprint) {
+      issues.push("rollback_workflow_manual_artifact_fingerprint_mismatch");
+    }
+  }
+
+  if (result.disposition === "rollback_ready" && result.rollbackAttemptCount !== 0) {
+    issues.push("rollback_workflow_ready_attempt_count_mismatch");
+  }
+  if (
+    (result.disposition === "rollback_verification_pending" ||
+      result.disposition === "rollback_verified_closed") &&
+    result.rollbackAttemptCount !== 1
+  ) {
+    issues.push("rollback_workflow_bounded_attempt_count_mismatch");
+  }
+  if (
+    result.disposition === "rollback_verified_closed" &&
+    result.rollbackVerificationFingerprint === null
+  ) {
+    issues.push("rollback_workflow_verified_closure_missing_verification");
+  }
+
+  const { resultFingerprint: _resultFingerprint, ...withoutFingerprint } = result;
+  if (rollbackWorkflowResultFingerprint(withoutFingerprint) !== result.resultFingerprint) {
+    issues.push("rollback_workflow_result_fingerprint_mismatch");
+  }
+
+  return normalizeReasons(issues);
+}
+
 export function planRollbackWorkflow(input: RollbackWorkflowInput): RollbackWorkflowResult {
   const entry = resolveRollbackWorkflow(input.mutationClass, input.resource.kind, input.field);
   const attempts = [...(input.rollbackAttempts ?? [])];
