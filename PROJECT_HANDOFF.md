@@ -13,20 +13,27 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest safe engineering checkpoint:** P8.6 action history/audit ledger is **certified complete** under issue #399 / PR #400.
+**Newest safe execution checkpoint:** P8.7 first persistent live low-risk action pilot is complete and tracked by issue #404.
 
-- exact tested head/tree: `d5ba916453f5c6700793c95718183fba2c16fdf8` / `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
-- exact-head CI #698 / run `35747808402`: success;
-- merge/tree: `57f5da59200b54ed12426f79b8977618bf212b08` / `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
-- post-merge main CI #699 / run `35748504397`: success;
-- ledger reuses P10.1 + P8.4 + P8.5 and creates no parallel persistence model;
-- exact direct action-ID lineage is mandatory;
-- replay conflicts, target conflicts and P8.4/P8.5 integrity failures fail closed;
-- ordered entries form a deterministic hash chain with independent ledger integrity verification;
-- unavailable/manual-intervention/rollback-verified evidence stays descriptive and never implies execution authority;
-- zero DB read/write/persistence, provider/network request/write, rollback execution, automatic transition, scheduler/worker activation, deployment or publication occurred.
+- exact plan/action: `f35d29f6-e0da-45fb-a98c-d36a28eb7403` / `48a8237b-9b71-4a43-84e1-0fc291f4cc35`;
+- target: Diamond Shelf collection `gid://shopify/Collection/335423963335`, field `meta_description`;
+- exact before fingerprint: `3d9c5c368a99141b37890291afa6d16da2d33b45c418d0fb060a27d145ca7b29`;
+- exact after fingerprint: `cdecc199596be9bca5d0a4960d892774a88c97a210ba6d7e6173aa7ae4f27dbd`;
+- final authorization fingerprint: `d468009fec625521e4c1ae247b7a75cf84a51032c34893db197629cfdc330235`;
+- final Task #54 preflight fingerprint: `dc4fcc32ab126e476ca3aafeb50393921cc3e9d2c9bba57bdf45bf5f7a4c2904`;
+- one completed deployment: `a1b5f5cd-8ead-4a6e-bbb5-4b2347dff209`;
+- one verified forward verification: `7c74b5e4-c014-48db-8d2b-c3184818adfe`;
+- provider and storefront verification both passed;
+- final lifecycle: `production_change_verified_live`;
+- `publicWriteOccurred=true`, `measurementEligible=true`;
+- zero rollback rows and no manual intervention;
+- exactly one action and one deployment; no duplicate/parallel execution;
+- P8.4 verification semantics were satisfied by exact independent provider + storefront agreement;
+- P8.5 rollback/manual-intervention safety remained available but was not exercised;
+- P8.6 remains the read-only audit/history projection layer; no competing live ledger was added;
+- after success, secure `PUBLIC_SITE_WRITES_ENABLED` was returned to `false` and canonical source `78f8e69d07aa4e853ab0c815e7ba24d284d93e97` / tree `271d82d2c3e3a1bef5eeca567e96f924189166f7` was successfully republished to the existing autoscale deployment.
 
-**Next boundary:** P8.7 — first persistent live low-risk action pilot. This boundary requires separate explicit authorization and must not be entered from generic `continue`. P8.8 and P12.6 remain incomplete/separately gated.
+**Next boundary:** P8.8 — progressive policy-authorized low-risk execution. Generic continuation does not authorize P8.8 implementation/activation, autonomous mutation, repeated/bulk provider writes, scheduler/worker mutation, policy-created authorization, new mutation classes/scopes, P12.2 live crawl work, Production DDL or publication.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
@@ -58,7 +65,7 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 - Replit is Git-only exact-synced to the implementation merge/tree, origin/main exact, `0/0`, clean, zero tracked/untracked files, zero locks and zero active repository writers.
 - Replit Git state was independently re-verified after the sync at the exact merge/tree; no separate Replit non-browser test run was performed. GitHub CI remains canonical for full test/browser certification.
 - No live website/sitemap/robots request, Production DB/storage read/write/DDL/DML, observation/evidence persistence activation, provider/public-site mutation, scheduler/worker activation, autonomous mutation, credential/secret change, destructive retention, Task #51/#53/#54 execution, deployment or publication occurred.
-- Published production is now the certified current-main release source `d84496c5aef727ac492d2bc17083a5e7a09de8ae` / tree `eebf1b2aca85a8dc5df3fff0127d046711effc67` on deployment `fbef9788-c08d-475d-a85d-88ede16e92c7` at `https://dsseoengine.replit.app`.
+- Published production now runs canonical source `78f8e69d07aa4e853ab0c815e7ba24d284d93e97` / tree `271d82d2c3e3a1bef5eeca567e96f924189166f7` on deployment `fbef9788-c08d-475d-a85d-88ede16e92c7` at `https://dsseoengine.replit.app`, with the public-write gate returned to the closed posture after P8.7.
 - Post-publication certification passed health/auth/root/protected-route checks, live P12.1 navigation verification, source/bundle attestation, safety-gate inspection, 34↔34 Development/Production schema verification and unexpected-activity audit.
 - All public/provider write, Task #53/#54 dispatch, competitor execution/persistence/dry-run, AI proposal generation, signal collection, GSC runtime, scheduler, worker/autonomous mutation and P12.2 crawl runtime execution/persistence gates remained false.
 - Replit's metadata-only publication marker `0a6046e9cbc8b8b9a984d0cff77ce359400b384b` had parent `d84496c5...`, the identical authorized tree and zero changed files; it was reconciled Git-only back to canonical source without republishing.
