@@ -23,7 +23,7 @@ export const DIAMOND_SHELF_SITE = {
   timezone: "America/Chicago",
 } as const;
 
-export type RuntimeSchemaState = "empty" | "core_ready" | "ready" | "partial";
+export type RuntimeSchemaState = "empty" | "core_ready" | "ready" | "p12_2_ready" | "partial";
 
 export interface BootstrapPlan {
   schemaState: RuntimeSchemaState;
@@ -86,11 +86,22 @@ export function planRuntimeBootstrap(tableCount: number): BootstrapPlan {
 
   if (
     tableCount === EXPECTED_RUNTIME_TABLE_COUNT ||
-    tableCount === EXPECTED_CURRENT_TABLE_COUNT ||
-    tableCount === EXPECTED_P12_2_TABLE_COUNT
+    tableCount === EXPECTED_CURRENT_TABLE_COUNT
   ) {
     return {
       schemaState: "ready",
+      tableCount,
+      applyCoreMigration: false,
+      applyAuthMigration: false,
+      upsertDiamondShelf: true,
+      blocked: false,
+      reason: null,
+    };
+  }
+
+  if (tableCount === EXPECTED_P12_2_TABLE_COUNT) {
+    return {
+      schemaState: "p12_2_ready",
       tableCount,
       applyCoreMigration: false,
       applyAuthMigration: false,
