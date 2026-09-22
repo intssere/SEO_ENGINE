@@ -6,6 +6,8 @@ import {
   EXPECTED_CURRENT_TABLE_COUNT,
   EXPECTED_OBSERVATION_EVIDENCE_TABLE_COUNT,
   EXPECTED_RUNTIME_TABLE_COUNT,
+  EXPECTED_CRAWL_EXECUTION_STATE_TABLE_COUNT,
+  EXPECTED_P12_2_TABLE_COUNT,
   planRuntimeBootstrap,
 } from "./runtime-bootstrap.js";
 
@@ -36,11 +38,29 @@ test("fully initialized runtime schema skips migrations and allows idempotent si
   assert.equal(plan.blocked, false);
 });
 
-test("unrecognized partial or future schema states fail closed", () => {
+test("current P3.6 and future P12.2 schemas are recognized without automatic migration", () => {
+  const current = planRuntimeBootstrap(EXPECTED_CURRENT_TABLE_COUNT);
+  assert.equal(current.schemaState, "ready");
+  assert.equal(current.blocked, false);
+  assert.equal(current.applyCoreMigration, false);
+  assert.equal(current.applyAuthMigration, false);
+  assert.equal(current.upsertDiamondShelf, true);
+
+  const p12 = planRuntimeBootstrap(EXPECTED_P12_2_TABLE_COUNT);
+  assert.equal(p12.schemaState, "p12_2_ready");
+  assert.equal(p12.blocked, false);
+  assert.equal(p12.applyCoreMigration, false);
+  assert.equal(p12.applyAuthMigration, false);
+  assert.equal(p12.upsertDiamondShelf, true);
+});
+
+test("unrecognized partial or unsupported future schema states fail closed", () => {
   for (const count of [
     12,
     EXPECTED_CORE_TABLE_COUNT + 1,
     EXPECTED_RUNTIME_TABLE_COUNT + 1,
+    EXPECTED_CURRENT_TABLE_COUNT + 1,
+    EXPECTED_P12_2_TABLE_COUNT + 1,
   ]) {
     const plan = planRuntimeBootstrap(count);
     assert.equal(plan.schemaState, "partial");
@@ -68,5 +88,15 @@ test("current runtime schema count includes the P3.6 observation/evidence tables
   assert.equal(
     EXPECTED_CURRENT_TABLE_COUNT,
     EXPECTED_RUNTIME_TABLE_COUNT + EXPECTED_OBSERVATION_EVIDENCE_TABLE_COUNT,
+  );
+});
+
+
+test("P12.2 future schema count adds exactly three crawl execution-state tables", () => {
+  assert.equal(EXPECTED_CRAWL_EXECUTION_STATE_TABLE_COUNT, 3);
+  assert.equal(EXPECTED_P12_2_TABLE_COUNT, 37);
+  assert.equal(
+    EXPECTED_P12_2_TABLE_COUNT,
+    EXPECTED_CURRENT_TABLE_COUNT + EXPECTED_CRAWL_EXECUTION_STATE_TABLE_COUNT,
   );
 });

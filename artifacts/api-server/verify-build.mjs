@@ -7,6 +7,8 @@ const distDir = path.join(artifactDir, "dist");
 
 const bundle = await readFile(path.join(distDir, "index.mjs"), "utf8");
 const sourceMap = await readFile(path.join(distDir, "index.mjs.map"), "utf8");
+const p122Bundle = await readFile(path.join(distDir, "p12-2-crawl.mjs"), "utf8");
+const p122SourceMap = await readFile(path.join(distDir, "p12-2-crawl.mjs.map"), "utf8");
 
 const requiredBundleMarkers = [
   '"/execution"',
@@ -58,6 +60,22 @@ const requiredBundleMarkers = [
   "publicRegistrationEnabled",
 ];
 
+
+const requiredP122BundleMarkers = [
+  "P12_2_LIVE_CRAWL",
+  "p12_2_cli_direct_execution_disabled",
+  "schedulerEnabled",
+  "autonomousWorkerEnabled",
+  "publicationAuthorized",
+];
+
+const requiredP122SourceMarkers = [
+  "src/first-party-crawl-cli.ts",
+  "lib/first-party-crawl-manual.ts",
+  "lib/first-party-live-adapters.ts",
+  "lib/first-party-crawl-persistence.ts",
+];
+
 const requiredSourceMarkers = [
   "routes/execution.ts",
   "routes/connections.ts",
@@ -79,14 +97,23 @@ const requiredSourceMarkers = [
 
 const missingBundleMarkers = requiredBundleMarkers.filter((marker) => !bundle.includes(marker));
 const missingSourceMarkers = requiredSourceMarkers.filter((marker) => !sourceMap.includes(marker));
+const missingP122BundleMarkers = requiredP122BundleMarkers.filter((marker) => !p122Bundle.includes(marker));
+const missingP122SourceMarkers = requiredP122SourceMarkers.filter((marker) => !p122SourceMap.includes(marker));
 
-if (missingBundleMarkers.length > 0 || missingSourceMarkers.length > 0) {
+if (
+  missingBundleMarkers.length > 0 ||
+  missingSourceMarkers.length > 0 ||
+  missingP122BundleMarkers.length > 0 ||
+  missingP122SourceMarkers.length > 0
+) {
   const details = [
     missingBundleMarkers.length > 0 ? `bundle markers: ${missingBundleMarkers.join(", ")}` : null,
     missingSourceMarkers.length > 0 ? `source-map markers: ${missingSourceMarkers.join(", ")}` : null,
+    missingP122BundleMarkers.length > 0 ? `P12.2 bundle markers: ${missingP122BundleMarkers.join(", ")}` : null,
+    missingP122SourceMarkers.length > 0 ? `P12.2 source-map markers: ${missingP122SourceMarkers.join(", ")}` : null,
   ].filter(Boolean).join("; ");
 
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: Tasks #51–#54 execution safety foundations and Task #55 authentication/RBAC/CSRF security foundation are present.");
+console.log("Production API bundle verification passed: Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, and the default-off P12.2 manual crawl engineering entrypoint are present.");

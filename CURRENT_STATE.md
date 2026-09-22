@@ -2,6 +2,28 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
+## Active engineering checkpoint — P12.2 live adapters / issue #387
+
+Issue #387 is the active engineering task on branch `p12-2-live-adapter-engineering`.
+
+Engineering scope now present on the task branch:
+- production-capable but default-off first-party sitemap, robots, page and pacing-clock adapters for exact site `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `https://diamondshelf.us`;
+- SSRF/DNS-rebinding controls reuse the pinned secure transport model with fresh public-address resolution, address pinning, TLS/SNI preservation and manual redirect revalidation;
+- dedicated migration source `0004_first_party_crawl_execution_state.sql` with three crawl execution-state tables;
+- lazy PostgreSQL persistence adapter with exact site/origin/schema binding, replay/idempotency and checkpoint-revision conflict controls;
+- manual composition requiring exact confirmation `AUTHORIZE:P12_2_LIVE_CRAWL:eb1da9ee-539c-4200-8f04-f64ccaea7768` plus all four independent network/execution/persistence gates;
+- inspection-only CLI; no HTTP route, startup hook, scheduler or worker binding;
+- migration/persistence integration tests isolated to `P12_2_EPHEMERAL_DATABASE_URL` and forbidden from falling back to generic `DATABASE_URL`.
+
+**Certification is still pending PR/exact-head CI. P12.2 live proof remains blocked.** No external crawl/provider request, Production DB mutation, deployment or publication is authorized by this engineering task.
+
+Schema reality after an implementation-test incident must remain explicit:
+- Production remains at the certified 34-table P3.6 schema and was not written by issue #387;
+- Replit Development was unintentionally advanced from 34 to 37 tables when an early local migration test inherited generic `DATABASE_URL` and applied the then-local 0004 once;
+- the three new Development tables were empty when detected;
+- no compensating DDL has been attempted or authorized;
+- schema reconciliation is a separate future authorization after the final merged 0004 contract is certified.
+
 ## Published production
 
 The currently published and post-publication-certified application release is the **current-main production publication** authorized after P12.2 engineering closeout.
@@ -21,7 +43,7 @@ Post-publication certification passed:
 - `HEAD /` = 200;
 - unauthenticated protected-capability probe = 401 `authentication_required`;
 - P12.1 operational-only primary navigation is live;
-- Development and Production both remain at the exact 34-table P3.6 contract;
+- at the time of post-publication certification, Development and Production both matched the exact 34-table P3.6 contract; current schema state later diverged only because of the issue #387 Development-only migration-test incident documented above;
 - P3.6 remains 3 tables / 15 indexes / 26 constraints / 0 rows;
 - public/provider writes, Task #53/#54 dispatch, competitor execution/persistence/dry-run, AI proposal generation, signal collection, GSC runtime, scheduler, worker/autonomous mutation and P12.2 crawl runtime execution/persistence remain disabled;
 - no unexpected provider/crawl/public-site/database activity was observed;

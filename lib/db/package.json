@@ -12,7 +12,8 @@
     "push-force": "drizzle-kit push --force --config ./drizzle.config.ts",
     "bootstrap:runtime": "tsx src/bootstrap-runtime.ts",
     "test:bootstrap": "tsx --test src/runtime-bootstrap.test.ts",
-    "test:p3-6": "tsx --test src/p3-6-observation-evidence-migration.test.ts"
+    "test:p3-6": "tsx --test src/p3-6-observation-evidence-migration.test.ts",
+    "test:p12-2": "tsx --test src/p12-2-first-party-crawl-migration.test.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",

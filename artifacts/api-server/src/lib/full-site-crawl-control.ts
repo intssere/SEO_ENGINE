@@ -553,6 +553,24 @@ function assertCounterIntegrity(plan: FullSiteCrawlExecutionPlan, counters: Craw
   if (finalized > plan.source.inventoryUniqueUrls) throw new Error("crawl_checkpoint_finalized_counter_exceeds_inventory");
 }
 
+export function assertFullSiteCrawlCheckpointFingerprintIntegrity(
+  checkpoint: FullSiteCrawlCheckpoint,
+): void {
+  if (checkpoint.version !== "first_party_full_site_crawl_checkpoint_v1") {
+    throw new Error("crawl_checkpoint_version_invalid");
+  }
+  if (!Number.isInteger(checkpoint.sequence) || checkpoint.sequence < 0) {
+    throw new Error("crawl_checkpoint_sequence_invalid");
+  }
+  if (!/^[a-f0-9]{64}$/.test(checkpoint.fingerprint)) {
+    throw new Error("crawl_checkpoint_fingerprint_invalid");
+  }
+  const { fingerprint: actual, ...withoutFingerprint } = checkpoint;
+  if (actual !== fingerprint(withoutFingerprint)) {
+    throw new Error("crawl_checkpoint_fingerprint_mismatch");
+  }
+}
+
 export function assertFullSiteCrawlCheckpointIntegrity(
   plan: FullSiteCrawlExecutionPlan,
   checkpoint: FullSiteCrawlCheckpoint,

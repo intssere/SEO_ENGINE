@@ -370,7 +370,7 @@ function retryDelayForAttempt(
   return Math.min(policy.retryMaxDelayMs, policy.retryBaseDelayMs * (2 ** Math.max(0, completedAttempt - 1)));
 }
 
-function assertSnapshotIntegrity(snapshot: FullSiteCrawlBridgeSnapshot): void {
+export function assertFullSiteCrawlBridgeSnapshotIntegrity(snapshot: FullSiteCrawlBridgeSnapshot): void {
   if (snapshot.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("crawl_bridge_snapshot_version_invalid");
   requireRunId(snapshot.runId);
   requireObservedAt(snapshot.observedAt);
@@ -672,7 +672,7 @@ export async function runFullSiteCrawlBridge(
       canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     });
     if (previous) {
-      assertSnapshotIntegrity(previous);
+      assertFullSiteCrawlBridgeSnapshotIntegrity(previous);
       if (!previous.certification.certification.wholeSiteCertified) {
         throw new Error("crawl_bridge_previous_snapshot_not_certified");
       }
@@ -707,7 +707,7 @@ export async function runFullSiteCrawlBridge(
     ...withoutFingerprint,
     fingerprint: fingerprint(withoutFingerprint),
   };
-  assertSnapshotIntegrity(snapshot);
+  assertFullSiteCrawlBridgeSnapshotIntegrity(snapshot);
   await options.persistence.saveCompletedRun(snapshot);
   return snapshot;
 }
@@ -768,7 +768,7 @@ function incrementalSummary(receipts: IncrementalCrawlUrlReceipt[]): Incremental
   return summary;
 }
 
-function assertIncrementalReceiptIntegrity(receipt: IncrementalCrawlBridgeReceipt): void {
+export function assertIncrementalCrawlBridgeReceiptIntegrity(receipt: IncrementalCrawlBridgeReceipt): void {
   if (receipt.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("crawl_bridge_incremental_receipt_version_invalid");
   requireRunId(receipt.runId);
   requireObservedAt(receipt.observedAt);
@@ -862,7 +862,7 @@ export async function runIncrementalCrawlBridge(
     },
   };
   const receipt = { ...withoutFingerprint, fingerprint: fingerprint(withoutFingerprint) };
-  assertIncrementalReceiptIntegrity(receipt);
+  assertIncrementalCrawlBridgeReceiptIntegrity(receipt);
   await options.persistence.saveIncrementalRun(receipt);
   return receipt;
 }
