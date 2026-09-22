@@ -2,35 +2,39 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.6 action history/audit ledger certified / P8.7 explicit authorization boundary
+## Active engineering checkpoint — P8.7 first persistent live low-risk action pilot complete / P8.8 next boundary
 
-Issue #399 / PR #400 is complete.
+P8.7 live execution is complete and tracked by issue #404.
 
-Certified P8.6 engineering:
-- exact tested head: `d5ba916453f5c6700793c95718183fba2c16fdf8`;
-- exact tested tree: `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
-- exact-head CI #698 / run `35747808402`: success;
-- merge: `57f5da59200b54ed12426f79b8977618bf212b08`;
-- merge tree: `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
-- post-merge main CI #699 / run `35748504397`: success.
+Certified live-pilot evidence:
+- site: Diamond Shelf / `https://diamondshelf.us`;
+- action plan: `f35d29f6-e0da-45fb-a98c-d36a28eb7403`;
+- action: `48a8237b-9b71-4a43-84e1-0fc291f4cc35`;
+- target: Shopify collection `gid://shopify/Collection/335423963335`, `meta_description`;
+- before fingerprint: `3d9c5c368a99141b37890291afa6d16da2d33b45c418d0fb060a27d145ca7b29`;
+- after fingerprint: `cdecc199596be9bca5d0a4960d892774a88c97a210ba6d7e6173aa7ae4f27dbd`;
+- final authorization fingerprint: `d468009fec625521e4c1ae247b7a75cf84a51032c34893db197629cfdc330235`;
+- final Task #54 preflight fingerprint: `dc4fcc32ab126e476ca3aafeb50393921cc3e9d2c9bba57bdf45bf5f7a4c2904`;
+- persistent deployment: `a1b5f5cd-8ead-4a6e-bbb5-4b2347dff209`;
+- forward verification: `7c74b5e4-c014-48db-8d2b-c3184818adfe`;
+- provider verification: passed;
+- storefront verification: passed;
+- final lifecycle: `production_change_verified_live`;
+- `publicWriteOccurred=true`;
+- `measurementEligible=true`;
+- rollback count: 0;
+- manual intervention: not required;
+- exactly one action and one deployment; no duplicate/parallel execution.
 
-P8.6 now provides a deterministic, tamper-evident, read-only action-specific audit ledger over already-certified evidence:
-- P10.1 timeline events are rebuilt through `buildUnifiedChangeTimeline`;
-- every admitted source must bind directly to the exact action ID;
-- directly supplied target/resource/field/before/after facts must match the canonical action identity;
-- P8.4 verification evidence is integrity-checked before projection;
-- P8.5 rollback/manual-intervention evidence is integrity-checked before projection;
-- exact replay collapses while conflicting replay fails closed;
-- cross-source ordering is deterministic but creates no authority, priority, current-state inference or causality;
-- every ledger entry is hash-chained to the previous entry;
-- ledger integrity can be independently recomputed for sequence, chain, entry fingerprints, counts and final ledger fingerprint;
-- unavailable verification, manual intervention and rollback-verified closure remain descriptive evidence only.
+The approved live value is:
 
-P8.6 is pure/default-off engineering. It performs no database read/write, schema mutation, audit persistence, provider/network request, provider/public-site mutation, proposal/approval/authorization mutation, Task #51/#53/#54 execution, rollback execution, automatic transition, scheduler/worker/autonomous execution, deployment or publication.
+`The Home Fragrance collection combines Candles, Diffusers, and Other Home Fragrance, placing these related product types together for easier comparison.`
 
-**Next boundary:** P8.7 — first persistent live low-risk action pilot. P8.7 is **not** authorized by generic `continue`; it requires a separate explicit authorization naming the exact live mutation class/site/provider scope, Production persistence/write boundary, safety gates, verification/rollback closure and abort criteria. Until that authorization exists, live provider/public-site mutation remains blocked.
+P8.4 semantics were satisfied by independent provider + storefront agreement on the exact approved after state. P8.5 rollback/manual-intervention safety remained available but was not exercised because forward verification succeeded. P8.6 remains the read-only action-history/audit projection layer; P8.7 introduced no competing event authority.
 
-P8.8 progressive policy-authorized execution and P12.6 completion remain later/separately gated.
+After the successful pilot, secure `PUBLIC_SITE_WRITES_ENABLED` was returned to `false` and canonical source `78f8e69d07aa4e853ab0c815e7ba24d284d93e97` / tree `271d82d2c3e3a1bef5eeca567e96f924189166f7` was successfully republished to the existing autoscale deployment. No additional Task #51/#53/#54 call, Production DB mutation, Shopify/provider request, rollback, migration, scheduler/worker activation or public-site mutation occurred during gate closure.
+
+**Next boundary:** P8.8 — progressive policy-authorized low-risk execution. P8.7 does not authorize autonomous execution, repeated/bulk provider writes, scheduler/worker mutation, policy-created authorization, additional mutation classes/scopes, P12.2 live crawling, Production DDL or P8.8 activation. Any P8.8 implementation/live policy execution remains separately gated.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
@@ -68,13 +72,13 @@ Schema reality must remain explicit:
 The currently published and post-publication-certified application release is the **current-main production publication** authorized after P12.2 engineering closeout.
 
 Published application source:
-- SHA: `d84496c5aef727ac492d2bc17083a5e7a09de8ae`
-- tree: `eebf1b2aca85a8dc5df3fff0127d046711effc67`
+- SHA: `78f8e69d07aa4e853ab0c815e7ba24d284d93e97`
+- tree: `271d82d2c3e3a1bef5eeca567e96f924189166f7`
 - deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
 - URL: `https://dsseoengine.replit.app`
 - deployment status: success
-- live JS asset: `/assets/index-CEg5NiNd.js`
-- live JS SHA-256: `5a26cea87dc162b2d6d2954cc07970bbbdea6a10fefad3d6534a58ab080f0b23`
+- current public-write gate posture: closed (`PUBLIC_SITE_WRITES_ENABLED=false`)
+- the P8.7 gate-close republish did not re-attest a specific emitted asset hash
 
 Post-publication certification passed:
 - `GET /api/healthz` = 200;

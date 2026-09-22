@@ -54,21 +54,23 @@ Unless the user gives exact, specific authorization for a bounded action:
 - P8.4 verification adapters are read-only evidence adapters, not execution authority. They are closed to Shopify product/collection SEO `title` and `meta_description` only.
 - P8.4 `verified` requires independent provider and storefront fingerprints to both match the exact expected fingerprint. Mutation receipts, lifecycle status or one-sided observation must never substitute for verification.
 - P8.4 `unavailable` must remain distinct from authoritative `failed`; do not promote unavailable evidence to success or infer provider/storefront convergence.
-- P8.4 does not authorize media-alt/`write_files`, provider writes, verification persistence, automatic transitions, or P8.7/P8.8 live/policy execution.
+- P8.4 does not authorize media-alt/`write_files`, provider writes, automatic transitions, or P8.8 policy execution. P8.7 occurred only through a separately authorized Task #54 live pilot and creates no standing authority.
 
 - P8.5 rollback/manual-intervention workflow artifacts are pure/default-off planning evidence, not rollback authority. They remain closed to the same P8.4 product/collection SEO `title`/`meta_description` classes only.
 - P8.5 `rollback_ready` never grants write permission and must never itself invoke provider mutation, Task #53/#54 execution, persistence, or an automatic action/plan/deployment transition.
 - P8.5 `rollback_verified_closed` requires exactly one rollback attempt plus independent provider and storefront verification of the exact captured pre-change fingerprint. Mutation receipts, lifecycle labels, or one-sided reads are insufficient.
 - If a provider/public write may have occurred and authoritative forward or restore state is unavailable/uncertain, or if restore/lineage integrity is missing/conflicting, P8.5 must fail closed to `manual_intervention_required`.
 - Duplicate/conflicting rollback attempts, rollback rejection/uncertainty, exhausted unavailable restore verification, and provider/storefront disagreement must never be auto-retried or silently closed.
-- Generic `continue` after P8.5 may advance P8.6 action-history/audit-ledger engineering only; it does not authorize P8.7/P8.8 live/policy execution, provider/public-site writes, Production DB mutation, scheduler/worker activation, deployment or publication.
+- P8.5 never granted live write authority. The later P8.7 pilot was separately and explicitly authorized; its completion must not be read back into P8.5 as standing rollback or provider-write permission.
 
 - P8.6 action-history/audit-ledger artifacts are deterministic read-only evidence projections only. They must reuse P10.1 chronology and certified P8.4/P8.5 integrity; do not create a second persistence/event authority from them.
 - Every P8.6 source must bind directly to the exact action ID. Shared plan/deployment/target/fingerprint values, timestamp proximity or ordering must never fill missing action lineage.
 - P8.6 exact replay may collapse, but conflicting replay for the same source/evidence identity must fail closed; later timestamps never win a conflict.
 - P8.6 hash-chain ordering is serialization/tamper evidence only. It must never be treated as current state, approval, execution success, recommendation quality, priority, causality or provider-write authority.
 - P8.6 `rollback_verified_closed`, manual-intervention and unavailable evidence remain descriptive facts only; the ledger must never invoke Task #51/#53/#54, rollback, persistence or an automatic transition.
-- P8.7 is the first persistent live low-risk action pilot and is an explicit-authorization boundary. Generic `continue` after P8.6 must not activate P8.7/P8.8, provider/public-site writes, Production DB writes, scheduler/worker execution, deployment or publication.
+- P8.7 certified exactly one human-authorized Shopify collection SEO `meta_description` production mutation. It does not create standing provider-write authority, reusable authorization, reusable preflight confirmation, or an always-open public-write gate.
+- After P8.7, `PUBLIC_SITE_WRITES_ENABLED=false` remains the default production posture. Reopening it, renewing executable authorization, invoking Task #54, rollback, or performing any additional provider/public-site write requires a new exact bounded authorization.
+- P8.7 success does not authorize P8.8. Generic `continue` may advance documentation/review/specification work only; P8.8 implementation/activation, autonomous or policy-authorized writes, scheduler/worker mutation, Production DB writes, credential/scope change, deployment or publication remain separately gated.
 
 - P9.6 worker-control artifacts are review-only. A generic `continue` never activates a worker, scheduler, retry loop, durable pause/kill state, queue claim, provider/crawl request, persistence, deployment, or publication.
 - Worker-control precedence is `kill > drain > pause > running`. Pause/drain may allow already in-flight work to continue, but cannot admit new claims or reset P9.5 history.
