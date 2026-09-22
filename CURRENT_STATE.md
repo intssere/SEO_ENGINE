@@ -2,41 +2,35 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.5 rollback/manual-intervention certified / P8.6 next
+## Active engineering checkpoint — P8.6 action history/audit ledger certified / P8.7 explicit authorization boundary
 
-Issue #395 / PR #396 is complete.
+Issue #399 / PR #400 is complete.
 
-Certified P8.5 engineering:
-- exact tested head: `61717d2e99528636d66b35c5f78303073e449417`;
-- exact-head CI #694 / run `35739798444`, attempt 2: success;
-- merge: `6ef508a0a14c68aa4462b5af3b8aa1f3276cfc4a`;
-- post-merge main CI #695 / run `35742915788`: success.
+Certified P8.6 engineering:
+- exact tested head: `d5ba916453f5c6700793c95718183fba2c16fdf8`;
+- exact tested tree: `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
+- exact-head CI #698 / run `35747808402`: success;
+- merge: `57f5da59200b54ed12426f79b8977618bf212b08`;
+- merge tree: `1d27ee0fe64327d93c7bb438cdb4da37ac076ae2`;
+- post-merge main CI #699 / run `35748504397`: success.
 
-P8.5 now provides a deterministic, pure/default-off rollback and manual-intervention workflow layer over certified P8.4 verification evidence for exactly the four bounded execution classes:
-- Shopify product SEO `title`;
-- Shopify product SEO `meta_description`;
-- Shopify collection SEO `title`;
-- Shopify collection SEO `meta_description`.
+P8.6 now provides a deterministic, tamper-evident, read-only action-specific audit ledger over already-certified evidence:
+- P10.1 timeline events are rebuilt through `buildUnifiedChangeTimeline`;
+- every admitted source must bind directly to the exact action ID;
+- directly supplied target/resource/field/before/after facts must match the canonical action identity;
+- P8.4 verification evidence is integrity-checked before projection;
+- P8.5 rollback/manual-intervention evidence is integrity-checked before projection;
+- exact replay collapses while conflicting replay fails closed;
+- cross-source ordering is deterministic but creates no authority, priority, current-state inference or causality;
+- every ledger entry is hash-chained to the previous entry;
+- ledger integrity can be independently recomputed for sequence, chain, entry fingerprints, counts and final ledger fingerprint;
+- unavailable verification, manual intervention and rollback-verified closure remain descriptive evidence only.
 
-The workflow emits exactly one of:
-- `no_rollback_needed`;
-- `rollback_ready`;
-- `rollback_verification_pending`;
-- `rollback_verified_closed`;
-- `manual_intervention_required`.
+P8.6 is pure/default-off engineering. It performs no database read/write, schema mutation, audit persistence, provider/network request, provider/public-site mutation, proposal/approval/authorization mutation, Task #51/#53/#54 execution, rollback execution, automatic transition, scheduler/worker/autonomous execution, deployment or publication.
 
-P8.5 recomputes state fingerprints, validates P8.4 result integrity and exact mutation/resource/target/field lineage, permits only one bounded rollback attempt representation, requires independent provider + storefront restore agreement for verified closure, and fails closed to manual intervention on write uncertainty, unavailable exhausted evidence, restore corruption, rollback rejection/uncertainty, provider/storefront disagreement, duplicate/conflicting rollback attempts, or any incompatible supplied state.
+**Next boundary:** P8.7 — first persistent live low-risk action pilot. P8.7 is **not** authorized by generic `continue`; it requires a separate explicit authorization naming the exact live mutation class/site/provider scope, Production persistence/write boundary, safety gates, verification/rollback closure and abort criteria. Until that authorization exists, live provider/public-site mutation remains blocked.
 
-P8.5 is planning/evidence engineering only. Every result explicitly records:
-- `providerWritePerformed:false`;
-- `rollbackWritePerformed:false`;
-- `databaseMutationPerformed:false`;
-- `automaticTransition:false`;
-- `liveExecutionAuthorized:false`.
-
-It performs no Shopify/provider/network request, rollback write, persistence, action/plan/deployment transition, scheduler/worker activation, OAuth scope expansion, deployment or publication.
-
-**Next safe engineering boundary:** P8.6 — action history and audit ledger over the existing governed proposal/approval/execution/verification/rollback evidence model. Generic `continue` may advance this default-off engineering lane only; it does not authorize P8.7/P8.8 live/policy execution, Task #53/#54 provider writes, Production DB mutation, scheduler/worker activation, deployment or publication.
+P8.8 progressive policy-authorized execution and P12.6 completion remain later/separately gated.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
