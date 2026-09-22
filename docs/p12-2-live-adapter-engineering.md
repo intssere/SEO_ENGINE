@@ -189,3 +189,33 @@ P12.2 live proof remains incomplete until separately authorized steps perform:
 10. verification of zero unexpected provider/public-site/scheduler/worker activity.
 
 Generic continuation authorizes none of those live actions.
+
+
+## Engineering certification
+
+Certified lineage:
+
+- issue: #387;
+- PR: #388;
+- exact tested head: `f7210f7c7d7b7ff3e079403ec107acefbf4f9cc0`;
+- tree: `317675fd81f3a83a0336be56c4e4c1f816ff82d9`;
+- exact-head PR CI #686 / run `35713158875`: success;
+- merge: `cfdb21f3853f6a6c604686d750016c08c7f43492`;
+- post-merge main CI #687 / run `35713968607`: success;
+- Replit Git-only sync: exact merge/tree, origin/main exact, `0/0`, clean.
+
+The certified GitHub CI covered legacy/core/auth/P3.6 schema checks, the dedicated P12.2 ephemeral migration/persistence step, all workspace packages, P11.10 synthetic scale, Playwright Chromium critical paths, typecheck and build.
+
+Migration-test isolation is now permanent: P12.2 migration/persistence tests use only `P12_2_EPHEMERAL_DATABASE_URL`, require the local CI database identity and exact 34-table pre-migration baseline, and never fall back to generic `DATABASE_URL`.
+
+## Current schema/runtime boundary
+
+- Production remains at the certified 34-table P3.6 schema.
+- Migration 0004 is **not applied to Production**.
+- Development is at 37 tables because of the disclosed early local test-isolation incident; the three P12.2 tables were empty when detected.
+- No compensating Development DDL was attempted.
+- The merged runtime can recognize either 34-table current Production or 37-table future P12.2 schema, but does not auto-apply 0004.
+- No deployment/publication of this adapter merge occurred.
+- All live network, execution, persistence, scheduler, worker, provider-write and public-site-write gates remain closed.
+
+P12.2 remains incomplete until separately authorized Production schema application, deployment/runtime activation and real full/resume/repeat/incremental/persisted-evidence proof.
