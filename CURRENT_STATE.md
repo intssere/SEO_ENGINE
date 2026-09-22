@@ -69,7 +69,7 @@ Certification:
 - Replit is Git-only exact-synced to the implementation merge/tree, origin/main exact, ahead/behind `0/0`, clean, zero tracked/untracked files, zero locks and zero active repository writers;
 - Replit Git state was independently re-verified after the sync at the exact merge/tree; no separate Replit non-browser test run was performed, so GitHub CI remains canonical for full test/browser certification.
 
-P12.2 engineering is **unpublished**. It performed no live website/sitemap/robots request, Production DB/storage read/write/DDL/DML, observation/evidence persistence activation, provider/public-site mutation, scheduler/worker activation, autonomous mutation, credential/secret change, destructive retention, Task #51/#53/#54 execution, deployment or publication.
+At the P12.2 engineering closeout, the bridge was **unpublished** and had performed no live website/sitemap/robots request, Production DB/storage read/write/DDL/DML, observation/evidence persistence activation, provider/public-site mutation, scheduler/worker activation, autonomous mutation, credential/secret change, destructive retention or Task #51/#53/#54 execution. The bridge code is now included in the certified current-main production release, but remains runtime-inert because all live network/execution/persistence/provider/write gates are still false; publication alone granted no crawl authority.
 
 P12 criterion readiness after the P12.2 bridge:
 - **P12.1 — DONE.**
