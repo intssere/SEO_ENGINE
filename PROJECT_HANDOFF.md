@@ -13,15 +13,20 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Current checkpoint:** issue #387 is implementing the final default-off P12.2 live-adapter/persistence engineering layer on branch `p12-2-live-adapter-engineering`; PR/CI certification is pending. The previously published current-main application remains live and safe, but P12.2 itself is still **not production-complete** and no live crawl is authorized.
+**Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
+- Exact tested adapter head/tree: `f7210f7c7d7b7ff3e079403ec107acefbf4f9cc0` / `317675fd81f3a83a0336be56c4e4c1f816ff82d9`.
+- PR CI #686 / run `35713158875`: success.
+- Merge: `cfdb21f3853f6a6c604686d750016c08c7f43492`; post-merge CI #687 / run `35713968607`: success.
+- Replit is Git-only exact-synced to that merge/tree, `0/0`, clean.
+- Exact future site binding remains `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `https://diamondshelf.us`.
+- Exact manual confirmation remains `AUTHORIZE:P12_2_LIVE_CRAWL:eb1da9ee-539c-4200-8f04-f64ccaea7768`, but confirmation alone is insufficient: `networkReady`, `liveExecutionAuthorized`, `persistenceReady`, and `persistenceAuthorized` must also all be true.
+- No API/startup/job/scheduler/worker binding exists; the bundled CLI is inspection-only by default.
+- Migration 0004 is merged as source only and is **not applied to Production**.
+- Production remains 34 tables; Development is 37 because of the disclosed early local migration-test incident. No compensating DDL is authorized or attempted.
+- P12.2 migration/persistence integration tests now use only `P12_2_EPHEMERAL_DATABASE_URL` and never generic `DATABASE_URL`.
+- The next live path is separately gated: Production schema application → deployment/runtime publication → bounded full crawl → intentional interruption/resume → repeat/reconciliation → bounded incremental cycle → persisted evidence certification.
 
-- Active issue #387 adds exact-site production-capable sitemap/robots/page/clock adapters, dedicated 0004 crawl-state schema source, lazy PostgreSQL persistence, and manual composition with all live gates default-off.
-- Exact future site binding: `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `https://diamondshelf.us`.
-- Exact manual confirmation: `AUTHORIZE:P12_2_LIVE_CRAWL:eb1da9ee-539c-4200-8f04-f64ccaea7768`; confirmation alone is insufficient because all four readiness/authorization booleans must also be true.
-- No API/startup/job/scheduler/worker binding is added; bundled CLI is inspection-only and direct execution is blocked.
-- Migration tests now use only `P12_2_EPHEMERAL_DATABASE_URL` and may never inherit generic `DATABASE_URL`.
-- During the first local implementation validation, an early test did inherit generic `DATABASE_URL` and applied then-local 0004 once to Replit Development, moving it 34→37 tables. All three new tables were empty; Production remained 34 and untouched. No compensating DDL is authorized or attempted. Reconciliation is a separate future gate after merged-contract certification.
 - P12.2 issue #382 / implementation PR #383.
 - Implementation base SHA/tree: `2b17be98c750dcba30eeedb657587bb49748867f` / `8af93afa0c3c7fc6bdbaab7adb55fe77e865e869`.
 - Final exact tested head/tree: `dbeadef4b18dabeac37e82535e791b8e7eb733c2` / `782f65af18516791421f20bcc9b198a7b8fc515a`.

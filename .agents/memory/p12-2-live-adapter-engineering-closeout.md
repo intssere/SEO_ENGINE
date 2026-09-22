@@ -4,7 +4,16 @@
 
 Issue #387 adds default-off production-capable first-party sitemap, robots, page, pacing-clock and PostgreSQL persistence adapters plus manual composition for the exact Diamond Shelf site.
 
-The engineering branch is `p12-2-live-adapter-engineering`.
+Engineering is certified complete.
+
+- issue: #387
+- PR: #388
+- exact tested head: `f7210f7c7d7b7ff3e079403ec107acefbf4f9cc0`
+- tree: `317675fd81f3a83a0336be56c4e4c1f816ff82d9`
+- exact-head PR CI #686 / run `35713158875`: success
+- merge: `cfdb21f3853f6a6c604686d750016c08c7f43492`
+- post-merge main CI #687 / run `35713968607`: success
+- Replit Git-only sync: exact merge/tree, `0/0`, clean
 
 ## Permanent safety facts
 
@@ -27,4 +36,15 @@ The incident produced the durable rule that migration integration tests must use
 
 ## Completion meaning
 
-Merging issue #387 will make P12.2 live-proof adapters engineering-ready only. It does not authorize schema application, deployment, network crawling, persistence, scheduler/worker activation or publication.
+P12.2 live-adapter engineering is now certified complete.
+
+That certification is engineering-only. It does not authorize:
+- applying migration 0004 to Production;
+- deployment/publication of the merged adapter layer;
+- enabling any of the four live runtime gates;
+- sitemap/robots/page network access;
+- live crawl persistence;
+- scheduler/worker activation;
+- provider/public-site mutation.
+
+Production remains at 34 tables. Development is at 37 only because of the disclosed migration-test incident. The next live path remains separately gated: Production schema application → deployment/runtime activation → bounded full crawl → interruption/resume → repeat/reconciliation → bounded incremental cycle → persisted evidence certification.
