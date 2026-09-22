@@ -74,6 +74,39 @@ jobs:
           pnpm --filter @workspace/db test:p3-6
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^34$'
 
+      - name: Test P12.2 crawl execution-state migration and persistence
+        env:
+          P12_2_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
+        run: |
+          pnpm --filter @workspace/db test:p12-2
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^37
+      - name: Test P11.10 synthetic load scale
+        run: pnpm --filter @workspace/api-server test:scale
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @workspace/seo-engine exec playwright install --with-deps chromium
+
+      - name: Test P4.10 browser critical paths
+        run: pnpm --filter @workspace/seo-engine test:e2e
+
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: p4-10-playwright-artifacts
+          path: |
+            artifacts/seo-engine/playwright-report
+            artifacts/seo-engine/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+          pnpm --filter @workspace/api-server test:p12-2-persistence-ephemeral
+
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
 
