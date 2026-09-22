@@ -51,6 +51,11 @@ Unless the user gives exact, specific authorization for a bounded action:
 - Do not overwrite production plan data merely to make labels or reporting fields agree.
 - Fail closed on stale state, incomplete evidence, schema mismatch, unknown authorization, ambiguous target identity, or verification uncertainty.
 
+- P8.4 verification adapters are read-only evidence adapters, not execution authority. They are closed to Shopify product/collection SEO `title` and `meta_description` only.
+- P8.4 `verified` requires independent provider and storefront fingerprints to both match the exact expected fingerprint. Mutation receipts, lifecycle status or one-sided observation must never substitute for verification.
+- P8.4 `unavailable` must remain distinct from authoritative `failed`; do not promote unavailable evidence to success or infer provider/storefront convergence.
+- P8.4 does not authorize media-alt/`write_files`, provider writes, verification persistence, automatic transitions, or P8.7/P8.8 live/policy execution.
+
 - P9.6 worker-control artifacts are review-only. A generic `continue` never activates a worker, scheduler, retry loop, durable pause/kill state, queue claim, provider/crawl request, persistence, deployment, or publication.
 - Worker-control precedence is `kill > drain > pause > running`. Pause/drain may allow already in-flight work to continue, but cannot admit new claims or reset P9.5 history.
 - A killed worker state cannot ordinary-resume. Started or outcome-uncertain killed work requires manual-intervention reconciliation; dead-letter/no-work items must never be revived through resume.

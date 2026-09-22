@@ -451,7 +451,7 @@ Existing Tasks #51–#54 remain the safety foundation.
 | P8.1 | Unify opportunity → proposal → approval UI around existing control primitives | DONE — issue #285 / PR #286 / merge `6dd42a2850713a4692039bb76900731129422061` |
 | P8.2 | Evidence/risk/preview/verification/rollback action cards | DONE — issue #288 / PR #289 / merge `964e940d82f93dece9fbaaf56eca21782318e357` |
 | P8.3 | Expand bounded Shopify/site mutation action classes only after individual review | REVIEW COMPLETE / IMPLEMENTATION BLOCKED — issue #291 selects product media alt text as the preferred future class; current Shopify `fileUpdate` requires a separately authorized isolated `write_files` scope/credential architecture, so no implementation or live mutation is authorized |
-| P8.4 | Add verification adapters per mutation class | PLANNED |
+| P8.4 | Add verification adapters per mutation class | DONE — issue #391 / PR #392 / merge `c956c14bbb990090bca79391a77fe527c0d49675`; deterministic read-only registry/dispatcher for product/collection × SEO `title`/`meta_description`, independent Task #53 provider + storefront verification, deterministic `verified`/`failed`/`unavailable` semantics and stable failure/result fingerprints; exact-head CI #690 + post-merge CI #691; no provider write, persistence, DB mutation, scope expansion, runtime activation, deployment or publication |
 | P8.5 | Add deterministic rollback/manual-intervention workflows | PLANNED |
 | P8.6 | Action history and audit ledger | PLANNED |
 | P8.7 | First persistent live low-risk action pilot | explicit authorization required |
