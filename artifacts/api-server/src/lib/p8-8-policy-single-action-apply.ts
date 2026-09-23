@@ -516,6 +516,37 @@ export function p88W07ReservationTerminalStatus(
   return null;
 }
 
+export type P88W07ControlSafetyDecision =
+  | "forward_eligible"
+  | "cancel_prewrite"
+  | "safety_closure_only"
+  | "rollback_safety_closure"
+  | "terminal";
+
+export function p88W07ControlSafetyDecision(input: {
+  dispatchState: P88W07DispatchState;
+  currentControlMode: "running" | "paused" | "draining" | "drained" | "killed";
+  afterStateObserved: boolean;
+}): P88W07ControlSafetyDecision {
+  if (p88W07IsTerminalState(input.dispatchState)) return "terminal";
+  if (input.dispatchState === "reserved_prewrite") {
+    return input.currentControlMode === "running"
+      ? "forward_eligible"
+      : "cancel_prewrite";
+  }
+  if (
+    input.currentControlMode === "killed"
+    && input.afterStateObserved
+    && (
+      input.dispatchState === "dispatch_started"
+      || input.dispatchState === "forward_verification_pending"
+    )
+  ) {
+    return "rollback_safety_closure";
+  }
+  return "safety_closure_only";
+}
+
 export function buildP88W07VerificationEvidence(input: Omit<
   P88W07VerificationEvidence,
   "verificationFingerprint"
