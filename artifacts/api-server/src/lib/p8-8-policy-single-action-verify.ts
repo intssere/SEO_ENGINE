@@ -181,7 +181,7 @@ export async function verifyP88W07IndependentState(input: {
 
   const hasUnavailable =
     provider.status === "unavailable" || storefront.status === "unavailable";
-  const status =
+  const status: P88W07IndependentVerification["status"] =
     providerVerified && storefrontVerified && failures.length === 0
       ? "verified"
       : hasUnavailable
@@ -221,7 +221,7 @@ export async function verifyP88W07IndependentState(input: {
   return Object.freeze({
     ...base,
     resultFingerprint: stableHash({
-      purpose: "p8.8_w07_independent_verification",
+      fingerprintDomain: "p8.8_w07_independent_verification",
       ...base,
     }),
   });
