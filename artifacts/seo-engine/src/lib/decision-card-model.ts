@@ -24,9 +24,7 @@ export function buildOpportunityDecisionCard(
     why: row.why_qualifies || row.rationale,
     workflowLabel: row.execution_authorized
       ? "Authorization recorded"
-      : row.status === "new"
-        ? "Recommendation only"
-        : row.status.replaceAll("_", " "),
+      : "Recommendation only",
   });
 }
 
