@@ -2,7 +2,7 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W05 mutation-control specification/review open / implementation + Production boundaries blocked
+## Active engineering checkpoint — P8.8 W05 mutation-control specification certified / implementation + Production boundaries blocked
 
 P8.8 W04 specification/review is certified complete under issue #418 / PR #419.
 
@@ -45,11 +45,18 @@ Final PR-head/merge/post-merge certification is recorded on issue #420 after mer
 
 W04 engineering grants no provider/network execution, Task #51/#53/#54 execution, policy activation, scheduler/worker/autonomous execution, credential/scope/config change, deployment, publication or W05–W10 authority.
 
-## P8.8 W05 specification/review boundary
+## P8.8 W05 specification certification
 
-W05 specification/review is open under issue #435 / PR #436 from verified canonical main `6c796fcb33c07a0fbc41e119b8e533ed155e043f` / tree `1dbb7abf80c362f474caf114c5a32f1e656cc60d`.
+W05 specification/review is certified complete under issue #435 / PR #436.
 
-The review defines, but does not implement:
+Certification:
+- exact tested specification head: `7db3ff43bf46165ecee32c77fcd30b43a6a83a54`;
+- exact-head CI #777 / run `35864048317`: success;
+- merge/tree: `a6cc2d092801382f13bb0b05916fa167330dd04c` / `a3ac3e20fce77f5ff9cf206416e4050d4c84b5ff`;
+- post-merge main CI #779 / run `35864613069`: success;
+- Replit Git-only reconciliation: exact merge SHA, `origin/main` exact, `0/0`, clean, no extra local commit and no deployment/database/config/provider/runtime action.
+
+The certified W05 specification defines, but does not implement:
 - a dedicated durable policy-mutation control namespace preserving P9.6 `kill > drain > pause > running` semantics;
 - append-only control transition provenance plus one current site-scoped control state;
 - an immutable W05 claim binding that records the exact W03/W04 pair and durable control revision accepted for one W04 `authorized -> claimed` transition;
@@ -57,10 +64,12 @@ The review defines, but does not implement:
 - pause/drain/kill blocking of all new claims/forward writes, with safe release only for unclaimed `authorized` reservations;
 - no generic release/expiry of `claimed` or `manual_intervention` rows;
 - a latched `killed` state with no ordinary resume;
-- database-clock/revision-based atomic claim/control transactions and real PostgreSQL race certification for a future implementation;
+- database-clock/revision-based atomic claim/control transactions and real PostgreSQL race certification for future engineering;
 - a future additive W05 migration layered only after W04, with dedicated localhost-only engineering DB isolation and no generic `DATABASE_URL` fallback.
 
-W05 review preserves W01–W04 fingerprints/idempotency exactly and leaves the human Task #51/#54 path unchanged. All W05 provider-dispatch/public-write markers remain false.
+W05 preserves W01–W04 fingerprints/idempotency exactly and leaves the human Task #51/#54 path unchanged. All W05 provider-dispatch/public-write markers remain false.
+
+**Next safe boundary:** W05-E1–E5 engineering requires separate explicit authorization. W04 Production migration 0005 and any future W05 migration/Production control initialization remain separately gated.
 
 **Still blocked:** W05 implementation, migration creation/application, Production DDL/DML, Production control/claim/reservation transitions, provider/network access, Task #51/#53/#54 execution, policy/scheduler/worker/autonomous activation, credentials/scopes/config changes, deployment/publication and W06–W10.
 
