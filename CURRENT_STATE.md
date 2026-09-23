@@ -2,50 +2,37 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W02 pure proposal materialization complete / W03 separately gated
+## Active engineering checkpoint — P8.8 W02 complete / W03 specification-review active / implementation blocked
 
-P8.8 W02 specification/review was certified under issue #410 / PR #411.
+P8.8 W02 is certified complete under issue #412 / PR #413.
 
-W02 specification certification:
-- exact tested spec head: `d3ce0caad0116304788149d7495d352a7a1a06c3`;
-- exact-head CI #714 / run `35829067684`: success;
-- merge/tree: `f6be2baeef826dcc83d2232cd3dc29b040146852` / `05e1980f3e1e2d5ad957012d721728eadf11a6bc`;
-- post-merge CI #715 / run `35829973926`: success;
-- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, no republish/runtime/provider/database/config/migration/W02 implementation/scheduler/worker/policy activation.
+Final W02 certification:
+- final exact tested PR head: `a10f18e225b7266dad9fe0d784c5d6c729c0de13`;
+- exact-head CI #724 / run `35832630157`: success;
+- merge/tree: `d42a0b11c730795d8f279b02f770c8925638be94` / `95c7e1309e43e94142ef302f305844f5c748d272`;
+- post-merge main CI #725 / run `35834394743`: success;
+- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, zero locks/writers, no republish/runtime/provider/database/config/migration/W03 implementation/scheduler/worker/policy activation.
 
-W02 engineering is complete under issue #412 / PR #413.
+W03 specification/review is tracked by issue #414.
 
-W02 now implements a pure deterministic bridge from:
-- one canonically rebuilt P9.7 `proposal_review`;
-- one canonically rebuilt P6.6 preview containing exactly one changed `meta_description` field;
-- one explicit caller-supplied, integrity-bound Shopify Product target binding;
+W03 defines a future pure, provenance-distinct policy authorization artifact that must:
+- canonically rebuild and verify exact W01 admission;
+- canonically rebuild and verify exact W02 materialization;
+- fail closed unless W01/W02 shared recommendation/proposal/target/before/after identities agree;
+- identify provenance exactly as `policy_authorization`;
+- carry no human approval ID/decision/actor and create no approvals row;
+- remain structurally incompatible with the human Task #51 `controlled_execution_foundation_v1` envelope and Task #54 human confirmation namespace;
+- derive a deterministic policy action identity without claiming a persisted DB action row;
+- bind an opaque caller-supplied reservation descriptor without creating/persisting it; W04 remains the later durable-reservation authority;
+- use caller-supplied canonical issued time and a maximum 15-minute TTL bounded by W01 evaluation expiry and policy-grant expiry;
+- bind exact policy/evaluation/materialization/proposal/target/before/after/evidence/quality/risk/current-state/control/reservation fingerprints;
+- set provider write/dispatch/public-site/automatic-transition authority to false.
 
-to a governed proposal artifact whose lifecycle is exactly `materialized_unpersisted`.
+The W03 artifact may authorize progression only to a later policy-aware preflight stage. It must not itself authorize provider dispatch or live mutation.
 
-Certified engineering properties:
-- P9.7 worker projection is rebuilt before trusting the supplied recommendation;
-- P6.6 preview report is rebuilt before trusting the supplied preview;
-- advisory reviews fail closed;
-- Product identity is never inferred or discovered;
-- target scope is exactly Diamond Shelf / Shopify Product / `update_meta_description` / `meta_description` / `write_products`;
-- before/after text is copied byte-for-byte from P6.6, including whitespace;
-- deterministic target-binding, before-state, after-state, materialization-idempotency, proposal and materialization fingerprints are produced;
-- exact replay is stable;
-- conflicting reuse of one P9.7 idempotency identity can fail closed through the pure replay-compatibility guard;
-- evidence/missing-evidence lineage is preserved;
-- W01 receives only static materialized facts; W02 does not fabricate bounded-pilot authorization or live provider/control/quota state.
+W03 is **specification/review only** at this checkpoint. Generic continuation does not authorize W03 implementation, policy authorization creation, approvals/action/reservation persistence, DB/schema work, provider/network access, Task #51/#53/#54 execution, policy activation, scheduler/worker/autonomous execution, credential/scope/config changes, deployment, publication or W04–W10.
 
-W02 performs zero DB read/write/persistence/schema work, zero provider/network read/write, zero ProposalRecord persistence, zero approval/policy authorization, zero Task #51/#53/#54 execution, zero scheduler/worker/autonomous execution, zero credential/scope/config change, zero deployment and zero publication.
-
-Engineering validation:
-- CI #716 failed only because the new synthetic fixture incorrectly referenced score evidence not present on the synthetic opportunity; fixture lineage was corrected;
-- CI #717 then passed runtime tests and exposed only a TypeScript narrowing issue for the already-runtime-validated changed-field status;
-- that type narrowing was made explicit without behavioral change;
-- corrected code-only head `21e9aa50a7ad2826cea115e6c62a1037fcea79ef` passed canonical CI #718 completely.
-
-Final PR-head, merge, post-merge CI and Replit Git-only certification will be recorded on issue #412 after merge.
-
-**Next boundary:** W03 — provenance-distinct policy authorization artifact. W03 is not authorized by the W02 implementation approval or generic continuation. It requires separate explicit authorization. W02 grants no approval, policy authorization, durable reservation, provider execution, DB/schema, worker, deployment or publication authority.
+**Next boundary after W03 specification certification:** explicit authorization for pure W03 implementation only.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 

@@ -13,37 +13,28 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 engineering checkpoint:** W02 pure governed-proposal materialization is complete under issue #412 / PR #413; W03 is separately gated.
+**Newest P8.8 engineering checkpoint:** W02 is certified complete; W03 specification/review is active under issue #414.
 
-W02 specification/review was certified under issue #410 / PR #411:
-- exact tested spec head: `d3ce0caad0116304788149d7495d352a7a1a06c3`;
-- exact-head CI #714 / run `35829067684`: success;
-- merge/tree: `f6be2baeef826dcc83d2232cd3dc29b040146852` / `05e1980f3e1e2d5ad957012d721728eadf11a6bc`;
-- post-merge CI #715 / run `35829973926`: success;
-- Replit exact Git-only sync: merge/tree exact, `0/0`, clean, no republish/runtime activity.
+W02 final certification:
+- final tested PR head: `a10f18e225b7266dad9fe0d784c5d6c729c0de13`;
+- exact-head CI #724 / run `35832630157`: success;
+- merge/tree: `d42a0b11c730795d8f279b02f770c8925638be94` / `95c7e1309e43e94142ef302f305844f5c748d272`;
+- post-merge CI #725 / run `35834394743`: success;
+- Replit exact Git-only sync: merge/tree exact, `0/0`, clean, zero tracked/untracked changes/locks/writers, no republish/runtime activity.
 
-W02 engineering contract:
-- rebuild exact P9.7 recommendation projection and require exact supplied-candidate equality;
-- rebuild exact P6.6 preview report and require exact supplied-report equality;
-- accept only `proposal_review`;
-- require exactly one field total and one changed field, exactly `meta_description`;
-- require caller-supplied fingerprinted Diamond Shelf Shopify Product GID + canonical product URL binding;
-- never infer/discover Product identity and never query Shopify;
-- copy P6.6 current/proposed values byte-for-byte without generation/rewrite/normalization;
-- bind target/before/after/idempotency/proposal/materialization identities deterministically;
-- output lifecycle exactly `materialized_unpersisted`;
-- preserve evidence/missing-evidence lineage;
-- emit only static W01 facts; no bounded-pilot/live-current-state/control/quota facts are invented;
-- pure replay guard rejects conflicting reuse of one recommendation idempotency identity;
-- zero DB/persistence/schema/provider/network/approval/policy-authorization/Task #51/#53/#54/scheduler/worker/credential/config/deployment/publication authority.
+W03 review contract:
+- W01 evaluation and W02 materialization must each be canonically rebuilt before trust;
+- W01 must be exact `admit` with zero rejection reasons and still-fresh grant/evaluation state;
+- W01/W02 shared recommendation/proposal/target/before/after identities must agree exactly;
+- provenance is exactly `policy_authorization`, never human approval;
+- no approval ID/decision/actor, approvals-row fabrication, Task #51 envelope shape, or Task #54 human confirmation namespace;
+- deterministic `policyActionId` is an artifact identity only; `persistedActionId=null` and no action row is claimed;
+- W03 binds but does not create an opaque reservation descriptor; W04 later owns durable reservation/idempotency;
+- caller-supplied issued time and maximum 15-minute TTL are bounded by W01 evaluation and policy-grant expiry;
+- provider write/dispatch/public-site/automatic-transition remain false;
+- W03 authorizes progression only to a later policy-aware preflight, not provider dispatch.
 
-Validation:
-- CI #716 found only a synthetic test-fixture evidence-lineage error, which was corrected;
-- CI #717 passed runtime tests and found only a TypeScript narrowing issue, corrected without behavior change;
-- corrected code-only head `21e9aa50a7ad2826cea115e6c62a1037fcea79ef` passed CI #718 completely;
-- final PR/merge/post-merge lineage is recorded on issue #412 after certification.
-
-**Next safe boundary:** W03 — provenance-distinct policy authorization artifact, separately authorized. Generic `continue` must not implement W03, persist a proposal/authorization, create approvals, call provider/runtime paths, activate policy/workers, alter schema/credentials/config, deploy or publish.
+**Active safe boundary:** W03 specification/review only. Generic continuation may refine/review this contract but must not implement W03 or begin W04.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
