@@ -14,7 +14,8 @@
     "test:bootstrap": "tsx --test src/runtime-bootstrap.test.ts",
     "test:p3-6": "tsx --test src/p3-6-observation-evidence-migration.test.ts",
     "test:p12-2": "tsx --test src/p12-2-first-party-crawl-migration.test.ts",
-    "test:p8-8-w04": "tsx --test src/p8-8-w04-reservation-migration.test.ts"
+    "test:p8-8-w04": "tsx --test src/p8-8-w04-reservation-migration.test.ts",
+    "test:p8-8-w05": "tsx --test src/p8-8-w05-mutation-control-migration.test.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
