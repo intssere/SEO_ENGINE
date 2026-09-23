@@ -1,51 +1,28 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
+## Active engineering checkpoint — P8.8 W07 implementation engineering in progress
 
-W07 specification/review is certified complete under issue #461 / PR #462.
+W07-E1–E5 implementation is explicitly authorized under issue #469 on branch `p8-8-w07-single-action-apply-implementation-469`, based from certified canonical main `57d4fc640f876b958d3ad87eca8391b1849a00bb`.
 
-Final W07 specification certification:
-- exact certified spec head: `50ecafcb53a1bbf50ca1714e917616dd58c9c7da`;
-- exact-head CI #939 / run `35894054466`: success;
-- merge/canonical main: `15846991123b6664c37176b844550d4b0095b39a`;
-- canonical tree: `94f2ccfa5b265e2ee0a8f470546428c1d6d7b9e1`;
-- post-merge CI #945 / run `35895949868`: success;
-- Replit main exact-synced to the merge, ahead/behind `0/0`, clean, no extra local commits;
-- the W07 specification diff was documentation-only;
-- no W07 implementation, migration 0007, Production DDL/DML, live provider access/write, rollback write, Task #51/#53/#54 execution, policy/scheduler/worker activation, credential/config change, deployment/publication, or W08–W10 work occurred.
+Implemented on the branch:
+- E1 pure exact W01–W06 handoff, deterministic policy execution/dispatch identities, two-phase dispatch state machine, and one-forward/one-rollback attempt guards;
+- E2 additive source migration `0007_p8_8_policy_mutation_dispatch.sql` with only `policy_mutation_dispatches` and append-only `policy_mutation_dispatch_events`, plus 43-table schema recognition and an explicit-URL dispatch store;
+- E3 injected-transport Shopify Product `productUpdate` adapter that sends only exact W02 `meta_description` bytes and never reuses Task #53 normalization;
+- E4 exact W02-domain provider verification plus independent storefront verification and bounded safety closure/rollback orchestration;
+- E5 unit/static coverage and dedicated localhost-only PostgreSQL dispatch/race certification through `P8_8_W07_EPHEMERAL_DATABASE_URL`.
 
-The certified W07 contract requires:
-- exact W06 `ready_for_w07` handoff plus independent W01–W06 revalidation;
-- dedicated policy execution provenance distinct from Task #51/#53/#54;
-- future two-phase durable dispatch fence `reserved_prewrite -> dispatch_started`;
-- W04 remains `claimed` through all nonterminal forward verification/rollback states;
-- `claimed -> released` only for exact proven no-dispatch closure;
-- `claimed -> consumed` only after a spent forward attempt reaches a safe terminal no-write/live/rollback-verified state;
-- `claimed -> manual_intervention` for unresolved/unsafe side-effect state;
-- exact W02 after bytes for forward mutation and exact W02 before bytes for rollback;
-- Task #53 normalization is forbidden in the policy mutation path;
-- maximum one forward mutation attempt and one rollback mutation attempt;
-- exact provider after/before state plus independent provider + storefront verification;
-- no automatic forward or rollback write retry;
-- pause/drain/kill split between blocking new forward work and allowing mandatory safety closure;
-- future migration `0007_p8_8_policy_mutation_dispatch.sql` limited to policy dispatch state/events;
-- future policy execution gate remains default-off and separate from `PUBLIC_SITE_WRITES_ENABLED`;
-- live Stage 1 activation remains W10.
+Safety invariants preserved:
+- `reserved_prewrite -> dispatch_started` is the durable forward-write point of no return;
+- W04 remains `claimed` while W07 is nonterminal;
+- proven no-dispatch closes W04 `released`; safely terminal spent attempts close `consumed`; uncertainty closes `manual_intervention`;
+- forward and rollback provider mutation counts are each durably capped at one;
+- mutation receipts alone are never success; exact provider state plus independent storefront verification is required;
+- policy execution remains structurally distinct from Task #51/#53/#54;
+- W04/W05/W06 stores accept the additive 43-table W07 engineering schema without changing earlier semantics or auto-applying migration 0007.
 
-**Next explicit engineering boundary:** W07-E1 through W07-E5 implementation exactly as defined in `docs/p8-8-w07-policy-single-action-apply-spec.md`.
+CI wiring now applies/tests migration 0007 only in the dedicated localhost test database, requires exactly 43 tables before and after W07 dispatch/race certification, then runs the existing full workspace/scale/browser/typecheck/build envelope.
 
-Generic `continue` does **not** authorize that implementation. It may perform only documentation/readiness/review work until a user explicitly authorizes W07 implementation.
-
-W07 implementation authorization should preserve all exclusions:
-- no Production migrations 0005/0006/0007;
-- no Production DDL/DML/control/reservation/claim/dispatch changes;
-- no live Production provider reads;
-- no real provider/public-site or rollback writes;
-- no Task #51/#53/#54 execution;
-- no scheduler/worker/policy/autonomous activation;
-- no credential/scope/config changes;
-- no deployment/publication;
-- W08–W10 remain out of scope.
+**Not yet certified or merged.** Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live Production provider reads, all real provider/public-site and rollback writes, scheduler/worker/policy/autonomous activation, credentials/scopes/config changes, deployment/publication, and W08–W10 remain out of scope.
 
 ## Active engineering checkpoint — P8.8 W06 policy-aware mutation-free preflight specification/review
 

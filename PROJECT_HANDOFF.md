@@ -13,6 +13,19 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
+### P8.8 W07 implementation — issue #469
+
+Canonical implementation base is GitHub main `57d4fc640f876b958d3ad87eca8391b1849a00bb`.
+
+Branch: `p8-8-w07-single-action-apply-implementation-469`.
+
+W07-E1–E5 is in engineering: pure W01–W06 handoff/state-machine contracts; additive migration 0007 with policy dispatch/event tables; explicit-URL durable dispatch fencing and W04 terminal closure; exact byte-preserving Shopify Product meta-description forward/rollback adapter; independent provider/storefront verification; one-forward/one-rollback safety orchestration; 43-table localhost PostgreSQL crash/replay/race certification.
+
+The branch is not yet certified or merged. GitHub CI remains authoritative.
+
+**Current safe boundary:** finish W07 implementation PR/exact-head certification only. No Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live provider access/writes, real rollback writes, Task #51/#53/#54 execution, scheduler/worker/policy/autonomous activation, credential/config/gate changes, deployment/publication, or W08–W10.
+
+
 ### P8.8 W07 specification certified — implementation gate next
 
 Canonical GitHub `main` is `15846991123b6664c37176b844550d4b0095b39a` / tree `94f2ccfa5b265e2ee0a8f470546428c1d6d7b9e1`.

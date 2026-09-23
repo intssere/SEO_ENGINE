@@ -16,7 +16,8 @@
     "p12-2:crawl": "node --enable-source-maps ./dist/p12-2-crawl.mjs",
     "test:p8-8-w04-persistence-ephemeral": "tsx --test src/lib/p8-8-reservation-store.ephemeral.test.ts",
     "test:p8-8-w05-persistence-ephemeral": "tsx --test src/lib/p8-8-mutation-control-store.ephemeral.test.ts",
-    "test:p8-8-w06-persistence-ephemeral": "tsx --test src/lib/p8-8-policy-preflight-store.ephemeral.test.ts"
+    "test:p8-8-w06-persistence-ephemeral": "tsx --test src/lib/p8-8-policy-preflight-store.ephemeral.test.ts",
+    "test:p8-8-w07-persistence-ephemeral": "tsx --test src/lib/p8-8-policy-dispatch-store.ephemeral.test.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
