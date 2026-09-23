@@ -109,7 +109,7 @@ function opportunityEntry(): OpportunityCollectionEntryInput {
               ? 0.2
               : 0.9,
         basisCode: "p88.w02.synthetic." + dimension,
-        evidenceFingerprints: [fp(20 + index)],
+        evidenceFingerprints: [fp(10 + index)],
       } satisfies OpportunityScoreComponentInput,
     ]),
   ) as Record<OpportunityScoreDimension, OpportunityScoreComponentInput>;
