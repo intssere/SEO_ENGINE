@@ -5,12 +5,12 @@ export default function AutomationPage() {
     <CustomerDomainHub
       eyebrow="SAFE AUTOMATION"
       title="Automation"
-      description="Review proposed changes, control what can run, and inspect what happened after a change. Safety checks remain in force underneath this simpler workspace."
+      description="Review changes, control automation, and inspect outcomes."
       cards={[
         {
           title: "Review changes",
           description:
-            "Review proposed edits and decide which human-review items can proceed when the underlying workflow supports approval.",
+            "Review proposed edits that require a decision.",
           href: "/automation/review",
           actionLabel: "Review pending changes",
           status: "available",
@@ -18,7 +18,7 @@ export default function AutomationPage() {
         {
           title: "Change queue",
           description:
-            "See prepared actions, their current state, and the safeguards that must be satisfied before any provider execution can occur.",
+            "See prepared actions and the safeguards blocking execution.",
           href: "/automation/changes",
           actionLabel: "Open change queue",
           status: "available",
@@ -26,7 +26,7 @@ export default function AutomationPage() {
         {
           title: "Change history",
           description:
-            "Inspect recorded deployments and verification state without turning historical records into a new execution path.",
+            "Inspect recorded changes and verification state.",
           href: "/automation/history",
           actionLabel: "View change history",
           status: "available",
@@ -34,7 +34,7 @@ export default function AutomationPage() {
         {
           title: "Safety & rules",
           description:
-            "Inspect review state, risk controls, rollback planning, and execution guardrails behind automated changes.",
+            "Inspect risk, rollback, and execution guardrails.",
           href: "/automation/safety",
           actionLabel: "Review safety controls",
           status: "available",

@@ -17,7 +17,7 @@ export default function SettingsPage() {
         <PageHeader
           eyebrow="WORKSPACE"
           title="Settings"
-          description="Manage website connections, automation safeguards, and the configuration that controls how SEO Engine works with your site."
+          description="Manage connections and automation safeguards."
         />
 
         <div className="grid grid-cols-1 gap-6 max-w-4xl">
@@ -28,8 +28,7 @@ export default function SettingsPage() {
                   Website connections
                 </h2>
                 <p className="text-sm text-[#647087] mt-1">
-                  Connect the website and search-data sources SEO Engine can read.
-                  Connection status is shown without exposing secret values.
+                  Connect websites and search-data sources without exposing secrets.
                 </p>
               </div>
               <StatusBadge tone="info">MANAGE HERE</StatusBadge>
@@ -51,8 +50,7 @@ export default function SettingsPage() {
                     Review before applying changes
                   </p>
                   <p className="text-xs text-[#647087] mt-1">
-                    Changes that require human approval stay blocked until the
-                    applicable review workflow is satisfied.
+                    Review-required changes stay blocked until approved.
                   </p>
                 </div>
                 <StatusBadge tone="success">PROTECTED</StatusBadge>
@@ -64,8 +62,7 @@ export default function SettingsPage() {
                     Source access starts read-only
                   </p>
                   <p className="text-xs text-[#647087] mt-1">
-                    A connected source does not automatically grant permission to
-                    change the live website.
+                    Connecting a source does not grant live-site write access.
                   </p>
                 </div>
                 <StatusBadge tone="success">PROTECTED</StatusBadge>
@@ -77,8 +74,7 @@ export default function SettingsPage() {
                     Automatic recovery
                   </p>
                   <p className="text-xs text-[#647087] mt-1">
-                    Automated rollback remains unavailable until the required
-                    production workflow is explicitly configured and certified.
+                    Automated rollback remains unavailable until certified.
                   </p>
                 </div>
                 <StatusBadge tone="warning">NOT ACTIVE</StatusBadge>
@@ -96,10 +92,7 @@ export default function SettingsPage() {
               Security & privacy
             </h2>
             <p className="text-sm text-[#455168]">
-              Secret values and credential-presence details are never exposed to
-              the browser. Customer-facing connection screens receive only the
-              sanitized provider readiness and authorization state supplied by
-              the API.
+              Secrets stay server-side; the browser receives sanitized readiness and authorization state.
             </p>
           </section>
         </div>
