@@ -13,28 +13,33 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 engineering checkpoint:** W02 is certified complete; W03 specification/review is active under issue #414.
+**Newest P8.8 engineering checkpoint:** W03 pure provenance-distinct policy authorization is complete under issue #416 / PR #417; W04 is separately gated.
 
-W02 final certification:
-- final tested PR head: `a10f18e225b7266dad9fe0d784c5d6c729c0de13`;
-- exact-head CI #724 / run `35832630157`: success;
-- merge/tree: `d42a0b11c730795d8f279b02f770c8925638be94` / `95c7e1309e43e94142ef302f305844f5c748d272`;
-- post-merge CI #725 / run `35834394743`: success;
+W03 specification/review was certified under issue #414 / PR #415:
+- exact tested spec head: `5b9ebdb94c4408e48935a2cc90a02c3c7ec9d3ea`;
+- exact-head CI #726 / run `35835557080`: success;
+- merge/tree: `262d33512cf5372866f282682dd6dce46aa614e8` / `508a500b90ad5aa052396ffa40fc38615182d4c9`;
+- post-merge CI #727 / run `35836180050`: success;
 - Replit exact Git-only sync: merge/tree exact, `0/0`, clean, zero tracked/untracked changes/locks/writers, no republish/runtime activity.
 
-W03 review contract:
-- W01 evaluation and W02 materialization must each be canonically rebuilt before trust;
-- W01 must be exact `admit` with zero rejection reasons and still-fresh grant/evaluation state;
-- W01/W02 shared recommendation/proposal/target/before/after identities must agree exactly;
-- provenance is exactly `policy_authorization`, never human approval;
-- no approval ID/decision/actor, approvals-row fabrication, Task #51 envelope shape, or Task #54 human confirmation namespace;
-- deterministic `policyActionId` is an artifact identity only; `persistedActionId=null` and no action row is claimed;
-- W03 binds but does not create an opaque reservation descriptor; W04 later owns durable reservation/idempotency;
-- caller-supplied issued time and maximum 15-minute TTL are bounded by W01 evaluation and policy-grant expiry;
-- provider write/dispatch/public-site/automatic-transition remain false;
-- W03 authorizes progression only to a later policy-aware preflight, not provider dispatch.
+W03 engineering contract:
+- canonical W01 rebuild/integrity and exact `admit` required;
+- canonical W02 rebuild/integrity and `materialized_unpersisted` required;
+- exact W01↔W02 shared policy/recommendation/proposal/target/before/after identity equality;
+- provenance exactly `policy_authorization`;
+- human approval fields and Task #51/#54 human-path artifacts rejected;
+- structurally incompatible with `controlled_execution_foundation_v1`;
+- caller-supplied reservation only, restricted before W04 to synthetic/non-durable `reserved_prewrite`;
+- deterministic reservation-descriptor, policy-action and policy-authorization identities;
+- `persistedActionId=null`, no persisted action;
+- canonical caller-supplied issuance, TTL 1–15 minutes, expiry clamped to W01 evaluation/grant expiry;
+- `providerWriteAllowed=false`, `providerDispatchAuthorized=false`, `publicSiteWrites=false`, `automaticTransition=false`, `dispatchEligible=false`;
+- exact replay stable; conflicting same-lineage authorization replay fails closed;
+- zero DB/persistence/schema/provider/network/approval/action/reservation persistence/Task #51/#53/#54/worker/policy/deployment/publication authority.
 
-**Active safe boundary:** W03 specification/review only. Generic continuation may refine/review this contract but must not implement W03 or begin W04.
+Code-only head `8278efbcc81bac309489ccd265f7e8faa02c3140` passed CI #728 completely; final PR/merge/post-merge lineage is recorded on issue #416.
+
+**Next safe boundary:** W04 — durable reservation/idempotency design. W04 introduces persistence/schema semantics and requires separate explicit authorization. Generic `continue` must not implement W04, create DB tables/rows, activate workers/policies, call providers, execute Task #51/#53/#54, alter credentials/config, deploy or publish.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
