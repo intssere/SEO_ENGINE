@@ -82,6 +82,19 @@ function coordinator(
       states.push(state);
       return { kind: "started_new", receipt: receipt() };
     },
+    async startRollback() {
+      if (state !== "rollback_required") {
+        return {
+          kind: "already_started_or_terminal",
+          receipt: receipt(),
+        };
+      }
+      state = "rollback_started";
+      revision += 1;
+      rollbackAttemptCount = 1;
+      states.push(state);
+      return { kind: "started_new", receipt: receipt() };
+    },
     async transition(input) {
       state = input.toState;
       revision += 1;
