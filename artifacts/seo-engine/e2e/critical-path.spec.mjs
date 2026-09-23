@@ -135,6 +135,50 @@ test("P12.1 primary navigation excludes engineering-only routes while direct eng
   assertBrowserClean(errors);
 });
 
+test("UGP-2.2 customer routes declare detail level and return to their parent", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/site-audit/technical");
+
+  const banner = page.getByRole("note");
+  await expect(banner).toContainText("ADVANCED VIEW");
+  await expect(banner).toContainText("Site Audit details");
+  const back = banner.getByRole("link", { name: "Back to Site Audit" });
+  await back.click();
+  await expect(page).toHaveURL(/\/site-audit$/);
+
+  await page.goto("/content/research");
+  await expect(page.getByRole("note")).toContainText("EVIDENCE VIEW");
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
+test("UGP-2.2 opportunity evidence reveals traceability before technical details", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/opportunities");
+
+  await page.getByRole("button", { name: "Inspect evidence summary" }).first().click();
+  await expect(page.getByText("What supports this")).toBeVisible();
+
+  const evidence = page.getByText("Show traceable evidence");
+  const advanced = page.getByText("Show technical details");
+  await expect(evidence).toBeVisible();
+  await expect(advanced).toHaveCount(0);
+
+  await evidence.click();
+  await expect(page.getByText("Traceable evidence")).toBeVisible();
+  await expect(advanced).toBeVisible();
+
+  await advanced.click();
+  await expect(page.getByText("Quality & provenance")).toBeVisible();
+  await expect(page.getByText("Unavailable technical dimensions")).toBeVisible();
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
 test("Audit DataGrid is keyboard-scrollable and search/sort behavior is deterministic", async ({
   page,
 }) => {
