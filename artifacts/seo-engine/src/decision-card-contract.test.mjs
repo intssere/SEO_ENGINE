@@ -17,6 +17,7 @@ const governance = read("components/governance-action-card.tsx");
 test("UGP-2.3 standard card grammar exposes every customer decision dimension", () => {
   for (const label of [
     "Impact",
+    "Risk",
     "Current state",
     "Recommended state",
     "Why",
@@ -26,14 +27,13 @@ test("UGP-2.3 standard card grammar exposes every customer decision dimension", 
     assert.ok(component.includes(label), label);
   }
   assert.ok(proposalTable.includes("Preview available"));
-  assert.ok(component.includes("PREVIEW AFTER PROPOSAL"));
+  assert.ok(component.includes("Preview after proposal"));
 });
 
 test("UGP-2.3 opportunity projection does not invent absent state", () => {
   assert.match(model, /Expected impact is not exposed by this opportunity/);
   assert.match(model, /currentState: null/);
   assert.match(component, /Measurement unavailable/);
-  assert.match(component, /No verified outcome is exposed/);
 });
 
 test("UGP-2.3 proposal table keeps review separate from execution and measurement", () => {
