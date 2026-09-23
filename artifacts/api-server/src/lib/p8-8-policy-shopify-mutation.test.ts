@@ -78,12 +78,6 @@ test("W07 Shopify forward mutation sends exactly Product id + byte-exact W02 aft
       seo: { description: f.executionIntent.state.afterValue },
     },
   });
-  assert.equal(
-    JSON.stringify(parsed.variables).includes(
-      String(f.executionIntent.state.afterValue),
-    ),
-    true,
-  );
   assert.equal(capturedBody.includes("title"), false);
   assert.equal(capturedBody.includes("handle"), false);
   assert.equal(capturedBody.includes("descriptionHtml"), false);
