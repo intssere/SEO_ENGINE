@@ -21,7 +21,6 @@ import {
   type P88W03PolicyAuthorizationInput,
 } from "./p8-8-policy-authorization.js";
 import {
-  P8_8_W04_DURABLE_RECEIPT_VERSION,
   assertP88W04DurableReceiptIntegrity,
   pairP88W03W04DurableReservation,
   type P88W04DurableReservationReceipt,
@@ -852,13 +851,6 @@ export function buildP88W06PolicyPreflight(input: {
 
   const allBlockers = [...new Set([...uniqueUncertain, ...uniqueBlockers])]
     .sort((a, b) => a.localeCompare(b));
-  const claimReleaseEligibility: P88W06ClaimReleaseEligibility =
-    disposition === "ready_for_w07"
-      ? "retain_for_w07"
-      : disposition === "state_uncertain"
-        ? "not_releasable_uncertain"
-        : "release_eligible_no_dispatch";
-
   const expiresAt = preflightExpiry(validatedAt, w03.expiresAt);
   if (
     disposition === "ready_for_w07"
