@@ -14,7 +14,7 @@ import {
 
 export type P88W07DispatchCoordinator = Pick<
   P88W07DispatchStore,
-  "reservePrewrite" | "startDispatch" | "transition" | "readDispatch"
+  "reservePrewrite" | "startDispatch" | "startRollback" | "transition" | "readDispatch"
 >;
 import {
   type P88W07ShopifyMutationResult,
@@ -434,14 +434,28 @@ export async function runP88W07RollbackClosure(input: {
     throw new Error("p88_w07_rollback_not_required");
   }
 
-  await input.store.transition({
+  const rollbackStart = await input.store.startRollback({
     intent: input.intent,
-    expectedStates: ["rollback_required"],
-    toState: "rollback_started",
     reason: "rollback_attempt_point_of_no_return",
-    publicWriteOccurrence: "confirmed",
-    rollbackWriteOccurrence: "possible",
   });
+  if (rollbackStart.kind === "already_started_or_terminal") {
+    return result({
+      disposition: rollbackStart.receipt.state === "rollback_verified_closed"
+        ? "rollback_verified_closed"
+        : rollbackStart.receipt.state === "manual_intervention_required"
+          ? "manual_intervention_required"
+          : "already_started_or_terminal",
+      receipt: rollbackStart.receipt,
+      mutationResult: null,
+      verificationAssessment: null,
+      providerMutationCalls: 0,
+      rollbackMutationCalls: 0,
+      automaticWriteRetryPerformed: false,
+      task51ExecutionPerformed: false,
+      task53ExecutionPerformed: false,
+      task54ExecutionPerformed: false,
+    });
+  }
 
   let mutation: P88W07ShopifyMutationResult;
   try {
