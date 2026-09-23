@@ -46,6 +46,16 @@ const NAV_ICON_BY_PATH: Record<string, LucideIcon> = {
   "/settings": Settings2,
 };
 
+const ADVANCED_DETAIL_ROUTES = new Set([
+  "/site-audit/technical",
+  "/automation/changes",
+  "/automation/history",
+  "/automation/safety",
+  "/performance/experiments",
+  "/performance/learning",
+  "/settings/connections",
+]);
+
 function isNavigationItemActive(item: NavigationItem, location: string) {
   if (location === item.path) return true;
   if (item.path !== "/" && location.startsWith(item.path + "/")) return true;
@@ -104,6 +114,9 @@ export function Layout({ children }: { children: ReactNode }) {
   const mainContentRef = useRef<HTMLElement>(null);
   const previousLocationRef = useRef(location);
   const auth = useAuth();
+  const detailParent = NAV_ITEMS.find(
+    (item) => item.path !== "/" && location.startsWith(item.path + "/"),
+  );
 
   const setAskModalOpen = useCallback((open: boolean) => {
     if (open) {
@@ -247,6 +260,17 @@ export function Layout({ children }: { children: ReactNode }) {
           tabIndex={-1}
           className="workspace relative"
         >
+          {detailParent ? (
+            <div className="detailViewBanner" role="note">
+              <span>
+                {ADVANCED_DETAIL_ROUTES.has(location)
+                  ? "ADVANCED VIEW"
+                  : "EVIDENCE VIEW"}
+              </span>
+              <strong>{detailParent.label} details</strong>
+              <Link href={detailParent.path}>Back to {detailParent.label}</Link>
+            </div>
+          ) : null}
           {children}
         </main>
 
