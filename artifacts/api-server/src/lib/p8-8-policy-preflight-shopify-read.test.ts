@@ -36,7 +36,10 @@ function stableJson(value: unknown): string {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return "[" + value.map(stableJson).join(",") + "]";
   const object = value as Record<string, unknown>;
-  return "{" + Object.keys(object)\n    .sort((left, right) => left.localeCompare(right))\n    .map((key) => JSON.stringify(key) + ":" + stableJson(object[key]))\n    .join(",") + "}";
+  return "{" + Object.keys(object)
+    .sort((left, right) => left.localeCompare(right))
+    .map((key) => JSON.stringify(key) + ":" + stableJson(object[key]))
+    .join(",") + "}";
 }
 
 function hash(value: unknown): string {
