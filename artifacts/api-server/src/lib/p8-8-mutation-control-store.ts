@@ -101,6 +101,7 @@ export type P88W05ClaimInput = Readonly<{
 }>;
 
 type Sql = ReturnType<typeof postgres>;
+type SqlExecutor = Pick<Sql, "unsafe">;
 
 type ControlStateRow = {
   site_id: string;
@@ -583,7 +584,7 @@ export class P88W05MutationControlStore {
             projection.state.controlFingerprint,
           ],
         );
-        await this.insertEvent(tx as Sql, projection.event);
+        await this.insertEvent(tx, projection.event);
         return deepFreeze({
           kind: "initialized" as const,
           projection,
@@ -600,7 +601,10 @@ export class P88W05MutationControlStore {
     }
   }
 
-  private async insertEvent(sql: Sql, event: P88W05ControlEvent) {
+  private async insertEvent(
+    sql: SqlExecutor,
+    event: P88W05ControlEvent,
+  ) {
     assertP88W05ControlEventIntegrity(event);
     await sql.unsafe(
       "INSERT INTO policy_mutation_control_events ("
@@ -766,7 +770,7 @@ export class P88W05MutationControlStore {
         if (updated[0]?.site_id !== input.siteId) {
           throw new Error("p88_w05_control_revision_conflict");
         }
-        await this.insertEvent(tx as Sql, projection.event);
+        await this.insertEvent(tx, projection.event);
         return deepFreeze({
           ...projection,
           releasedReservationId,
