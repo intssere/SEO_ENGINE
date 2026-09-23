@@ -115,7 +115,7 @@ export async function runP88W07ForwardExecution(input: {
   mutate: P88W07MutationInvoker;
   verify: P88W07IndependentVerifier;
 }): Promise<P88W07ExecutionResult> {
-  const reserved = await input.store.reservePrewrite({
+  await input.store.reservePrewrite({
     handoff: input.handoff,
     intent: input.intent,
   });
@@ -434,7 +434,7 @@ export async function runP88W07RollbackClosure(input: {
     throw new Error("p88_w07_rollback_not_required");
   }
 
-  const started = await input.store.transition({
+  await input.store.transition({
     intent: input.intent,
     expectedStates: ["rollback_required"],
     toState: "rollback_started",
