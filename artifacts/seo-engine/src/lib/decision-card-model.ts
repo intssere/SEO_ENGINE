@@ -15,9 +15,9 @@ export function buildOpportunityDecisionCard(
   row: OpportunityRecord,
 ): DecisionCardModel {
   return Object.freeze({
-    id: "opportunity:" + row.id,
+    id: row.id,
     problem: row.title,
-    impact: "Expected impact is not exposed by this opportunity.",
+    impact: "Impact not available.",
     risk: row.risk_classification,
     currentState: null,
     recommendedState: row.recommendation,
