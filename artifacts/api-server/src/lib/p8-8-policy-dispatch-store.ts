@@ -806,6 +806,201 @@ export class P88W07DispatchStore {
     }
   }
 
+  async cancelBeforeDispatch(input: {
+    executionInput: P88W07ExecutionInput;
+    transitionReason: string;
+  }): Promise<P88W07AdvanceResult> {
+    const intent = projectP88W07ExecutionIntent(input.executionInput);
+    const sql = this.sqlFactory(this.databaseUrl);
+    try {
+      await this.assertSchemaAndIdentity(sql, intent.siteId);
+      return await sql.begin(async (tx) => {
+        const { reservation, claim } = await this.lockLineage(tx, intent);
+        if (!reservationMatches(reservation, intent) || reservation!.status !== "claimed") {
+          throw new Error("p88_w07_reservation_not_claimed");
+        }
+        if (!claimMatches(claim, intent)) {
+          throw new Error("p88_w07_claim_binding_mismatch");
+        }
+
+        const rows = await tx.unsafe<DispatchRow[]>(
+          "SELECT " + DISPATCH_COLUMNS
+            + " FROM policy_mutation_dispatches "
+            + "WHERE claim_id=$1 OR dispatch_id=$2 FOR UPDATE",
+          [intent.claimId, intent.dispatchId],
+        );
+        const now = await this.now(tx);
+        let record: P88W07DispatchRecord;
+
+        if (rows[0]) {
+          const row = rows[0];
+          if (!rowMatchesIntent(row, intent)) {
+            throw new Error("p88_w07_dispatch_identity_collision");
+          }
+          if (row.state === "cancelled_before_dispatch") {
+            return {
+              record: recordFromRow(row),
+              w04TerminalStatus: "released",
+            };
+          }
+          if (
+            row.state !== "reserved_prewrite"
+            || row.forward_attempt_count !== 0
+            || row.public_write_occurrence !== "none"
+          ) {
+            throw new Error("p88_w07_no_dispatch_closure_not_proven");
+          }
+          const projection = projectP88W07Transition({
+            fromState: row.state,
+            toState: "cancelled_before_dispatch",
+            forwardAttemptCount: row.forward_attempt_count,
+            rollbackAttemptCount: row.rollback_attempt_count,
+            publicWriteOccurrence: row.public_write_occurrence,
+            rollbackOccurrence: row.rollback_occurrence,
+          });
+          const nextRevision = Number(row.row_revision) + 1;
+          const updated = await tx.unsafe<DispatchRow[]>(
+            "UPDATE policy_mutation_dispatches SET "
+              + "state='cancelled_before_dispatch',row_revision=$4,"
+              + "final_closure_reason=$5,terminal_at=$6::timestamptz,"
+              + "updated_at=$6::timestamptz "
+              + "WHERE dispatch_id=$1 AND row_revision=$2 AND state=$3 "
+              + "AND forward_attempt_count=0 "
+              + "AND public_write_occurrence='none' "
+              + "RETURNING " + DISPATCH_COLUMNS,
+            [
+              row.dispatch_id,
+              row.row_revision,
+              row.state,
+              nextRevision,
+              input.transitionReason,
+              now.toISOString(),
+            ],
+          );
+          if (!updated[0]) {
+            throw new Error("p88_w07_no_dispatch_closure_uncertain");
+          }
+          await this.insertEvent(tx, {
+            dispatchId: row.dispatch_id,
+            siteId: intent.siteId,
+            fromRevision: Number(row.row_revision),
+            fromState: row.state,
+            toRevision: nextRevision,
+            toState: projection.toState,
+            transitionReason: input.transitionReason,
+            publicWriteOccurrence: projection.publicWriteOccurrence,
+            rollbackOccurrence: projection.rollbackOccurrence,
+            providerRequestFingerprint: null,
+            effectiveAt: now.toISOString(),
+          });
+          record = recordFromRow(updated[0]);
+        } else {
+          const inserted = await tx.unsafe<DispatchRow[]>(
+            "INSERT INTO policy_mutation_dispatches ("
+              + "dispatch_id,dispatch_version,dispatch_fingerprint,"
+              + "execution_id,execution_fingerprint,site_id,policy_id,"
+              + "policy_version,policy_fingerprint,evaluation_id,"
+              + "evaluation_fingerprint,materialization_id,"
+              + "materialization_fingerprint,proposal_id,proposal_fingerprint,"
+              + "w03_authorization_id,w03_authorization_fingerprint,"
+              + "policy_action_id,reservation_id,reservation_fingerprint,"
+              + "claim_id,claim_fingerprint,w06_preflight_id,"
+              + "w06_preflight_fingerprint,credential_profile_id,"
+              + "claimed_control_revision,claimed_control_fingerprint,"
+              + "provider,domain,resource_kind,resource_gid,target_url,"
+              + "action_type,field,required_provider_scope,before_fingerprint,"
+              + "after_fingerprint,state,row_revision,forward_attempt_count,"
+              + "rollback_attempt_count,public_write_occurrence,"
+              + "rollback_occurrence,final_closure_reason,reserved_at,"
+              + "terminal_at"
+              + ") VALUES ("
+              + "$1,$2,$3,$4,$5,$6::uuid,$7,$8,$9,$10,$11,$12,$13,$14,$15,"
+              + "$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,"
+              + "'shopify','diamondshelf.us','product',$28,$29,"
+              + "'update_meta_description','meta_description','write_products',"
+              + "$30,$31,'cancelled_before_dispatch',1,0,0,'none','none',"
+              + "$32,$33::timestamptz,$33::timestamptz"
+              + ") RETURNING " + DISPATCH_COLUMNS,
+            [
+              intent.dispatchId,
+              P8_8_W07_DISPATCH_VERSION,
+              intent.dispatchFingerprint,
+              intent.policyExecutionId,
+              intent.executionFingerprint,
+              intent.siteId,
+              intent.policyId,
+              intent.policyVersion,
+              intent.policyFingerprint,
+              intent.evaluationId,
+              intent.evaluationFingerprint,
+              intent.materializationId,
+              intent.materializationFingerprint,
+              intent.proposalId,
+              intent.proposalFingerprint,
+              intent.w03AuthorizationId,
+              intent.w03AuthorizationFingerprint,
+              intent.policyActionId,
+              intent.reservationId,
+              intent.reservationFingerprint,
+              intent.claimId,
+              intent.claimFingerprint,
+              intent.w06PreflightId,
+              intent.w06PreflightFingerprint,
+              intent.credentialProfileId,
+              intent.claimedControlRevision,
+              intent.claimedControlFingerprint,
+              intent.target.resourceGid,
+              intent.target.targetUrl,
+              intent.state.beforeFingerprint,
+              intent.state.afterFingerprint,
+              input.transitionReason,
+              now.toISOString(),
+            ],
+          );
+          if (!inserted[0]) {
+            throw new Error("p88_w07_no_dispatch_insert_uncertain");
+          }
+          await this.insertEvent(tx, {
+            dispatchId: intent.dispatchId,
+            siteId: intent.siteId,
+            fromRevision: null,
+            fromState: null,
+            toRevision: 1,
+            toState: "cancelled_before_dispatch",
+            transitionReason: input.transitionReason,
+            publicWriteOccurrence: "none",
+            rollbackOccurrence: "none",
+            providerRequestFingerprint: null,
+            effectiveAt: now.toISOString(),
+          });
+          record = recordFromRow(inserted[0]);
+        }
+
+        const released = await tx.unsafe<{ reservation_id: string }[]>(
+          "UPDATE policy_mutation_reservations SET status='released',"
+            + "terminal_at=$2::timestamptz,terminal_reason=$3,"
+            + "updated_at=$2::timestamptz "
+            + "WHERE reservation_id=$1 AND status='claimed' "
+            + "RETURNING reservation_id",
+          [
+            intent.reservationId,
+            now.toISOString(),
+            input.transitionReason,
+          ],
+        );
+        if (released[0]?.reservation_id !== intent.reservationId) {
+          throw new Error("p88_w07_w04_release_uncertain");
+        }
+        return {
+          record,
+          w04TerminalStatus: "released",
+        };
+      });
+    } finally {
+      await sql.end({ timeout: 1 }).catch(() => undefined);
+    }
+  }
+
   async startDispatch(input: {
     executionInput: P88W07ExecutionInput;
     dispatchId: string;
