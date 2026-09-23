@@ -5,12 +5,12 @@ export default function ContentPage() {
     <CustomerDomainHub
       eyebrow="CONTENT GROWTH"
       title="Content"
-      description="Research what people search for, understand where your content is missing coverage, and manage the content workflows that support organic growth."
+      description="Research demand, find content gaps, and manage organic content."
       cards={[
         {
           title: "Search research",
           description:
-            "Explore competitor topics, semantic gaps, search demand signals, and supporting evidence before deciding what to create or improve.",
+            "Explore topics, gaps, demand signals, and supporting evidence.",
           href: "/content/research",
           actionLabel: "Open search research",
           status: "preview",
@@ -18,7 +18,7 @@ export default function ContentPage() {
         {
           title: "Rank tracking",
           description:
-            "Review the current availability of keyword position and SERP monitoring. No ranking metrics are invented when a live source is not connected.",
+            "Check rank tracking availability. No ranking metrics are invented without a live source.",
           href: "/content/rankings",
           actionLabel: "View rank tracking",
           status: "unavailable",
@@ -26,7 +26,7 @@ export default function ContentPage() {
         {
           title: "AI visibility",
           description:
-            "Inspect the current AI-answer visibility workspace and citation observations while live collection remains safely disabled.",
+            "Inspect AI-answer visibility and citation observations.",
           href: "/content/ai-visibility",
           actionLabel: "Open AI visibility",
           status: "preview",
@@ -34,8 +34,8 @@ export default function ContentPage() {
         {
           title: "Article automation",
           description:
-            "Research-to-brief-to-draft-to-publish automation will live here, including citations, internal links, media, refreshes, and publishing controls.",
-          actionLabel: "Article workflow is being added",
+            "Plan, draft, optimize, and publish articles from one workflow.",
+          actionLabel: "Article automation is coming",
           status: "coming_soon",
         },
       ]}
