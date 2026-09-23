@@ -17,14 +17,14 @@ const polish = read("../e2e/product-polish.spec.mjs");
 const browser = read("../e2e/reporting.spec.mjs");
 const packageJson = read("../package.json");
 
-test("P11.7 preserves Reports as a routed engineering surface after P12.1", () => {
+test("UGP-2.1 preserves Reports as an advanced surface under Performance", () => {
   const parsed = JSON.parse(nav);
-  const primaryPaths = parsed.flatMap((group) =>
-    group.items.map((item) => item.path),
-  );
+  const primaryPaths = parsed.map((item) => item.path);
   assert.equal(primaryPaths.includes("/reports"), false);
+  assert.equal(primaryPaths.includes("/performance"), true);
   assert.match(app, /import ReportsPage from ['"]\.\/pages\/reports['"]/);
   assert.match(app, /<Route path="\/reports" component=\{ReportsPage\} \/>/);
+  assert.match(app, /<Route path="\/performance\/reports" component=\{ReportsPage\} \/>/);
 });
 
 test("P11.7 report route remains inside P11.5 and P11.6 inherited gates", () => {
