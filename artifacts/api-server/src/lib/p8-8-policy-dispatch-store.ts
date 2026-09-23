@@ -998,6 +998,20 @@ export class P88W07DispatchStore {
     });
   }
 
+  async readControlMode(siteId: string): Promise<string | null> {
+    const sql = this.sqlFactory(this.databaseUrl);
+    try {
+      await this.assertSchemaAndIdentity(sql, siteId);
+      const rows = await sql.unsafe<{ mode: string }[]>(
+        "SELECT mode FROM policy_mutation_control_state WHERE site_id=$1::uuid",
+        [siteId],
+      );
+      return rows[0]?.mode ?? null;
+    } finally {
+      await sql.end({ timeout: 1 }).catch(() => undefined);
+    }
+  }
+
   markManualIntervention(input: {
     dispatchId: string;
     expectedRevision: number;
