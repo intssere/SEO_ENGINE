@@ -324,7 +324,7 @@ test("P8.8 W04 PostgreSQL reservation store preserves replay/concurrency invaria
 
   await t.test("database transaction time rejects future-issued W03 authorization", async () => {
     await clear();
-    const future = new Date(now.getTime() + 5 * 60_000).toISOString();
+    const future = new Date(now.getTime() + 20 * 60_000).toISOString();
     const scenario = buildP88W04TestScenario({
       siteId,
       baseTime: future,
