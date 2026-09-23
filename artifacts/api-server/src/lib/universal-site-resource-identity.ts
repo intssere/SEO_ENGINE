@@ -267,6 +267,15 @@ function exactLocale(value: unknown): string | null {
   return value;
 }
 
+function resourceLocatorPayload(
+  locator: Omit<UniversalResourceLocator, "resourceLocatorFingerprint">,
+) {
+  return {
+    purpose: "ugp_resource_locator",
+    ...locator,
+  };
+}
+
 function assertSiteIntegrity(site: UniversalSiteIdentity): void {
   const rebuilt = buildUniversalSiteIdentity({
     siteId: site.siteId,
@@ -406,67 +415,68 @@ export function buildUniversalResourceLocator(
 
   return deepFreeze({
     ...base,
-    resourceLocatorFingerprint: stableHash({
-      purpose: "ugp_resource_locator",
-      ...base,
-    }),
+    resourceLocatorFingerprint: stableHash(resourceLocatorPayload(base)),
   });
 }
 
 export function assertUniversalResourceLocatorIntegrity(
   locator: UniversalResourceLocator,
 ): void {
-  const site = buildUniversalSiteIdentityFromLocator(locator);
-  const connection = locator.connectionId === null
+  if (!locator || typeof locator !== "object" || Array.isArray(locator)) {
+    throw new Error("ugp_identity_invalid_resource_locator");
+  }
+  if (locator.version !== UGP_UNIVERSAL_IDENTITY_VERSION) {
+    throw new Error("ugp_identity_resource_locator_version_mismatch");
+  }
+
+  const connectionId = locator.connectionId == null
     ? null
-    : buildUniversalConnectionIdentityFromLocator(locator, site);
-  const rebuilt = buildUniversalResourceLocator({
-    site,
-    connection,
-    provider: locator.provider,
+    : exactKey(locator.connectionId, "connection_id");
+  const connectionIdentityFingerprint =
+    locator.connectionIdentityFingerprint == null
+      ? null
+      : exactFingerprint(
+          locator.connectionIdentityFingerprint,
+          "connection_identity_fingerprint",
+        );
+  if ((connectionId === null) !== (connectionIdentityFingerprint === null)) {
+    throw new Error("ugp_identity_resource_connection_pair_invalid");
+  }
+
+  if (!UNIVERSAL_RESOURCE_KINDS.includes(locator.kind)) {
+    throw new Error("ugp_identity_invalid_resource_kind");
+  }
+
+  const externalId = exactOpaqueIdentity(
+    locator.externalId,
+    "external_id",
+    true,
+  );
+  const canonicalUrl = canonicalResourceUrl(locator.canonicalUrl);
+  if (externalId === null && canonicalUrl === null) {
+    throw new Error("ugp_identity_resource_anchor_missing");
+  }
+
+  const normalized = {
+    version: UGP_UNIVERSAL_IDENTITY_VERSION,
+    siteId: exactKey(locator.siteId, "site_id"),
+    siteIdentityFingerprint: exactFingerprint(
+      locator.siteIdentityFingerprint,
+      "site_identity_fingerprint",
+    ),
+    connectionId,
+    connectionIdentityFingerprint,
+    provider: exactProvider(locator.provider),
     kind: locator.kind,
-    externalId: locator.externalId,
-    canonicalUrl: locator.canonicalUrl,
-    locale: locator.locale,
-  });
-  if (stableJson(rebuilt) !== stableJson(locator)) {
+    externalId,
+    canonicalUrl,
+    locale: exactLocale(locator.locale),
+  };
+
+  const expected = stableHash(resourceLocatorPayload(normalized));
+  if (expected !== locator.resourceLocatorFingerprint) {
     throw new Error("ugp_identity_resource_locator_integrity_failed");
   }
-}
-
-function buildUniversalSiteIdentityFromLocator(
-  locator: UniversalResourceLocator,
-): UniversalSiteIdentity {
-  const canonicalUrl = locator.canonicalUrl;
-  if (!canonicalUrl) {
-    throw new Error(
-      "ugp_identity_locator_site_rebuild_requires_canonical_url",
-    );
-  }
-  const origin = new URL(canonicalUrl).origin;
-  const site = buildUniversalSiteIdentity({
-    siteId: locator.siteId,
-    canonicalOrigin: origin,
-  });
-  if (site.siteIdentityFingerprint !== locator.siteIdentityFingerprint) {
-    throw new Error("ugp_identity_resource_site_fingerprint_mismatch");
-  }
-  return site;
-}
-
-function buildUniversalConnectionIdentityFromLocator(
-  locator: UniversalResourceLocator,
-  site: UniversalSiteIdentity,
-): UniversalConnectionIdentity {
-  if (
-    locator.connectionId === null
-    || locator.connectionIdentityFingerprint === null
-  ) {
-    throw new Error("ugp_identity_resource_connection_incomplete");
-  }
-  throw new Error(
-    "ugp_identity_locator_connection_rebuild_requires_connection_context",
-  );
 }
 
 export function buildUniversalResourceIdentity(
@@ -477,6 +487,8 @@ export function buildUniversalResourceIdentity(
   }
 
   const locator = input.locator;
+  assertUniversalResourceLocatorIntegrity(locator);
+
   const stateFingerprint = exactFingerprint(
     input.stateFingerprint,
     "state_fingerprint",
@@ -492,6 +504,7 @@ export function buildUniversalResourceIdentity(
   }
 
   if (parent) {
+    assertUniversalResourceLocatorIntegrity(parent);
     if (
       parent.siteId !== locator.siteId
       || parent.siteIdentityFingerprint !== locator.siteIdentityFingerprint
@@ -534,6 +547,8 @@ export function buildUniversalResourceIdentity(
 export function buildShopifyUniversalResourceIdentity(
   input: ShopifyUniversalResourceIdentityInput,
 ): UniversalResourceIdentity {
+  assertSiteIntegrity(input.site);
+  assertConnectionIntegrity(input.connection, input.site);
   if (input.connection.provider !== "shopify") {
     throw new Error("ugp_identity_shopify_connection_required");
   }
