@@ -3,7 +3,7 @@ import test from "node:test";
 import postgres from "postgres";
 import { createHash } from "node:crypto";
 import { buildP88W04TestScenario } from "./p8-8-w04-test-fixture.js";
-import { P88W04ReservationStore } from "./p8-8-reservation-store.js";
+import { projectP88W04DurableReceipt } from "./p8-8-reservation-store.js";
 import { P88W05MutationControlStore } from "./p8-8-mutation-control-store.js";
 import {
   buildP88W06PolicyPreflight,
@@ -106,11 +106,106 @@ test("P8.8 W06 read-only snapshot and race certification uses dedicated 41-table
     proposedValue: "After W06 PostgreSQL",
   });
 
-  const w04Store = new P88W04ReservationStore({ databaseUrl });
-  const reserved = await w04Store.reserve(scenario.input);
-  assert.equal(reserved.kind, "created");
-  assert.ok("receipt" in reserved);
-  if (!("receipt" in reserved)) throw new Error("w06_test_receipt_missing");
+  const intent = scenario.input.intent;
+  const w03 = scenario.input.w03Authorization;
+  await admin.unsafe(
+    "INSERT INTO policy_mutation_reservations ("
+      + "reservation_id,reservation_version,reservation_class,"
+      + "reservation_fingerprint,site_id,policy_id,policy_version,"
+      + "policy_fingerprint,evaluation_id,evaluation_fingerprint,"
+      + "materialization_id,materialization_fingerprint,"
+      + "materialization_idempotency_fingerprint,proposal_id,"
+      + "proposal_fingerprint,recommendation_fingerprint,"
+      + "recommendation_idempotency_key,target_binding_fingerprint,"
+      + "provider,domain,resource_kind,resource_gid,target_url,action_type,"
+      + "field,required_provider_scope,before_fingerprint,after_fingerprint,"
+      + "w03_authorization_id,w03_authorization_fingerprint,policy_action_id,"
+      + "w03_reservation_descriptor_fingerprint,status,authorized_at,expires_at"
+      + ") VALUES ("
+      + "$1,$2,$3,$4,$5::uuid,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,"
+      + "$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,"
+      + "'authorized',$33::timestamptz,$34::timestamptz"
+      + ")",
+    [
+      intent.reservationId,
+      "p8-8-w04-durable-reservation-v1",
+      "shopify.product.seo.meta_description",
+      intent.reservationFingerprint,
+      intent.siteId,
+      intent.policy.policyId,
+      intent.policy.policyVersion,
+      intent.policy.policyFingerprint,
+      intent.evaluation.evaluationId,
+      intent.evaluation.evaluationFingerprint,
+      intent.materialization.materializationId,
+      intent.materialization.materializationFingerprint,
+      intent.materialization.materializationIdempotencyFingerprint,
+      intent.proposal.proposalId,
+      intent.proposal.proposalFingerprint,
+      intent.recommendation.recommendationFingerprint,
+      intent.recommendation.recommendationIdempotencyKey,
+      intent.target.targetBindingFingerprint,
+      intent.target.provider,
+      intent.target.domain,
+      intent.target.resourceKind,
+      intent.target.resourceGid,
+      intent.target.targetUrl,
+      intent.target.actionType,
+      intent.target.field,
+      intent.target.requiredProviderScope,
+      intent.state.beforeFingerprint,
+      intent.state.afterFingerprint,
+      w03.policyAuthorizationId,
+      w03.policyAuthorizationFingerprint,
+      w03.policyActionId,
+      w03.reservation.descriptorFingerprint,
+      w03.issuedAt,
+      w03.expiresAt,
+    ],
+  );
+
+  const w04Receipt = projectP88W04DurableReceipt({
+    reservation_id: intent.reservationId,
+    reservation_version: "p8-8-w04-durable-reservation-v1",
+    reservation_class: "shopify.product.seo.meta_description",
+    reservation_fingerprint: intent.reservationFingerprint,
+    site_id: intent.siteId,
+    policy_id: intent.policy.policyId,
+    policy_version: intent.policy.policyVersion,
+    policy_fingerprint: intent.policy.policyFingerprint,
+    evaluation_id: intent.evaluation.evaluationId,
+    evaluation_fingerprint: intent.evaluation.evaluationFingerprint,
+    materialization_id: intent.materialization.materializationId,
+    materialization_fingerprint: intent.materialization.materializationFingerprint,
+    materialization_idempotency_fingerprint:
+      intent.materialization.materializationIdempotencyFingerprint,
+    proposal_id: intent.proposal.proposalId,
+    proposal_fingerprint: intent.proposal.proposalFingerprint,
+    recommendation_fingerprint: intent.recommendation.recommendationFingerprint,
+    recommendation_idempotency_key:
+      intent.recommendation.recommendationIdempotencyKey,
+    target_binding_fingerprint: intent.target.targetBindingFingerprint,
+    provider: intent.target.provider,
+    domain: intent.target.domain,
+    resource_kind: intent.target.resourceKind,
+    resource_gid: intent.target.resourceGid,
+    target_url: intent.target.targetUrl,
+    action_type: intent.target.actionType,
+    field: intent.target.field,
+    required_provider_scope: intent.target.requiredProviderScope,
+    before_fingerprint: intent.state.beforeFingerprint,
+    after_fingerprint: intent.state.afterFingerprint,
+    w03_authorization_id: w03.policyAuthorizationId,
+    w03_authorization_fingerprint: w03.policyAuthorizationFingerprint,
+    policy_action_id: w03.policyActionId,
+    w03_reservation_descriptor_fingerprint: w03.reservation.descriptorFingerprint,
+    status: "authorized",
+    authorized_at: new Date(w03.issuedAt),
+    expires_at: new Date(w03.expiresAt),
+    claimed_at: null,
+    terminal_at: null,
+    terminal_reason: null,
+  });
 
   const w05Store = new P88W05MutationControlStore({ databaseUrl });
   const initialized = await w05Store.initializeControl({
@@ -119,7 +214,7 @@ test("P8.8 W06 read-only snapshot and race certification uses dedicated 41-table
   });
   const claimed = await w05Store.claim({
     w03Authorization: scenario.input.w03Authorization,
-    w04Receipt: reserved.receipt,
+    w04Receipt: w04Receipt,
     expectedControlRevision: initialized.projection.state.revision,
     expectedControlFingerprint:
       initialized.projection.state.controlFingerprint,
@@ -135,7 +230,7 @@ test("P8.8 W06 read-only snapshot and race certification uses dedicated 41-table
     w02Materialization: scenario.intentInput.w02Materialization,
     w03Input: scenario.w03Input,
     w03Authorization: scenario.input.w03Authorization,
-    w04Receipt: reserved.receipt,
+    w04Receipt: w04Receipt,
     w05ClaimReceipt: claimed.receipt,
   };
 
@@ -143,11 +238,11 @@ test("P8.8 W06 read-only snapshot and race certification uses dedicated 41-table
   const governanceBeforeReads = await governance();
   const first = await w06Store.readSnapshot({
     siteId,
-    reservationId: reserved.receipt.reservationId,
+    reservationId: w04Receipt.reservationId,
   });
   const second = await w06Store.readSnapshot({
     siteId,
-    reservationId: reserved.receipt.reservationId,
+    reservationId: w04Receipt.reservationId,
   });
   const governanceAfterReads = await governance();
 
@@ -201,7 +296,7 @@ test("P8.8 W06 read-only snapshot and race certification uses dedicated 41-table
 
   const changed = await w06Store.readSnapshot({
     siteId,
-    reservationId: reserved.receipt.reservationId,
+    reservationId: w04Receipt.reservationId,
   });
   assert.notEqual(changed.snapshotFingerprint, first.snapshotFingerprint);
 
@@ -222,7 +317,7 @@ test("P8.8 W06 read-only snapshot and race certification uses dedicated 41-table
   >(
     "SELECT status,COUNT(*) OVER ()::int AS count "
       + "FROM policy_mutation_reservations WHERE reservation_id=$1",
-    [reserved.receipt.reservationId],
+    [w04Receipt.reservationId],
   );
   assert.equal(reservationRows[0]?.count, 1);
   assert.equal(reservationRows[0]?.status, "claimed");
@@ -230,7 +325,7 @@ test("P8.8 W06 read-only snapshot and race certification uses dedicated 41-table
   const claimRows = await admin.unsafe<{ count: number }[]>(
     "SELECT COUNT(*)::int AS count FROM policy_mutation_claims "
       + "WHERE reservation_id=$1",
-    [reserved.receipt.reservationId],
+    [w04Receipt.reservationId],
   );
   assert.equal(claimRows[0]?.count, 1);
 });
