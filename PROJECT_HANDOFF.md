@@ -13,7 +13,7 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 checkpoint:** W04 E1–E5 remains certified; W05 specification is certified under issue #435 / PR #436; and W05-E1–E5 engineering is fully merged and post-merge certified under issue #443 / PR #444. Final PR head `d4daaa6b1b25667af884d1ecea1f3502e1d7bd8f` passed CI #835, merge `fa15403b2cf4802c85b87f01b1cc77c778775245` / tree `9ff17f37ce595b58640817e57d805e7c70237ea8` passed post-merge CI #840, and Replit is Git-only exact-synced at `0/0`, clean. Production/runtime/provider/W06 boundaries remain blocked or separately gated.
+**Newest P8.8 checkpoint:** W04 and W05 engineering are certified; W06 policy-aware mutation-free preflight specification/review is authorized under issue #451 and is being defined on a dedicated branch. The W06 contract requires exact W01–W05 lineage, the exact same durable running control epoch accepted by the W05 claim, a read-only authoritative Shopify Product meta-description observation reconstructed in the byte-exact W02 state-fingerprint domain, a bounded no-dispatch proof, and release-eligibility projection only. W06 remains non-dispatchable and does not alter the human Task #51/#53/#54 path. W06 implementation, Production migrations/DDL/DML/control/claim changes, provider writes, runtime activation, deployment/publication, and W07–W10 remain blocked.
 
 W04 specification/review was certified under issue #418 / PR #419:
 - exact tested spec head: `2ac7373e9986874afe9e543863cfecc8d82732e0`;
@@ -63,7 +63,7 @@ Final PR #444 closeout certification is complete: exact PR head `d4daaa6b1b25667
 
 W05 engineering does **not** authorize Production migrations 0005/0006, Production control initialization/claims/reservation transitions, provider/network access, Task #51/#53/#54 execution, scheduler/worker/policy activation, credential/config changes, deployment/publication or W06–W10.
 
-**Next safe boundary:** documentation-only post-merge continuity reconciliation under issue #449, then W06 policy-aware mutation-free preflight as a separately gated engineering work package. Production migrations 0005/0006 and Production control initialization/claims remain separately authorized. Generic `continue` must not implement/activate W06, apply Production DDL/DML, create Production reservation/control/claim rows, call providers, execute Task #51/#53/#54, activate policy/workers, alter credentials/config, deploy or publish.
+**Current safe boundary:** complete W06 specification/review under issue #451 and certify its exact PR head. After specification certification, W06-E1–E5 implementation requires a new explicit authorization. Production migrations 0005/0006 and Production control initialization/claims remain separately authorized. Generic `continue` must not implement/activate W06, perform live provider reads, apply Production DDL/DML, create or transition Production reservation/control/claim rows, call provider mutations, execute Task #51/#53/#54, activate policy/workers, alter credentials/config, deploy or publish.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
