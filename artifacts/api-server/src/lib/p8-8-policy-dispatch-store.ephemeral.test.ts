@@ -440,27 +440,19 @@ test("P8.8 W07 PostgreSQL dispatch fence certifies replay, terminal closure and 
       rollbackWriteOccurrence: "none",
     });
 
-    const started = await w07.transition({
+    const started = await w07.startRollback({
       intent: f.intent,
-      expectedStates: ["rollback_required"],
-      toState: "rollback_started",
       reason: "synthetic_rollback_point_of_no_return",
-      publicWriteOccurrence: "confirmed",
-      rollbackWriteOccurrence: "possible",
     });
-    assert.equal(started.rollbackAttemptCount, 1);
+    assert.equal(started.kind, "started_new");
+    assert.equal(started.receipt.rollbackAttemptCount, 1);
 
-    await assert.rejects(
-      w07.transition({
-        intent: f.intent,
-        expectedStates: ["rollback_required"],
-        toState: "rollback_started",
-        reason: "synthetic_duplicate_rollback",
-        publicWriteOccurrence: "confirmed",
-        rollbackWriteOccurrence: "possible",
-      }),
-      /p88_w07_transition_state_conflict/,
-    );
+    const replay = await w07.startRollback({
+      intent: f.intent,
+      reason: "synthetic_duplicate_rollback",
+    });
+    assert.equal(replay.kind, "already_started_or_terminal");
+    assert.equal(replay.receipt.rollbackAttemptCount, 1);
 
     await w07.transition({
       intent: f.intent,
