@@ -38,7 +38,9 @@ test("desktop Home navigates through customer IA and hands route focus to main",
   ).toBeVisible();
   await expect(page.getByRole("main")).toHaveAttribute("id", "main-content");
 
-  const siteAuditLink = page.getByRole("link", { name: "Site Audit" });
+  const siteAuditLink = page
+    .locator(".sidebar .primaryNav")
+    .getByRole("link", { name: "Site Audit", exact: true });
   await siteAuditLink.click();
 
   await expect(page).toHaveURL(/\/site-audit$/);
@@ -279,7 +281,9 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
 }) => {
   const { boundary, errors } = await openSyntheticPage(page, "/");
 
-  const restoreTarget = page.getByRole("link", { name: "Site Audit" });
+  const restoreTarget = page
+    .locator(".sidebar .primaryNav")
+    .getByRole("link", { name: "Site Audit", exact: true });
   await restoreTarget.focus();
   await expect(restoreTarget).toBeFocused();
 
