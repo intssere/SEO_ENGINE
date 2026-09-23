@@ -154,6 +154,36 @@ test("UGP-2.2 customer routes declare detail level and return to their parent", 
   assertBrowserClean(errors);
 });
 
+test("UGP-2.3 opportunity card exposes the complete customer decision grammar", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/opportunities");
+
+  const card = page.locator("article.approvalReviewCard").first();
+  await expect(card.getByRole("heading", { name: "Improve product meta description" })).toBeVisible();
+  for (const label of [
+    "Impact",
+    "Risk",
+    "Current state",
+    "Recommended state",
+    "Why",
+    "Review / apply",
+    "Measurement",
+  ]) {
+    await expect(card.getByText(label, { exact: true })).toBeVisible();
+  }
+  await expect(card.getByText("Impact not available.")).toBeVisible();
+  await expect(card.getByText("Not available", { exact: true })).toBeVisible();
+  await expect(card.getByText("Synthetic proposal")).toBeVisible();
+  await expect(card.getByText("Not measured")).toBeVisible();
+  await expect(card.getByText("Preview after proposal")).toBeVisible();
+  await expect(card.getByRole("button", { name: "See evidence" })).toBeVisible();
+  await expect(card.getByRole("link", { name: "Review workflow" })).toHaveAttribute("href", "/automation");
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
 test("UGP-2.2 opportunity evidence reveals traceability before technical details", async ({
   page,
 }) => {
