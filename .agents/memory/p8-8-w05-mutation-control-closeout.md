@@ -25,3 +25,15 @@ Corrected code-only head `6f5e302db014c153cfca2f86ca7f46136e0ab74f` passed CI #8
 Migration 0005 remains unapplied to Production. Migration 0006 is engineering source only and is not applied to Production. No Production control row, claim, reservation transition, provider call, Task #51/#53/#54 execution, worker/policy activation, deployment/publication or credential/config change occurred.
 
 Next boundary: W06 policy-aware mutation-free preflight, separately authorized. Production DDL for 0005/0006 remains separately authorized.
+
+## Final merge certification
+
+- final PR head: `d4daaa6b1b25667af884d1ecea1f3502e1d7bd8f`;
+- exact-head CI #835 / run `35870588547`: success;
+- merge SHA/tree: `fa15403b2cf4802c85b87f01b1cc77c778775245` / `9ff17f37ce595b58640817e57d805e7c70237ea8`;
+- post-merge main CI #840 / run `35871447548`: success;
+- issue #443: closed;
+- Replit Git-only reconciliation: branch `main`, local HEAD and refreshed `origin/main` both exact at `fa15403b2cf4802c85b87f01b1cc77c778775245`, ahead/behind `0/0`, clean, no extra local commits;
+- zero deployment/publication, Production migration/DDL/DML/control initialization/reservation claim, provider/network action, Task #51/#53/#54 execution, worker/scheduler/policy activation, or credential/config mutation.
+
+Post-merge continuity documentation is tracked by issue #449. W06 remains separately gated.

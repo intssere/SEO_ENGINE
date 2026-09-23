@@ -2,7 +2,7 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W05 mutation-control engineering implemented / final PR certification + Production boundaries blocked
+## Active engineering checkpoint — P8.8 W05 mutation-control engineering certified / W06 separately gated
 
 P8.8 W04 specification/review is certified complete under issue #418 / PR #419.
 
@@ -78,14 +78,20 @@ Corrected code-only W05 head `6f5e302db014c153cfca2f86ca7f46136e0ab74f` passed c
 - typecheck;
 - build.
 
-The final documentation/closeout head of PR #444 still requires fresh exact-head CI before any merge certification.
+Final W05 certification is complete:
+- final PR head `d4daaa6b1b25667af884d1ecea1f3502e1d7bd8f` passed exact-head CI #835 / run `35870588547`;
+- PR #444 merged as `fa15403b2cf4802c85b87f01b1cc77c778775245` / tree `9ff17f37ce595b58640817e57d805e7c70237ea8`;
+- issue #443 closed with the merge;
+- post-merge main CI #840 / run `35871447548` completed successfully, including W05 PostgreSQL migration/concurrency, full workspace tests, P11.10 scale, Chromium critical paths, typecheck and build;
+- Replit was reconciled Git-only to exact canonical `main` `fa15403b2cf4802c85b87f01b1cc77c778775245`, refreshed `origin/main` exact, ahead/behind `0/0`, clean, with no extra local commits;
+- no deployment/publication, Production DDL/DML, migrations 0005/0006 application, Production control initialization/reservation claim, provider/network request, Task #51/#53/#54 execution, policy/scheduler/worker/autonomous activation, or credentials/scopes/config mutation occurred.
 
 **Production migrations 0005 and 0006 remain unapplied.** No Production control row, claim, reservation transition, DDL/DML, provider/network operation, Task #51/#53/#54 execution, policy/worker activation, credential/config mutation, deployment or publication has occurred from W05 engineering.
 
 **Next boundaries:**
-- exact-head PR #444 closeout CI and exact tested-head merge/certification;
+- this documentation-only post-merge continuity closeout is tracked by issue #449;
 - W04/W05 Production DDL remains a separate explicit authorization naming exact canonical SHA/tree and migration checksums;
-- W06 — policy-aware mutation-free preflight — remains separately gated and is not authorized by W05 engineering.
+- W06 — policy-aware mutation-free preflight — is the next engineering work package, remains separately gated, and is not authorized by generic continuation or by W05 completion.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 

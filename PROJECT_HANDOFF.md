@@ -13,7 +13,7 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 checkpoint:** W04 E1–E5 remains certified, W05 specification is certified under issue #435 / PR #436, and W05-E1–E5 engineering is implemented under issue #443 / PR #444; corrected code-only head `6f5e302db014c153cfca2f86ca7f46136e0ab74f` passed CI #825, while final PR-head closeout CI/merge and all Production/runtime/provider/W06 boundaries remain pending or blocked.
+**Newest P8.8 checkpoint:** W04 E1–E5 remains certified; W05 specification is certified under issue #435 / PR #436; and W05-E1–E5 engineering is fully merged and post-merge certified under issue #443 / PR #444. Final PR head `d4daaa6b1b25667af884d1ecea1f3502e1d7bd8f` passed CI #835, merge `fa15403b2cf4802c85b87f01b1cc77c778775245` / tree `9ff17f37ce595b58640817e57d805e7c70237ea8` passed post-merge CI #840, and Replit is Git-only exact-synced at `0/0`, clean. Production/runtime/provider/W06 boundaries remain blocked or separately gated.
 
 W04 specification/review was certified under issue #418 / PR #419:
 - exact tested spec head: `2ac7373e9986874afe9e543863cfecc8d82732e0`;
@@ -59,11 +59,11 @@ Implemented:
 
 Corrected code-only head `6f5e302db014c153cfca2f86ca7f46136e0ab74f` passed CI #825 / run `35869432936` completely: W05 migration/schema, real PostgreSQL races, full workspace, P11.10, Chromium, typecheck and build.
 
-Final closeout documentation is now being added on PR #444; the resulting exact PR head must pass fresh CI before merge.
+Final PR #444 closeout certification is complete: exact PR head `d4daaa6b1b25667af884d1ecea1f3502e1d7bd8f` passed CI #835 / run `35870588547`; the PR merged as `fa15403b2cf4802c85b87f01b1cc77c778775245` / tree `9ff17f37ce595b58640817e57d805e7c70237ea8`; post-merge CI #840 / run `35871447548` passed; and Replit was reconciled Git-only to that exact merge with refreshed `origin/main`, ahead/behind `0/0`, clean, and no extra local commits.
 
 W05 engineering does **not** authorize Production migrations 0005/0006, Production control initialization/claims/reservation transitions, provider/network access, Task #51/#53/#54 execution, scheduler/worker/policy activation, credential/config changes, deployment/publication or W06–W10.
 
-**Next safe boundary:** finish exact-head certification of PR #444 and merge only the exact tested head under the repository workflow. W06 remains separately gated. Production migrations 0005/0006 and Production control initialization/claims remain separately authorized. Generic `continue` must not apply Production DDL/DML, create Production reservation/control/claim rows, call providers, execute Task #51/#53/#54, activate policy/workers, alter credentials/config, deploy or publish.
+**Next safe boundary:** documentation-only post-merge continuity reconciliation under issue #449, then W06 policy-aware mutation-free preflight as a separately gated engineering work package. Production migrations 0005/0006 and Production control initialization/claims remain separately authorized. Generic `continue` must not implement/activate W06, apply Production DDL/DML, create Production reservation/control/claim rows, call providers, execute Task #51/#53/#54, activate policy/workers, alter credentials/config, deploy or publish.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
