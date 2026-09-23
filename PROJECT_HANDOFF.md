@@ -13,7 +13,7 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 engineering checkpoint:** W04 E1–E5 durable reservation/idempotency engineering is complete under issue #420 / PR #422; Production migration 0005 and W05 are separately gated.
+**Newest P8.8 checkpoint:** W04 E1–E5 durable reservation/idempotency engineering is complete under issue #420 / PR #422, and W05 durable mutation-control is now in specification/review only under issue #435 / PR #436; W05 implementation and all Production/runtime/provider boundaries remain blocked.
 
 W04 specification/review was certified under issue #418 / PR #419:
 - exact tested spec head: `2ac7373e9986874afe9e543863cfecc8d82732e0`;
@@ -42,7 +42,22 @@ Code-only head `209bd9a96489176942e501a20b6e4983c94f521a` passed CI #744 / run `
 
 **Production status:** migration 0005 is source/CI-certified only and is NOT applied to Production. No Production reservation row exists from W04 engineering.
 
-**Next safe boundaries:** W04 Production DDL requires a separate exact-SHA/tree/checksum authorization; W05 durable mutation-control bridge requires separate engineering authorization. Generic `continue` must not apply migration 0005, create Production reservation rows, implement W05, call providers, execute Task #51/#53/#54, activate policy/workers, alter credentials/config, deploy or publish.
+**W05 specification/review now open:** issue #435 / PR #436, branched from verified canonical main `6c796fcb33c07a0fbc41e119b8e533ed155e043f` / tree `1dbb7abf80c362f474caf114c5a32f1e656cc60d`.
+
+The W05 review defines only:
+- durable policy-mutation control state + append-only transition history, separate from P9.6 review artifacts and human action tables;
+- exact W03/W04 pair + durable control revision binding for a single immutable W05 claim;
+- atomic W04 `authorized -> claimed` transition under exact `running` control;
+- pause/drain/kill release of unclaimed `authorized` reservations only;
+- claimed/manual-intervention preservation until later certified no-dispatch or safety-closure evidence exists;
+- latched kill semantics and no ordinary killed resume;
+- database-clock/revision race handling and real PostgreSQL concurrency certification requirements;
+- strict separation between new forward mutation and post-side-effect safety closure;
+- no change to human Task #51/#54 semantics.
+
+W05 review does **not** authorize implementation, migration creation/application, Production DB access/write, control/claim rows, provider/network access, Task #51/#53/#54 execution, scheduler/worker/policy activation, credential/config changes, deployment/publication or W06–W10.
+
+**Next safe boundaries:** complete/certify the W05 specification PR only. After that, W05 engineering requires a separate explicit authorization. W04 Production DDL remains separately gated. Generic `continue` must not implement W05, create/apply migrations, apply migration 0005, create Production reservation/control/claim rows, call providers, execute Task #51/#53/#54, activate policy/workers, alter credentials/config, deploy or publish.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
