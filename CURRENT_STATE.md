@@ -1,25 +1,41 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W06 implementation
+## Active engineering checkpoint — P8.8 W07 single-action apply specification/review
 
-W06-E1–E5 implementation is authorized under issue #453 and is in engineering review on branch `p8-8-w06-preflight-implementation-453` from canonical base `2496b67d52075f10d32ac46b8914cb29cb4c73c8`.
+W06 specification and E1–E5 implementation are certified complete.
 
-Implemented scope on the branch:
-- E1 pure exact W01–W05 policy-preflight lineage verification and deterministic `p8-8-w06-policy-preflight-v1` / `p8-8-w06-no-dispatch-proof-v1` artifacts;
-- E2 behavior-preserving exported W02 byte-exact target-bound state-fingerprint helper and raw provider-observation contracts;
-- E3 explicit-URL, read-only W04/W05 snapshot store over the existing 41-table W05 schema, with PostgreSQL transaction time authoritative and no generic `DATABASE_URL` fallback;
-- E4 injected-transport Shopify Product SEO read adapter/orchestrator requiring a read-only `read_products` credential contract and rejecting write-capable credentials;
-- E5 unit/static safety coverage plus dedicated localhost-only PostgreSQL read/race certification through `P8_8_W06_EPHEMERAL_DATABASE_URL`, with table count required to remain exactly 41 before and after W06 certification.
+Final W06 certification:
+- implementation issue #453 / PR #458;
+- exact certified PR head: `6a2127d76a4234175041e9fe09b09120d621fe59`;
+- PR-head CI #885 / run `35888216255`: success;
+- merge/canonical main: `910058bca868b2d49333fd57c8ac7979cd41f53a`;
+- canonical tree: `6d66098c713152de5ea5e8c51fbdb1a6ccf6d111`;
+- post-merge CI #913 / run `35890798168`: success;
+- Replit main exact-synced to the merge, ahead/behind `0/0`, clean, no extra commits;
+- no deployment/publication, Production migrations/DDL/DML, live provider access, provider write, Task #51/#53/#54 execution, policy/scheduler/worker activation, or credential/config change occurred.
 
-W06 remains mutation-free and non-dispatchable. It does not add a migration/table, does not perform claim release/consume DML, does not call a provider mutation, does not invoke Task #51/#53/#54, does not open `PUBLIC_SITE_WRITES_ENABLED`, and does not create W07 authority.
+W07 specification/review is now active under issue #461 on branch `p8-8-w07-single-action-apply-spec-461`.
 
-Current canonical implementation branch head before PR certification: `2b67b47782a9c65de231bc0f24612523d73caaa0`. GitHub `main` remains `2496b67d52075f10d32ac46b8914cb29cb4c73c8` until a separately authorized merge.
+The W07 review defines:
+- exact W06 `ready_for_w07` handoff plus independent W01–W06 revalidation;
+- a dedicated policy execution provenance distinct from Task #51/#53/#54;
+- a future two-phase durable dispatch fence: `reserved_prewrite -> dispatch_started`;
+- W04 remains `claimed` throughout nonterminal provider/verification/rollback work;
+- `claimed -> released` only for proven no-dispatch closure;
+- `claimed -> consumed` only after a spent forward attempt reaches a safe terminal no-write/live/rollback-verified state;
+- `claimed -> manual_intervention` for uncertain/unsafe closure;
+- exact W02 after bytes for forward mutation and exact W02 before bytes for rollback; Task #53 normalization is forbidden in the policy mutation path;
+- at most one forward mutation attempt and at most one rollback mutation attempt;
+- exact provider after/before state plus independent P8.4-equivalent provider+storefront verification;
+- pause/drain/kill split between blocking new forward work and permitting mandatory safety closure after side effect becomes possible;
+- future dedicated migration 0007 with `policy_mutation_dispatches` and `policy_mutation_dispatch_events`;
+- future dedicated policy execution gate, default false, in addition to `PUBLIC_SITE_WRITES_ENABLED`;
+- W07 engineering remains default-off and live Stage 1 activation remains W10.
 
-Replit has one earlier unpushed local W06 attempt commit based on the same canonical base; its push failed and it is non-canonical. It must be discarded/reconciled against the final certified GitHub branch/merge rather than imported. No live database/provider/runtime/deployment/config operation occurred from that local attempt.
+Specification document:
+- `docs/p8-8-w07-policy-single-action-apply-spec.md`.
 
-**Still out of scope:** Production migrations 0005/0006, Production DDL/DML/control/reservation/claim changes, live Production provider reads, all provider writes, scheduler/worker/policy/autonomous activation, credentials/scopes/config changes, deployment/publication, and W07–W10.
-
-This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
+**This phase is specification/review only.** W07 implementation, migration 0007 creation/application, Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live provider reads, provider/public-site writes, rollback writes, Task #51/#53/#54 execution, policy/scheduler/worker/autonomous activation, credentials/scopes/config changes, deployment/publication, and W08–W10 remain out of scope.
 
 ## Active engineering checkpoint — P8.8 W06 policy-aware mutation-free preflight specification/review
 

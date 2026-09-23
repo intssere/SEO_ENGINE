@@ -13,6 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
+### P8.8 W07 specification/review — issue #461
+
+Canonical GitHub `main` is `910058bca868b2d49333fd57c8ac7979cd41f53a` / tree `6d66098c713152de5ea5e8c51fbdb1a6ccf6d111`.
+
+W06 is fully certified and merged:
+- PR #458 exact head `6a2127d76a4234175041e9fe09b09120d621fe59`;
+- PR-head CI #885 success;
+- merge `910058bca868b2d49333fd57c8ac7979cd41f53a`;
+- post-merge CI #913 success;
+- Replit main exact, `0/0`, clean.
+
+W07 review branch: `p8-8-w07-single-action-apply-spec-461`.
+
+W07 is being specified as the default-off policy apply/safety-closure layer. The key contract is a durable two-phase dispatch fence before any provider write, exact byte-preserving W02 forward/rollback values, at most one forward attempt and one rollback attempt, W04 held `claimed` until terminal closure, independent exact-provider plus provider/storefront verification, and manual intervention for any unresolved side-effect ambiguity.
+
+Future W07 migration 0007 is proposed to own only policy dispatch state/events. It is not created/applied by the specification phase. Live policy execution remains W10.
+
+**Current safe boundary:** complete W07 specification/review and exact-head PR certification only. Generic `continue` must not implement W07, create/apply migration 0007, apply Production migrations 0005/0006, mutate Production policy rows, call live providers, perform provider/rollback writes, execute Task #51/#53/#54, activate policy/scheduler/worker/autonomy, change credentials/config/gates, deploy or publish.
+
+
 ### P8.8 W06 implementation — issue #453
 
 W06-E1–E5 engineering is now implemented on GitHub branch `p8-8-w06-preflight-implementation-453` from canonical base `2496b67d52075f10d32ac46b8914cb29cb4c73c8` and is awaiting PR/exact-head CI certification.
@@ -24,9 +44,7 @@ The current canonical implementation branch head before PR certification is `2b6
 Production migrations 0005/0006, Production DDL/DML/control/reservation/claim changes, live Production provider reads, provider writes, Task #51/#53/#54 execution, scheduler/worker/policy/autonomous activation, credential/scope/config changes, deployment/publication, and W07–W10 remain outside issue #453.
 
 
-**Newest P8.8 checkpoint:** W04 and W05 engineering are certified; W06 policy-aware mutation-free preflight specification/review is authorized under issue #451 and is being defined on a dedicated branch. The W06 contract requires exact W01–W05 lineage, the exact same durable running control epoch accepted by the W05 claim, a read-only authoritative Shopify Product meta-description observation reconstructed in the byte-exact W02 state-fingerprint domain, a bounded no-dispatch proof, and release-eligibility projection only. W06 remains non-dispatchable and does not alter the human Task #51/#53/#54 path. W06 implementation, Production migrations/DDL/DML/control/claim changes, provider writes, runtime activation, deployment/publication, and W07–W10 remain blocked.
-
-W04 specification/review was certified under issue #418 / PR #419:
+**Newest P8.8 checkpoint:** W01–W06 are certified through canonical merge `910058bca868b2d49333fd57c8ac7979cd41f53a`. W07 specification/review is active under issue #461. W07 defines a policy-only two-phase dispatch fence, exact byte-preserving Product meta-description forward/rollback semantics, one-forward/one-rollback maximum, exact provider plus provider/storefront verification, and W04 `released`/`consumed`/`manual_intervention` closure mapping. W07 implementation and all live/Production activation remain separately gated.\n\nW04 specification/review was certified under issue #418 / PR #419:
 - exact tested spec head: `2ac7373e9986874afe9e543863cfecc8d82732e0`;
 - exact-head CI #737 / run `35843311585`: success;
 - merge/tree: `2c31f3e4a355ac1bb2715f201a5dc2148a3b99f7` / `76f4406258e092e4af3b6221860d88231ab60f0a`;
@@ -74,7 +92,7 @@ Final PR #444 closeout certification is complete: exact PR head `d4daaa6b1b25667
 
 W05 engineering does **not** authorize Production migrations 0005/0006, Production control initialization/claims/reservation transitions, provider/network access, Task #51/#53/#54 execution, scheduler/worker/policy activation, credential/config changes, deployment/publication or W06–W10.
 
-**Current safe boundary:** complete W06 specification/review under issue #451 and certify its exact PR head. After specification certification, W06-E1–E5 implementation requires a new explicit authorization. Production migrations 0005/0006 and Production control initialization/claims remain separately authorized. Generic `continue` must not implement/activate W06, perform live provider reads, apply Production DDL/DML, create or transition Production reservation/control/claim rows, call provider mutations, execute Task #51/#53/#54, activate policy/workers, alter credentials/config, deploy or publish.
+**Current safe boundary:** complete W07 specification/review under issue #461 and certify its exact PR head. W07 implementation, migration 0007, Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live provider reads/writes, Task #51/#53/#54 execution, policy/scheduler/worker activation, credential/config changes, deployment/publication and W08–W10 remain separately gated.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
