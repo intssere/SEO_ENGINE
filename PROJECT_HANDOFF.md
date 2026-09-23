@@ -13,6 +13,19 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
+### P8.8 W07 implementation — issue #471
+
+Canonical implementation base is GitHub main `57d4fc640f876b958d3ad87eca8391b1849a00bb` / tree `0909c686bddba21e3c82e5bc3cb2b4af6aec81b3`, after W07 spec closeout PR #464 and post-merge CI #950 succeeded.
+
+Implementation branch: `p8-8-w07-single-action-apply-implementation-471`.
+
+Authorized branch work is W07-E1–E5 only: deterministic W06→W07 contracts, additive migration 0007 source + dedicated dispatch/event store, exact byte-preserving injected Shopify Product SEO mutation adapter, independent verification/one-rollback safety closure, and localhost-only crash/replay/race certification. W04 remains claimed until safe terminal closure; forward and rollback writes are each at-most-once.
+
+No runtime route/scheduler/worker binding is authorized. Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch mutations, live provider access/writes, rollback writes, Task #51/#53/#54 execution, credentials/config/gates, deployment/publication and W08–W10 remain blocked.
+
+**Current safe boundary:** finish W07 implementation branch, exact-head CI certification, and review only. Merge remains separately authorized.
+
+
 ### P8.8 W07 specification certified — implementation gate next
 
 Canonical GitHub `main` is `15846991123b6664c37176b844550d4b0095b39a` / tree `94f2ccfa5b265e2ee0a8f470546428c1d6d7b9e1`.
