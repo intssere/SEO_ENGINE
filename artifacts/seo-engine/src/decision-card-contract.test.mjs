@@ -31,16 +31,16 @@ test("UGP-2.3 standard card grammar exposes every customer decision dimension", 
 });
 
 test("UGP-2.3 opportunity projection does not invent absent state", () => {
-  assert.match(model, /Expected impact is not exposed by this opportunity/);
+  assert.match(model, /Impact not available/);
   assert.match(model, /currentState: null/);
-  assert.match(component, /Measurement unavailable/);
+  assert.match(component, /Not measured/);
 });
 
 test("UGP-2.3 proposal table keeps review separate from execution and measurement", () => {
   assert.match(proposalTable, /Approved for review flow/);
   assert.match(proposalTable, /Review state does not authorize execution/);
   assert.match(proposalTable, /Governed execution path still applies/);
-  assert.match(proposalTable, /Measurement unavailable/);
+  assert.match(proposalTable, /Not measured/);
 });
 
 test("UGP-2.3 Opportunities uses decision cards while history remains tabular", () => {
