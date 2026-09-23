@@ -358,11 +358,35 @@ Review decision:
 - kill does not retroactively roll back already completed/verified historical actions, but an in-flight write observed after kill should default to restoration unless it was already terminal before kill;
 - any unresolved write/rollback uncertainty blocks further autonomous mutation for the site.
 
-P9.8 implementation remains blocked pending a deterministic P9.7→governed-proposal bridge, durable policy grants/provenance/idempotency, policy-aware Task #51/#54-compatible authorization/execution contracts, mutation-control persistence, P8.4–P8.6 certification and separately authorized schema/config work.
+The P8.8 engineering foundation now implements the deterministic P9.7→governed-proposal bridge, pure policy grant/evaluation, provenance-distinct policy authorization, durable W04 reservation/idempotency and durable W05 mutation-control/claim persistence in engineering source only. P9.8 autonomous execution remains blocked pending W06 policy-aware preflight, W07 apply semantics, W08 audit projection, W09 shadow certification, W10 separately authorized live activation, Production schema/config authorization and all provider/runtime gates.
 
 Initial future blast-radius proposal is shadow-only first, then at most one product-meta-description forward action per 24 hours/site with one active site mutation and a 14-day same-target cooldown. Expansion requires a new policy version and separate authorization; no stage automatically unlocks new fields/resources/scopes.
 
 P9.8 review completion does not authorize implementation or activation.
+
+### P8.8 W05 durable mutation-control bridge
+
+W05 materializes the mutation-specific durable control prerequisite identified by P9.8 without activating autonomous execution.
+
+Permanent architecture:
+- durable current mutation control is isolated in `policy_mutation_control_state`;
+- append-only transition provenance is isolated in `policy_mutation_control_events`;
+- exact W03/W04 + accepted control-revision claim provenance is isolated in `policy_mutation_claims`;
+- these tables never substitute for human `approvals`, human `actions`, Task #54 `deployments` or generic worker `jobs`;
+- migration 0006 creates schema only and inserts no default running control state;
+- missing durable mutation-control state therefore fails closed;
+- control precedence remains `kill > drain > pause > running`;
+- only durable `running` can admit a new W05 claim;
+- every control+reservation transaction locks the control row before the W04 reservation row, serializing claim-vs-control races;
+- exact W03/W04 pairing plus exact expected control revision/fingerprint is required before claim;
+- one immutable W05 claim and W04 `authorized -> claimed` transition occur atomically;
+- exact replay reuses the existing durable claim; a claimed W04 row without that claim is uncertain state;
+- pause/drain/kill may release only exact paired unclaimed `authorized`; `claimed` and `manual_intervention` stay blocking;
+- kill is a durable latch and ordinary resume is forbidden;
+- new forward mutation remains distinct from required provider verification/rollback/manual-intervention safety closure after a possible side effect;
+- W05 itself has no provider read/write, public-site write, Task #51/#53/#54 execution, scheduler/worker binding, automatic route/startup activation or deployment/publication authority.
+
+The runtime schema recognizer may recognize the 41-table W05 engineering shape but does not apply migration 0006 automatically. Production migrations 0005/0006 and durable control initialization remain separate authorization boundaries.
 
 ### P10.1 unified change timeline
 
