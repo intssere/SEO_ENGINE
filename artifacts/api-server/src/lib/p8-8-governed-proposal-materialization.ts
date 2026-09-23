@@ -606,6 +606,10 @@ export function materializeP88W02GovernedProposal(
   }
 
   const field = preview.fields[0]!;
+  const fieldStatus = field.status;
+  if (fieldStatus === "unchanged") {
+    throw new Error("p88_w02_changed_field_required");
+  }
   const beforeValue = field.currentValue;
   const afterValue = field.proposedValue;
 
@@ -669,7 +673,7 @@ export function materializeP88W02GovernedProposal(
       previewFingerprint: preview.previewFingerprint,
       previewKey: preview.previewKey,
       fieldKey: "meta_description" as const,
-      fieldStatus: field.status,
+      fieldStatus,
     },
     lineage: {
       opportunityId: recommendation.lineage.opportunityId,
@@ -728,7 +732,7 @@ export function materializeP88W02GovernedProposal(
       previewFingerprint: preview.previewFingerprint,
       previewKey: preview.previewKey,
       fieldKey: "meta_description" as const,
-      fieldStatus: field.status,
+      fieldStatus,
     },
     lineage: {
       opportunityId: recommendation.lineage.opportunityId,
