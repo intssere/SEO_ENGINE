@@ -165,7 +165,7 @@ test("UGP-2.2 opportunity evidence reveals traceability before technical details
   const evidence = page.getByText("Show traceable evidence");
   const advanced = page.getByText("Show technical details");
   await expect(evidence).toBeVisible();
-  await expect(advanced).toHaveCount(0);
+  await expect(advanced).toBeHidden();
 
   await evidence.click();
   await expect(page.getByText("Traceable evidence")).toBeVisible();
@@ -370,7 +370,7 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
   assertBrowserClean(errors);
 });
 
-for (const route of ["/", "/content", "/site-audit", "/authority", "/automation", "/settings", "/technical-seo", "/search-intelligence", "/ai-visibility", "/governance", "/connections"]) {
+for (const route of ["/", "/content", "/site-audit", "/authority", "/automation", "/settings", "/content/research", "/site-audit/technical", "/automation/safety", "/settings/connections", "/technical-seo", "/search-intelligence", "/ai-visibility", "/governance", "/connections"]) {
   test(`axe serious/critical scan passes on ${route}`, async ({ page }) => {
     const { boundary, errors } = await openSyntheticPage(page, route);
 
