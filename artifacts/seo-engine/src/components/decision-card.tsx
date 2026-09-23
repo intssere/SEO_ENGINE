@@ -1,11 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "wouter";
-import { StatusBadge } from "./status-badge";
-import { riskTone } from "@/lib/status-grammar";
 import type { DecisionCardModel } from "@/lib/decision-card-model";
-
-const titleize = (value: string) =>
-  value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 export function DecisionCard({
   model,
@@ -18,17 +13,7 @@ export function DecisionCard({
   return (
     <article className="card approvalReviewCard" aria-labelledby={titleId}>
       <header className="approvalCardHead">
-        <div>
-          <p className="eyebrow">{model.subtitle}</p>
-          <h2 id={titleId}>{model.problem}</h2>
-          {model.url ? <small>{model.url}</small> : null}
-        </div>
-        <div className="approvalBadges">
-          <StatusBadge tone={riskTone(model.risk)}>
-            {titleize(model.risk)} risk
-          </StatusBadge>
-          <StatusBadge tone="info">{Math.round(model.confidence * 100)}% confidence</StatusBadge>
-        </div>
+        <h2 id={titleId}>{model.problem}</h2>
       </header>
 
       <div className="approvalDetailsGrid">
@@ -37,8 +22,8 @@ export function DecisionCard({
           <p>{model.impact}</p>
         </section>
         <section>
-          <span className="approvalLabel">Priority</span>
-          <p><b>{model.score.toFixed(1)}</b> score</p>
+          <span className="approvalLabel">Risk</span>
+          <p><b>{model.risk}</b></p>
         </section>
       </div>
 
@@ -63,17 +48,15 @@ export function DecisionCard({
         <section>
           <span className="approvalLabel">Review / apply</span>
           <p><b>{model.workflowLabel}</b></p>
-          <p>This card does not execute changes.</p>
         </section>
         <section>
           <span className="approvalLabel">Measurement</span>
           <p><b>Measurement unavailable</b></p>
-          <p>No verified outcome is exposed.</p>
         </section>
       </div>
 
       <div className="approvalActions">
-        <StatusBadge>PREVIEW AFTER PROPOSAL</StatusBadge>
+        <span className="approvalLabel">Preview after proposal</span>
         <Link href="/automation" className="customerHubAction">Review workflow</Link>
       </div>
     </article>
