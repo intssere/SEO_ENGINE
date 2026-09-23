@@ -236,9 +236,12 @@ test("W07 retained-live verification requires exact provider state and both inde
   assert.equal(assessment.status, "verified");
 
   const noStorefront = buildP88W07VerificationEvidence({
-    ...evidence,
+    status: evidence.status,
+    providerRawValue: evidence.providerRawValue,
+    providerObservedFingerprint: evidence.providerObservedFingerprint,
+    providerVerified: evidence.providerVerified,
     storefrontVerified: false,
-    verificationFingerprint: undefined as never,
+    failureCategories: evidence.failureCategories,
   });
   const failed = assessP88W07Verification({
     target: f.lineage.w02Materialization.target,
