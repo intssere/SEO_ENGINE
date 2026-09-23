@@ -23,7 +23,7 @@ import {
 export const P8_8_W07_EXPECTED_TABLE_COUNT = 43 as const;
 
 type Sql = ReturnType<typeof postgres>;
-type SqlExecutor = Parameters<Parameters<Sql["begin"]>[0]>[0];
+type SqlExecutor = Pick<Sql, "unsafe">;
 
 type ControlRow = {
   site_id: string;
