@@ -156,6 +156,11 @@ export type P88W07StartResult = Readonly<{
   receipt: P88W07DispatchReceipt;
 }>;
 
+export type P88W07RollbackStartResult = Readonly<{
+  kind: "started_new" | "already_started_or_terminal";
+  receipt: P88W07DispatchReceipt;
+}>;
+
 const DISPATCH_COLUMNS = [
   "dispatch_id",
   "dispatch_version",
@@ -883,6 +888,99 @@ export class P88W07DispatchStore {
     }
   }
 
+  async startRollback(input: {
+    intent: P88W07ExecutionIntent;
+    reason: string;
+  }): Promise<P88W07RollbackStartResult> {
+    const sql = this.sqlFactory(this.databaseUrl);
+    try {
+      await this.assertSchemaAndIdentity(sql, input.intent.siteId);
+      return await sql.begin(async (tx) => {
+        const authority = await this.readLockedAuthority(tx, input.intent);
+        if (authority.reservation.status !== "claimed") {
+          throw new Error("p88_w07_reservation_not_claimed");
+        }
+
+        const dispatch = await this.selectDispatch(tx, input.intent);
+        if (!dispatch || !dispatchMatchesIntent(dispatch, input.intent)) {
+          throw new Error("p88_w07_dispatch_missing_or_mismatched");
+        }
+
+        if (dispatch.state !== "rollback_required") {
+          if (Number(dispatch.rollback_attempt_count) === 1) {
+            return Object.freeze({
+              kind: "already_started_or_terminal" as const,
+              receipt: receipt(dispatch),
+            });
+          }
+          throw new Error("p88_w07_rollback_not_startable");
+        }
+        if (
+          Number(dispatch.forward_attempt_count) !== 1
+          || Number(dispatch.rollback_attempt_count) !== 0
+        ) {
+          throw new Error("p88_w07_rollback_attempt_state_invalid");
+        }
+
+        const now = await this.databaseNow(tx);
+        const nextRevision = Number(dispatch.revision) + 1;
+        const updated = await tx.unsafe<DispatchRow[]>(
+          "UPDATE policy_mutation_dispatches SET state='rollback_started',"
+            + "revision=$2,rollback_attempt_count=1,"
+            + "updated_at=$3::timestamptz "
+            + "WHERE dispatch_id=$1 AND state='rollback_required' "
+            + "AND forward_attempt_count=1 AND rollback_attempt_count=0 "
+            + "AND revision=$4 "
+            + "RETURNING dispatch_id,dispatch_version,execution_id,"
+            + "execution_fingerprint,dispatch_fingerprint,site_id::text AS site_id,"
+            + "policy_id,policy_version,policy_fingerprint,evaluation_id,"
+            + "evaluation_fingerprint,materialization_id,materialization_fingerprint,"
+            + "proposal_id,proposal_fingerprint,w03_authorization_id,"
+            + "w03_authorization_fingerprint,policy_action_id,reservation_id,"
+            + "reservation_fingerprint,claim_id,claim_fingerprint,w06_preflight_id,"
+            + "w06_preflight_fingerprint,credential_profile_id,"
+            + "claimed_control_revision,claimed_control_fingerprint,provider,domain,"
+            + "resource_kind,resource_gid,target_url,action_type,field,"
+            + "required_provider_scope,before_fingerprint,after_fingerprint,state,"
+            + "revision,forward_attempt_count,rollback_attempt_count,"
+            + "public_write_occurrence,provider_request_id,"
+            + "provider_operation_fingerprint,provider_response_fingerprint,"
+            + "final_closure_reason,created_at,updated_at",
+          [
+            input.intent.dispatchId,
+            nextRevision,
+            now.toISOString(),
+            Number(dispatch.revision),
+          ],
+        );
+        if (!updated[0]) throw new Error("p88_w07_rollback_start_race");
+
+        await this.insertEvent(tx, {
+          intent: input.intent,
+          fromRevision: Number(dispatch.revision),
+          fromState: dispatch.state,
+          toRevision: nextRevision,
+          toState: "rollback_started",
+          reason: input.reason,
+          publicWriteOccurrence: dispatch.public_write_occurrence,
+          rollbackWriteOccurrence: "possible",
+          effectiveAt: now.toISOString(),
+        });
+        return Object.freeze({
+          kind: "started_new" as const,
+          receipt: receipt(updated[0]),
+        });
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("p88_w07_")) {
+        throw error;
+      }
+      throw new Error("p88_w07_rollback_start_state_uncertain");
+    } finally {
+      await sql.end({ timeout: 1 }).catch(() => undefined);
+    }
+  }
+
   async transition(input: {
     intent: P88W07ExecutionIntent;
     expectedStates: readonly P88W07DispatchState[];
@@ -915,19 +1013,18 @@ export class P88W07DispatchStore {
           throw new Error("p88_w07_dispatch_missing_or_mismatched");
         }
 
-        if (dispatch.state === input.toState) return receipt(dispatch);
+        if (dispatch.state === input.toState) {
+          throw new Error("p88_w07_transition_already_applied");
+        }
         if (!input.expectedStates.includes(dispatch.state)) {
           throw new Error("p88_w07_transition_state_conflict");
         }
         assertP88W07TransitionAllowed(dispatch.state, input.toState);
 
-        let forwardAttemptCount = Number(dispatch.forward_attempt_count);
-        let rollbackAttemptCount = Number(dispatch.rollback_attempt_count);
+        const forwardAttemptCount = Number(dispatch.forward_attempt_count);
+        const rollbackAttemptCount = Number(dispatch.rollback_attempt_count);
         if (input.toState === "rollback_started") {
-          if (rollbackAttemptCount !== 0 || forwardAttemptCount !== 1) {
-            throw new Error("p88_w07_rollback_attempt_already_spent");
-          }
-          rollbackAttemptCount = 1;
+          throw new Error("p88_w07_rollback_start_requires_dedicated_fence");
         }
 
         const terminalStatus = p88W07ReservationTerminalStatus(input.toState);
