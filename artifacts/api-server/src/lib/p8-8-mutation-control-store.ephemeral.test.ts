@@ -285,7 +285,7 @@ test("P8.8 W05 PostgreSQL control/claim bridge preserves durable race and safety
         initialized.projection.state,
       );
 
-      const [claim, transition] = await Promise.all([
+      const [claim, transitionResult] = await Promise.all([
         store.claim(input),
         store.transitionControl({
           siteId,
@@ -297,21 +297,28 @@ test("P8.8 W05 PostgreSQL control/claim bridge preserves durable race and safety
             w03Authorization: scenario.input.w03Authorization,
             w04Receipt: receipt,
           },
-        }).catch((error: unknown) => error),
+        }).then(
+          (value) => ({ ok: true as const, value }),
+          (error: unknown) => ({ ok: false as const, error }),
+        ),
       ]);
 
       assert.ok(
         ["claimed_new", "reservation_not_claimable"].includes(claim.kind),
       );
-      if (transition instanceof Error) {
+      if (!transitionResult.ok) {
+        assert.ok(transitionResult.error instanceof Error);
         assert.match(
-          transition.message,
+          transitionResult.error.message,
           /p88_w05_control_revision_conflict/,
         );
         assert.equal(claim.kind, "claimed_new");
       } else {
-        assert.equal(transition.state.revision, 2);
-        assert.equal(transition.state.mode === "running", false);
+        assert.equal(transitionResult.value.state.revision, 2);
+        assert.equal(
+          transitionResult.value.state.mode === "running",
+          false,
+        );
       }
 
       const control = await store.readControl(siteId);
