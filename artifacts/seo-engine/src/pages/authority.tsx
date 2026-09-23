@@ -26,14 +26,14 @@ export default function AuthorityPage() {
         {
           title: "Outreach",
           description:
-            "Earned-link outreach, unlinked brand mentions, broken-link opportunities, resource pages, and editorial outreach will be managed here.",
+            "Manage earned-link outreach, brand mentions, broken-link opportunities, and editorial outreach here.",
           actionLabel: "Outreach workflow is being added",
           status: "coming_soon",
         },
         {
           title: "Digital PR opportunities",
           description:
-            "Evidence-backed PR and citation opportunities will appear here when the supporting discovery and outreach connectors are implemented.",
+            "PR and citation opportunities will appear here as discovery and outreach connectors are added.",
           actionLabel: "Opportunity workflow is being added",
           status: "coming_soon",
         },
