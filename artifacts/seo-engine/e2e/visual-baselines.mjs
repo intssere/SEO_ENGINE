@@ -1,7 +1,7 @@
 export const VISUAL_BASELINES = {
   "command-center-desktop": {
     viewport: { width: 1440, height: 1000 },
-    hash: "101c841a94c0904c856b91189319852997189319823190f39ab48a3488348530e3ff1ff0e01fc0001dcc6002dbf8422199dec4001677987d57d6e009d41e2029",
+    hash: "101c881a9420904c856b9118931995291318131902f711510ab4162508340030e3ff1ff0e00fc0001dcc2002c221dbff00001f95d6733d9c17d70800001b2039",
     maxDistance: 32,
   },
   "command-center-tablet": {
@@ -11,7 +11,7 @@ export const VISUAL_BASELINES = {
   },
   "command-center-mobile": {
     viewport: { width: 390, height: 844 },
-    hash: "4e01aa91c3e3c00399a0b160a9a0ec00d2b0a718ee31d801c018aa99ce015b0100000000a60fffffffff000f2cb57f0300067f800078fe07001e7fc08001807f",
+    hash: "4e01aa91c3e3c0039dc0d964c240b1b0e8b0e018e631d0010001ee986ac1a80100000000a60fcfffffff001c08dc160301f81006fff1800183ff7fcc8021fc1f",
     maxDistance: 32,
   },
   "audit-desktop": {

@@ -1,5 +1,24 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState, createContext, useContext } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  createContext,
+  useContext,
+} from "react";
 import { Link, useLocation } from "wouter";
+import {
+  BarChart3,
+  FileText,
+  House,
+  Lightbulb,
+  Link2,
+  SearchCheck,
+  Settings2,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 import { AskModal } from "./ask-modal";
 import { useGetDashboard } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth-client";
@@ -11,22 +30,29 @@ export const useAskModal = () => useContext(AskModalContext);
 type NavigationItem = {
   label: string;
   path: string;
-  status?: "planned";
+  aliases?: string[];
 };
 
-type NavigationDomain = {
-  domain: string;
-  items: NavigationItem[];
+const NAV_ITEMS = navigation as NavigationItem[];
+
+const NAV_ICON_BY_PATH: Record<string, LucideIcon> = {
+  "/": House,
+  "/opportunities": Lightbulb,
+  "/content": FileText,
+  "/site-audit": SearchCheck,
+  "/authority": Link2,
+  "/automation": Sparkles,
+  "/performance": BarChart3,
+  "/settings": Settings2,
 };
 
-const NAV_DOMAINS = navigation as NavigationDomain[];
-const NAV_ITEMS = NAV_DOMAINS.flatMap((domain) => domain.items);
-
-function navigationDomainId(domain: string) {
-  return `nav-domain-${domain.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+function isNavigationItemActive(item: NavigationItem, location: string) {
+  if (location === item.path) return true;
+  if (item.path !== "/" && location.startsWith(item.path + "/")) return true;
+  return item.aliases?.includes(location) ?? false;
 }
 
-function NavigationGroups({
+function PrimaryNavigation({
   location,
   approvalsPending,
   onNavigate,
@@ -37,34 +63,33 @@ function NavigationGroups({
 }) {
   return (
     <nav className="primaryNav" aria-label="Primary navigation">
-      {NAV_DOMAINS.map((domain) => {
-        const domainId = navigationDomainId(domain.domain);
-        return (
-          <div className="navDomain" key={domain.domain} role="group" aria-labelledby={domainId}>
-            <p className="navDomainLabel" id={domainId}>{domain.domain}</p>
-            <div className="navDomainItems">
-              {domain.items.map((item) => {
-                const isActive = location === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    href={item.path}
-                    className={isActive ? "active" : ""}
-                    aria-current={isActive ? "page" : undefined}
-                    onClick={onNavigate}
-                  >
-                    <span className="navLinkText">
-                      {item.label}
-                      {item.label === "Approvals" && approvalsPending ? ` · ${approvalsPending}` : ""}
-                    </span>
-                    {item.status === "planned" ? <span className="navStatus">Planned</span> : null}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+      <ul className="navList">
+        {NAV_ITEMS.map((item) => {
+          const isActive = isNavigationItemActive(item, location);
+          const Icon = NAV_ICON_BY_PATH[item.path] ?? House;
+          const pending =
+            item.path === "/automation" && approvalsPending
+              ? approvalsPending
+              : 0;
+
+          return (
+            <li key={item.path}>
+              <Link
+                href={item.path}
+                className={isActive ? "active" : ""}
+                aria-current={isActive ? "page" : undefined}
+                onClick={onNavigate}
+              >
+                <Icon className="navIcon" aria-hidden="true" />
+                <span className="navLinkText">
+                  {item.label}
+                  {pending ? ` · ${pending}` : ""}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }
@@ -120,13 +145,12 @@ export function Layout({ children }: { children: ReactNode }) {
         mainContentRef.current?.focus({ preventScroll: true });
       });
     }
-    const activeItem = NAV_ITEMS.find((item) => item.path === location);
+
+    const activeItem = NAV_ITEMS.find((item) =>
+      isNavigationItemActive(item, location),
+    );
     if (activeItem) {
       document.title = `${activeItem.label} | SEO Engine`;
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) {
-        metaDesc.setAttribute("content", `View ${activeItem.label} on SEO Engine, your AI command center.`);
-      }
     }
   }, [location]);
 
@@ -139,11 +163,11 @@ export function Layout({ children }: { children: ReactNode }) {
             <span className="brandMark" aria-hidden="true">S</span>
             <div>
               <strong>SEO ENGINE</strong>
-              <small>AI SEO Command Center</small>
+              <small>Search Growth Platform</small>
             </div>
           </div>
 
-          <NavigationGroups
+          <PrimaryNavigation
             location={location}
             approvalsPending={data?.approvalsPending}
           />
@@ -151,7 +175,9 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="sidebarFoot">
             {auth.enforcementEnabled && auth.authenticated && auth.user ? (
               <div className="mb-3 border-b border-[#24344f] pb-3 text-xs leading-5 text-[#9fb0c9]">
-                <strong className="block truncate text-[#dce6f4]">{auth.user.displayName || auth.user.email}</strong>
+                <strong className="block truncate text-[#dce6f4]">
+                  {auth.user.displayName || auth.user.email}
+                </strong>
                 <span className="block truncate">{auth.user.email}</span>
                 <span className="uppercase tracking-wide">{auth.user.role}</span>
                 <button
@@ -164,13 +190,16 @@ export function Layout({ children }: { children: ReactNode }) {
               </div>
             ) : null}
             {isLoading ? (
-              <span className="text-[#7f91af]">Loading state...</span>
+              <span className="text-[#7f91af]">Loading workspace...</span>
             ) : data ? (
               <>
-                <span aria-hidden="true" className={`statusDot ${data.state === "live" ? "" : "offline"}`} />
-                {data.state === "live" ? "Engine online" : "Data unavailable"}
+                <span
+                  aria-hidden="true"
+                  className={`statusDot ${data.state === "live" ? "" : "offline"}`}
+                />
+                {data.state === "live" ? "Workspace online" : "Data unavailable"}
                 <br />
-                <small>Guarded autonomy</small>
+                <small>Safety controls active</small>
               </>
             ) : (
               <span className="text-[#7f91af]">Offline</span>
@@ -184,7 +213,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <span className="brandMark" aria-hidden="true">S</span>
               <div>
                 <strong>SEO ENGINE</strong>
-                <small>Navigation</small>
+                <small>Search workspace</small>
               </div>
             </div>
             <button
@@ -204,7 +233,7 @@ export function Layout({ children }: { children: ReactNode }) {
             className="mobileNavPanel"
             hidden={!isMobileNavOpen}
           >
-            <NavigationGroups
+            <PrimaryNavigation
               location={location}
               approvalsPending={data?.approvalsPending}
               onNavigate={() => setIsMobileNavOpen(false)}

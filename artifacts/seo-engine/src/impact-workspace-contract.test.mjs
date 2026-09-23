@@ -12,12 +12,12 @@ const app = readFileSync(join(here, "App.tsx"), "utf8");
 const navigation = JSON.parse(readFileSync(join(here, "navigation.json"), "utf8"));
 const packageJson = JSON.parse(readFileSync(join(here, "..", "package.json"), "utf8"));
 
-test("P10.7 preserves the Impact route while P12.1 keeps it engineering-only", () => {
+test("UGP-2.1 preserves Impact as an advanced surface under Performance", () => {
   assert.match(app, /<Route path="\/impact" component=\{ImpactPage\}/);
-  const primaryPaths = navigation.flatMap((group) =>
-    group.items.map((item) => item.path),
-  );
+  assert.match(app, /<Route path="\/performance\/impact" component=\{ImpactPage\}/);
+  const primaryPaths = navigation.map((item) => item.path);
   assert.equal(primaryPaths.includes("/impact"), false);
+  assert.equal(primaryPaths.includes("/performance"), true);
 });
 
 test("P10.7 is visibly synthetic, read-only, non-causal and non-executable", () => {
