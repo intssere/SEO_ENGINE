@@ -171,7 +171,7 @@ test("UGP-2.1 customer-facing surfaces do not expose engineering task identifier
 test("UGP-2.1 keeps unavailable and future capability states explicit", () => {
   const source = customerSources.join("\n");
   assert.match(source, /COMING NEXT/);
-  assert.match(source, /NOT CONNECTED/);
+  assert.match(source, /UNAVAILABLE/);
   assert.match(source, /PREVIEW/);
   assert.match(source, /No ranking metrics are invented/);
 });
