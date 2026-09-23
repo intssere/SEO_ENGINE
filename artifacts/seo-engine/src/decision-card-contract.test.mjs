@@ -40,7 +40,7 @@ test("UGP-2.3 proposal table keeps review separate from execution and measuremen
   assert.match(proposalTable, /Approved for review flow/);
   assert.match(proposalTable, /Review state does not authorize execution/);
   assert.match(proposalTable, /Governed execution path still applies/);
-  assert.match(proposalTable, /Not measured/);
+  assert.match(proposalTable, /Measurement unavailable/);
 });
 
 test("UGP-2.3 Opportunities uses decision cards while history remains tabular", () => {
