@@ -163,8 +163,8 @@ test("pending approvals are surfaced as human-review warning", () => {
   const model = buildCommandCenterModel(fixture({ approvalsPending: 3 }));
   const card = model.cards.find((item) => item.id === "decisions");
   assert.equal(card?.tone, "warning");
-  assert.equal(card?.href, "/approvals");
-  assert.match(card?.detail ?? "", /human review/i);
+  assert.equal(card?.href, "/automation");
+  assert.match(card?.detail ?? "", /waiting for review/i);
 });
 
 test("regressions fail verification and measurement states visibly", () => {
