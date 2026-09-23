@@ -35,10 +35,10 @@ test("UGP-2.3 projects source-backed opportunity decision state deterministicall
   assert.equal(first.workflowLabel, "Recommendation only");
 });
 
-test("UGP-2.3 preserves explicit workflow state without implying execution", () => {
+test("UGP-2.3 exposes authorization without inferring workflow from optional status", () => {
   assert.equal(
     buildOpportunityDecisionCard({ ...base, status: "planned" }).workflowLabel,
-    "planned",
+    "Recommendation only",
   );
   assert.equal(
     buildOpportunityDecisionCard({
