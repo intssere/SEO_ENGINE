@@ -406,9 +406,17 @@ function rowMatches(
   );
 }
 
+type P88W04ExactReplayKind =
+  | "existing_authorized"
+  | "already_claimed"
+  | "already_consumed"
+  | "already_released"
+  | "already_expired"
+  | "manual_intervention_required";
+
 function exactReplayKind(
   status: P88W04DurableReservationStatus,
-): P88W04ReserveResult["kind"] {
+): P88W04ExactReplayKind {
   if (status === "authorized") return "existing_authorized";
   if (status === "claimed") return "already_claimed";
   if (status === "consumed") return "already_consumed";
