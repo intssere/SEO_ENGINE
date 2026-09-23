@@ -5,12 +5,12 @@ export default function SiteAuditHubPage() {
     <CustomerDomainHub
       eyebrow="SITE HEALTH"
       title="Site Audit"
-      description="Find technical issues that can limit crawling, indexing, relevance, and site quality, then inspect the evidence before taking action."
+      description="Find crawl, index, metadata, and site-quality issues."
       cards={[
         {
           title: "Technical audit",
           description:
-            "Review current technical findings, severity, affected URLs, evidence quality, and crawl-certification coverage.",
+            "Review findings, severity, affected URLs, and crawl coverage.",
           href: "/site-audit/technical",
           actionLabel: "Open technical audit",
           status: "available",
@@ -18,7 +18,7 @@ export default function SiteAuditHubPage() {
         {
           title: "Crawl coverage",
           description:
-            "Inspect the crawl coverage currently exposed by the certified read model. Full URL inventory remains limited until its frontend read endpoint is available.",
+            "Inspect certified crawl coverage and current URL visibility.",
           href: "/site-audit/technical",
           actionLabel: "Review crawl coverage",
           status: "preview",
@@ -26,7 +26,7 @@ export default function SiteAuditHubPage() {
         {
           title: "Internal links",
           description:
-            "Orphan detection, internal-link graph analysis, and anchor-text distribution remain visible as a capability without fabricated live results.",
+            "Review internal-link capability without fabricated live results.",
           href: "/site-audit/internal-links",
           actionLabel: "View internal-link status",
           status: "unavailable",
