@@ -2,47 +2,44 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W01 pure policy grant/evaluation complete / W02 separately gated
+## Active engineering checkpoint — P8.8 W01 complete / W02 specification-review active / implementation blocked
 
-P8.8 specification/review is certified complete under issue #406 / PR #407.
+P8.8 W01 is certified complete under issue #408 / PR #409.
 
-Specification certification:
-- specification head: `8b4a25c15be91c61910b397762a99bb004963bda`;
-- exact-head CI #704 / run `35776363403`: success;
-- merge/tree: `3b462520a59cdb29318773fde4cd36592ddc27c3` / `f99095e5e4f4514f8c3c8ffa6091ceaf89eacd45`;
-- post-merge CI #705 / run `35777100907`: success;
-- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, no republish/runtime/provider/database/config/migration/scheduler/worker activity.
+Final W01 certification:
+- final tested PR head: `af1416b0fc71019f758b1e7853a7342faed7f3a6`;
+- exact-head CI #712 / run `35827410674`: success;
+- merge/tree: `e59aba2c10f9c2976fcf5da4987312f1525313d4` / `221303f6c37c8084171c2c5f7fd02ddafda4a6d1`;
+- post-merge main CI #713 / run `35828075367`: success;
+- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, no republish/runtime/provider/database/config/migration/scheduler/worker/policy activation.
 
-P8.8 W01 is complete under issue #408 / PR #409.
+W02 specification/review is tracked by issue #410.
 
-W01 implements only a pure, deterministic, default-off policy grant/admission library for the exact initial class:
+The W02 review resolves an important identity gap: certified P9.7 recommendation artifacts and P6.6 changed previews do not carry an authoritative Shopify Product GID or canonical product URL. W02 therefore must not infer or discover provider identity. It requires an explicit caller-supplied, fingerprinted Product target binding.
 
-`shopify.product.seo.meta_description`
+The W02 specification defines a future pure deterministic bridge from:
+- exact P9.7 `proposal_review`;
+- exact certified P6.6 changed preview;
+- explicit caller-supplied target binding;
 
-W01 now provides:
-- an immutable/deep-frozen in-code policy grant;
-- deterministic policy fingerprints and integrity checks;
-- exact initial scope: Diamond Shelf / Shopify Product / `update_meta_description` / `meta_description` / `write_products`;
-- minimum 2 evidence refs;
-- minimum quality score 90;
-- exactly low risk;
-- concurrency limit 1;
-- quota 1 action / 24 hours;
-- same-target cooldown >= 14 days;
-- canonical activation/expiry/revocation identity;
-- deterministic pure admission/rejection evaluation over caller-supplied recommendation/proposal/evidence/quality/risk/target/current-state/control facts;
-- exact sorted fail-closed reason codes;
-- deterministic evidence/quality/risk/target/current-state/evaluation fingerprints;
-- explicit semantics that `admit` means policy-layer admission only, not approval or execution authorization;
-- source-level and runtime-capability markers proving zero DB/network/provider/runtime binding.
+to a non-persisted governed-proposal materialization artifact.
 
-The W01 admission matrix fails closed on inactive/expired/revoked policy, non-running control, unresolved side-effect/manual-intervention state, invalid recommendation/proposal lineage, AI-assisted or edited proposals, insufficient evidence, any quality blocker/warning, score below threshold, non-low risk, unsupported provider/domain/resource/GID/URL/action/field/scope, stale provider-before state, prior deployment, site concurrency, cooldown or quota exhaustion.
+Initial W02 scope remains exactly:
+- `diamondshelf.us`;
+- Shopify Product;
+- `gid://shopify/Product/<id>`;
+- exact `https://diamondshelf.us/products/<slug>`;
+- `update_meta_description`;
+- `meta_description`;
+- `write_products`;
+- one exact changed field only;
+- no generated/rewritten text.
 
-W01 performs no database read/write/persistence/schema work, no provider/network request/write, no approval creation, no Task #51/#53/#54 execution, no policy activation, no scheduler/worker/autonomous execution, no credential/scope/config change, no public-write-gate enablement, no deployment and no publication.
+The materialized before/after values must be copied byte-for-byte from the selected P6.6 changed field; W02 may only hash/bind them. It may not trim, rewrite, normalize copy, infer Product identity, fetch Shopify, persist ProposalRecords, grant approval, create policy authorization or execution authority.
 
-The implementation's code-only head passed canonical CI #706 before closeout documentation was added. Exact final PR-head/merge/post-merge certification is recorded on issue #408.
+W02 is **specification/review only** at this checkpoint. Generic continuation does not authorize W02 implementation, persistence, DB/schema work, provider/network access, Task #51/#53/#54, policy activation, scheduler/worker/autonomous execution, credentials/scopes/config changes, deployment, publication or W03–W10.
 
-**Next boundary:** W02 — P9.7 proposal materialization bridge. W02 is not authorized by W01 approval or generic continuation. It requires a separate explicit implementation authorization and must remain deterministic, generate no new text, persist nothing, and create no execution authority unless a later separately authorized work package provides it.
+**Next boundary after W02 specification certification:** explicit authorization for pure W02 implementation only.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
