@@ -69,7 +69,7 @@ test("unrecognized partial or unsupported future schema states fail closed", () 
     EXPECTED_CORE_TABLE_COUNT + 1,
     EXPECTED_RUNTIME_TABLE_COUNT + 1,
     EXPECTED_CURRENT_TABLE_COUNT + 1,
-    EXPECTED_P12_2_TABLE_COUNT + 1,
+    EXPECTED_P12_2_TABLE_COUNT + 2,
     EXPECTED_P8_8_W04_TABLE_COUNT + 1,
   ]) {
     const plan = planRuntimeBootstrap(count);
