@@ -1,6 +1,51 @@
 # SEO ENGINE — Current State Checkpoint
 
-This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
+## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
+
+W07 specification/review is certified complete under issue #461 / PR #462.
+
+Final W07 specification certification:
+- exact certified spec head: `50ecafcb53a1bbf50ca1714e917616dd58c9c7da`;
+- exact-head CI #939 / run `35894054466`: success;
+- merge/canonical main: `15846991123b6664c37176b844550d4b0095b39a`;
+- canonical tree: `94f2ccfa5b265e2ee0a8f470546428c1d6d7b9e1`;
+- post-merge CI #945 / run `35895949868`: success;
+- Replit main exact-synced to the merge, ahead/behind `0/0`, clean, no extra local commits;
+- the W07 specification diff was documentation-only;
+- no W07 implementation, migration 0007, Production DDL/DML, live provider access/write, rollback write, Task #51/#53/#54 execution, policy/scheduler/worker activation, credential/config change, deployment/publication, or W08–W10 work occurred.
+
+The certified W07 contract requires:
+- exact W06 `ready_for_w07` handoff plus independent W01–W06 revalidation;
+- dedicated policy execution provenance distinct from Task #51/#53/#54;
+- future two-phase durable dispatch fence `reserved_prewrite -> dispatch_started`;
+- W04 remains `claimed` through all nonterminal forward verification/rollback states;
+- `claimed -> released` only for exact proven no-dispatch closure;
+- `claimed -> consumed` only after a spent forward attempt reaches a safe terminal no-write/live/rollback-verified state;
+- `claimed -> manual_intervention` for unresolved/unsafe side-effect state;
+- exact W02 after bytes for forward mutation and exact W02 before bytes for rollback;
+- Task #53 normalization is forbidden in the policy mutation path;
+- maximum one forward mutation attempt and one rollback mutation attempt;
+- exact provider after/before state plus independent provider + storefront verification;
+- no automatic forward or rollback write retry;
+- pause/drain/kill split between blocking new forward work and allowing mandatory safety closure;
+- future migration `0007_p8_8_policy_mutation_dispatch.sql` limited to policy dispatch state/events;
+- future policy execution gate remains default-off and separate from `PUBLIC_SITE_WRITES_ENABLED`;
+- live Stage 1 activation remains W10.
+
+**Next explicit engineering boundary:** W07-E1 through W07-E5 implementation exactly as defined in `docs/p8-8-w07-policy-single-action-apply-spec.md`.
+
+Generic `continue` does **not** authorize that implementation. It may perform only documentation/readiness/review work until a user explicitly authorizes W07 implementation.
+
+W07 implementation authorization should preserve all exclusions:
+- no Production migrations 0005/0006/0007;
+- no Production DDL/DML/control/reservation/claim/dispatch changes;
+- no live Production provider reads;
+- no real provider/public-site or rollback writes;
+- no Task #51/#53/#54 execution;
+- no scheduler/worker/policy/autonomous activation;
+- no credential/scope/config changes;
+- no deployment/publication;
+- W08–W10 remain out of scope.
 
 ## Active engineering checkpoint — P8.8 W06 policy-aware mutation-free preflight specification/review
 

@@ -13,57 +13,22 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 checkpoint:** W04 and W05 engineering are certified; W06 policy-aware mutation-free preflight specification/review is authorized under issue #451 and is being defined on a dedicated branch. The W06 contract requires exact W01–W05 lineage, the exact same durable running control epoch accepted by the W05 claim, a read-only authoritative Shopify Product meta-description observation reconstructed in the byte-exact W02 state-fingerprint domain, a bounded no-dispatch proof, and release-eligibility projection only. W06 remains non-dispatchable and does not alter the human Task #51/#53/#54 path. W06 implementation, Production migrations/DDL/DML/control/claim changes, provider writes, runtime activation, deployment/publication, and W07–W10 remain blocked.
+### P8.8 W07 specification certified — implementation gate next
 
-W04 specification/review was certified under issue #418 / PR #419:
-- exact tested spec head: `2ac7373e9986874afe9e543863cfecc8d82732e0`;
-- exact-head CI #737 / run `35843311585`: success;
-- merge/tree: `2c31f3e4a355ac1bb2715f201a5dc2148a3b99f7` / `76f4406258e092e4af3b6221860d88231ab60f0a`;
-- post-merge CI #738 / run `35844152037`: success;
-- Replit exact Git-only sync: merge/tree exact, `0/0`, clean, zero tracked/untracked changes/locks/writers, no republish/runtime activity.
+Canonical GitHub `main` is `15846991123b6664c37176b844550d4b0095b39a` / tree `94f2ccfa5b265e2ee0a8f470546428c1d6d7b9e1`.
 
-W04 engineering contract:
-- deterministic pure W04 reservation intent from canonical W01/W02 lineage;
-- exact W04 reservation ID/fingerprint must be precommitted through unchanged W03 v1;
-- additive migration source `0005_p8_8_policy_mutation_reservations.sql`;
-- dedicated policy reservation namespace, never fake human `actions` rows and never generic `jobs`;
-- database CHECK constraints close initial scope to Diamond Shelf Shopify Product `meta_description`;
-- partial unique indexes enforce one active/blocking reservation per site and per exact target field;
-- explicit database URL only, with no W04 fallback to process `DATABASE_URL`;
-- database transaction time controls authorization-window validity;
-- exact replay vs identity/site/target/uncertain conflict classification;
-- stale `authorized` may expire opportunistically; `claimed` and `manual_intervention` never auto-expire;
-- bounded durable receipt with no raw proposal/provider/secret/human-approval payload;
-- real concurrent PostgreSQL race certification in dedicated localhost CI;
-- exact W03/W04 pair projection for later W05/W06;
-- provider dispatch/public write authority remains false.
+W07 specification/review is complete:
+- issue #461 / PR #462;
+- exact certified spec head `50ecafcb53a1bbf50ca1714e917616dd58c9c7da`;
+- PR-head CI #939 success;
+- merge `15846991123b6664c37176b844550d4b0095b39a`;
+- post-merge CI #945 success;
+- Replit main exact, `0/0`, clean.
 
-Code-only head `209bd9a96489176942e501a20b6e4983c94f521a` passed CI #744 / run `35854780897` completely.
+The W07 contract is now frozen for implementation: policy-only two-phase dispatch fence, W04 held claimed until terminal closure, exact W02 byte-preserving forward/rollback values, at most one forward and one rollback mutation, exact provider plus independent provider/storefront verification, fail-closed manual intervention on uncertainty, and a future additive migration 0007 limited to policy dispatch state/events.
 
-**Production status:** migration 0005 is source/CI-certified only and is NOT applied to Production. No Production reservation row exists from W04 engineering.
+**Current safe boundary:** implementation-readiness/documentation only. Generic `continue` must not implement W07 or create migration 0007. W07-E1–E5 implementation requires explicit user authorization. Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live provider access/writes, rollback writes, Task #51/#53/#54 execution, policy/scheduler/worker activation, credentials/config/gates, deployment/publication and W08–W10 remain separately gated.
 
-**W05 engineering implementation:** issue #443 / PR #444.
-
-Implemented:
-- dedicated policy-mutation control state + append-only transition history, separate from P9.6 review artifacts and all human action tables;
-- exact W03/W04 pair + exact durable control revision/fingerprint binding for one immutable W05 claim;
-- atomic W04 `authorized -> claimed` transition under exact durable `running` control;
-- control-row-first locking to serialize claim-vs-pause/drain/kill races;
-- pause/drain/kill safe release of exact paired unclaimed `authorized` reservations only;
-- claimed/manual-intervention preservation until later certified no-dispatch or safety-closure evidence exists;
-- durable latched kill and no ordinary killed resume;
-- database-clock/revision semantics and real PostgreSQL concurrency certification;
-- strict new-forward-mutation vs post-side-effect-safety-closure separation;
-- zero change to the human Task #51/#54 path;
-- migration source `0006_p8_8_policy_mutation_controls.sql`, with no default running row and no Production application.
-
-Corrected code-only head `6f5e302db014c153cfca2f86ca7f46136e0ab74f` passed CI #825 / run `35869432936` completely: W05 migration/schema, real PostgreSQL races, full workspace, P11.10, Chromium, typecheck and build.
-
-Final PR #444 closeout certification is complete: exact PR head `d4daaa6b1b25667af884d1ecea1f3502e1d7bd8f` passed CI #835 / run `35870588547`; the PR merged as `fa15403b2cf4802c85b87f01b1cc77c778775245` / tree `9ff17f37ce595b58640817e57d805e7c70237ea8`; post-merge CI #840 / run `35871447548` passed; and Replit was reconciled Git-only to that exact merge with refreshed `origin/main`, ahead/behind `0/0`, clean, and no extra local commits.
-
-W05 engineering does **not** authorize Production migrations 0005/0006, Production control initialization/claims/reservation transitions, provider/network access, Task #51/#53/#54 execution, scheduler/worker/policy activation, credential/config changes, deployment/publication or W06–W10.
-
-**Current safe boundary:** complete W06 specification/review under issue #451 and certify its exact PR head. After specification certification, W06-E1–E5 implementation requires a new explicit authorization. Production migrations 0005/0006 and Production control initialization/claims remain separately authorized. Generic `continue` must not implement/activate W06, perform live provider reads, apply Production DDL/DML, create or transition Production reservation/control/claim rows, call provider mutations, execute Task #51/#53/#54, activate policy/workers, alter credentials/config, deploy or publish.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
