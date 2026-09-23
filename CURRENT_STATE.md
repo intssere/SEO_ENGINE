@@ -2,7 +2,7 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W05 mutation-control engineering certified / W06 separately gated
+## Active engineering checkpoint — P8.8 W06 policy-aware mutation-free preflight specification/review
 
 P8.8 W04 specification/review is certified complete under issue #418 / PR #419.
 
@@ -92,6 +92,45 @@ Final W05 certification is complete:
 - this documentation-only post-merge continuity closeout is tracked by issue #449;
 - W04/W05 Production DDL remains a separate explicit authorization naming exact canonical SHA/tree and migration checksums;
 - W06 — policy-aware mutation-free preflight — is the next engineering work package, remains separately gated, and is not authorized by generic continuation or by W05 completion.
+
+## P8.8 W06 policy-aware mutation-free preflight specification/review
+
+W06 specification/review is authorized under issue #451.
+
+The current specification defines:
+
+- exact canonical W01–W05 lineage as a mandatory prerequisite;
+- W04 reservation must remain exactly `claimed` with one exact immutable W05 claim;
+- current durable W05 control must remain the exact same `running` revision/fingerprint accepted by the claim; a later pause/drain/kill or later running revision invalidates forward readiness;
+- only W01 `single_action_canary` may become forward-ready; `shadow` remains observation-only;
+- database transaction time remains authoritative for W03 authorization freshness;
+- read-only durable snapshots must be checked before and after the provider read so W06 never holds a DB lock across network I/O and any concurrent control/claim change fails closed;
+- one bounded authoritative Shopify Product SEO `meta_description` read is required for forward readiness;
+- W06 must use a read-capable credential path only; the policy lineage label `write_products` is not W06 write authority;
+- the W02 byte-exact, target-bound state-fingerprint domain is authoritative for stale-before validation;
+- the existing Task #53 normalized `executionStateFingerprint` must never substitute for W02 before-state equality;
+- raw provider value and reconstructed W02-domain before fingerprint must both match exactly;
+- provider read unavailability never becomes success;
+- storefront pre-read is not required for initial W06 readiness; P8.4 provider+storefront independence remains post-side-effect verification;
+- recommended dispositions are `ready_for_w07`, `blocked_no_dispatch`, `provider_read_unavailable_no_dispatch`, and `state_uncertain`;
+- W06 readiness is bounded to at most 60 seconds and never extends W03 expiry;
+- every W06 result keeps provider dispatch/write/public-write false;
+- a distinct `p8-8-w06-no-dispatch-proof-v1` proves only that this exact W06 path did not start provider mutation dispatch;
+- failed exact-state preflight may project `release_eligible_no_dispatch`, but W06 itself performs no DML and no claim release;
+- later W07/closure integration must atomically fence dispatch before any `claimed -> released` closure;
+- W06 never rolls back provider drift because W06 itself never writes;
+- no new W06 table or migration is required;
+- the human Task #51/#53/#54 path remains structurally and behaviorally unchanged.
+
+Specification document:
+
+- `docs/p8-8-w06-policy-preflight-spec.md`
+
+Recommended future engineering packages are W06-E1 through W06-E5: pure lineage contracts, W02-domain provider observation, read-only W04/W05 snapshot store, read-only Shopify preflight orchestration, and no-dispatch/race certification.
+
+**This is specification/review only.** No W06 implementation, live provider read, Production DDL/DML/read/write, Production control/claim transition, provider/public-site write, Task #51/#53/#54 execution, policy/scheduler/worker/autonomous activation, credential/config mutation, deployment/publication, or W07–W10 authority is granted.
+
+**Next boundary after spec certification:** separate explicit W06-E1–E5 implementation authorization.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
