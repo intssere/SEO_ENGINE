@@ -110,6 +110,9 @@ export function EvidenceDrawer({
             {model.quality.status.toUpperCase()}
           </StatusBadge>
         </div>
+        {model.executionAuthorized !== null ? (
+          <p><strong>Execution authorized:</strong> {model.executionAuthorized ? "yes" : "no"}</p>
+        ) : null}
         {model.quality.score !== null ? (
           <p>
             <strong>Quality score:</strong> {model.quality.score}/100 ·
