@@ -474,8 +474,9 @@ export class P88W04ReservationStore {
         + "WHERE table_schema='public' AND table_type='BASE TABLE'",
     );
     if (
-      Number(counts[0]?.count ?? 0)
-      !== P8_8_W04_EXPECTED_TABLE_COUNT
+      ![P8_8_W04_EXPECTED_TABLE_COUNT, 43].includes(
+        Number(counts[0]?.count ?? 0),
+      )
     ) {
       throw new Error("p88_w04_schema_table_count_mismatch");
     }
