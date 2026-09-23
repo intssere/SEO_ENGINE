@@ -13,28 +13,36 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest certified execution checkpoint:** P8.7 first persistent live low-risk action pilot is complete under issue #404 / PR #405.
+**Newest P8.8 engineering checkpoint:** W01 pure policy grant/evaluation is complete under issue #408 / PR #409.
 
-- exact tested closeout head: `7a7747d50b8f6bfd4286390e2025dbab7b62d4fd`;
-- exact-head CI #702 / run `35774922578`: success;
-- merge/tree: `f7967fc0b494dec0fc9eab74f556469efcceee06` / `d3ecdbd5596e60348f0ad7dc550b15752b608cc7`;
-- post-merge main CI #703 / run `35775514185`: success;
-- Replit exact Git-only sync: merge/tree exact, `0/0`, clean, zero tracked/untracked changes, no republish;
-- live pilot itself had one action/one deployment/one verified forward result, independent provider + storefront verification, no rollback/manual intervention, and the production public-write gate was returned to closed.
+P8.8 specification/review was certified first under issue #406 / PR #407:
+- exact tested spec head: `8b4a25c15be91c61910b397762a99bb004963bda`;
+- exact-head CI #704 / run `35776363403`: success;
+- merge/tree: `3b462520a59cdb29318773fde4cd36592ddc27c3` / `f99095e5e4f4514f8c3c8ffa6091ceaf89eacd45`;
+- post-merge CI #705 / run `35777100907`: success;
+- Replit exact Git-only sync: merge/tree exact, `0/0`, clean, no republish.
 
-**Active safe boundary:** P8.8 specification/review under issue #406. Implementation and activation are blocked.
+W01 is pure/default-off and locks the initial policy class to Shopify Product SEO `meta_description` only.
 
-P8.8 specification fixes the initial future policy class at Shopify Product SEO `meta_description` only and requires:
-- distinct policy authorization provenance;
-- immutable/versioned policy grants;
-- exact P9.7 proposal materialization;
-- deterministic evidence/quality/risk/quota/cooldown/control admission;
-- durable reservation/idempotency;
-- separate policy execution namespace;
-- Task #54-equivalent forward/verification/rollback safety;
-- Stage 0 shadow before any Stage 1 live canary.
+Certified W01 contract:
+- immutable/deep-frozen versioned grant;
+- deterministic grant fingerprint and integrity validation;
+- `diamondshelf.us` / Shopify / Product / `update_meta_description` / `meta_description` / `write_products`;
+- P9.7 deterministic-preview proposal method only;
+- low risk only;
+- evidence refs >=2;
+- quality score >=90 with no blockers/warnings;
+- concurrency 1;
+- quota 1 per 24h;
+- same-target cooldown >=14 days;
+- deterministic caller-supplied-state admission/rejection;
+- stale-state/prior-deployment/control/manual-intervention/quota/cooldown failures all reject;
+- `admit` is policy-layer admission only and is never approval/execution authorization;
+- zero DB/persistence/schema/provider/network/Task #51/#53/#54/policy activation/scheduler/worker/credential/deployment/publication authority.
 
-Generic continuation at this checkpoint may advance only specification/review work. It does not authorize W01 implementation, Production schema changes, worker/scheduler activation, policy activation, provider/public-site mutation, Task #51/#53/#54 execution, credential/scope changes, deployment or publication.
+The code-only implementation head passed CI #706; final exact PR/merge/post-merge lineage is recorded on issue #408.
+
+**Next safe boundary:** W02 — P9.7 proposal materialization bridge, separately authorized. Generic `continue` must not implement W02, persist proposals, call providers, create policy authorization, execute Task #51/#53/#54, activate a worker or policy, change schema/credentials/config, deploy or publish.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
