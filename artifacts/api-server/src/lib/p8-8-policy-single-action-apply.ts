@@ -418,8 +418,7 @@ export function projectP88W07DispatchIntent(input: {
   });
 }
 
-const allowedTransitions: Readonly<Record<P88W07DispatchState, readonly P88W07DispatchState[]>> =
-  Object.freeze({
+const allowedTransitions = Object.freeze({
     reserved_prewrite: Object.freeze([
       "dispatch_started",
       "cancelled_before_dispatch",
@@ -451,7 +450,7 @@ const allowedTransitions: Readonly<Record<P88W07DispatchState, readonly P88W07Di
     rollback_verified_closed: Object.freeze([]),
     cancelled_before_dispatch: Object.freeze([]),
     manual_intervention_required: Object.freeze([]),
-  });
+  }) as Readonly<Record<P88W07DispatchState, readonly P88W07DispatchState[]>>;
 
 export function projectP88W07Transition(input: {
   current: P88W07DispatchProjection;
