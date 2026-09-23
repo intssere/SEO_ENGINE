@@ -8,6 +8,8 @@ import {
   EXPECTED_RUNTIME_TABLE_COUNT,
   EXPECTED_CRAWL_EXECUTION_STATE_TABLE_COUNT,
   EXPECTED_P12_2_TABLE_COUNT,
+  EXPECTED_P8_8_W04_RESERVATION_TABLE_COUNT,
+  EXPECTED_P8_8_W04_TABLE_COUNT,
   planRuntimeBootstrap,
 } from "./runtime-bootstrap.js";
 
@@ -38,7 +40,7 @@ test("fully initialized runtime schema skips migrations and allows idempotent si
   assert.equal(plan.blocked, false);
 });
 
-test("current P3.6 and future P12.2 schemas are recognized without automatic migration", () => {
+test("current P3.6, P12.2, and future P8.8 W04 schemas are recognized without automatic migration", () => {
   const current = planRuntimeBootstrap(EXPECTED_CURRENT_TABLE_COUNT);
   assert.equal(current.schemaState, "ready");
   assert.equal(current.blocked, false);
@@ -52,6 +54,13 @@ test("current P3.6 and future P12.2 schemas are recognized without automatic mig
   assert.equal(p12.applyCoreMigration, false);
   assert.equal(p12.applyAuthMigration, false);
   assert.equal(p12.upsertDiamondShelf, true);
+
+  const w04 = planRuntimeBootstrap(EXPECTED_P8_8_W04_TABLE_COUNT);
+  assert.equal(w04.schemaState, "p8_8_w04_ready");
+  assert.equal(w04.blocked, false);
+  assert.equal(w04.applyCoreMigration, false);
+  assert.equal(w04.applyAuthMigration, false);
+  assert.equal(w04.upsertDiamondShelf, true);
 });
 
 test("unrecognized partial or unsupported future schema states fail closed", () => {
@@ -61,6 +70,7 @@ test("unrecognized partial or unsupported future schema states fail closed", () 
     EXPECTED_RUNTIME_TABLE_COUNT + 1,
     EXPECTED_CURRENT_TABLE_COUNT + 1,
     EXPECTED_P12_2_TABLE_COUNT + 1,
+    EXPECTED_P8_8_W04_TABLE_COUNT + 1,
   ]) {
     const plan = planRuntimeBootstrap(count);
     assert.equal(plan.schemaState, "partial");
@@ -98,5 +108,15 @@ test("P12.2 future schema count adds exactly three crawl execution-state tables"
   assert.equal(
     EXPECTED_P12_2_TABLE_COUNT,
     EXPECTED_CURRENT_TABLE_COUNT + EXPECTED_CRAWL_EXECUTION_STATE_TABLE_COUNT,
+  );
+});
+
+
+test("P8.8 W04 future schema count adds exactly one policy reservation table", () => {
+  assert.equal(EXPECTED_P8_8_W04_RESERVATION_TABLE_COUNT, 1);
+  assert.equal(EXPECTED_P8_8_W04_TABLE_COUNT, 38);
+  assert.equal(
+    EXPECTED_P8_8_W04_TABLE_COUNT,
+    EXPECTED_P12_2_TABLE_COUNT + EXPECTED_P8_8_W04_RESERVATION_TABLE_COUNT,
   );
 });
