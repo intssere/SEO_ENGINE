@@ -102,8 +102,8 @@ function approvedEnvelope(
     publicSiteWritesEnabled: false,
     now: "2026-09-23T12:05:00.000Z",
   });
-  assert.equal(result.ok, true);
   if (!result.ok) throw new Error(result.reason);
+  assert.equal(result.ok, true);
   return result.envelope;
 }
 
@@ -417,7 +417,7 @@ test("UGP-1.4 fails closed if read-only resolver semantics claim a write or DB m
       result: {
         ...base,
         provider_write_dispatch_enabled: true,
-      } as Task53ResolverResult,
+      } as unknown as Task53ResolverResult,
       observedAt: OBSERVED_AT,
     }),
     /ugp_shopify_resolver_semantics_mismatch/,
@@ -429,7 +429,7 @@ test("UGP-1.4 fails closed if read-only resolver semantics claim a write or DB m
       result: {
         ...base,
         database_mutations: 1,
-      } as Task53ResolverResult,
+      } as unknown as Task53ResolverResult,
       observedAt: OBSERVED_AT,
     }),
     /ugp_shopify_resolver_semantics_mismatch/,
