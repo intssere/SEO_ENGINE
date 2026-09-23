@@ -24,14 +24,14 @@ export function DecisionCard({
 }) {
   const titleId = model.id + "-title";
   return (
-    <article className="decisionCard" aria-labelledby={titleId}>
-      <header className="decisionCardHeader">
+    <article className="card approvalReviewCard" aria-labelledby={titleId}>
+      <header className="approvalCardHead">
         <div>
           <p className="eyebrow">{model.subtitle}</p>
           <h2 id={titleId}>{model.problem}</h2>
           {model.url ? <small>{model.url}</small> : null}
         </div>
-        <div className="decisionCardBadges">
+        <div className="approvalBadges">
           <StatusBadge tone={riskTone(model.risk)}>
             {titleize(model.risk)} risk
           </StatusBadge>
@@ -41,42 +41,48 @@ export function DecisionCard({
         </div>
       </header>
 
-      <div className="decisionCardImpact">
-        <span>Impact</span>
-        <p>{model.impact}</p>
+      <div className="approvalDetailsGrid">
+        <section>
+          <span className="approvalLabel">Impact</span>
+          <p>{model.impact}</p>
+        </section>
+        <section>
+          <span className="approvalLabel">Priority</span>
+          <p><b>{model.score.toFixed(1)}</b> score</p>
+        </section>
       </div>
 
-      <div className="decisionCardStateGrid">
+      <div className="approvalDetailsGrid">
         <section>
-          <span>Current state</span>
+          <span className="approvalLabel">Current state</span>
           <p>{stateText(model.currentState)}</p>
         </section>
         <section>
-          <span>Recommended state</span>
+          <span className="approvalLabel">Recommended state</span>
           <p>{model.recommendedState}</p>
         </section>
       </div>
 
-      <div className="decisionCardWhy">
-        <span>Why</span>
+      <div className="approvalDraftSection">
+        <span className="approvalLabel">Why</span>
         <p>{model.why}</p>
         {evidence}
       </div>
 
-      <div className="decisionCardFooter">
+      <div className="approvalDetailsGrid">
         <div>
-          <span>Review / apply</span>
+          <span className="approvalLabel">Review / apply</span>
           <strong>{model.workflowLabel}</strong>
           <small>{model.workflowDetail}</small>
         </div>
         <div>
-          <span>Measurement</span>
+          <span className="approvalLabel">Measurement</span>
           <strong>{model.measurement.label}</strong>
           <small>{model.measurement.detail}</small>
         </div>
       </div>
 
-      <div className="decisionCardActions">
+      <div className="approvalActions">
         {model.previewAvailable ? (
           <StatusBadge tone="info">PREVIEW AVAILABLE</StatusBadge>
         ) : (
