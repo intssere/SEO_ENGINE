@@ -139,3 +139,25 @@ test("W04 reservation intent source remains pure and runtime-unbound", async () 
   assert.doesNotMatch(source, /scheduler.*dispatch/i);
   assert.doesNotMatch(source, /worker.*dispatch/i);
 });
+
+
+test("W04 reservation store has explicit PostgreSQL persistence only and no provider/runtime binding", async () => {
+  const source = await readFile(
+    new URL("./p8-8-reservation-store.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /from "postgres"/);
+  assert.doesNotMatch(source, /DATABASE_URL/);
+  assert.doesNotMatch(source, /process\.env/);
+  assert.doesNotMatch(source, /\bfetch\s*\(/);
+  assert.doesNotMatch(source, /https?\.request/);
+  assert.doesNotMatch(source, /express\s*\(/);
+  assert.doesNotMatch(source, /router\./);
+  assert.doesNotMatch(source, /task51-action-renewal/);
+  assert.doesNotMatch(source, /task53-read-only-resource-resolver/);
+  assert.doesNotMatch(source, /task54-persistent-apply/);
+  assert.doesNotMatch(source, /scheduler.*dispatch/i);
+  assert.doesNotMatch(source, /worker.*dispatch/i);
+  assert.doesNotMatch(source, /PUBLIC_SITE_WRITES_ENABLED/);
+});
