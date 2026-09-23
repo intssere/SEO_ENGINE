@@ -13,6 +13,17 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
+### P8.8 W06 implementation — issue #453
+
+W06-E1–E5 engineering is now implemented on GitHub branch `p8-8-w06-preflight-implementation-453` from canonical base `2496b67d52075f10d32ac46b8914cb29cb4c73c8` and is awaiting PR/exact-head CI certification.
+
+The branch adds only the certified W06 implementation scope: exact W01–W05 lineage contracts, exact W02-domain provider observation, an explicit-URL read-only 41-table snapshot store, an injected query-only Shopify Product meta-description adapter/orchestrator, and localhost-only no-dispatch/race certification. W06 adds no migration/table and never grants provider dispatch/write/public-write authority.
+
+The current canonical implementation branch head before PR certification is `2b67b47782a9c65de231bc0f24612523d73caaa0`. Replit has a separate unpushed local W06 attempt commit whose push failed; it is non-canonical and must not be imported. No live database/provider/runtime/deployment/config action occurred from that attempt.
+
+Production migrations 0005/0006, Production DDL/DML/control/reservation/claim changes, live Production provider reads, provider writes, Task #51/#53/#54 execution, scheduler/worker/policy/autonomous activation, credential/scope/config changes, deployment/publication, and W07–W10 remain outside issue #453.
+
+
 **Newest P8.8 checkpoint:** W04 and W05 engineering are certified; W06 policy-aware mutation-free preflight specification/review is authorized under issue #451 and is being defined on a dedicated branch. The W06 contract requires exact W01–W05 lineage, the exact same durable running control epoch accepted by the W05 claim, a read-only authoritative Shopify Product meta-description observation reconstructed in the byte-exact W02 state-fingerprint domain, a bounded no-dispatch proof, and release-eligibility projection only. W06 remains non-dispatchable and does not alter the human Task #51/#53/#54 path. W06 implementation, Production migrations/DDL/DML/control/claim changes, provider writes, runtime activation, deployment/publication, and W07–W10 remain blocked.
 
 W04 specification/review was certified under issue #418 / PR #419:

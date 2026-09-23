@@ -98,6 +98,14 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^41$'
           pnpm --filter @workspace/api-server test:p8-8-w05-persistence-ephemeral
 
+      - name: Test P8.8 W06 read-only preflight persistence and race certification
+        env:
+          P8_8_W06_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
+        run: |
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^41$'
+          pnpm --filter @workspace/api-server test:p8-8-w06-persistence-ephemeral
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^41$'
+
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
 

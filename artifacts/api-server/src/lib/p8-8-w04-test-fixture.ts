@@ -41,6 +41,7 @@ import {
   type P88PolicyCandidate,
   type P88PolicyEvaluationInput,
   type P88PolicyGrantInput,
+  type P88PolicyStage,
 } from "./p8-8-policy-grant-evaluation.js";
 import {
   buildP88W02ProductTargetBinding,
@@ -141,6 +142,7 @@ function grantInput(
   siteId: string,
   activationTime: string,
   expiryTime: string,
+  policyStage: P88PolicyStage = "single_action_canary",
 ): P88PolicyGrantInput {
   return {
     policyId: "policy.initial-product-meta",
@@ -168,7 +170,7 @@ function grantInput(
     revoked: false,
     revokedAt: null,
     activationActorId: "admin@example.com",
-    policyStage: "single_action_canary",
+    policyStage,
     controlBindingId: "p96-diamondshelf-mutation-control",
   };
 }
@@ -249,6 +251,7 @@ export type P88W04TestScenarioOptions = {
   proposedValue?: string;
   subjectSuffix?: string;
   ttlMinutes?: number;
+  policyStage?: P88PolicyStage;
 };
 
 export function buildP88W04TestScenario(
@@ -386,7 +389,12 @@ export function buildP88W04TestScenario(
   const w02 = materializeP88W02GovernedProposal(w02Input);
 
   const grant = buildP88PolicyGrant(
-    grantInput(siteId, grantActivation, grantExpiry),
+    grantInput(
+      siteId,
+      grantActivation,
+      grantExpiry,
+      options.policyStage,
+    ),
   );
   const w01Input: P88PolicyEvaluationInput = {
     grant,

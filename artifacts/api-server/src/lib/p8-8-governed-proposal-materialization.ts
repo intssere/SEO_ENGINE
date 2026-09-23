@@ -499,7 +499,7 @@ function canonicalPreview(
   return preview;
 }
 
-function stateFingerprint(input: {
+export function p88W02StateFingerprint(input: {
   target: P88W02ProductTargetBinding;
   value: string | null;
   purpose: "before" | "after";
@@ -613,12 +613,12 @@ export function materializeP88W02GovernedProposal(
   const beforeValue = field.currentValue;
   const afterValue = field.proposedValue;
 
-  const beforeFingerprint = stateFingerprint({
+  const beforeFingerprint = p88W02StateFingerprint({
     target: input.targetBinding,
     value: beforeValue,
     purpose: "before",
   });
-  const afterFingerprint = stateFingerprint({
+  const afterFingerprint = p88W02StateFingerprint({
     target: input.targetBinding,
     value: afterValue,
     purpose: "after",
