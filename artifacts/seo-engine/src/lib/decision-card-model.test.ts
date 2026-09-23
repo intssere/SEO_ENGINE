@@ -48,3 +48,34 @@ test("UGP-2.3 exposes authorization without inferring workflow from optional sta
     "Authorization recorded",
   );
 });
+
+
+test("UGP-2.3 missing or unknown opportunity status falls back without inventing workflow", () => {
+  const base = {
+    id: "opp-missing-status",
+    title: "Missing status",
+    opportunity_type: "content_alignment",
+    score: 60,
+    rationale: "Rationale",
+    evidence_count: 1,
+    url: null,
+    query: null,
+    risk_classification: "low",
+    confidence: 0.8,
+    score_components: {},
+    why_qualifies: "Evidence-backed",
+    recommendation: "Change",
+    execution_authorized: false,
+    lifecycle: "active",
+    updated_at: "2026-09-23T12:00:00.000Z",
+  } as any;
+
+  assert.equal(
+    buildOpportunityDecisionCard(base).workflowLabel,
+    "Recommendation only",
+  );
+  assert.equal(
+    buildOpportunityDecisionCard({ ...base, status: "unknown_future_state" }).workflowLabel,
+    "Recommendation only",
+  );
+});
