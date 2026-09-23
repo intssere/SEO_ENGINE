@@ -173,7 +173,7 @@ test("UGP-2.3 opportunity card exposes the complete customer decision grammar", 
     await expect(card.getByText(label, { exact: true })).toBeVisible();
   }
   await expect(card.getByText("Impact not available.")).toBeVisible();
-  await expect(card.getByText("Not available")).toBeVisible();
+  await expect(card.getByText("Not available", { exact: true })).toBeVisible();
   await expect(card.getByText("Synthetic proposal")).toBeVisible();
   await expect(card.getByText("Not measured")).toBeVisible();
   await expect(card.getByText("Preview after proposal")).toBeVisible();
