@@ -13,33 +13,33 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 engineering checkpoint:** W03 pure provenance-distinct policy authorization is complete under issue #416 / PR #417; W04 is separately gated.
+**Newest P8.8 engineering checkpoint:** W03 is certified complete; W04 durable reservation/idempotency specification/review is active under issue #418.
 
-W03 specification/review was certified under issue #414 / PR #415:
-- exact tested spec head: `5b9ebdb94c4408e48935a2cc90a02c3c7ec9d3ea`;
-- exact-head CI #726 / run `35835557080`: success;
-- merge/tree: `262d33512cf5372866f282682dd6dce46aa614e8` / `508a500b90ad5aa052396ffa40fc38615182d4c9`;
-- post-merge CI #727 / run `35836180050`: success;
+W03 final certification:
+- final tested PR head: `b96e40f56dfdf5e3e3eaba50965042687a688860`;
+- exact-head CI #735 / run `35838781430`: success;
+- merge/tree: `e97c9a6b8cc7c0669914b1d460578a6f82611b6f` / `a059d96a85c56b27bcf4bcf7640129d2153f3432`;
+- post-merge CI #736 / run `35841167086`: success;
 - Replit exact Git-only sync: merge/tree exact, `0/0`, clean, zero tracked/untracked changes/locks/writers, no republish/runtime activity.
 
-W03 engineering contract:
-- canonical W01 rebuild/integrity and exact `admit` required;
-- canonical W02 rebuild/integrity and `materialized_unpersisted` required;
-- exact W01↔W02 shared policy/recommendation/proposal/target/before/after identity equality;
-- provenance exactly `policy_authorization`;
-- human approval fields and Task #51/#54 human-path artifacts rejected;
-- structurally incompatible with `controlled_execution_foundation_v1`;
-- caller-supplied reservation only, restricted before W04 to synthetic/non-durable `reserved_prewrite`;
-- deterministic reservation-descriptor, policy-action and policy-authorization identities;
-- `persistedActionId=null`, no persisted action;
-- canonical caller-supplied issuance, TTL 1–15 minutes, expiry clamped to W01 evaluation/grant expiry;
-- `providerWriteAllowed=false`, `providerDispatchAuthorized=false`, `publicSiteWrites=false`, `automaticTransition=false`, `dispatchEligible=false`;
-- exact replay stable; conflicting same-lineage authorization replay fails closed;
-- zero DB/persistence/schema/provider/network/approval/action/reservation persistence/Task #51/#53/#54/worker/policy/deployment/publication authority.
+W04 review contract:
+- use a dedicated `policy_mutation_reservations` table, not human `actions` and not generic worker `jobs`;
+- derive one pure deterministic W04 reservation intent from exact canonical W01/W02 lineage;
+- precommit that exact ID/fingerprint through the already-certified W03 synthetic reservation descriptor;
+- preserve W03 v1 unchanged;
+- durably materialize only the exact W03-precommitted identity after canonical W01/W02/W03 rebuild;
+- initial durable state = `authorized`;
+- active/blocking states = `authorized`, `claimed`, `manual_intervention`;
+- terminal states = `consumed`, `released`, `expired`;
+- database-enforce one active mutation per site and one active mutation per exact target field;
+- exact replay returns the existing row; identity collision/site conflict/target conflict/uncertain state fail closed;
+- use PostgreSQL transaction time for authorization-window validity;
+- opportunistically expire only stale unclaimed `authorized` rows; never auto-expire claimed/manual-intervention rows;
+- persist bounded lineage/fingerprints only, not proposal text, provider payload, secret/credential material or human approvals;
+- planned migration `0005_p8_8_policy_mutation_reservations.sql` is engineering-only until separately authorized;
+- Production DDL requires a later exact SHA/tree + migration-checksum authorization even after engineering certification.
 
-Code-only head `8278efbcc81bac309489ccd265f7e8faa02c3140` passed CI #728 completely; final PR/merge/post-merge lineage is recorded on issue #416.
-
-**Next safe boundary:** W04 — durable reservation/idempotency design. W04 introduces persistence/schema semantics and requires separate explicit authorization. Generic `continue` must not implement W04, create DB tables/rows, activate workers/policies, call providers, execute Task #51/#53/#54, alter credentials/config, deploy or publish.
+**Active safe boundary:** W04 specification/review only. Generic continuation may refine/review this contract but must not implement W04, create migrations/tables/rows, or begin W05.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
