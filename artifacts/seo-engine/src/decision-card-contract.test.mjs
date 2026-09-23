@@ -25,7 +25,7 @@ test("UGP-2.3 standard card grammar exposes every customer decision dimension", 
   ]) {
     assert.ok(component.includes(label), label);
   }
-  assert.ok(component.includes("PREVIEW AVAILABLE"));
+  assert.ok(proposalTable.includes("Preview available"));
   assert.ok(component.includes("PREVIEW AFTER PROPOSAL"));
 });
 
