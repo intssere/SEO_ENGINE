@@ -163,7 +163,7 @@ test("UGP-2.3 opportunity card exposes the complete customer decision grammar", 
   await expect(card.getByRole("heading", { name: "Improve product meta description" })).toBeVisible();
   for (const label of [
     "Impact",
-    "Priority",
+    "Risk",
     "Current state",
     "Recommended state",
     "Why",
@@ -176,7 +176,7 @@ test("UGP-2.3 opportunity card exposes the complete customer decision grammar", 
   await expect(card.getByText("Not exposed in this record")).toBeVisible();
   await expect(card.getByText("Synthetic proposal")).toBeVisible();
   await expect(card.getByText("Measurement unavailable")).toBeVisible();
-  await expect(card.getByText("PREVIEW AFTER PROPOSAL")).toBeVisible();
+  await expect(card.getByText("Preview after proposal")).toBeVisible();
   await expect(card.getByRole("button", { name: "See evidence" })).toBeVisible();
   await expect(card.getByRole("link", { name: "Review workflow" })).toHaveAttribute("href", "/automation");
 
