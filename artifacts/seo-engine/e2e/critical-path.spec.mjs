@@ -159,7 +159,7 @@ test("UGP-2.2 opportunity evidence reveals traceability before technical details
 }) => {
   const { boundary, errors } = await openSyntheticPage(page, "/opportunities");
 
-  await page.getByRole("button", { name: "Inspect evidence summary" }).first().click();
+  await page.getByRole("button", { name: "See evidence" }).first().click();
   await expect(page.getByText("What supports this")).toBeVisible();
 
   const evidence = page.getByText("Show traceable evidence");
