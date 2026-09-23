@@ -1,5 +1,24 @@
 # SEO ENGINE — Current State Checkpoint
 
+## Active engineering checkpoint — P8.8 W06 implementation
+
+W06-E1–E5 implementation is authorized under issue #453 and is in engineering review on branch `p8-8-w06-preflight-implementation-453` from canonical base `2496b67d52075f10d32ac46b8914cb29cb4c73c8`.
+
+Implemented scope on the branch:
+- E1 pure exact W01–W05 policy-preflight lineage verification and deterministic `p8-8-w06-policy-preflight-v1` / `p8-8-w06-no-dispatch-proof-v1` artifacts;
+- E2 behavior-preserving exported W02 byte-exact target-bound state-fingerprint helper and raw provider-observation contracts;
+- E3 explicit-URL, read-only W04/W05 snapshot store over the existing 41-table W05 schema, with PostgreSQL transaction time authoritative and no generic `DATABASE_URL` fallback;
+- E4 injected-transport Shopify Product SEO read adapter/orchestrator requiring a read-only `read_products` credential contract and rejecting write-capable credentials;
+- E5 unit/static safety coverage plus dedicated localhost-only PostgreSQL read/race certification through `P8_8_W06_EPHEMERAL_DATABASE_URL`, with table count required to remain exactly 41 before and after W06 certification.
+
+W06 remains mutation-free and non-dispatchable. It does not add a migration/table, does not perform claim release/consume DML, does not call a provider mutation, does not invoke Task #51/#53/#54, does not open `PUBLIC_SITE_WRITES_ENABLED`, and does not create W07 authority.
+
+Current canonical implementation branch head before PR certification: `2b67b47782a9c65de231bc0f24612523d73caaa0`. GitHub `main` remains `2496b67d52075f10d32ac46b8914cb29cb4c73c8` until a separately authorized merge.
+
+Replit has one earlier unpushed local W06 attempt commit based on the same canonical base; its push failed and it is non-canonical. It must be discarded/reconciled against the final certified GitHub branch/merge rather than imported. No live database/provider/runtime/deployment/config operation occurred from that local attempt.
+
+**Still out of scope:** Production migrations 0005/0006, Production DDL/DML/control/reservation/claim changes, live Production provider reads, all provider writes, scheduler/worker/policy/autonomous activation, credentials/scopes/config changes, deployment/publication, and W07–W10.
+
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
 ## Active engineering checkpoint — P8.8 W06 policy-aware mutation-free preflight specification/review
