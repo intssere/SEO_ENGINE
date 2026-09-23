@@ -329,8 +329,11 @@ test("P11.5 route navigation preserves visible, unobscured focus on main content
 }) => {
   const { boundary, errors } = await openSyntheticPage(page, "/");
 
-  await page.getByRole("link", { name: "Technical SEO" }).click();
-  await expect(page).toHaveURL(/\/technical-seo$/);
+  await page
+    .locator(".sidebar .primaryNav")
+    .getByRole("link", { name: "Site Audit", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/site-audit$/);
   const main = page.locator("#main-content");
   await expect(main).toBeFocused();
 
