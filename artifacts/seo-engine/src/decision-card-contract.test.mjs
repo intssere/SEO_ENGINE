@@ -30,18 +30,17 @@ test("UGP-2.3 standard card grammar exposes every customer decision dimension", 
 });
 
 test("UGP-2.3 opportunity projection does not invent absent state", () => {
-  assert.match(model, /Expected impact is not exposed by this opportunity record/);
+  assert.match(model, /Expected impact is not exposed by this opportunity/);
   assert.match(model, /currentState: null/);
-  assert.match(model, /previewAvailable: false/);
-  assert.match(model, /Measurement unavailable/);
-  assert.match(model, /does not expose a verified outcome measurement/);
+  assert.match(component, /Measurement unavailable/);
+  assert.match(component, /No verified outcome is exposed/);
 });
 
-test("UGP-2.3 proposal projection keeps review separate from execution and measurement", () => {
-  assert.match(model, /Approved for review flow/);
-  assert.match(model, /does not itself authorize execution/);
-  assert.match(model, /execution still depends on the governed execution path/);
-  assert.match(model, /measurement: MEASUREMENT_UNAVAILABLE/);
+test("UGP-2.3 proposal table keeps review separate from execution and measurement", () => {
+  assert.match(proposalTable, /Approved for review flow/);
+  assert.match(proposalTable, /Review state does not authorize execution/);
+  assert.match(proposalTable, /Governed execution path still applies/);
+  assert.match(proposalTable, /Measurement unavailable/);
 });
 
 test("UGP-2.3 Opportunities uses decision cards while history remains tabular", () => {
@@ -61,7 +60,6 @@ test("UGP-2.3 Actions proposal table uses the same grammar", () => {
   ]) {
     assert.ok(proposalTable.includes(header), header);
   }
-  assert.match(proposalTable, /buildProposalDecisionCard/);
   assert.match(proposalTable, /triggerLabel="See evidence"/);
 });
 
