@@ -134,6 +134,7 @@ export type P88W07AdvanceResult = Readonly<{
 }>;
 
 type Sql = ReturnType<typeof postgres>;
+type SqlExecutor = Pick<Sql, "unsafe">;
 
 type DispatchRow = {
   dispatch_id: string;
@@ -504,7 +505,7 @@ export class P88W07DispatchStore {
   }
 
   private async lockLineage(
-    tx: postgres.TransactionSql,
+    tx: SqlExecutor,
     intent: P88W07ExecutionIntent,
   ): Promise<{
     control: ControlRow | undefined;
@@ -542,7 +543,7 @@ export class P88W07DispatchStore {
     };
   }
 
-  private async now(tx: postgres.TransactionSql): Promise<Date> {
+  private async now(tx: SqlExecutor): Promise<Date> {
     const rows = await tx.unsafe<{ now: Date }[]>(
       "SELECT transaction_timestamp() AS now",
     );
@@ -554,7 +555,7 @@ export class P88W07DispatchStore {
   }
 
   private async policyBlocker(
-    tx: postgres.TransactionSql,
+    tx: SqlExecutor,
     intent: P88W07ExecutionIntent,
     now: Date,
     excludeDispatchId: string | null,
@@ -622,7 +623,7 @@ export class P88W07DispatchStore {
   }
 
   private async insertEvent(
-    tx: postgres.TransactionSql,
+    tx: SqlExecutor,
     input: {
       dispatchId: string;
       siteId: string;
@@ -1004,11 +1005,11 @@ export class P88W07DispatchStore {
           || projection.toState === "manual_intervention_required"
         ) && row.forward_attempt_count === 1
           ? now.toISOString()
-          : row.forward_result_at;
+          : iso(row.forward_result_at);
         const rollbackStartedAt =
           projection.toState === "rollback_started"
             ? now.toISOString()
-            : row.rollback_started_at;
+            : iso(row.rollback_started_at);
 
         const updated = await tx.unsafe<DispatchRow[]>(
           "UPDATE policy_mutation_dispatches SET "
@@ -1046,8 +1047,8 @@ export class P88W07DispatchStore {
             p88W07IsTerminalState(projection.toState)
               ? input.transitionReason
               : null,
-            forwardResultAt ? iso(forwardResultAt as unknown as Date) ?? forwardResultAt : null,
-            rollbackStartedAt ? iso(rollbackStartedAt as unknown as Date) ?? rollbackStartedAt : null,
+            forwardResultAt,
+            rollbackStartedAt,
             terminalAt,
             now.toISOString(),
           ],
