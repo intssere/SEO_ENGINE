@@ -13,36 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 engineering checkpoint:** W01 pure policy grant/evaluation is complete under issue #408 / PR #409.
+**Newest P8.8 engineering checkpoint:** W01 is certified complete; W02 specification/review is active under issue #410.
 
-P8.8 specification/review was certified first under issue #406 / PR #407:
-- exact tested spec head: `8b4a25c15be91c61910b397762a99bb004963bda`;
-- exact-head CI #704 / run `35776363403`: success;
-- merge/tree: `3b462520a59cdb29318773fde4cd36592ddc27c3` / `f99095e5e4f4514f8c3c8ffa6091ceaf89eacd45`;
-- post-merge CI #705 / run `35777100907`: success;
-- Replit exact Git-only sync: merge/tree exact, `0/0`, clean, no republish.
+W01 final certification:
+- final tested PR head: `af1416b0fc71019f758b1e7853a7342faed7f3a6`;
+- exact-head CI #712 / run `35827410674`: success;
+- merge/tree: `e59aba2c10f9c2976fcf5da4987312f1525313d4` / `221303f6c37c8084171c2c5f7fd02ddafda4a6d1`;
+- post-merge CI #713 / run `35828075367`: success;
+- Replit exact Git-only sync: merge/tree exact, `0/0`, clean, no republish/runtime activity.
 
-W01 is pure/default-off and locks the initial policy class to Shopify Product SEO `meta_description` only.
+W02 review contract:
+- source recommendation must be exact P9.7 `proposal_review`;
+- exact P6.6 preview must be canonically rebuilt and selected by fingerprint;
+- exactly one changed field is allowed, and it must be `meta_description`;
+- current/proposed text is copied exactly; W02 cannot generate or rewrite text;
+- Product GID/canonical product URL are not present upstream, so an explicit caller-supplied fingerprinted Product target binding is mandatory;
+- target binding is syntactically bound only; W02 performs no Shopify lookup or provider state claim;
+- output is a non-persisted governed-proposal materialization with deterministic proposal/materialization/idempotency fingerprints;
+- output still has no approval, policy authorization, Task #51/#53/#54 authority, durable reservation, provider mutation or persistence.
 
-Certified W01 contract:
-- immutable/deep-frozen versioned grant;
-- deterministic grant fingerprint and integrity validation;
-- `diamondshelf.us` / Shopify / Product / `update_meta_description` / `meta_description` / `write_products`;
-- P9.7 deterministic-preview proposal method only;
-- low risk only;
-- evidence refs >=2;
-- quality score >=90 with no blockers/warnings;
-- concurrency 1;
-- quota 1 per 24h;
-- same-target cooldown >=14 days;
-- deterministic caller-supplied-state admission/rejection;
-- stale-state/prior-deployment/control/manual-intervention/quota/cooldown failures all reject;
-- `admit` is policy-layer admission only and is never approval/execution authorization;
-- zero DB/persistence/schema/provider/network/Task #51/#53/#54/policy activation/scheduler/worker/credential/deployment/publication authority.
-
-The code-only implementation head passed CI #706; final exact PR/merge/post-merge lineage is recorded on issue #408.
-
-**Next safe boundary:** W02 — P9.7 proposal materialization bridge, separately authorized. Generic `continue` must not implement W02, persist proposals, call providers, create policy authorization, execute Task #51/#53/#54, activate a worker or policy, change schema/credentials/config, deploy or publish.
+**Active safe boundary:** W02 specification/review only. Generic continuation may refine/review this contract, but must not implement W02 or begin W03.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
