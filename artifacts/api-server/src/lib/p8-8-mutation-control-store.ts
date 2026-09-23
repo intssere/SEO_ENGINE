@@ -26,6 +26,7 @@ import {
 } from "./p8-8-mutation-control.js";
 
 export const P8_8_W05_EXPECTED_TABLE_COUNT = 41 as const;
+export const P8_8_W05_COMPATIBLE_TABLE_COUNTS = Object.freeze([41, 43] as const);
 export const P8_8_W05_CONTROL_SOURCE =
   "policy_mutation_control_state" as const;
 export const P8_8_W05_CLAIM_RECEIPT_VERSION =
@@ -456,7 +457,11 @@ export class P88W05MutationControlStore {
       "SELECT COUNT(*)::int AS count FROM information_schema.tables "
         + "WHERE table_schema='public' AND table_type='BASE TABLE'",
     );
-    if (Number(counts[0]?.count ?? 0) !== P8_8_W05_EXPECTED_TABLE_COUNT) {
+    if (
+      !P8_8_W05_COMPATIBLE_TABLE_COUNTS.includes(
+        Number(counts[0]?.count ?? 0) as 41 | 43,
+      )
+    ) {
       throw new Error("p88_w05_schema_table_count_mismatch");
     }
 
@@ -1020,6 +1025,7 @@ export function p88W05MutationControlStoreCapability() {
   return deepFreeze({
     version: P8_8_W05_CONTROL_VERSION,
     expectedPublicTableCount: P8_8_W05_EXPECTED_TABLE_COUNT,
+    compatibleAdditivePublicTableCounts: P8_8_W05_COMPATIBLE_TABLE_COUNTS,
     explicitDatabaseUrlOnly: true,
     databaseTransactionClockAuthoritative: true,
     controlRowLockedBeforeReservationRow: true,

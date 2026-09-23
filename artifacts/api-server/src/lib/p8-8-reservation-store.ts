@@ -14,6 +14,7 @@ import {
 } from "./p8-8-policy-authorization.js";
 
 export const P8_8_W04_EXPECTED_TABLE_COUNT = 38 as const;
+export const P8_8_W04_COMPATIBLE_TABLE_COUNTS = Object.freeze([38, 41, 43] as const);
 export const P8_8_W04_RESERVATION_SOURCE =
   "policy_mutation_reservations" as const;
 export const P8_8_W04_DURABLE_RECEIPT_VERSION =
@@ -474,8 +475,9 @@ export class P88W04ReservationStore {
         + "WHERE table_schema='public' AND table_type='BASE TABLE'",
     );
     if (
-      Number(counts[0]?.count ?? 0)
-      !== P8_8_W04_EXPECTED_TABLE_COUNT
+      !P8_8_W04_COMPATIBLE_TABLE_COUNTS.includes(
+        Number(counts[0]?.count ?? 0) as 38 | 41 | 43,
+      )
     ) {
       throw new Error("p88_w04_schema_table_count_mismatch");
     }
@@ -777,6 +779,7 @@ export function p88W04ReservationStoreCapability() {
     version: P8_8_W04_DURABLE_RESERVATION_VERSION,
     explicitDatabaseUrlOnly: true,
     expectedPublicTableCount: P8_8_W04_EXPECTED_TABLE_COUNT,
+    compatibleAdditivePublicTableCounts: P8_8_W04_COMPATIBLE_TABLE_COUNTS,
     dedicatedReservationTable: true,
     databaseTransactionClockAuthoritative: true,
     exactReplaySupported: true,
