@@ -18,6 +18,9 @@ export const EXPECTED_P8_8_W04_TABLE_COUNT =
 export const EXPECTED_P8_8_W05_CONTROL_TABLE_COUNT = 3;
 export const EXPECTED_P8_8_W05_TABLE_COUNT =
   EXPECTED_P8_8_W04_TABLE_COUNT + EXPECTED_P8_8_W05_CONTROL_TABLE_COUNT;
+export const EXPECTED_P8_8_W07_DISPATCH_TABLE_COUNT = 2;
+export const EXPECTED_P8_8_W07_TABLE_COUNT =
+  EXPECTED_P8_8_W05_TABLE_COUNT + EXPECTED_P8_8_W07_DISPATCH_TABLE_COUNT;
 export const DIAMOND_SHELF_SITE = {
   organizationName: "Diamond Shelf Trading LLC",
   organizationSlug: "diamond-shelf-trading",
@@ -36,6 +39,7 @@ export type RuntimeSchemaState =
   | "p12_2_ready"
   | "p8_8_w04_ready"
   | "p8_8_w05_ready"
+  | "p8_8_w07_ready"
   | "partial";
 
 export interface BootstrapPlan {
@@ -139,6 +143,18 @@ export function planRuntimeBootstrap(tableCount: number): BootstrapPlan {
   if (tableCount === EXPECTED_P8_8_W05_TABLE_COUNT) {
     return {
       schemaState: "p8_8_w05_ready",
+      tableCount,
+      applyCoreMigration: false,
+      applyAuthMigration: false,
+      upsertDiamondShelf: true,
+      blocked: false,
+      reason: null,
+    };
+  }
+
+  if (tableCount === EXPECTED_P8_8_W07_TABLE_COUNT) {
+    return {
+      schemaState: "p8_8_w07_ready",
       tableCount,
       applyCoreMigration: false,
       applyAuthMigration: false,
@@ -339,7 +355,8 @@ export async function ensureDiamondShelfIdentity(
       tableCount !== EXPECTED_CURRENT_TABLE_COUNT &&
       tableCount !== EXPECTED_P12_2_TABLE_COUNT &&
       tableCount !== EXPECTED_P8_8_W04_TABLE_COUNT &&
-      tableCount !== EXPECTED_P8_8_W05_TABLE_COUNT
+      tableCount !== EXPECTED_P8_8_W05_TABLE_COUNT &&
+      tableCount !== EXPECTED_P8_8_W07_TABLE_COUNT
     ) {
       return {
         status: "blocked",
