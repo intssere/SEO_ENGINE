@@ -70,16 +70,16 @@ export function DecisionCard({
       </div>
 
       <div className="approvalDetailsGrid">
-        <div>
+        <section>
           <span className="approvalLabel">Review / apply</span>
-          <strong>{model.workflowLabel}</strong>
-          <small>{model.workflowDetail}</small>
-        </div>
-        <div>
+          <p><b>{model.workflowLabel}</b></p>
+          <p>{model.workflowDetail}</p>
+        </section>
+        <section>
           <span className="approvalLabel">Measurement</span>
-          <strong>{model.measurement.label}</strong>
-          <small>{model.measurement.detail}</small>
-        </div>
+          <p><b>{model.measurement.label}</b></p>
+          <p>{model.measurement.detail}</p>
+        </section>
       </div>
 
       <div className="approvalActions">
