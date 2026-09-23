@@ -34,8 +34,8 @@ export default function ContentPage() {
         {
           title: "Article automation",
           description:
-            "Research-to-brief-to-draft-to-publish automation will live here, including citations, internal links, media, refreshes, and publishing controls.",
-          actionLabel: "Article workflow is being added",
+            "Plan, draft, optimize, and publish articles from one automated workflow.",
+          actionLabel: "Article automation is coming",
           status: "coming_soon",
         },
       ]}
