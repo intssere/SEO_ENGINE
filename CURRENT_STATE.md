@@ -2,7 +2,7 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W04 durable reservation engineering complete / Production DDL + W05 separately gated
+## Active engineering checkpoint — P8.8 W05 mutation-control specification/review open / implementation + Production boundaries blocked
 
 P8.8 W04 specification/review is certified complete under issue #418 / PR #419.
 
@@ -44,6 +44,25 @@ Final PR-head/merge/post-merge certification is recorded on issue #420 after mer
 - W05 — durable mutation-control bridge — is separately gated and not authorized by W04 engineering or generic continuation.
 
 W04 engineering grants no provider/network execution, Task #51/#53/#54 execution, policy activation, scheduler/worker/autonomous execution, credential/scope/config change, deployment, publication or W05–W10 authority.
+
+## P8.8 W05 specification/review boundary
+
+W05 specification/review is open under issue #435 / PR #436 from verified canonical main `6c796fcb33c07a0fbc41e119b8e533ed155e043f` / tree `1dbb7abf80c362f474caf114c5a32f1e656cc60d`.
+
+The review defines, but does not implement:
+- a dedicated durable policy-mutation control namespace preserving P9.6 `kill > drain > pause > running` semantics;
+- append-only control transition provenance plus one current site-scoped control state;
+- an immutable W05 claim binding that records the exact W03/W04 pair and durable control revision accepted for one W04 `authorized -> claimed` transition;
+- strict separation between new forward mutation and mandatory safety closure after a possible provider side effect;
+- pause/drain/kill blocking of all new claims/forward writes, with safe release only for unclaimed `authorized` reservations;
+- no generic release/expiry of `claimed` or `manual_intervention` rows;
+- a latched `killed` state with no ordinary resume;
+- database-clock/revision-based atomic claim/control transactions and real PostgreSQL race certification for a future implementation;
+- a future additive W05 migration layered only after W04, with dedicated localhost-only engineering DB isolation and no generic `DATABASE_URL` fallback.
+
+W05 review preserves W01–W04 fingerprints/idempotency exactly and leaves the human Task #51/#54 path unchanged. All W05 provider-dispatch/public-write markers remain false.
+
+**Still blocked:** W05 implementation, migration creation/application, Production DDL/DML, Production control/claim/reservation transitions, provider/network access, Task #51/#53/#54 execution, policy/scheduler/worker/autonomous activation, credentials/scopes/config changes, deployment/publication and W06–W10.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
