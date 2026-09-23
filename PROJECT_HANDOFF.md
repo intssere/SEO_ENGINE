@@ -30,25 +30,6 @@ The W07 contract is now frozen for implementation: policy-only two-phase dispatc
 **Current safe boundary:** implementation-readiness/documentation only. Generic `continue` must not implement W07 or create migration 0007. W07-E1–E5 implementation requires explicit user authorization. Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live provider access/writes, rollback writes, Task #51/#53/#54 execution, policy/scheduler/worker activation, credentials/config/gates, deployment/publication and W08–W10 remain separately gated.
 
 
-### P8.8 W07 specification/review — issue #461
-
-Canonical GitHub `main` is `910058bca868b2d49333fd57c8ac7979cd41f53a` / tree `6d66098c713152de5ea5e8c51fbdb1a6ccf6d111`.
-
-W06 is fully certified and merged:
-- PR #458 exact head `6a2127d76a4234175041e9fe09b09120d621fe59`;
-- PR-head CI #885 success;
-- merge `910058bca868b2d49333fd57c8ac7979cd41f53a`;
-- post-merge CI #913 success;
-- Replit main exact, `0/0`, clean.
-
-W07 review branch: `p8-8-w07-single-action-apply-spec-461`.
-
-W07 is being specified as the default-off policy apply/safety-closure layer. The key contract is a durable two-phase dispatch fence before any provider write, exact byte-preserving W02 forward/rollback values, at most one forward attempt and one rollback attempt, W04 held `claimed` until terminal closure, independent exact-provider plus provider/storefront verification, and manual intervention for any unresolved side-effect ambiguity.
-
-Future W07 migration 0007 is proposed to own only policy dispatch state/events. It is not created/applied by the specification phase. Live policy execution remains W10.
-
-**Current safe boundary:** W07 implementation-readiness/documentation only. W07-E1–E5 implementation requires explicit user authorization. Migration 0007, Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live provider reads/writes, rollback writes, Task #51/#53/#54 execution, policy/scheduler/worker activation, credential/config changes, deployment/publication and W08–W10 remain separately gated.
-
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
 - Exact tested adapter head/tree: `f7210f7c7d7b7ff3e079403ec107acefbf4f9cc0` / `317675fd81f3a83a0336be56c4e4c1f816ff82d9`.
