@@ -568,7 +568,7 @@ export function assertP88W06ExactArtifactLineage(
   for (const [left, right, name] of comparisons) requireEqual(left, right, name);
 }
 
-function snapshotIssues(
+export function p88W06DurableSnapshotIssues(
   snapshot: P88W06DurableSnapshot,
   input: P88W06LineageInput,
 ): string[] {
@@ -763,8 +763,8 @@ export function buildP88W06PolicyPreflight(input: {
   );
 
   const uncertainIssues = [
-    ...snapshotIssues(input.preSnapshot, input.lineage),
-    ...snapshotIssues(finalSnapshot, input.lineage),
+    ...p88W06DurableSnapshotIssues(input.preSnapshot, input.lineage),
+    ...p88W06DurableSnapshotIssues(finalSnapshot, input.lineage),
   ];
   if (input.preSnapshot.snapshotFingerprint !== finalSnapshot.snapshotFingerprint) {
     uncertainIssues.push("durable_snapshot_changed");
