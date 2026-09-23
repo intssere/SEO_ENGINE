@@ -2,48 +2,48 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W03 complete / W04 specification-review active / implementation + Production DDL blocked
+## Active engineering checkpoint — P8.8 W04 durable reservation engineering complete / Production DDL + W05 separately gated
 
-P8.8 W03 is certified complete under issue #416 / PR #417.
+P8.8 W04 specification/review is certified complete under issue #418 / PR #419.
 
-Final W03 certification:
-- final exact tested PR head: `b96e40f56dfdf5e3e3eaba50965042687a688860`;
-- exact-head CI #735 / run `35838781430`: success;
-- merge/tree: `e97c9a6b8cc7c0669914b1d460578a6f82611b6f` / `a059d96a85c56b27bcf4bcf7640129d2153f3432`;
-- post-merge main CI #736 / run `35841167086`: success;
-- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, zero locks/writers, no republish/runtime/provider/database/config/migration/W04 implementation/scheduler/worker/policy activation.
+W04 specification certification:
+- exact tested spec head: `2ac7373e9986874afe9e543863cfecc8d82732e0`;
+- exact-head CI #737 / run `35843311585`: success;
+- merge/tree: `2c31f3e4a355ac1bb2715f201a5dc2148a3b99f7` / `76f4406258e092e4af3b6221860d88231ab60f0a`;
+- post-merge main CI #738 / run `35844152037`: success;
+- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, zero locks/writers, no republish/runtime/provider/database/config/migration/W04 implementation/reservation-row/scheduler/worker/policy activation.
 
-W04 specification/review is tracked by issue #418.
+W04 E1–E5 engineering is complete under issue #420 / PR #422.
 
-The W04 review selects a dedicated PostgreSQL `policy_mutation_reservations` table rather than reusing:
-- human Task #51 `actions` rows, which carry human authorization semantics and no distinct policy reservation identity; or
-- generic `jobs` rows, which carry queue/worker/run-after/attempt semantics.
+Implemented engineering:
+- E1 pure deterministic W01/W02-derived reservation intent;
+- unchanged W03 v1 synthetic reservation descriptor must precommit the exact W04 reservation ID/fingerprint;
+- E2 additive transactional migration source `0005_p8_8_policy_mutation_reservations.sql`;
+- dedicated `policy_mutation_reservations` namespace, separate from human `actions` and generic worker `jobs`;
+- exact initial Shopify Product `meta_description` scope enforced by database CHECK constraints;
+- one active/blocking reservation per site and per exact target field enforced by partial unique indexes;
+- E3 explicit-URL PostgreSQL reservation store with no generic `DATABASE_URL` fallback;
+- PostgreSQL transaction time is authoritative for W03 issuance/expiry validity;
+- exact replay / identity collision / site conflict / target conflict / uncertain-state classification;
+- opportunistic expiry only for stale unclaimed `authorized` rows; claimed/manual-intervention rows never auto-expire;
+- bounded durable reservation receipts with no raw proposal/provider/secret/human-approval payloads;
+- E4 real concurrent PostgreSQL certification on dedicated localhost ephemeral CI;
+- E5 pure W03 + W04 durable-receipt pairing for later W05/W06;
+- pairing yields policy-aware control eligibility only and keeps provider dispatch/public-site writes false.
 
-The W04 design uses **precommit then materialize** sequencing:
-1. a pure W04 projector deterministically derives one reservation ID/fingerprint from exact W01/W02 lineage;
-2. that exact identity is precommitted inside the existing W03 synthetic/non-durable reservation descriptor;
-3. W03 remains unchanged and non-dispatchable;
-4. W04 canonically rebuilds W01/W02/W03 and durably materializes only that exact precommitted identity;
-5. later W05/W06 must require the exact W03 + W04 durable-receipt pair.
+The runtime schema recognizer now understands the 38-table W04 engineering state but does **not** auto-apply migration 0005.
 
-The planned schema enforces:
-- one active/blocking policy mutation per site;
-- one active/blocking mutation per exact Product field;
-- deterministic exact replay;
-- identity-collision fail-closed behavior;
-- no proposal text, provider payload, secret, credential or human approval persistence;
-- lifecycle `authorized | claimed | consumed | released | expired | manual_intervention`;
-- no automatic expiry of claimed/manual-intervention states;
-- opportunistic expiry of stale unclaimed authorized rows only;
-- database transaction time as the durable authorization-window clock.
+Code-only W04 head `209bd9a96489176942e501a20b6e4983c94f521a` passed canonical CI #744 / run `35854780897` completely, including the isolated migration/schema and real PostgreSQL concurrency tests.
 
-The planned engineering migration is `0005_p8_8_policy_mutation_reservations.sql`, but **no migration file or schema change is authorized at this checkpoint**.
+**Production migration 0005 is NOT applied.** No Production DDL/DML or reservation row was created. Replit Development/Production databases were not changed by W04 engineering.
 
-W04 is specification/review only. Generic continuation does not authorize W04 implementation, migration creation, Production DDL/DML, reservation rows, provider/network access, Task #51/#53/#54 execution, policy activation, scheduler/worker/autonomous execution, credential/scope/config changes, deployment, publication or W05–W10.
+Final PR-head/merge/post-merge certification is recorded on issue #420 after merge.
 
-Even after future W04 engineering certification, Production DDL must remain separately authorized with the exact canonical SHA/tree and migration checksum.
+**Next boundaries:**
+- W04 Production DDL is a separate explicit authorization requiring the final canonical SHA/tree and migration checksum.
+- W05 — durable mutation-control bridge — is separately gated and not authorized by W04 engineering or generic continuation.
 
-**Next boundary after W04 specification certification:** explicit bounded W04 engineering authorization. Production DDL remains a separate later boundary.
+W04 engineering grants no provider/network execution, Task #51/#53/#54 execution, policy activation, scheduler/worker/autonomous execution, credential/scope/config change, deployment, publication or W05–W10 authority.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 

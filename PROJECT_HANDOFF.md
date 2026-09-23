@@ -13,33 +13,36 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 engineering checkpoint:** W03 is certified complete; W04 durable reservation/idempotency specification/review is active under issue #418.
+**Newest P8.8 engineering checkpoint:** W04 E1–E5 durable reservation/idempotency engineering is complete under issue #420 / PR #422; Production migration 0005 and W05 are separately gated.
 
-W03 final certification:
-- final tested PR head: `b96e40f56dfdf5e3e3eaba50965042687a688860`;
-- exact-head CI #735 / run `35838781430`: success;
-- merge/tree: `e97c9a6b8cc7c0669914b1d460578a6f82611b6f` / `a059d96a85c56b27bcf4bcf7640129d2153f3432`;
-- post-merge CI #736 / run `35841167086`: success;
+W04 specification/review was certified under issue #418 / PR #419:
+- exact tested spec head: `2ac7373e9986874afe9e543863cfecc8d82732e0`;
+- exact-head CI #737 / run `35843311585`: success;
+- merge/tree: `2c31f3e4a355ac1bb2715f201a5dc2148a3b99f7` / `76f4406258e092e4af3b6221860d88231ab60f0a`;
+- post-merge CI #738 / run `35844152037`: success;
 - Replit exact Git-only sync: merge/tree exact, `0/0`, clean, zero tracked/untracked changes/locks/writers, no republish/runtime activity.
 
-W04 review contract:
-- use a dedicated `policy_mutation_reservations` table, not human `actions` and not generic worker `jobs`;
-- derive one pure deterministic W04 reservation intent from exact canonical W01/W02 lineage;
-- precommit that exact ID/fingerprint through the already-certified W03 synthetic reservation descriptor;
-- preserve W03 v1 unchanged;
-- durably materialize only the exact W03-precommitted identity after canonical W01/W02/W03 rebuild;
-- initial durable state = `authorized`;
-- active/blocking states = `authorized`, `claimed`, `manual_intervention`;
-- terminal states = `consumed`, `released`, `expired`;
-- database-enforce one active mutation per site and one active mutation per exact target field;
-- exact replay returns the existing row; identity collision/site conflict/target conflict/uncertain state fail closed;
-- use PostgreSQL transaction time for authorization-window validity;
-- opportunistically expire only stale unclaimed `authorized` rows; never auto-expire claimed/manual-intervention rows;
-- persist bounded lineage/fingerprints only, not proposal text, provider payload, secret/credential material or human approvals;
-- planned migration `0005_p8_8_policy_mutation_reservations.sql` is engineering-only until separately authorized;
-- Production DDL requires a later exact SHA/tree + migration-checksum authorization even after engineering certification.
+W04 engineering contract:
+- deterministic pure W04 reservation intent from canonical W01/W02 lineage;
+- exact W04 reservation ID/fingerprint must be precommitted through unchanged W03 v1;
+- additive migration source `0005_p8_8_policy_mutation_reservations.sql`;
+- dedicated policy reservation namespace, never fake human `actions` rows and never generic `jobs`;
+- database CHECK constraints close initial scope to Diamond Shelf Shopify Product `meta_description`;
+- partial unique indexes enforce one active/blocking reservation per site and per exact target field;
+- explicit database URL only, with no W04 fallback to process `DATABASE_URL`;
+- database transaction time controls authorization-window validity;
+- exact replay vs identity/site/target/uncertain conflict classification;
+- stale `authorized` may expire opportunistically; `claimed` and `manual_intervention` never auto-expire;
+- bounded durable receipt with no raw proposal/provider/secret/human-approval payload;
+- real concurrent PostgreSQL race certification in dedicated localhost CI;
+- exact W03/W04 pair projection for later W05/W06;
+- provider dispatch/public write authority remains false.
 
-**Active safe boundary:** W04 specification/review only. Generic continuation may refine/review this contract but must not implement W04, create migrations/tables/rows, or begin W05.
+Code-only head `209bd9a96489176942e501a20b6e4983c94f521a` passed CI #744 / run `35854780897` completely.
+
+**Production status:** migration 0005 is source/CI-certified only and is NOT applied to Production. No Production reservation row exists from W04 engineering.
+
+**Next safe boundaries:** W04 Production DDL requires a separate exact-SHA/tree/checksum authorization; W05 durable mutation-control bridge requires separate engineering authorization. Generic `continue` must not apply migration 0005, create Production reservation rows, implement W05, call providers, execute Task #51/#53/#54, activate policy/workers, alter credentials/config, deploy or publish.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
