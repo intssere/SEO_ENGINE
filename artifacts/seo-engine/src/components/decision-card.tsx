@@ -7,20 +7,12 @@ import type { DecisionCardModel } from "@/lib/decision-card-model";
 const titleize = (value: string) =>
   value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-function stateText(value: string | null) {
-  if (value === null) return "Not exposed in this record";
-  if (value === "") return "Observed empty value";
-  return value;
-}
-
 export function DecisionCard({
   model,
   evidence,
-  footer,
 }: {
   model: DecisionCardModel;
   evidence?: ReactNode;
-  footer?: ReactNode;
 }) {
   const titleId = model.id + "-title";
   return (
@@ -35,9 +27,7 @@ export function DecisionCard({
           <StatusBadge tone={riskTone(model.risk)}>
             {titleize(model.risk)} risk
           </StatusBadge>
-          <StatusBadge tone="info">
-            {Math.round(model.confidence * 100)}% confidence
-          </StatusBadge>
+          <StatusBadge tone="info">{Math.round(model.confidence * 100)}% confidence</StatusBadge>
         </div>
       </header>
 
@@ -55,7 +45,7 @@ export function DecisionCard({
       <div className="approvalDetailsGrid">
         <section>
           <span className="approvalLabel">Current state</span>
-          <p>{stateText(model.currentState)}</p>
+          <p>Not exposed in this record</p>
         </section>
         <section>
           <span className="approvalLabel">Recommended state</span>
@@ -73,25 +63,18 @@ export function DecisionCard({
         <section>
           <span className="approvalLabel">Review / apply</span>
           <p><b>{model.workflowLabel}</b></p>
-          <p>{model.workflowDetail}</p>
+          <p>This card does not execute changes.</p>
         </section>
         <section>
           <span className="approvalLabel">Measurement</span>
-          <p><b>{model.measurement.label}</b></p>
-          <p>{model.measurement.detail}</p>
+          <p><b>Measurement unavailable</b></p>
+          <p>No verified outcome is exposed.</p>
         </section>
       </div>
 
       <div className="approvalActions">
-        {model.previewAvailable ? (
-          <StatusBadge tone="info">PREVIEW AVAILABLE</StatusBadge>
-        ) : (
-          <StatusBadge>PREVIEW AFTER PROPOSAL</StatusBadge>
-        )}
-        <Link href={model.actionHref} className="customerHubAction">
-          {model.actionLabel}
-        </Link>
-        {footer}
+        <StatusBadge>PREVIEW AFTER PROPOSAL</StatusBadge>
+        <Link href="/automation" className="customerHubAction">Review workflow</Link>
       </div>
     </article>
   );
