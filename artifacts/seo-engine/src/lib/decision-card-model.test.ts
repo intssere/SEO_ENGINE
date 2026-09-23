@@ -28,7 +28,7 @@ test("UGP-2.3 projects source-backed opportunity decision state deterministicall
 
   assert.deepEqual(first, replay);
   assert.equal(first.problem, base.title);
-  assert.equal(first.impact, "Expected impact is not exposed by this opportunity.");
+  assert.equal(first.impact, "Impact not available.");
   assert.equal(first.risk, "low");
   assert.equal(first.currentState, null);
   assert.equal(first.recommendedState, base.recommendation);
