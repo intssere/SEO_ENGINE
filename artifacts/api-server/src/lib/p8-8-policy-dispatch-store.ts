@@ -618,10 +618,6 @@ export class P88W07DispatchStore {
       await this.assertSchemaAndIdentity(sql, intent.siteId);
       return await sql.begin(async (tx) => {
         const authority = await this.readLockedAuthority(tx, intent);
-        this.assertCurrentForwardAuthority(authority, intent);
-        const now = await this.databaseNow(tx);
-        this.assertFresh(intent, now);
-
         const existing = await this.selectDispatch(tx, intent);
         if (existing) {
           if (!dispatchMatchesIntent(existing, intent)) {
@@ -632,6 +628,10 @@ export class P88W07DispatchStore {
             receipt: receipt(existing),
           });
         }
+
+        this.assertCurrentForwardAuthority(authority, intent);
+        const now = await this.databaseNow(tx);
+        this.assertFresh(intent, now);
 
         const inserted = await tx.unsafe<DispatchRow[]>(
           "INSERT INTO policy_mutation_dispatches ("
@@ -753,32 +753,11 @@ export class P88W07DispatchStore {
       throw new Error("p88_w07_dispatch_ineligible:" + issues.join(","));
     }
 
-    const observed = input.finalBeforeObservation;
-    const exactBefore = p88W02StateFingerprint({
-      target: input.handoff.lineage.w02Materialization.target,
-      value: observed.rawValue,
-      purpose: "before",
-    });
-    if (
-      observed.status !== "observed"
-      || observed.siteId !== intent.siteId
-      || observed.resourceGid !== intent.target.resourceGid
-      || observed.rawValue !== intent.state.beforeValue
-      || observed.observedBeforeFingerprint !== exactBefore
-      || exactBefore !== intent.state.beforeFingerprint
-    ) {
-      throw new Error("p88_w07_final_before_state_mismatch");
-    }
-
     const sql = this.sqlFactory(this.databaseUrl);
     try {
       await this.assertSchemaAndIdentity(sql, intent.siteId);
       return await sql.begin(async (tx) => {
         const authority = await this.readLockedAuthority(tx, intent);
-        this.assertCurrentForwardAuthority(authority, intent);
-        const now = await this.databaseNow(tx);
-        this.assertFresh(intent, now);
-
         const dispatch = await this.selectDispatch(tx, intent);
         if (!dispatch || !dispatchMatchesIntent(dispatch, intent)) {
           throw new Error("p88_w07_dispatch_missing_or_mismatched");
@@ -791,6 +770,27 @@ export class P88W07DispatchStore {
             });
           }
           throw new Error("p88_w07_dispatch_state_uncertain");
+        }
+
+        this.assertCurrentForwardAuthority(authority, intent);
+        const now = await this.databaseNow(tx);
+        this.assertFresh(intent, now);
+
+        const observed = input.finalBeforeObservation;
+        const exactBefore = p88W02StateFingerprint({
+          target: input.handoff.lineage.w02Materialization.target,
+          value: observed.rawValue,
+          purpose: "before",
+        });
+        if (
+          observed.status !== "observed"
+          || observed.siteId !== intent.siteId
+          || observed.resourceGid !== intent.target.resourceGid
+          || observed.rawValue !== intent.state.beforeValue
+          || observed.observedBeforeFingerprint !== exactBefore
+          || exactBefore !== intent.state.beforeFingerprint
+        ) {
+          throw new Error("p88_w07_final_before_state_mismatch");
         }
 
         const historyQuota = await tx.unsafe<{ count: number }[]>(
