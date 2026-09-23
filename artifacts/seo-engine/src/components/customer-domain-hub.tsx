@@ -13,7 +13,7 @@ export type CustomerDomainCard = {
 const STATUS_META = {
   available: { label: "AVAILABLE", tone: "success" as const },
   preview: { label: "PREVIEW", tone: "info" as const },
-  unavailable: { label: "NOT CONNECTED", tone: "neutral" as const },
+  unavailable: { label: "UNAVAILABLE", tone: "neutral" as const },
   coming_soon: { label: "COMING NEXT", tone: "neutral" as const },
 };
 
