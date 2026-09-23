@@ -14,6 +14,16 @@ const layoutSource = readFileSync(
   "utf8",
 );
 const cssSource = readFileSync(join(here, "index.css"), "utf8");
+const read = (relativePath) => readFileSync(join(here, relativePath), "utf8");
+const customerSources = [
+  "components/customer-domain-hub.tsx",
+  "pages/content.tsx",
+  "pages/site-audit-hub.tsx",
+  "pages/authority.tsx",
+  "pages/automation.tsx",
+  "pages/dashboard.tsx",
+  "pages/settings.tsx",
+].map(read);
 
 const expectedPrimaryLabels = [
   "Home",
@@ -148,4 +158,20 @@ test("customer navigation uses list semantics and mobile replacement below 640px
     cssSource,
     /.mobileNavPanels*{[sS]*?display:s*block;/,
   );
+});
+
+
+test("UGP-2.1 customer-facing surfaces do not expose engineering task identifiers", () => {
+  const source = customerSources.join("\n");
+  assert.doesNotMatch(source, /Task\s*#/);
+  assert.doesNotMatch(source, /UGP-[0-9]/);
+  assert.doesNotMatch(source, /P[0-9]+\.[0-9]+/);
+});
+
+test("UGP-2.1 keeps unavailable and future capability states explicit", () => {
+  const source = customerSources.join("\n");
+  assert.match(source, /COMING NEXT/);
+  assert.match(source, /NOT CONNECTED/);
+  assert.match(source, /PREVIEW/);
+  assert.match(source, /No ranking metrics are invented/);
 });
