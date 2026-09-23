@@ -9,13 +9,15 @@ const read = (relativePath) => readFileSync(join(here, relativePath), "utf8");
 
 const page = read("pages/technical-seo.tsx");
 const app = read("App.tsx");
-const navigation = read("navigation.json");
+const navigation = JSON.parse(read("navigation.json"));
 const model = read("lib/audit-workspace-model.ts");
 
-test("P4.6 preserves the existing Technical SEO route and Audit navigation", () => {
+test("UGP-2.1 preserves Technical SEO under the customer-facing Site Audit domain", () => {
+  const siteAudit = navigation.find((item) => item.label === "Site Audit");
   assert.ok(app.includes('<Route path="/technical-seo" component={TechnicalSeoPage} />'));
-  assert.ok(navigation.includes('"label": "Technical SEO"'));
-  assert.ok(navigation.includes('"path": "/technical-seo"'));
+  assert.ok(app.includes('<Route path="/site-audit/technical" component={TechnicalSeoPage} />'));
+  assert.equal(siteAudit?.path, "/site-audit");
+  assert.ok(siteAudit?.aliases?.includes("/technical-seo"));
 });
 
 test("P4.6 uses only existing GET dashboard/findings hooks for exposed runtime data", () => {
