@@ -349,12 +349,14 @@ test("P8.8 W07 43-table dispatch fence, crash/replay and W04 safety closure", as
     rollbackOccurrence: "none",
   });
   assert.equal(manual.state, "manual_intervention_required");
-  reservationRows = await admin.unsafe<{ status: string; terminal_at: Date | null }[]>(
+  const manualReservationRows = await admin.unsafe<
+    { status: string; terminal_at: Date | null }[]
+  >(
     "SELECT status,terminal_at FROM policy_mutation_reservations WHERE reservation_id=$1",
     [uncertainCase.w04Receipt.reservationId],
   );
-  assert.equal(reservationRows[0]?.status, "manual_intervention");
-  assert.equal(reservationRows[0]?.terminal_at, null);
+  assert.equal(manualReservationRows[0]?.status, "manual_intervention");
+  assert.equal(manualReservationRows[0]?.terminal_at, null);
 
   const eventRows = await admin.unsafe<{ count: number }[]>(
     "SELECT COUNT(*)::int AS count FROM policy_mutation_dispatch_events",
