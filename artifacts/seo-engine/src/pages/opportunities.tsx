@@ -29,7 +29,7 @@ const activeColumns = [
     ),
   },
   {
-    header: "Evidence",
+    header: "Why this",
     accessorKey: "evidence_count",
     cell: (value: number, row: OpportunityRecord) => (
       <div className="opportunityEvidence">
@@ -37,13 +37,13 @@ const activeColumns = [
         <span>{row.why_qualifies}</span>
         <OpportunityEvidenceDrawer
           opportunity={row}
-          triggerLabel="Inspect evidence summary"
+          triggerLabel="See evidence"
         />
       </div>
     ),
   },
   {
-    header: "Evaluator risk",
+    header: "Risk",
     accessorKey: "risk_classification",
     cell: (value: string) => <StatusBadge tone={riskTone(value)}>{value.toUpperCase()}</StatusBadge>,
   },
@@ -52,9 +52,8 @@ const activeColumns = [
     accessorKey: "recommendation",
     cell: (value: string, row: OpportunityRecord) => (
       <div className="opportunityPlan">
-        <strong>DRY RUN ONLY</strong>
+        <strong>NOT APPLIED</strong>
         <span>{value}</span>
-        <small>Execution authorized: {row.execution_authorized ? "yes" : "no"}</small>
       </div>
     ),
   },
@@ -75,27 +74,27 @@ export default function OpportunitiesPage() {
     <>
       <header className="topbar">
         <div>
-          <strong>Decision Queue</strong>
-          <span className="muted"> Opportunities</span>
+          <strong>Opportunities</strong>
+          <span className="muted"> Prioritized improvements</span>
         </div>
       </header>
 
       <div className="content">
         <PageHeader 
-          eyebrow="QUEUED" 
+          eyebrow="PRIORITIZED" 
           title="Opportunities" 
-          description="Evidence-backed candidates that currently satisfy guarded eligibility rules. Recommendations are dry-run only."
+          description="Prioritized improvements backed by current evidence. Open details only when you need them."
           readiness={data?.readiness}
         />
 
         <section className="card opportunityQueue">
           <div className="sectionHead">
             <div>
-              <p className="eyebrow">CURRENTLY VALID</p>
-              <h2>Active decision queue</h2>
-              <p className="muted">Only candidates supported by the latest persisted baseline evidence appear here.</p>
+              <p className="eyebrow">RECOMMENDED</p>
+              <h2>What to improve next</h2>
+              <p className="muted">Only currently supported opportunities appear here.</p>
             </div>
-            <StatusBadge tone="info"><ShieldCheck className="w-3 h-3 mr-1 inline" /> READ-ONLY</StatusBadge>
+            <StatusBadge tone="info"><ShieldCheck className="w-3 h-3 mr-1 inline" /> EVIDENCE-BACKED</StatusBadge>
           </div>
           {isLoading ? (
             <div className="flex flex-col items-center justify-center p-12 text-[#647087]" role="status" aria-live="polite">
