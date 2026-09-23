@@ -5,12 +5,12 @@ export default function AuthorityPage() {
     <CustomerDomainHub
       eyebrow="AUTHORITY & LINKS"
       title="Authority"
-      description="Understand the external signals supporting your site, where competitors have stronger link coverage, and which authority-building opportunities deserve attention."
+      description="Find backlink gaps and authority-building opportunities."
       cards={[
         {
           title: "Backlink gaps",
           description:
-            "Inspect supplied referring-domain gap evidence and shared coverage without treating provider-native authority metrics as universally comparable.",
+            "Inspect referring-domain gaps and shared coverage evidence.",
           href: "/authority/backlinks",
           actionLabel: "Review backlink gaps",
           status: "preview",
@@ -18,7 +18,7 @@ export default function AuthorityPage() {
         {
           title: "Competitor authority",
           description:
-            "Compare competitor visibility, page evidence, authority signals, and observed topic gaps in the current research workspace.",
+            "Compare competitor visibility, authority signals, and topic gaps.",
           href: "/authority/competitors",
           actionLabel: "Open competitor research",
           status: "preview",
@@ -26,14 +26,14 @@ export default function AuthorityPage() {
         {
           title: "Outreach",
           description:
-            "Earned-link outreach, unlinked brand mentions, broken-link opportunities, resource pages, and editorial outreach will be managed here.",
+            "Manage earned-link, mention, broken-link, and editorial outreach.",
           actionLabel: "Outreach workflow is being added",
           status: "coming_soon",
         },
         {
           title: "Digital PR opportunities",
           description:
-            "Evidence-backed PR and citation opportunities will appear here when the supporting discovery and outreach connectors are implemented.",
+            "PR and citation opportunities will appear as connectors are added.",
           actionLabel: "Opportunity workflow is being added",
           status: "coming_soon",
         },
