@@ -2,43 +2,47 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 specification/review active / implementation blocked
+## Active engineering checkpoint — P8.8 W01 pure policy grant/evaluation complete / W02 separately gated
 
-P8.7 is certified complete under issue #404 / PR #405.
+P8.8 specification/review is certified complete under issue #406 / PR #407.
 
-Final P8.7 repository certification:
-- exact tested closeout head: `7a7747d50b8f6bfd4286390e2025dbab7b62d4fd`;
-- exact-head CI #702 / run `35774922578`: success;
-- merge: `f7967fc0b494dec0fc9eab74f556469efcceee06`;
-- merge tree: `d3ecdbd5596e60348f0ad7dc550b15752b608cc7`;
-- post-merge main CI #703 / run `35775514185`: success;
-- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, no republish/runtime/provider/database/config action.
+Specification certification:
+- specification head: `8b4a25c15be91c61910b397762a99bb004963bda`;
+- exact-head CI #704 / run `35776363403`: success;
+- merge/tree: `3b462520a59cdb29318773fde4cd36592ddc27c3` / `f99095e5e4f4514f8c3c8ffa6091ceaf89eacd45`;
+- post-merge CI #705 / run `35777100907`: success;
+- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, no republish/runtime/provider/database/config/migration/scheduler/worker activity.
 
-P8.8 specification/review is now tracked by issue #406.
+P8.8 W01 is complete under issue #408 / PR #409.
 
-The P8.8 specification converts the completed P9.8 architecture review plus P8.7 live-pilot evidence into a staged implementation contract while preserving all existing execution safeguards.
+W01 implements only a pure, deterministic, default-off policy grant/admission library for the exact initial class:
 
-Initial policy class remains exactly:
-- Shopify Product only;
-- action `update_meta_description`;
-- field `meta_description`;
-- exact Product GID + `diamondshelf.us/products/...` URL;
-- existing isolated `write_products` authority only;
-- no collections, titles, media/file-alt, handles, content, inventory, price, publication, theme or new provider scopes.
+`shopify.product.seo.meta_description`
 
-The specification requires:
-- provenance-distinct `policy_authorization` rather than fabricated human approval;
-- immutable/versioned/expiring/revocable external policy grants;
-- exact P9.7 → governed proposal materialization with no new generated text;
-- deterministic admission over evidence, quality, risk, target, quota, cooldown and worker-control state;
-- durable reservation/idempotency before provider dispatch;
-- a separate policy execution namespace that cannot spoof the human Task #54 confirmation;
-- preservation of one-forward-mutation maximum, independent provider + storefront verification, one deterministic rollback and manual-intervention fail-closed semantics;
-- staged rollout: Stage 0 shadow → Stage 1 single-action canary → separately reviewed Stage 2 expansion.
+W01 now provides:
+- an immutable/deep-frozen in-code policy grant;
+- deterministic policy fingerprints and integrity checks;
+- exact initial scope: Diamond Shelf / Shopify Product / `update_meta_description` / `meta_description` / `write_products`;
+- minimum 2 evidence refs;
+- minimum quality score 90;
+- exactly low risk;
+- concurrency limit 1;
+- quota 1 action / 24 hours;
+- same-target cooldown >= 14 days;
+- canonical activation/expiry/revocation identity;
+- deterministic pure admission/rejection evaluation over caller-supplied recommendation/proposal/evidence/quality/risk/target/current-state/control facts;
+- exact sorted fail-closed reason codes;
+- deterministic evidence/quality/risk/target/current-state/evaluation fingerprints;
+- explicit semantics that `admit` means policy-layer admission only, not approval or execution authorization;
+- source-level and runtime-capability markers proving zero DB/network/provider/runtime binding.
 
-P8.8 is **specification/review only** at this checkpoint. It authorizes no policy-engine implementation, Production schema/storage work, scheduler/worker activation, provider/public-site write, Task #51/#53/#54 execution, credential/scope change, `PUBLIC_SITE_WRITES_ENABLED` change, deployment or publication.
+The W01 admission matrix fails closed on inactive/expired/revoked policy, non-running control, unresolved side-effect/manual-intervention state, invalid recommendation/proposal lineage, AI-assisted or edited proposals, insufficient evidence, any quality blocker/warning, score below threshold, non-low risk, unsupported provider/domain/resource/GID/URL/action/field/scope, stale provider-before state, prior deployment, site concurrency, cooldown or quota exhaustion.
 
-**Next safe boundary after specification certification:** W01 — pure policy grant/evaluation contracts only, and only under a separate implementation authorization. W01 must remain deterministic, network-free, persistence-free and default-off.
+W01 performs no database read/write/persistence/schema work, no provider/network request/write, no approval creation, no Task #51/#53/#54 execution, no policy activation, no scheduler/worker/autonomous execution, no credential/scope/config change, no public-write-gate enablement, no deployment and no publication.
+
+The implementation's code-only head passed canonical CI #706 before closeout documentation was added. Exact final PR-head/merge/post-merge certification is recorded on issue #408.
+
+**Next boundary:** W02 — P9.7 proposal materialization bridge. W02 is not authorized by W01 approval or generic continuation. It requires a separate explicit implementation authorization and must remain deterministic, generate no new text, persist nothing, and create no execution authority unless a later separately authorized work package provides it.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
