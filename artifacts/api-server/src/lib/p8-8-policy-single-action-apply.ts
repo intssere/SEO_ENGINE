@@ -72,6 +72,12 @@ export type P88W07ExecutionIntent = Readonly<{
   w06PreflightId: string;
   w06PreflightFingerprint: string;
   credentialProfileId: string;
+  authorizationIssuedAt: string;
+  authorizationExpiresAt: string;
+  w06PreflightExpiresAt: string;
+  mutationQuotaMaxActions: 1;
+  mutationQuotaWindowHours: 24;
+  sameTargetCooldownHours: number;
   claimedControlRevision: number;
   claimedControlFingerprint: string;
   target: Readonly<{
@@ -323,6 +329,12 @@ export function projectP88W07ExecutionIntent(
     w06PreflightId: w06.preflightId,
     w06PreflightFingerprint: w06.preflightFingerprint,
     credentialProfileId: lineage.w01EvaluationInput.grant.credentialProfileId,
+    authorizationIssuedAt: w03.issuedAt,
+    authorizationExpiresAt: w03.expiresAt,
+    w06PreflightExpiresAt: w06.preflightExpiresAt,
+    mutationQuotaMaxActions: lineage.w01EvaluationInput.grant.mutationQuota.maxActions,
+    mutationQuotaWindowHours: lineage.w01EvaluationInput.grant.mutationQuota.windowHours,
+    sameTargetCooldownHours: lineage.w01EvaluationInput.grant.sameTargetCooldownHours,
     claimedControlRevision: w05.controlRevision,
     claimedControlFingerprint: w05.controlFingerprint,
     target: {
