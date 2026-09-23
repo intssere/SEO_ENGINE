@@ -86,8 +86,11 @@ test("P8.8 W05 migration applies only to the dedicated ephemeral W04 38-table ba
   assert.equal(Number(before[0]?.count ?? 0), EXPECTED_P8_8_W04_TABLE_COUNT);
 
   const existing = await sql.unsafe<{ table_name: string }[]>(
-    "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name = ANY($1::text[]) ORDER BY table_name",
-    [[...TABLES]],
+    "SELECT table_name FROM information_schema.tables "
+      + "WHERE table_schema='public' AND table_name IN ("
+      + "'policy_mutation_control_state',"
+      + "'policy_mutation_control_events',"
+      + "'policy_mutation_claims') ORDER BY table_name",
   );
   assert.equal(existing.length, 0, "W05 tables must not pre-exist");
 
@@ -100,8 +103,11 @@ test("P8.8 W05 migration applies only to the dedicated ephemeral W04 38-table ba
   assert.equal(Number(after[0]?.count ?? 0), EXPECTED_P8_8_W05_TABLE_COUNT);
 
   const actualTables = await sql.unsafe<{ table_name: string }[]>(
-    "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name = ANY($1::text[]) ORDER BY table_name",
-    [[...TABLES]],
+    "SELECT table_name FROM information_schema.tables "
+      + "WHERE table_schema='public' AND table_name IN ("
+      + "'policy_mutation_control_state',"
+      + "'policy_mutation_control_events',"
+      + "'policy_mutation_claims') ORDER BY table_name",
   );
   assert.deepEqual(
     actualTables.map((row) => row.table_name).sort(),
