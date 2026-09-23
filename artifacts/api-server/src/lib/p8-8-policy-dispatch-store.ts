@@ -798,31 +798,28 @@ export class P88W07DispatchStore {
         if (!row) throw new Error("p88_w07_dispatch_update_uncertain");
 
         if (input.terminalReservationStatus) {
-          let terminalSql: string;
-          let params: unknown[];
+          let closed: { reservation_id: string }[];
           if (input.terminalReservationStatus === "manual_intervention") {
-            terminalSql =
+            closed = await tx.unsafe<{ reservation_id: string }[]>(
               "UPDATE policy_mutation_reservations SET status='manual_intervention',"
-              + "terminal_at=NULL,terminal_reason=$3,updated_at=$2::timestamptz "
-              + "WHERE reservation_id=$1 AND status='claimed' RETURNING reservation_id";
-            params = [current.reservation_id, now.toISOString(), input.reason];
+                + "terminal_at=NULL,terminal_reason=$3,updated_at=$2::timestamptz "
+                + "WHERE reservation_id=$1 AND status='claimed' RETURNING reservation_id",
+              [current.reservation_id, now.toISOString(), input.reason],
+            );
           } else {
-            terminalSql =
+            closed = await tx.unsafe<{ reservation_id: string }[]>(
               "UPDATE policy_mutation_reservations SET status=$3,"
-              + "terminal_at=$2::timestamptz,terminal_reason=$4,"
-              + "updated_at=$2::timestamptz "
-              + "WHERE reservation_id=$1 AND status='claimed' RETURNING reservation_id";
-            params = [
-              current.reservation_id,
-              now.toISOString(),
-              input.terminalReservationStatus,
-              input.reason,
-            ];
+                + "terminal_at=$2::timestamptz,terminal_reason=$4,"
+                + "updated_at=$2::timestamptz "
+                + "WHERE reservation_id=$1 AND status='claimed' RETURNING reservation_id",
+              [
+                current.reservation_id,
+                now.toISOString(),
+                input.terminalReservationStatus,
+                input.reason,
+              ],
+            );
           }
-          const closed = await tx.unsafe<{ reservation_id: string }[]>(
-            terminalSql,
-            params,
-          );
           if (closed[0]?.reservation_id !== current.reservation_id) {
             throw new Error("p88_w07_reservation_terminal_update_uncertain");
           }
