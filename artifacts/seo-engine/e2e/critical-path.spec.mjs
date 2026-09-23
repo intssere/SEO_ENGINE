@@ -168,7 +168,7 @@ test("UGP-2.2 opportunity evidence reveals traceability before technical details
   await expect(advanced).toBeHidden();
 
   await evidence.click();
-  await expect(page.getByText("Traceable evidence")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Traceable evidence" })).toBeVisible();
   await expect(advanced).toBeVisible();
 
   await advanced.click();
