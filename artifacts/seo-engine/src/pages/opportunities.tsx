@@ -87,7 +87,7 @@ export default function OpportunitiesPage() {
               No opportunities currently meet the evidence and confidence guardrails.
             </div>
           ) : (
-            <div className="decisionCardList">
+            <div className="approvalReviewList">
               {cards.map((card, index) => (
                 <DecisionCard
                   key={card.id}
