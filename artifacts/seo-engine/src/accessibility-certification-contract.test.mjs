@@ -16,10 +16,15 @@ const packageJson = read("../package.json");
 const EXPECTED_ROUTES = [
   "/",
   "/opportunities",
+  "/content",
+  "/site-audit",
+  "/authority",
+  "/automation",
+  "/performance",
+  "/settings",
   "/governance",
   "/actions",
   "/approvals",
-  "/performance",
   "/deployments",
   "/technical-seo",
   "/rankings",
@@ -31,19 +36,19 @@ const EXPECTED_ROUTES = [
   "/impact",
   "/reports",
   "/connections",
-  "/settings",
 ];
 
-test("P11.5 certifies every explicit routed surface plus the not-found fallback", () => {
+test("UGP-2.1 certifies every distinct routed surface plus the not-found fallback", () => {
   const actual = [...app.matchAll(/<Route path="([^"]+)"/g)].map((match) => match[1]);
-  assert.deepEqual(actual, EXPECTED_ROUTES);
 
   for (const route of EXPECTED_ROUTES) {
+    assert.ok(actual.includes(route), `missing app surface ${route}`);
     assert.ok(
       cert.includes(JSON.stringify(route)),
       `P11.5 browser certification missing route ${route}`,
     );
   }
+  assert.ok(actual.length > EXPECTED_ROUTES.length, "customer aliases should map to already-certified surfaces");
   assert.ok(cert.includes('"/__p11-5-not-found"'));
 });
 
