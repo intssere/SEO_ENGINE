@@ -25,25 +25,25 @@ async function openSyntheticPage(page, path, viewport = { width: 1440, height: 1
   return { boundary, errors };
 }
 
-test("desktop Command Center navigates without live network and hands route focus to main", async ({
+test("desktop Home navigates through customer IA and hands route focus to main", async ({
   page,
 }) => {
   const { boundary, errors } = await openSyntheticPage(page, "/");
 
   await expect(
-    page.getByRole("heading", { name: "SEO operations overview" }),
+    page.getByRole("heading", { name: "Search growth overview" }),
   ).toBeVisible();
   await expect(
     page.getByText("Freshness marker: Synthetic fixture · 5 minutes").first(),
   ).toBeVisible();
   await expect(page.getByRole("main")).toHaveAttribute("id", "main-content");
 
-  const technicalLink = page.getByRole("link", { name: "Technical SEO" });
-  await technicalLink.click();
+  const siteAuditLink = page.getByRole("link", { name: "Site Audit" });
+  await siteAuditLink.click();
 
-  await expect(page).toHaveURL(/\/technical-seo$/);
+  await expect(page).toHaveURL(/\/site-audit$/);
   await expect(
-    page.getByRole("heading", { name: "Technical SEO & crawl explorer" }),
+    page.getByRole("heading", { name: "Site Audit" }),
   ).toBeVisible();
   await expect(page.locator("#main-content")).toBeFocused();
 
@@ -89,21 +89,25 @@ test("P12.1 primary navigation excludes engineering-only routes while direct eng
 
   const primary = page.locator(".sidebar .primaryNav");
   for (const label of [
-    "Overview",
+    "Home",
     "Opportunities",
-    "Technical SEO",
-    "Governance",
-    "Actions",
-    "Approvals",
-    "Deployments",
+    "Content",
+    "Site Audit",
+    "Authority",
+    "Automation",
     "Performance",
-    "Connections",
     "Settings",
   ]) {
     await expect(primary.getByRole("link", { name: new RegExp("^" + label) })).toBeVisible();
   }
 
   for (const label of [
+    "Technical SEO",
+    "Governance",
+    "Actions",
+    "Approvals",
+    "Deployments",
+    "Connections",
     "Rankings",
     "Search Intelligence",
     "AI Visibility",
@@ -275,7 +279,7 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
 }) => {
   const { boundary, errors } = await openSyntheticPage(page, "/");
 
-  const restoreTarget = page.getByRole("link", { name: "Technical SEO" });
+  const restoreTarget = page.getByRole("link", { name: "Site Audit" });
   await restoreTarget.focus();
   await expect(restoreTarget).toBeFocused();
 
@@ -318,7 +322,7 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
   assertBrowserClean(errors);
 });
 
-for (const route of ["/", "/technical-seo", "/search-intelligence", "/ai-visibility", "/governance", "/connections"]) {
+for (const route of ["/", "/content", "/site-audit", "/authority", "/automation", "/settings", "/technical-seo", "/search-intelligence", "/ai-visibility", "/governance", "/connections"]) {
   test(`axe serious/critical scan passes on ${route}`, async ({ page }) => {
     const { boundary, errors } = await openSyntheticPage(page, route);
 
