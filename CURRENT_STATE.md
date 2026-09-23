@@ -1,41 +1,51 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W07 single-action apply specification/review
+## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
 
-W06 specification and E1–E5 implementation are certified complete.
+W07 specification/review is certified complete under issue #461 / PR #462.
 
-Final W06 certification:
-- implementation issue #453 / PR #458;
-- exact certified PR head: `6a2127d76a4234175041e9fe09b09120d621fe59`;
-- PR-head CI #885 / run `35888216255`: success;
-- merge/canonical main: `910058bca868b2d49333fd57c8ac7979cd41f53a`;
-- canonical tree: `6d66098c713152de5ea5e8c51fbdb1a6ccf6d111`;
-- post-merge CI #913 / run `35890798168`: success;
-- Replit main exact-synced to the merge, ahead/behind `0/0`, clean, no extra commits;
-- no deployment/publication, Production migrations/DDL/DML, live provider access, provider write, Task #51/#53/#54 execution, policy/scheduler/worker activation, or credential/config change occurred.
+Final W07 specification certification:
+- exact certified spec head: `50ecafcb53a1bbf50ca1714e917616dd58c9c7da`;
+- exact-head CI #939 / run `35894054466`: success;
+- merge/canonical main: `15846991123b6664c37176b844550d4b0095b39a`;
+- canonical tree: `94f2ccfa5b265e2ee0a8f470546428c1d6d7b9e1`;
+- post-merge CI #945 / run `35895949868`: success;
+- Replit main exact-synced to the merge, ahead/behind `0/0`, clean, no extra local commits;
+- the W07 specification diff was documentation-only;
+- no W07 implementation, migration 0007, Production DDL/DML, live provider access/write, rollback write, Task #51/#53/#54 execution, policy/scheduler/worker activation, credential/config change, deployment/publication, or W08–W10 work occurred.
 
-W07 specification/review is now active under issue #461 on branch `p8-8-w07-single-action-apply-spec-461`.
-
-The W07 review defines:
+The certified W07 contract requires:
 - exact W06 `ready_for_w07` handoff plus independent W01–W06 revalidation;
-- a dedicated policy execution provenance distinct from Task #51/#53/#54;
-- a future two-phase durable dispatch fence: `reserved_prewrite -> dispatch_started`;
-- W04 remains `claimed` throughout nonterminal provider/verification/rollback work;
-- `claimed -> released` only for proven no-dispatch closure;
+- dedicated policy execution provenance distinct from Task #51/#53/#54;
+- future two-phase durable dispatch fence `reserved_prewrite -> dispatch_started`;
+- W04 remains `claimed` through all nonterminal forward verification/rollback states;
+- `claimed -> released` only for exact proven no-dispatch closure;
 - `claimed -> consumed` only after a spent forward attempt reaches a safe terminal no-write/live/rollback-verified state;
-- `claimed -> manual_intervention` for uncertain/unsafe closure;
-- exact W02 after bytes for forward mutation and exact W02 before bytes for rollback; Task #53 normalization is forbidden in the policy mutation path;
-- at most one forward mutation attempt and at most one rollback mutation attempt;
-- exact provider after/before state plus independent P8.4-equivalent provider+storefront verification;
-- pause/drain/kill split between blocking new forward work and permitting mandatory safety closure after side effect becomes possible;
-- future dedicated migration 0007 with `policy_mutation_dispatches` and `policy_mutation_dispatch_events`;
-- future dedicated policy execution gate, default false, in addition to `PUBLIC_SITE_WRITES_ENABLED`;
-- W07 engineering remains default-off and live Stage 1 activation remains W10.
+- `claimed -> manual_intervention` for unresolved/unsafe side-effect state;
+- exact W02 after bytes for forward mutation and exact W02 before bytes for rollback;
+- Task #53 normalization is forbidden in the policy mutation path;
+- maximum one forward mutation attempt and one rollback mutation attempt;
+- exact provider after/before state plus independent provider + storefront verification;
+- no automatic forward or rollback write retry;
+- pause/drain/kill split between blocking new forward work and allowing mandatory safety closure;
+- future migration `0007_p8_8_policy_mutation_dispatch.sql` limited to policy dispatch state/events;
+- future policy execution gate remains default-off and separate from `PUBLIC_SITE_WRITES_ENABLED`;
+- live Stage 1 activation remains W10.
 
-Specification document:
-- `docs/p8-8-w07-policy-single-action-apply-spec.md`.
+**Next explicit engineering boundary:** W07-E1 through W07-E5 implementation exactly as defined in `docs/p8-8-w07-policy-single-action-apply-spec.md`.
 
-**This phase is specification/review only.** W07 implementation, migration 0007 creation/application, Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live provider reads, provider/public-site writes, rollback writes, Task #51/#53/#54 execution, policy/scheduler/worker/autonomous activation, credentials/scopes/config changes, deployment/publication, and W08–W10 remain out of scope.
+Generic `continue` does **not** authorize that implementation. It may perform only documentation/readiness/review work until a user explicitly authorizes W07 implementation.
+
+W07 implementation authorization should preserve all exclusions:
+- no Production migrations 0005/0006/0007;
+- no Production DDL/DML/control/reservation/claim/dispatch changes;
+- no live Production provider reads;
+- no real provider/public-site or rollback writes;
+- no Task #51/#53/#54 execution;
+- no scheduler/worker/policy/autonomous activation;
+- no credential/scope/config changes;
+- no deployment/publication;
+- W08–W10 remain out of scope.
 
 ## Active engineering checkpoint — P8.8 W06 policy-aware mutation-free preflight specification/review
 

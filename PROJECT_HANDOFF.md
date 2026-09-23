@@ -13,86 +13,22 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W07 specification/review — issue #461
+### P8.8 W07 specification certified — implementation gate next
 
-Canonical GitHub `main` is `910058bca868b2d49333fd57c8ac7979cd41f53a` / tree `6d66098c713152de5ea5e8c51fbdb1a6ccf6d111`.
+Canonical GitHub `main` is `15846991123b6664c37176b844550d4b0095b39a` / tree `94f2ccfa5b265e2ee0a8f470546428c1d6d7b9e1`.
 
-W06 is fully certified and merged:
-- PR #458 exact head `6a2127d76a4234175041e9fe09b09120d621fe59`;
-- PR-head CI #885 success;
-- merge `910058bca868b2d49333fd57c8ac7979cd41f53a`;
-- post-merge CI #913 success;
+W07 specification/review is complete:
+- issue #461 / PR #462;
+- exact certified spec head `50ecafcb53a1bbf50ca1714e917616dd58c9c7da`;
+- PR-head CI #939 success;
+- merge `15846991123b6664c37176b844550d4b0095b39a`;
+- post-merge CI #945 success;
 - Replit main exact, `0/0`, clean.
 
-W07 review branch: `p8-8-w07-single-action-apply-spec-461`.
+The W07 contract is now frozen for implementation: policy-only two-phase dispatch fence, W04 held claimed until terminal closure, exact W02 byte-preserving forward/rollback values, at most one forward and one rollback mutation, exact provider plus independent provider/storefront verification, fail-closed manual intervention on uncertainty, and a future additive migration 0007 limited to policy dispatch state/events.
 
-W07 is being specified as the default-off policy apply/safety-closure layer. The key contract is a durable two-phase dispatch fence before any provider write, exact byte-preserving W02 forward/rollback values, at most one forward attempt and one rollback attempt, W04 held `claimed` until terminal closure, independent exact-provider plus provider/storefront verification, and manual intervention for any unresolved side-effect ambiguity.
+**Current safe boundary:** implementation-readiness/documentation only. Generic `continue` must not implement W07 or create migration 0007. W07-E1–E5 implementation requires explicit user authorization. Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live provider access/writes, rollback writes, Task #51/#53/#54 execution, policy/scheduler/worker activation, credentials/config/gates, deployment/publication and W08–W10 remain separately gated.
 
-Future W07 migration 0007 is proposed to own only policy dispatch state/events. It is not created/applied by the specification phase. Live policy execution remains W10.
-
-**Current safe boundary:** complete W07 specification/review and exact-head PR certification only. Generic `continue` must not implement W07, create/apply migration 0007, apply Production migrations 0005/0006, mutate Production policy rows, call live providers, perform provider/rollback writes, execute Task #51/#53/#54, activate policy/scheduler/worker/autonomy, change credentials/config/gates, deploy or publish.
-
-
-### P8.8 W06 implementation — issue #453
-
-W06-E1–E5 engineering is now implemented on GitHub branch `p8-8-w06-preflight-implementation-453` from canonical base `2496b67d52075f10d32ac46b8914cb29cb4c73c8` and is awaiting PR/exact-head CI certification.
-
-The branch adds only the certified W06 implementation scope: exact W01–W05 lineage contracts, exact W02-domain provider observation, an explicit-URL read-only 41-table snapshot store, an injected query-only Shopify Product meta-description adapter/orchestrator, and localhost-only no-dispatch/race certification. W06 adds no migration/table and never grants provider dispatch/write/public-write authority.
-
-The current canonical implementation branch head before PR certification is `2b67b47782a9c65de231bc0f24612523d73caaa0`. Replit has a separate unpushed local W06 attempt commit whose push failed; it is non-canonical and must not be imported. No live database/provider/runtime/deployment/config action occurred from that attempt.
-
-Production migrations 0005/0006, Production DDL/DML/control/reservation/claim changes, live Production provider reads, provider writes, Task #51/#53/#54 execution, scheduler/worker/policy/autonomous activation, credential/scope/config changes, deployment/publication, and W07–W10 remain outside issue #453.
-
-
-**Newest P8.8 checkpoint:** W01–W06 are certified through canonical merge `910058bca868b2d49333fd57c8ac7979cd41f53a`. W07 specification/review is active under issue #461. W07 defines a policy-only two-phase dispatch fence, exact byte-preserving Product meta-description forward/rollback semantics, one-forward/one-rollback maximum, exact provider plus provider/storefront verification, and W04 `released`/`consumed`/`manual_intervention` closure mapping. W07 implementation and all live/Production activation remain separately gated.\n\nW04 specification/review was certified under issue #418 / PR #419:
-- exact tested spec head: `2ac7373e9986874afe9e543863cfecc8d82732e0`;
-- exact-head CI #737 / run `35843311585`: success;
-- merge/tree: `2c31f3e4a355ac1bb2715f201a5dc2148a3b99f7` / `76f4406258e092e4af3b6221860d88231ab60f0a`;
-- post-merge CI #738 / run `35844152037`: success;
-- Replit exact Git-only sync: merge/tree exact, `0/0`, clean, zero tracked/untracked changes/locks/writers, no republish/runtime activity.
-
-W04 engineering contract:
-- deterministic pure W04 reservation intent from canonical W01/W02 lineage;
-- exact W04 reservation ID/fingerprint must be precommitted through unchanged W03 v1;
-- additive migration source `0005_p8_8_policy_mutation_reservations.sql`;
-- dedicated policy reservation namespace, never fake human `actions` rows and never generic `jobs`;
-- database CHECK constraints close initial scope to Diamond Shelf Shopify Product `meta_description`;
-- partial unique indexes enforce one active/blocking reservation per site and per exact target field;
-- explicit database URL only, with no W04 fallback to process `DATABASE_URL`;
-- database transaction time controls authorization-window validity;
-- exact replay vs identity/site/target/uncertain conflict classification;
-- stale `authorized` may expire opportunistically; `claimed` and `manual_intervention` never auto-expire;
-- bounded durable receipt with no raw proposal/provider/secret/human-approval payload;
-- real concurrent PostgreSQL race certification in dedicated localhost CI;
-- exact W03/W04 pair projection for later W05/W06;
-- provider dispatch/public write authority remains false.
-
-Code-only head `209bd9a96489176942e501a20b6e4983c94f521a` passed CI #744 / run `35854780897` completely.
-
-**Production status:** migration 0005 is source/CI-certified only and is NOT applied to Production. No Production reservation row exists from W04 engineering.
-
-**W05 engineering implementation:** issue #443 / PR #444.
-
-Implemented:
-- dedicated policy-mutation control state + append-only transition history, separate from P9.6 review artifacts and all human action tables;
-- exact W03/W04 pair + exact durable control revision/fingerprint binding for one immutable W05 claim;
-- atomic W04 `authorized -> claimed` transition under exact durable `running` control;
-- control-row-first locking to serialize claim-vs-pause/drain/kill races;
-- pause/drain/kill safe release of exact paired unclaimed `authorized` reservations only;
-- claimed/manual-intervention preservation until later certified no-dispatch or safety-closure evidence exists;
-- durable latched kill and no ordinary killed resume;
-- database-clock/revision semantics and real PostgreSQL concurrency certification;
-- strict new-forward-mutation vs post-side-effect-safety-closure separation;
-- zero change to the human Task #51/#54 path;
-- migration source `0006_p8_8_policy_mutation_controls.sql`, with no default running row and no Production application.
-
-Corrected code-only head `6f5e302db014c153cfca2f86ca7f46136e0ab74f` passed CI #825 / run `35869432936` completely: W05 migration/schema, real PostgreSQL races, full workspace, P11.10, Chromium, typecheck and build.
-
-Final PR #444 closeout certification is complete: exact PR head `d4daaa6b1b25667af884d1ecea1f3502e1d7bd8f` passed CI #835 / run `35870588547`; the PR merged as `fa15403b2cf4802c85b87f01b1cc77c778775245` / tree `9ff17f37ce595b58640817e57d805e7c70237ea8`; post-merge CI #840 / run `35871447548` passed; and Replit was reconciled Git-only to that exact merge with refreshed `origin/main`, ahead/behind `0/0`, clean, and no extra local commits.
-
-W05 engineering does **not** authorize Production migrations 0005/0006, Production control initialization/claims/reservation transitions, provider/network access, Task #51/#53/#54 execution, scheduler/worker/policy activation, credential/config changes, deployment/publication or W06–W10.
-
-**Current safe boundary:** complete W07 specification/review under issue #461 and certify its exact PR head. W07 implementation, migration 0007, Production migrations 0005/0006/0007, Production DDL/DML/control/reservation/claim/dispatch changes, live provider reads/writes, Task #51/#53/#54 execution, policy/scheduler/worker activation, credential/config changes, deployment/publication and W08–W10 remain separately gated.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 
