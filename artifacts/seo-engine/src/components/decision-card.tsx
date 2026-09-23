@@ -30,7 +30,7 @@ export function DecisionCard({
       <div className="approvalDetailsGrid">
         <section>
           <span className="approvalLabel">Current state</span>
-          <p>Not exposed in this record</p>
+          <p>Not available</p>
         </section>
         <section>
           <span className="approvalLabel">Recommended state</span>
@@ -51,7 +51,7 @@ export function DecisionCard({
         </section>
         <section>
           <span className="approvalLabel">Measurement</span>
-          <p><b>Measurement unavailable</b></p>
+          <p><b>Not measured</b></p>
         </section>
       </div>
 
