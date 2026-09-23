@@ -11,6 +11,11 @@ import {
   type P88W07DispatchReceipt,
   type P88W07DispatchStore,
 } from "./p8-8-policy-dispatch-store.js";
+
+export type P88W07DispatchCoordinator = Pick<
+  P88W07DispatchStore,
+  "reservePrewrite" | "startDispatch" | "transition" | "readDispatch"
+>;
 import {
   type P88W07ShopifyMutationResult,
 } from "./p8-8-policy-shopify-mutation.js";
@@ -102,7 +107,7 @@ function exactAssessment(input: {
 }
 
 export async function runP88W07ForwardExecution(input: {
-  store: P88W07DispatchStore;
+  store: P88W07DispatchCoordinator;
   handoff: P88W07W06Handoff;
   intent: P88W07ExecutionIntent;
   eligibility: P88W07DispatchEligibility;
@@ -393,7 +398,7 @@ export async function runP88W07ForwardExecution(input: {
 }
 
 export async function runP88W07RollbackClosure(input: {
-  store: P88W07DispatchStore;
+  store: P88W07DispatchCoordinator;
   handoff: P88W07W06Handoff;
   intent: P88W07ExecutionIntent;
   mutate: P88W07MutationInvoker;
