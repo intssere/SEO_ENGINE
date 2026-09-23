@@ -13,26 +13,37 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-**Newest P8.8 engineering checkpoint:** W01 is certified complete; W02 specification/review is active under issue #410.
+**Newest P8.8 engineering checkpoint:** W02 pure governed-proposal materialization is complete under issue #412 / PR #413; W03 is separately gated.
 
-W01 final certification:
-- final tested PR head: `af1416b0fc71019f758b1e7853a7342faed7f3a6`;
-- exact-head CI #712 / run `35827410674`: success;
-- merge/tree: `e59aba2c10f9c2976fcf5da4987312f1525313d4` / `221303f6c37c8084171c2c5f7fd02ddafda4a6d1`;
-- post-merge CI #713 / run `35828075367`: success;
+W02 specification/review was certified under issue #410 / PR #411:
+- exact tested spec head: `d3ce0caad0116304788149d7495d352a7a1a06c3`;
+- exact-head CI #714 / run `35829067684`: success;
+- merge/tree: `f6be2baeef826dcc83d2232cd3dc29b040146852` / `05e1980f3e1e2d5ad957012d721728eadf11a6bc`;
+- post-merge CI #715 / run `35829973926`: success;
 - Replit exact Git-only sync: merge/tree exact, `0/0`, clean, no republish/runtime activity.
 
-W02 review contract:
-- source recommendation must be exact P9.7 `proposal_review`;
-- exact P6.6 preview must be canonically rebuilt and selected by fingerprint;
-- exactly one changed field is allowed, and it must be `meta_description`;
-- current/proposed text is copied exactly; W02 cannot generate or rewrite text;
-- Product GID/canonical product URL are not present upstream, so an explicit caller-supplied fingerprinted Product target binding is mandatory;
-- target binding is syntactically bound only; W02 performs no Shopify lookup or provider state claim;
-- output is a non-persisted governed-proposal materialization with deterministic proposal/materialization/idempotency fingerprints;
-- output still has no approval, policy authorization, Task #51/#53/#54 authority, durable reservation, provider mutation or persistence.
+W02 engineering contract:
+- rebuild exact P9.7 recommendation projection and require exact supplied-candidate equality;
+- rebuild exact P6.6 preview report and require exact supplied-report equality;
+- accept only `proposal_review`;
+- require exactly one field total and one changed field, exactly `meta_description`;
+- require caller-supplied fingerprinted Diamond Shelf Shopify Product GID + canonical product URL binding;
+- never infer/discover Product identity and never query Shopify;
+- copy P6.6 current/proposed values byte-for-byte without generation/rewrite/normalization;
+- bind target/before/after/idempotency/proposal/materialization identities deterministically;
+- output lifecycle exactly `materialized_unpersisted`;
+- preserve evidence/missing-evidence lineage;
+- emit only static W01 facts; no bounded-pilot/live-current-state/control/quota facts are invented;
+- pure replay guard rejects conflicting reuse of one recommendation idempotency identity;
+- zero DB/persistence/schema/provider/network/approval/policy-authorization/Task #51/#53/#54/scheduler/worker/credential/config/deployment/publication authority.
 
-**Active safe boundary:** W02 specification/review only. Generic continuation may refine/review this contract, but must not implement W02 or begin W03.
+Validation:
+- CI #716 found only a synthetic test-fixture evidence-lineage error, which was corrected;
+- CI #717 passed runtime tests and found only a TypeScript narrowing issue, corrected without behavior change;
+- corrected code-only head `21e9aa50a7ad2826cea115e6c62a1037fcea79ef` passed CI #718 completely;
+- final PR/merge/post-merge lineage is recorded on issue #412 after certification.
+
+**Next safe boundary:** W03 — provenance-distinct policy authorization artifact, separately authorized. Generic `continue` must not implement W03, persist a proposal/authorization, create approvals, call provider/runtime paths, activate policy/workers, alter schema/credentials/config, deploy or publish.
 
 **Current checkpoint:** P12.2 live-adapter/persistence engineering is now **certified complete** under issue #387 / PR #388, but P12.2 itself remains **not production-complete**. No live crawl is authorized.
 

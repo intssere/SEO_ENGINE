@@ -2,44 +2,50 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W01 complete / W02 specification-review active / implementation blocked
+## Active engineering checkpoint — P8.8 W02 pure proposal materialization complete / W03 separately gated
 
-P8.8 W01 is certified complete under issue #408 / PR #409.
+P8.8 W02 specification/review was certified under issue #410 / PR #411.
 
-Final W01 certification:
-- final tested PR head: `af1416b0fc71019f758b1e7853a7342faed7f3a6`;
-- exact-head CI #712 / run `35827410674`: success;
-- merge/tree: `e59aba2c10f9c2976fcf5da4987312f1525313d4` / `221303f6c37c8084171c2c5f7fd02ddafda4a6d1`;
-- post-merge main CI #713 / run `35828075367`: success;
-- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, no republish/runtime/provider/database/config/migration/scheduler/worker/policy activation.
+W02 specification certification:
+- exact tested spec head: `d3ce0caad0116304788149d7495d352a7a1a06c3`;
+- exact-head CI #714 / run `35829067684`: success;
+- merge/tree: `f6be2baeef826dcc83d2232cd3dc29b040146852` / `05e1980f3e1e2d5ad957012d721728eadf11a6bc`;
+- post-merge CI #715 / run `35829973926`: success;
+- Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, no republish/runtime/provider/database/config/migration/W02 implementation/scheduler/worker/policy activation.
 
-W02 specification/review is tracked by issue #410.
+W02 engineering is complete under issue #412 / PR #413.
 
-The W02 review resolves an important identity gap: certified P9.7 recommendation artifacts and P6.6 changed previews do not carry an authoritative Shopify Product GID or canonical product URL. W02 therefore must not infer or discover provider identity. It requires an explicit caller-supplied, fingerprinted Product target binding.
+W02 now implements a pure deterministic bridge from:
+- one canonically rebuilt P9.7 `proposal_review`;
+- one canonically rebuilt P6.6 preview containing exactly one changed `meta_description` field;
+- one explicit caller-supplied, integrity-bound Shopify Product target binding;
 
-The W02 specification defines a future pure deterministic bridge from:
-- exact P9.7 `proposal_review`;
-- exact certified P6.6 changed preview;
-- explicit caller-supplied target binding;
+to a governed proposal artifact whose lifecycle is exactly `materialized_unpersisted`.
 
-to a non-persisted governed-proposal materialization artifact.
+Certified engineering properties:
+- P9.7 worker projection is rebuilt before trusting the supplied recommendation;
+- P6.6 preview report is rebuilt before trusting the supplied preview;
+- advisory reviews fail closed;
+- Product identity is never inferred or discovered;
+- target scope is exactly Diamond Shelf / Shopify Product / `update_meta_description` / `meta_description` / `write_products`;
+- before/after text is copied byte-for-byte from P6.6, including whitespace;
+- deterministic target-binding, before-state, after-state, materialization-idempotency, proposal and materialization fingerprints are produced;
+- exact replay is stable;
+- conflicting reuse of one P9.7 idempotency identity can fail closed through the pure replay-compatibility guard;
+- evidence/missing-evidence lineage is preserved;
+- W01 receives only static materialized facts; W02 does not fabricate bounded-pilot authorization or live provider/control/quota state.
 
-Initial W02 scope remains exactly:
-- `diamondshelf.us`;
-- Shopify Product;
-- `gid://shopify/Product/<id>`;
-- exact `https://diamondshelf.us/products/<slug>`;
-- `update_meta_description`;
-- `meta_description`;
-- `write_products`;
-- one exact changed field only;
-- no generated/rewritten text.
+W02 performs zero DB read/write/persistence/schema work, zero provider/network read/write, zero ProposalRecord persistence, zero approval/policy authorization, zero Task #51/#53/#54 execution, zero scheduler/worker/autonomous execution, zero credential/scope/config change, zero deployment and zero publication.
 
-The materialized before/after values must be copied byte-for-byte from the selected P6.6 changed field; W02 may only hash/bind them. It may not trim, rewrite, normalize copy, infer Product identity, fetch Shopify, persist ProposalRecords, grant approval, create policy authorization or execution authority.
+Engineering validation:
+- CI #716 failed only because the new synthetic fixture incorrectly referenced score evidence not present on the synthetic opportunity; fixture lineage was corrected;
+- CI #717 then passed runtime tests and exposed only a TypeScript narrowing issue for the already-runtime-validated changed-field status;
+- that type narrowing was made explicit without behavioral change;
+- corrected code-only head `21e9aa50a7ad2826cea115e6c62a1037fcea79ef` passed canonical CI #718 completely.
 
-W02 is **specification/review only** at this checkpoint. Generic continuation does not authorize W02 implementation, persistence, DB/schema work, provider/network access, Task #51/#53/#54, policy activation, scheduler/worker/autonomous execution, credentials/scopes/config changes, deployment, publication or W03–W10.
+Final PR-head, merge, post-merge CI and Replit Git-only certification will be recorded on issue #412 after merge.
 
-**Next boundary after W02 specification certification:** explicit authorization for pure W02 implementation only.
+**Next boundary:** W03 — provenance-distinct policy authorization artifact. W03 is not authorized by the W02 implementation approval or generic continuation. It requires separate explicit authorization. W02 grants no approval, policy authorization, durable reservation, provider execution, DB/schema, worker, deployment or publication authority.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
