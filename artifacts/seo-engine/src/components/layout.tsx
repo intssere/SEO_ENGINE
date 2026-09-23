@@ -151,13 +151,6 @@ export function Layout({ children }: { children: ReactNode }) {
     );
     if (activeItem) {
       document.title = `${activeItem.label} | SEO Engine`;
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) {
-        metaDesc.setAttribute(
-          "content",
-          `Explore ${activeItem.label} in SEO Engine, your search growth workspace.`,
-        );
-      }
     }
   }, [location]);
 
