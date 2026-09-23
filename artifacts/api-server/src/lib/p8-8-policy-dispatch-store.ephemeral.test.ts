@@ -36,6 +36,7 @@ test("P8.8 W07 43-table dispatch fence, crash/replay and W04 safety closure", as
     t.skip("P8_8_W07_EPHEMERAL_DATABASE_URL is not configured");
     return;
   }
+  const testDatabaseUrl = databaseUrl;
 
   const admin = postgres(databaseUrl, {
     max: 8,
@@ -87,12 +88,12 @@ test("P8.8 W07 43-table dispatch fence, crash/replay and W04 safety closure", as
       proposedValue: "After  " + suffix + "\nbytes",
     });
 
-    const w04 = new P88W04ReservationStore({ databaseUrl });
+    const w04 = new P88W04ReservationStore({ databaseUrl: testDatabaseUrl });
     const reserved = await w04.reserve(scenario.input);
     assert.equal(reserved.kind, "created");
     if (!("receipt" in reserved)) throw new Error("w07_test_w04_receipt_missing");
 
-    const w05 = new P88W05MutationControlStore({ databaseUrl });
+    const w05 = new P88W05MutationControlStore({ databaseUrl: testDatabaseUrl });
     const control = await w05.initializeControl({
       siteId,
       mode: "running",
@@ -117,7 +118,7 @@ test("P8.8 W07 43-table dispatch fence, crash/replay and W04 safety closure", as
       w05ClaimReceipt: claimed.receipt,
     };
 
-    const w06 = new P88W06SnapshotStore({ databaseUrl });
+    const w06 = new P88W06SnapshotStore({ databaseUrl: testDatabaseUrl });
     const snapshot = await w06.readSnapshot({
       siteId,
       reservationId: reserved.receipt.reservationId,
