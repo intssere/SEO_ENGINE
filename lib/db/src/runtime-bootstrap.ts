@@ -15,6 +15,9 @@ export const EXPECTED_P12_2_TABLE_COUNT =
 export const EXPECTED_P8_8_W04_RESERVATION_TABLE_COUNT = 1;
 export const EXPECTED_P8_8_W04_TABLE_COUNT =
   EXPECTED_P12_2_TABLE_COUNT + EXPECTED_P8_8_W04_RESERVATION_TABLE_COUNT;
+export const EXPECTED_P8_8_W05_CONTROL_TABLE_COUNT = 3;
+export const EXPECTED_P8_8_W05_TABLE_COUNT =
+  EXPECTED_P8_8_W04_TABLE_COUNT + EXPECTED_P8_8_W05_CONTROL_TABLE_COUNT;
 export const DIAMOND_SHELF_SITE = {
   organizationName: "Diamond Shelf Trading LLC",
   organizationSlug: "diamond-shelf-trading",
@@ -32,6 +35,7 @@ export type RuntimeSchemaState =
   | "ready"
   | "p12_2_ready"
   | "p8_8_w04_ready"
+  | "p8_8_w05_ready"
   | "partial";
 
 export interface BootstrapPlan {
@@ -132,6 +136,18 @@ export function planRuntimeBootstrap(tableCount: number): BootstrapPlan {
     };
   }
 
+  if (tableCount === EXPECTED_P8_8_W05_TABLE_COUNT) {
+    return {
+      schemaState: "p8_8_w05_ready",
+      tableCount,
+      applyCoreMigration: false,
+      applyAuthMigration: false,
+      upsertDiamondShelf: true,
+      blocked: false,
+      reason: null,
+    };
+  }
+
   return {
     schemaState: "partial",
     tableCount,
@@ -139,7 +155,7 @@ export function planRuntimeBootstrap(tableCount: number): BootstrapPlan {
     applyAuthMigration: false,
     upsertDiamondShelf: false,
     blocked: true,
-    reason: `Refusing automatic migration because public schema is not a recognized state (${tableCount} tables; expected 0, ${EXPECTED_CORE_TABLE_COUNT}, ${EXPECTED_RUNTIME_TABLE_COUNT}, ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, or ${EXPECTED_P8_8_W04_TABLE_COUNT}).`,
+    reason: `Refusing automatic migration because public schema is not a recognized state (${tableCount} tables; expected 0, ${EXPECTED_CORE_TABLE_COUNT}, ${EXPECTED_RUNTIME_TABLE_COUNT}, ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, ${EXPECTED_P8_8_W04_TABLE_COUNT}, or ${EXPECTED_P8_8_W05_TABLE_COUNT}).`,
   };
 }
 
@@ -322,7 +338,8 @@ export async function ensureDiamondShelfIdentity(
     if (
       tableCount !== EXPECTED_CURRENT_TABLE_COUNT &&
       tableCount !== EXPECTED_P12_2_TABLE_COUNT &&
-      tableCount !== EXPECTED_P8_8_W04_TABLE_COUNT
+      tableCount !== EXPECTED_P8_8_W04_TABLE_COUNT &&
+      tableCount !== EXPECTED_P8_8_W05_TABLE_COUNT
     ) {
       return {
         status: "blocked",
@@ -331,7 +348,7 @@ export async function ensureDiamondShelfIdentity(
         reason:
           tableCount === 0
             ? "Public schema is empty; apply runtime migrations explicitly."
-            : `Public schema is not a recognized current/future engineering state (${tableCount} tables; expected ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, or ${EXPECTED_P8_8_W04_TABLE_COUNT}).`,
+            : `Public schema is not a recognized current/future engineering state (${tableCount} tables; expected ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, ${EXPECTED_P8_8_W04_TABLE_COUNT}, or ${EXPECTED_P8_8_W05_TABLE_COUNT}).`,
       };
     }
     const identities = await sql<

@@ -2,7 +2,7 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W05 mutation-control specification certified / implementation + Production boundaries blocked
+## Active engineering checkpoint — P8.8 W05 mutation-control engineering implemented / final PR certification + Production boundaries blocked
 
 P8.8 W04 specification/review is certified complete under issue #418 / PR #419.
 
@@ -45,33 +45,47 @@ Final PR-head/merge/post-merge certification is recorded on issue #420 after mer
 
 W04 engineering grants no provider/network execution, Task #51/#53/#54 execution, policy activation, scheduler/worker/autonomous execution, credential/scope/config change, deployment, publication or W05–W10 authority.
 
-## P8.8 W05 specification certification
+## P8.8 W05 mutation-control engineering
 
-W05 specification/review is certified complete under issue #435 / PR #436.
+W05 specification/review remains certified under issue #435 / PR #436.
 
-Certification:
-- exact tested specification head: `7db3ff43bf46165ecee32c77fcd30b43a6a83a54`;
-- exact-head CI #777 / run `35864048317`: success;
-- merge/tree: `a6cc2d092801382f13bb0b05916fa167330dd04c` / `a3ac3e20fce77f5ff9cf206416e4050d4c84b5ff`;
-- post-merge main CI #779 / run `35864613069`: success;
-- Replit Git-only reconciliation: exact merge SHA, `origin/main` exact, `0/0`, clean, no extra local commit and no deployment/database/config/provider/runtime action.
+W05-E1–E5 engineering is now implemented under issue #443 / PR #444.
 
-The certified W05 specification defines, but does not implement:
-- a dedicated durable policy-mutation control namespace preserving P9.6 `kill > drain > pause > running` semantics;
-- append-only control transition provenance plus one current site-scoped control state;
-- an immutable W05 claim binding that records the exact W03/W04 pair and durable control revision accepted for one W04 `authorized -> claimed` transition;
-- strict separation between new forward mutation and mandatory safety closure after a possible provider side effect;
-- pause/drain/kill blocking of all new claims/forward writes, with safe release only for unclaimed `authorized` reservations;
-- no generic release/expiry of `claimed` or `manual_intervention` rows;
-- a latched `killed` state with no ordinary resume;
-- database-clock/revision-based atomic claim/control transactions and real PostgreSQL race certification for future engineering;
-- a future additive W05 migration layered only after W04, with dedicated localhost-only engineering DB isolation and no generic `DATABASE_URL` fallback.
+Implemented engineering:
+- E1 pure deterministic durable mutation-control state/event contracts, immutable claim identity and explicit forward-mutation-vs-safety-closure projection;
+- P9.6 precedence remains exactly `kill > drain > pause > running`, with only durable `running` eligible for a new claim;
+- E2 additive transactional migration source `0006_p8_8_policy_mutation_controls.sql` creating only `policy_mutation_control_state`, `policy_mutation_control_events` and `policy_mutation_claims`;
+- migration 0006 inserts no default `running` row, so missing durable control remains fail-closed;
+- runtime schema recognition understands the future 41-table W05 engineering state but does not auto-apply migration 0006;
+- E3 explicit-URL PostgreSQL control store using database transaction time, monotonic revisions, append-only transition history and exact expected-revision/fingerprint checks;
+- every W05 transaction requiring both authorities locks the control row before the W04 reservation row;
+- E4 exact W03/W04 pairing is required before claim or safe unclaimed release;
+- a new claim atomically inserts one immutable W05 claim and transitions the exact W04 reservation `authorized -> claimed`;
+- exact claim replay is deterministic; a W04 `claimed` row without the exact W05 claim record fails closed as uncertain;
+- pause/drain/kill may safely release only an exact paired unclaimed `authorized` reservation;
+- `claimed` and `manual_intervention` remain blocking and are never auto-released or auto-expired;
+- kill is durably latched and cannot ordinary-resume;
+- E5 real concurrent PostgreSQL certification covers duplicate claims, claim-vs-pause/drain/kill ordering, stale control revisions, safe authorized release, blocking claimed/manual-intervention state, drain completion, kill latch, expiry and false-success prevention;
+- human approvals/actions/deployments remain unchanged and the existing Task #51/#54 path is not modified or impersonated;
+- provider dispatch, provider writes and public-site writes remain false throughout W05.
 
-W05 preserves W01–W04 fingerprints/idempotency exactly and leaves the human Task #51/#54 path unchanged. All W05 provider-dispatch/public-write markers remain false.
+Corrected code-only W05 head `6f5e302db014c153cfca2f86ca7f46136e0ab74f` passed canonical CI #825 / run `35869432936` completely, including:
+- W05 migration/schema certification;
+- real PostgreSQL W05 concurrency certification;
+- full workspace tests;
+- P11.10 scale;
+- Chromium critical paths;
+- typecheck;
+- build.
 
-**Next safe boundary:** W05-E1–E5 engineering requires separate explicit authorization. W04 Production migration 0005 and any future W05 migration/Production control initialization remain separately gated.
+The final documentation/closeout head of PR #444 still requires fresh exact-head CI before any merge certification.
 
-**Still blocked:** W05 implementation, migration creation/application, Production DDL/DML, Production control/claim/reservation transitions, provider/network access, Task #51/#53/#54 execution, policy/scheduler/worker/autonomous activation, credentials/scopes/config changes, deployment/publication and W06–W10.
+**Production migrations 0005 and 0006 remain unapplied.** No Production control row, claim, reservation transition, DDL/DML, provider/network operation, Task #51/#53/#54 execution, policy/worker activation, credential/config mutation, deployment or publication has occurred from W05 engineering.
+
+**Next boundaries:**
+- exact-head PR #444 closeout CI and exact tested-head merge/certification;
+- W04/W05 Production DDL remains a separate explicit authorization naming exact canonical SHA/tree and migration checksums;
+- W06 — policy-aware mutation-free preflight — remains separately gated and is not authorized by W05 engineering.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 

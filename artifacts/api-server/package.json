@@ -14,7 +14,8 @@
     "pilot:run": "node --enable-source-maps ./dist/pilot-runner.mjs",
     "test:p12-2-persistence-ephemeral": "tsx --test src/lib/first-party-crawl-persistence.ephemeral.test.ts",
     "p12-2:crawl": "node --enable-source-maps ./dist/p12-2-crawl.mjs",
-    "test:p8-8-w04-persistence-ephemeral": "tsx --test src/lib/p8-8-reservation-store.ephemeral.test.ts"
+    "test:p8-8-w04-persistence-ephemeral": "tsx --test src/lib/p8-8-reservation-store.ephemeral.test.ts",
+    "test:p8-8-w05-persistence-ephemeral": "tsx --test src/lib/p8-8-mutation-control-store.ephemeral.test.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",

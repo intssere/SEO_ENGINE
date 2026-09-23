@@ -10,6 +10,8 @@ import {
   EXPECTED_P12_2_TABLE_COUNT,
   EXPECTED_P8_8_W04_RESERVATION_TABLE_COUNT,
   EXPECTED_P8_8_W04_TABLE_COUNT,
+  EXPECTED_P8_8_W05_CONTROL_TABLE_COUNT,
+  EXPECTED_P8_8_W05_TABLE_COUNT,
   planRuntimeBootstrap,
 } from "./runtime-bootstrap.js";
 
@@ -40,7 +42,7 @@ test("fully initialized runtime schema skips migrations and allows idempotent si
   assert.equal(plan.blocked, false);
 });
 
-test("current P3.6, P12.2, and future P8.8 W04 schemas are recognized without automatic migration", () => {
+test("current P3.6, P12.2, W04, and W05 schemas are recognized without automatic migration", () => {
   const current = planRuntimeBootstrap(EXPECTED_CURRENT_TABLE_COUNT);
   assert.equal(current.schemaState, "ready");
   assert.equal(current.blocked, false);
@@ -61,6 +63,13 @@ test("current P3.6, P12.2, and future P8.8 W04 schemas are recognized without au
   assert.equal(w04.applyCoreMigration, false);
   assert.equal(w04.applyAuthMigration, false);
   assert.equal(w04.upsertDiamondShelf, true);
+
+  const w05 = planRuntimeBootstrap(EXPECTED_P8_8_W05_TABLE_COUNT);
+  assert.equal(w05.schemaState, "p8_8_w05_ready");
+  assert.equal(w05.blocked, false);
+  assert.equal(w05.applyCoreMigration, false);
+  assert.equal(w05.applyAuthMigration, false);
+  assert.equal(w05.upsertDiamondShelf, true);
 });
 
 test("unrecognized partial or unsupported future schema states fail closed", () => {
@@ -71,6 +80,7 @@ test("unrecognized partial or unsupported future schema states fail closed", () 
     EXPECTED_CURRENT_TABLE_COUNT + 1,
     EXPECTED_P12_2_TABLE_COUNT + 2,
     EXPECTED_P8_8_W04_TABLE_COUNT + 1,
+    EXPECTED_P8_8_W05_TABLE_COUNT + 1,
   ]) {
     const plan = planRuntimeBootstrap(count);
     assert.equal(plan.schemaState, "partial");
@@ -118,5 +128,15 @@ test("P8.8 W04 future schema count adds exactly one policy reservation table", (
   assert.equal(
     EXPECTED_P8_8_W04_TABLE_COUNT,
     EXPECTED_P12_2_TABLE_COUNT + EXPECTED_P8_8_W04_RESERVATION_TABLE_COUNT,
+  );
+});
+
+
+test("P8.8 W05 future schema count adds exactly three mutation-control tables", () => {
+  assert.equal(EXPECTED_P8_8_W05_CONTROL_TABLE_COUNT, 3);
+  assert.equal(EXPECTED_P8_8_W05_TABLE_COUNT, 41);
+  assert.equal(
+    EXPECTED_P8_8_W05_TABLE_COUNT,
+    EXPECTED_P8_8_W04_TABLE_COUNT + EXPECTED_P8_8_W05_CONTROL_TABLE_COUNT,
   );
 });
