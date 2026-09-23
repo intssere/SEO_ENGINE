@@ -2,37 +2,38 @@
 
 This is the authoritative mutable resume checkpoint. Always independently resolve current GitHub `main` SHA/tree and CI before acting. `AGENTS.md` remains the normative operating contract, `MASTER_COMPLETION_ROADMAP.md` remains the durable long-term completion plan, and GitHub `main` remains canonical.
 
-## Active engineering checkpoint — P8.8 W02 complete / W03 specification-review active / implementation blocked
+## Active engineering checkpoint — P8.8 W03 pure policy authorization complete / W04 separately gated
 
-P8.8 W02 is certified complete under issue #412 / PR #413.
+P8.8 W03 specification/review is certified complete under issue #414 / PR #415.
 
-Final W02 certification:
-- final exact tested PR head: `a10f18e225b7266dad9fe0d784c5d6c729c0de13`;
-- exact-head CI #724 / run `35832630157`: success;
-- merge/tree: `d42a0b11c730795d8f279b02f770c8925638be94` / `95c7e1309e43e94142ef302f305844f5c748d272`;
-- post-merge main CI #725 / run `35834394743`: success;
+W03 specification certification:
+- exact tested spec head: `5b9ebdb94c4408e48935a2cc90a02c3c7ec9d3ea`;
+- exact-head CI #726 / run `35835557080`: success;
+- merge/tree: `262d33512cf5372866f282682dd6dce46aa614e8` / `508a500b90ad5aa052396ffa40fc38615182d4c9`;
+- post-merge CI #727 / run `35836180050`: success;
 - Replit Git-only reconciliation: exact merge/tree, `0/0`, clean, zero tracked/untracked changes, zero locks/writers, no republish/runtime/provider/database/config/migration/W03 implementation/scheduler/worker/policy activation.
 
-W03 specification/review is tracked by issue #414.
+W03 engineering is complete under issue #416 / PR #417.
 
-W03 defines a future pure, provenance-distinct policy authorization artifact that must:
-- canonically rebuild and verify exact W01 admission;
-- canonically rebuild and verify exact W02 materialization;
-- fail closed unless W01/W02 shared recommendation/proposal/target/before/after identities agree;
-- identify provenance exactly as `policy_authorization`;
-- carry no human approval ID/decision/actor and create no approvals row;
-- remain structurally incompatible with the human Task #51 `controlled_execution_foundation_v1` envelope and Task #54 human confirmation namespace;
-- derive a deterministic policy action identity without claiming a persisted DB action row;
-- bind an opaque caller-supplied reservation descriptor without creating/persisting it; W04 remains the later durable-reservation authority;
-- use caller-supplied canonical issued time and a maximum 15-minute TTL bounded by W01 evaluation expiry and policy-grant expiry;
-- bind exact policy/evaluation/materialization/proposal/target/before/after/evidence/quality/risk/current-state/control/reservation fingerprints;
-- set provider write/dispatch/public-site/automatic-transition authority to false.
+W03 now implements a pure deterministic provenance-distinct policy authorization artifact that:
+- rebuilds and integrity-verifies exact W01 policy admission;
+- rebuilds and integrity-verifies exact W02 governed-proposal materialization;
+- requires exact W01↔W02 policy/recommendation/proposal/target/before/after shared lineage equality;
+- identifies provenance exactly as `policy_authorization`;
+- rejects human approval ID/decision/actor/timestamp and Task #51/#54 human confirmation artifacts;
+- remains structurally incompatible with `controlled_execution_foundation_v1`;
+- binds only a caller-supplied synthetic/non-durable reservation descriptor before W04;
+- derives deterministic artifact-only policy action and policy authorization identities;
+- keeps `persistedActionId=null` and `persistedActionCreated=false`;
+- uses caller-supplied canonical issuance with TTL 1–15 minutes, clamped to W01 evaluation and grant expiry;
+- keeps provider write, provider dispatch, public-site writes, automatic transition and dispatch eligibility false;
+- provides a pure conflicting-replay assertion for the same W01/W02 lineage.
 
-The W03 artifact may authorize progression only to a later policy-aware preflight stage. It must not itself authorize provider dispatch or live mutation.
+W03 performs zero DB read/write/persistence/schema work, zero provider/network read/write, zero approvals-row/action/reservation persistence, zero Task #51/#53/#54 execution, zero scheduler/worker/autonomous execution, zero policy activation, zero credential/scope/config change, zero deployment and zero publication.
 
-W03 is **specification/review only** at this checkpoint. Generic continuation does not authorize W03 implementation, policy authorization creation, approvals/action/reservation persistence, DB/schema work, provider/network access, Task #51/#53/#54 execution, policy activation, scheduler/worker/autonomous execution, credential/scope/config changes, deployment, publication or W04–W10.
+The code-only implementation head `8278efbcc81bac309489ccd265f7e8faa02c3140` passed canonical CI #728 completely. Final PR-head/merge/post-merge certification is recorded on issue #416 after merge.
 
-**Next boundary after W03 specification certification:** explicit authorization for pure W03 implementation only.
+**Next boundary:** W04 — durable reservation/idempotency design. W04 introduces a new persistence/schema boundary and is not authorized by the W03 implementation approval or generic continuation. It requires separate explicit authorization.
 
 ## Active engineering checkpoint — P12.2 live-adapter engineering certified / live proof blocked
 
