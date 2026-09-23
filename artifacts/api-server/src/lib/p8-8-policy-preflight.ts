@@ -271,6 +271,8 @@ export type P88W06PolicyPreflight = Readonly<{
     mode: P88W05ControlMode | null;
   }>;
   providerObservation: P88W06ProviderObservation;
+  preSnapshotFingerprint: string;
+  finalSnapshotFingerprint: string;
   validatedAt: string;
   preflightExpiresAt: string;
   claimReleaseEligibility: P88W06ClaimReleaseEligibility;
@@ -962,10 +964,97 @@ export function buildP88W06PolicyPreflight(input: {
     claimedControl: preflightBase.claimedControl,
     currentControl: preflightBase.currentControl,
     providerObservation: preflightBase.providerObservation,
+    preSnapshotFingerprint: preflightBase.preSnapshotFingerprint,
+    finalSnapshotFingerprint: preflightBase.finalSnapshotFingerprint,
     validatedAt: preflightBase.validatedAt,
     preflightExpiresAt: preflightBase.preflightExpiresAt,
     claimReleaseEligibility: preflightBase.claimReleaseEligibility,
     noDispatchProof,
     safety,
   });
+}
+
+
+export function assertP88W06NoDispatchProofIntegrity(
+  proof: P88W06NoDispatchProof,
+): void {
+  const { proofFingerprint, ...base } = proof;
+  const expected = stableHash({
+    purpose: "p8.8_w06_no_dispatch_proof",
+    ...base,
+  });
+  if (expected !== proofFingerprint) {
+    throw new Error("p88_w06_no_dispatch_proof_integrity_mismatch");
+  }
+  if (
+    proof.version !== P8_8_W06_NO_DISPATCH_PROOF_VERSION
+    || proof.executionPhase !== "pre_dispatch_proven"
+    || proof.providerDispatchAttempted !== false
+    || proof.providerMutationCalled !== false
+    || proof.providerWritePerformed !== false
+    || proof.publicSiteWritePerformed !== false
+    || proof.task51ExecutionPerformed !== false
+    || proof.task53ExecutionPerformed !== false
+    || proof.task54ExecutionPerformed !== false
+    || proof.rollbackWritePerformed !== false
+    || proof.automaticTransition !== false
+  ) {
+    throw new Error("p88_w06_no_dispatch_proof_scope_invalid");
+  }
+}
+
+export function assertP88W06PolicyPreflightIntegrity(
+  preflight: P88W06PolicyPreflight,
+): void {
+  assertP88W06ProviderObservationIntegrity(preflight.providerObservation);
+  assertP88W06NoDispatchProofIntegrity(preflight.noDispatchProof);
+  if (
+    preflight.version !== P8_8_W06_PREFLIGHT_VERSION
+    || preflight.preflightProvenance !== "policy_preflight"
+  ) {
+    throw new Error("p88_w06_preflight_scope_invalid");
+  }
+  if (
+    !HEX_64.test(preflight.preSnapshotFingerprint)
+    || !HEX_64.test(preflight.finalSnapshotFingerprint)
+  ) {
+    throw new Error("p88_w06_preflight_snapshot_fingerprint_invalid");
+  }
+  const base = {
+    version: preflight.version,
+    preflightProvenance: preflight.preflightProvenance,
+    disposition: preflight.disposition,
+    blockers: preflight.blockers,
+    lineage: preflight.lineage,
+    target: preflight.target,
+    state: preflight.state,
+    claimedControl: preflight.claimedControl,
+    currentControl: preflight.currentControl,
+    providerObservation: preflight.providerObservation,
+    preSnapshotFingerprint: preflight.preSnapshotFingerprint,
+    finalSnapshotFingerprint: preflight.finalSnapshotFingerprint,
+    validatedAt: preflight.validatedAt,
+    preflightExpiresAt: preflight.preflightExpiresAt,
+    claimReleaseEligibility: preflight.claimReleaseEligibility,
+    safety: preflight.safety,
+  };
+  const expectedFingerprint = stableHash({
+    purpose: "p8.8_w06_policy_preflight",
+    ...base,
+  });
+  const expectedId =
+    "p88w06-preflight-" + expectedFingerprint.slice(0, 24);
+  if (
+    preflight.preflightFingerprint !== expectedFingerprint
+    || preflight.preflightId !== expectedId
+  ) {
+    throw new Error("p88_w06_preflight_integrity_mismatch");
+  }
+  if (
+    preflight.noDispatchProof.preflightId !== preflight.preflightId
+    || preflight.noDispatchProof.preflightFingerprint
+      !== preflight.preflightFingerprint
+  ) {
+    throw new Error("p88_w06_preflight_no_dispatch_binding_mismatch");
+  }
 }
