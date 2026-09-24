@@ -402,6 +402,23 @@ Permanent architecture:
 - W10 Stage 1 remains separately reviewed and explicitly authorized.
 
 
+### P8.8 W09-B real Stage 0 evidence acquisition
+
+W09-B is the read-only evidence bridge between Production state and the already-merged pure W09-A shadow engine. It is not an execution or persistence layer.
+
+Permanent architecture under review:
+- Production acquisition provenance and W09-A shadow evaluation remain separated;
+- a future acquisition adapter may read only an explicitly authorized, frozen SELECT-only query set from one named Production database using an explicit read-only role;
+- the first acquisition is one-shot, max 25 final candidates, max 100 source opportunities, and no provider network access;
+- W09-A continues to reject direct `production_read_snapshot`; evidence-complete Production acquisitions become externally supplied immutable `supplied_real_snapshot` inputs linked by a W09-B manifest;
+- Product identity must be persisted explicitly; URL/text similarity cannot manufacture Shopify Product GID;
+- provider-before state must be persisted provider-authoritative evidence with exact provenance/freshness; crawl/storefront evidence cannot substitute;
+- missing W05/W07 Production schema/state is an evidence-incomplete stop condition, never implicit migration or synthetic state;
+- P9.7 recommendation/proposal artifacts remain deterministic in-memory reconstructions rather than a new durable recommendation authority;
+- all first-run outputs stay outside Production;
+- provider-read addendum, Stage 0 persistence and W10 activation are separate future boundaries.
+
+
 ### P8.8 W05 durable mutation-control bridge
 
 W05 materializes the mutation-specific durable control prerequisite identified by P9.8 without activating autonomous execution.
