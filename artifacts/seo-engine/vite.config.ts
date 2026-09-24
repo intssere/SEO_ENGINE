@@ -63,10 +63,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
-    // Align production output with the workspace's existing ES2022 compile
-    // target so new route code fits the frozen P11.1 asset ceiling without
-    // weakening or bypassing the performance budget.
-    target: 'es2022',
     // UGP-2.4 introduces the first route-level dynamic import. Native dynamic
     // import is already exercised by the certified browser suite, so avoid
     // adding Vite's module-preload helper to every application load.

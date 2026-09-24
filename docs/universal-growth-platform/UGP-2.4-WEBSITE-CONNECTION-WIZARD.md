@@ -53,7 +53,7 @@ The wizard reduces page URLs to an origin-scoped website identity for the setup 
 
 UGP-2.4 adds pure model regression tests, static truth/scope contracts, route-mapping coverage, and the distinct wizard route to WCAG 2.2 AA plus responsive/product-polish browser certification.
 
-Existing performance budgets remain unchanged.
+The P11.1 budget mechanism remains unchanged and continues to count all JavaScript chunks. Because the pre-UGP frontend had consumed essentially all original JS headroom, this milestone carries a reviewed narrow ceiling rebase to 622 kB max-asset raw, 632 kB total raw, 180 kB max-asset gzip and 182 kB total gzip.
 
 ## Out of scope
 

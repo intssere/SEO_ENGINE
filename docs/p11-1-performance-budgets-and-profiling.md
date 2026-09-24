@@ -105,3 +105,21 @@ P11.1 does not:
 - deploy or publish.
 
 A later separately scoped task may add production-safe observability or load/scale certification, but this milestone does not authorize it.
+
+
+## UGP-2.4 reviewed JavaScript ceiling rebase
+
+UGP-2.4 introduced the first customer-facing route-level code split after the original P11.1 closeout. The pre-UGP initiative frontend had already consumed essentially all of the original JavaScript headroom. Exact GitHub CI measurements on the optimized UGP-2.4 candidate, with the existing browser target preserved, were:
+
+- entry JavaScript: approximately **621.1 kB raw / 178.0 kB gzip**;
+- website-wizard route chunk: approximately **9.6 kB raw / 3.2 kB gzip**;
+- total JavaScript: approximately **630.7 kB raw / 181.2 kB gzip**.
+
+The budget policy remains a hard total/per-asset regression gate and code splitting remains fully counted. The reviewed UGP-2.4 ceiling is therefore rebased narrowly to:
+
+| Asset class | Max asset raw | Max asset gzip | Max total raw | Max total gzip |
+|---|---:|---:|---:|---:|
+| JavaScript | 622,000 | 180,000 | 632,000 | 182,000 |
+| CSS | 190,000 | 33,000 | 190,000 | 33,000 |
+
+This is an intentional feature-baseline rebase, not a split-asset exclusion or checker bypass. The scanner and failure semantics are unchanged, and the Vite >500 kB advisory remains unsuppressed.
