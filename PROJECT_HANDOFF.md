@@ -13,36 +13,27 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W09-B real Stage 0 evidence acquisition review — issue #497
+### P8.8 W09-BE1–BE5 synthetic evidence engineering specification/review — issue #499
 
-Canonical baseline after W09-A is `3a265293106fe5ac78520f316f12ef659ca5693e` / tree `3c63748229b4fce27447f3793a58040913796118`.
+Canonical baseline is W09-B review merge `882ec877e0f052f71c6dce3b15f352472b468f5e` / tree `6db5dcc0a85b25a8212b00c1b216aace11f85ac3`.
 
-W09-A E1–E5 is certified complete under issue #493 / PR #494:
-- exact certified head `eae1d6f91ed125ae88e4fd9f69e4e1cf0a588d76`;
-- post-merge push CI #1027 and duplicate #1028 success;
-- Replit exact-synced Git-only to canonical main, `0/0`, clean, all pre-existing feature branch tips preserved;
-- no Production/provider/runtime activation occurred.
+W09-B review is certified complete under issue #497 / PR #498 with post-merge CI #1040 success and Replit exact Git-only reconciliation.
 
-W09-B review is active on branch `p8-8-w09b-real-stage0-evidence-review-497`.
+W09-BE1–BE5 specification/review is active on branch `p8-8-w09be1-be5-engineering-spec-499`.
 
-Review decisions:
-- W09-B first run is DB-read-only, provider-network-free, non-persistent and one-shot;
-- B0 schema/readiness preflight, B1 bounded evidence extraction, B2 offline W09-A evaluation are separate conceptual phases;
-- W09-A never reads Production directly; raw Production provenance lives in a separate immutable acquisition manifest, then evidence-complete candidates enter W09-A as `supplied_real_snapshot`;
-- final candidate cap 25, source opportunity scan cap 100;
-- exact one active Shopify `diamondshelf.us` site;
-- frozen SELECT-only query set inside one repeatable-read/read-only transaction;
-- only reviewed tables/columns and row caps may be read;
-- missing 0005/0006/0007 Production objects cause `real_shadow_evidence_incomplete`; do not migrate or synthesize state;
-- Product GID must be persisted explicitly;
-- existing provider-before evidence must be demonstrably provider-authoritative and fresh; crawler/storefront/page snapshot evidence is not interchangeable;
-- P9.7 recommendation/proposal artifacts are recomputed in memory from real persisted source evidence;
-- optional human comparison remains exact-target P8.6-style evidence only;
-- outputs remain outside Production;
-- any fresh Shopify read requires a later provider-read addendum;
-- W10 remains blocked.
+Key frozen engineering decisions:
+- BE1 owns pure frozen query descriptors, SQL/query-set fingerprints, acquisition package/manifest schemas, candidate completeness states and integrity verification;
+- BE2 uses an explicit database URL only, direct `postgres`, one connection and one read-only/repeatable-read transaction; no ambient `DATABASE_URL`, `@workspace/db`, arbitrary SQL API, persistence or provider/runtime binding;
+- exactly 18 SELECT-only query descriptors form v1; changing SQL/columns/parameters/caps/ordering changes the query-set fingerprint;
+- BE3 is pure/offline and converts only integrity-valid `complete_for_w09a` acquisition records into W09-A `supplied_real_snapshot`, after which W09-A independently recomputes W01 again;
+- BE4 uses only localhost/127.0.0.1 ephemeral PostgreSQL, dedicated `P8_8_W09B_EPHEMERAL_DATABASE_URL`, full 43-table W07 schema plus controlled missing-schema cases, and proves no table/row mutation;
+- BE5 statically forbids provider/fetch, mutation SQL, migrations, persistence, runtime binding and W10 activation;
+- Product GID must be persisted and integrity-bound;
+- provider-before authority requires an exact persisted W06 `P88W06ProviderObservation` envelope passing W06 integrity and freshness checks; labels/text alone are never sufficient;
+- no new migration or persistent evidence store;
+- engineering does not authorize the real Production Stage 0 read.
 
-**Current safe boundary:** finish W09-B review/spec PR certification only. Do not implement the acquisition adapter, read Production, inspect the live schema, contact Shopify/providers, persist evidence, change runtime/config, deploy/publish or begin W10 from generic continuation.
+**Current safe boundary:** complete W09-BE1–BE5 specification/review and PR certification only. Do not implement, connect to Production, inspect live schema, contact providers, persist evidence, deploy/publish or begin W10 from generic continuation.
 
 ### P8.8 W07 specification certified — implementation gate next
 
