@@ -448,14 +448,20 @@ export class P88W07DispatchStore {
         const quota = await tx.unsafe<{ count: number }[]>(
           "SELECT COUNT(*)::int AS count FROM policy_mutation_dispatches "
             + "WHERE site_id=$1::uuid AND forward_attempt_count=1 "
-            + "AND dispatch_started_at >= $2::timestamptz - interval '24 hours'",
-          [intent.siteId, now.toISOString()],
+            + "AND dispatch_started_at >= $2::timestamptz "
+            + "- ($3::text || ' hours')::interval",
+          [
+            intent.siteId,
+            now.toISOString(),
+            String(intent.policy.mutationQuotaWindowHours),
+          ],
         );
-        if (Number(quota[0]?.count ?? 0) >= 1) {
+        if (
+          Number(quota[0]?.count ?? 0) >= intent.policy.mutationQuotaMaxActions
+        ) {
           throw new Error("p88_w07_mutation_quota_exhausted");
         }
 
-        const cooldownHours = 336;
         const cooldown = await tx.unsafe<{ count: number }[]>(
           "SELECT COUNT(*)::int AS count FROM policy_mutation_dispatches "
             + "WHERE site_id=$1::uuid AND resource_gid=$2 AND field=$3 "
@@ -467,7 +473,7 @@ export class P88W07DispatchStore {
             intent.target.resourceGid,
             intent.target.field,
             now.toISOString(),
-            String(cooldownHours),
+            String(intent.policy.sameTargetCooldownHours),
           ],
         );
         if (Number(cooldown[0]?.count ?? 0) > 0) {
