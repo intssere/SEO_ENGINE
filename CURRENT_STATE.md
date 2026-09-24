@@ -1,41 +1,39 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W09 Stage 0 shadow certification implementation
+## Active engineering checkpoint — P8.8 W09-B real Stage 0 evidence acquisition review
 
-W09 specification/review is merged and certified complete under issue #487 / PR #490.
+W09-A E1–E5 is merged and certified complete under issue #493 / PR #494.
 
-Specification closeout:
-- exact certified spec head: `9c3eeb61c17566d7165a901c96b0600c30b9cafc`;
-- merge/canonical implementation base: `409ca6e61011caeaabffefc11f503a05623135a4`;
-- canonical base tree: `cea391f1f7ca1512812a121604cf0ed4f7d109cd`;
-- post-merge CI #1019 / run `35979404611`: success;
-- Replit exact Git-only reconciled to the merge/tree, ahead/behind `0/0`, clean, all pre-existing local-only branch tips preserved;
-- no W09 implementation, Production read/write/persistence, provider/public-site access, W03–W07 materialization, runtime activation, config/gate change, deployment or publication occurred during the spec phase.
+W09-A closeout:
+- exact certified head: `eae1d6f91ed125ae88e4fd9f69e4e1cf0a588d76`;
+- merge/canonical main: `3a265293106fe5ac78520f316f12ef659ca5693e`;
+- canonical tree: `3c63748229b4fce27447f3793a58040913796118`;
+- post-merge push CI #1027 and duplicate #1028: success;
+- legacy schema, Task, P3.6, P12.2, W04/W05/W06/W07 PostgreSQL gates, full workspace tests, P11.10, Chromium, typecheck and build all passed;
+- Replit exact Git-only reconciled to canonical main, ahead/behind `0/0`, clean, all 31 pre-existing non-main branch tips preserved;
+- incidental Replit metadata commit `70a4659864bb62ab57615b9d295cefc5f21853a1` was not pushed and is not reachable from main;
+- no W09-B Production access/persistence, provider activity, W03–W07 execution, migration, runtime activation, deployment/publication or W10 work occurred.
 
-W09-E1–E5 engineering is implemented under issue #493 / PR #494 on branch `p8-8-w09-stage-0-shadow-certification-implementation-493`.
+W09-B review is active under issue #497 on branch `p8-8-w09b-real-stage0-evidence-review-497`.
 
-Current implementation:
-- E1 deterministic source-provenance envelopes and shadow-decision artifacts; every caller-supplied W01 evaluation is recomputed through the certified W01 evaluator and must match exactly;
-- `production_read_snapshot` is rejected by W09-A engineering; `supplied_real_snapshot` remains descriptive and does not prove W09-B completion;
-- E2 bounded sessions up to 1,000 caller-supplied items, canonical ordering, exact replay collapse, conflict fail-closed semantics, mixed-policy rejection, deterministic session fingerprints/summaries and independent integrity verification;
-- E3 optional P8.6 human-ledger comparison requires independent P8.6 integrity plus exact Product mutation class/resource GID/URL/field/before/after fingerprints; comparison is direction-only/descriptive and never correctness/causality scoring;
-- explicit tests prove Collection/P8.7-shaped evidence is not comparable to the initial W09 Product class;
-- E4 full W01 rejection/control certification including activation/expiry/revocation, pause/drain/drained/kill, unresolved manual intervention/provider-write uncertainty/rollback failure, proposal/evidence/quality/risk/target constraints, provider-before mismatch, prior deployment, concurrency, cooldown and quota;
-- E5 source/decision/session tamper detection plus static proof of no database/provider/network/runtime/migration binding;
-- shadow `admit` remains non-authorizing and creates no W03–W07 artifact.
+Frozen review direction:
+- first real Stage 0 acquisition is database-read-only, provider-network-free and non-persistent;
+- W09-A remains DB-free and consumes only `supplied_real_snapshot`; the Production acquisition manifest binds that snapshot back to exact Production provenance;
+- maximum 25 final candidates and maximum 100 source opportunities scanned;
+- exactly one active Shopify `diamondshelf.us` site;
+- one read-only repeatable-read transaction with frozen SELECT-only query set and strict time/row caps;
+- Product GID must come from persisted integrity-bound evidence, never URL inference;
+- page/crawl snapshots must not be relabeled as provider-authoritative before-state evidence;
+- a candidate needs an already-persisted provider-authoritative, fresh, exact Product/meta-description observation or it remains evidence-incomplete;
+- missing Production migrations/tables 0005/0006/0007 are a fail-closed evidence gap: do not migrate, assume running, or synthesize control/dispatch state;
+- deterministic P9.7 recommendation/proposal artifacts are rebuilt in memory from real persisted source evidence rather than read from or written to a new recommendation authority table;
+- no W09-B outputs are persisted to Production in the first run;
+- a later provider-read-only addendum is separate if DB-only evidence is insufficient;
+- W10 remains separately reviewed and explicitly authorized.
 
-Engineering exact-head checkpoint before continuity-doc commits:
-- head `c9f68168a63f74e3ee89b7c52c23b040b55ad334`;
-- CI #1021 / run `35981055157`: success;
-- legacy schema, Task, P3.6, P12.2, W04/W05/W06/W07 PostgreSQL gates: pass;
-- full workspace tests including the W09 E1–E5 certification matrix: pass;
-- P11.10, Chromium, typecheck and build: pass.
+**Current safe boundary:** W09-B documentation/review/specification only. Generic `continue` does not authorize W09-B engineering, any Production SELECT/schema inspection, provider read, persistence, deployment or W10.
 
-**Current safe boundary:** re-certify the final documentation-updated PR #494 head, then stop for separate merge authorization. Do not merge PR #494 from generic continuation.
-
-**Still excluded:** W09-B real Stage 0 Production reads/persistence; direct Production DB access; provider/public-site reads/writes; W03–W07 materialization/execution; Task #51/#53/#54 execution; scheduler/worker/startup activation; credential/scope/config/gate changes; migration/schema changes; deployment/publication; W10 Stage 1.
-
-**Next boundary after an explicitly authorized W09-A implementation merge:** separately review the W09-B real Stage 0 evidence acquisition plan. Direct Production reads or persistence remain separately authorized. W10 remains blocked.
+**Still excluded:** Production DB connection/read/write; schema inspection; provider/public-site read/write; W03–W07 materialization/mutation; Task #51/#53/#54 execution; scheduler/worker/startup activation; credential/scope/config/gate change; migration/schema change; deployment/publication; recurring Stage 0; W10.
 
 ## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
 
