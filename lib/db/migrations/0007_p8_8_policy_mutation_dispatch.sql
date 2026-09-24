@@ -38,6 +38,7 @@ CREATE TABLE policy_mutation_dispatches (
   action_type text NOT NULL,
   field text NOT NULL,
   required_provider_scope text NOT NULL,
+  target_binding_fingerprint char(64) NOT NULL,
   before_fingerprint char(64) NOT NULL,
   after_fingerprint char(64) NOT NULL,
   state text NOT NULL,
@@ -79,7 +80,358 @@ CREATE TABLE policy_mutation_dispatches (
   CHECK (action_type = 'update_meta_description'),
   CHECK (field = 'meta_description'),
   CHECK (required_provider_scope = 'write_products'),
-  CHECK (before_fingerprint ~ '^[0-9a-f]{64}$'),
+  CHECK (target_binding_fingerprint ~ '^[0-9a-f]{64}
+  CHECK (after_fingerprint ~ '^[0-9a-f]{64}$'),
+  CHECK (before_fingerprint <> after_fingerprint),
+  CHECK (row_revision >= 1),
+  CHECK (forward_attempt_count BETWEEN 0 AND 1),
+  CHECK (rollback_attempt_count BETWEEN 0 AND 1),
+  CHECK (public_write_occurrence IN ('none','possible','confirmed')),
+  CHECK (rollback_occurrence IN ('none','possible','confirmed')),
+  CHECK (
+    provider_request_fingerprint IS NULL
+    OR provider_request_fingerprint ~ '^[0-9a-f]{64}$'
+  ),
+  CHECK (
+    provider_response_fingerprint IS NULL
+    OR provider_response_fingerprint ~ '^[0-9a-f]{64}$'
+  ),
+  CHECK (
+    verification_fingerprint IS NULL
+    OR verification_fingerprint ~ '^[0-9a-f]{64}$'
+  ),
+  CHECK (
+    state IN (
+      'reserved_prewrite',
+      'dispatch_started',
+      'forward_rejected_no_write',
+      'forward_verification_pending',
+      'forward_verified_live',
+      'rollback_required',
+      'rollback_started',
+      'rollback_verification_pending',
+      'rollback_verified_closed',
+      'cancelled_before_dispatch',
+      'manual_intervention_required'
+    )
+  ),
+  CHECK (
+    (state = 'reserved_prewrite' AND forward_attempt_count = 0)
+    OR
+    (state <> 'reserved_prewrite' AND state <> 'cancelled_before_dispatch'
+      AND forward_attempt_count = 1)
+    OR
+    (state = 'cancelled_before_dispatch' AND forward_attempt_count = 0)
+  ),
+  CHECK (
+    rollback_attempt_count = 0
+    OR state IN (
+      'rollback_started',
+      'rollback_verification_pending',
+      'rollback_verified_closed',
+      'manual_intervention_required'
+    )
+  ),
+  CHECK (
+    (forward_attempt_count = 0 AND dispatch_started_at IS NULL)
+    OR
+    (forward_attempt_count = 1 AND dispatch_started_at IS NOT NULL)
+  ),
+  CHECK (
+    (rollback_attempt_count = 0 AND rollback_started_at IS NULL)
+    OR
+    (rollback_attempt_count = 1 AND rollback_started_at IS NOT NULL)
+  ),
+  CHECK (
+    (
+      state IN (
+        'forward_rejected_no_write',
+        'forward_verified_live',
+        'rollback_verified_closed',
+        'cancelled_before_dispatch',
+        'manual_intervention_required'
+      )
+      AND terminal_at IS NOT NULL
+    )
+    OR
+    (
+      state NOT IN (
+        'forward_rejected_no_write',
+        'forward_verified_live',
+        'rollback_verified_closed',
+        'cancelled_before_dispatch',
+        'manual_intervention_required'
+      )
+      AND terminal_at IS NULL
+    )
+  )
+);
+
+CREATE TABLE policy_mutation_dispatch_events (
+  event_id text PRIMARY KEY,
+  event_version text NOT NULL,
+  event_fingerprint char(64) NOT NULL UNIQUE,
+  dispatch_id text NOT NULL
+    REFERENCES policy_mutation_dispatches(dispatch_id) ON DELETE RESTRICT,
+  site_id uuid NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  from_revision bigint,
+  from_state text,
+  to_revision bigint NOT NULL,
+  to_state text NOT NULL,
+  transition_reason text NOT NULL,
+  provider_request_fingerprint char(64),
+  public_write_occurrence text NOT NULL,
+  rollback_occurrence text NOT NULL,
+  effective_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT transaction_timestamp(),
+
+  CHECK (event_version = 'p8-8-w07-policy-dispatch-event-v1'),
+  CHECK (event_fingerprint ~ '^[0-9a-f]{64}$'),
+  CHECK (from_revision IS NULL OR from_revision >= 1),
+  CHECK (to_revision >= 1),
+  CHECK (
+    (from_revision IS NULL AND from_state IS NULL AND to_revision = 1)
+    OR
+    (from_revision IS NOT NULL AND from_state IS NOT NULL
+      AND to_revision = from_revision + 1)
+  ),
+  CHECK (
+    from_state IS NULL
+    OR from_state IN (
+      'reserved_prewrite','dispatch_started','forward_rejected_no_write',
+      'forward_verification_pending','forward_verified_live','rollback_required',
+      'rollback_started','rollback_verification_pending',
+      'rollback_verified_closed','cancelled_before_dispatch',
+      'manual_intervention_required'
+    )
+  ),
+  CHECK (
+    to_state IN (
+      'reserved_prewrite','dispatch_started','forward_rejected_no_write',
+      'forward_verification_pending','forward_verified_live','rollback_required',
+      'rollback_started','rollback_verification_pending',
+      'rollback_verified_closed','cancelled_before_dispatch',
+      'manual_intervention_required'
+    )
+  ),
+  CHECK (
+    provider_request_fingerprint IS NULL
+    OR provider_request_fingerprint ~ '^[0-9a-f]{64}$'
+  ),
+  CHECK (public_write_occurrence IN ('none','possible','confirmed')),
+  CHECK (rollback_occurrence IN ('none','possible','confirmed'))
+);
+
+CREATE UNIQUE INDEX ux_policy_mutation_dispatches_blocking_site
+  ON policy_mutation_dispatches (site_id)
+  WHERE state IN (
+    'reserved_prewrite','dispatch_started','forward_verification_pending',
+    'rollback_required','rollback_started','rollback_verification_pending',
+    'manual_intervention_required'
+  );
+
+CREATE UNIQUE INDEX ux_policy_mutation_dispatches_blocking_target
+  ON policy_mutation_dispatches (
+    site_id,provider,resource_kind,resource_gid,field
+  )
+  WHERE state IN (
+    'reserved_prewrite','dispatch_started','forward_verification_pending',
+    'rollback_required','rollback_started','rollback_verification_pending',
+    'manual_intervention_required'
+  );
+
+CREATE INDEX idx_policy_mutation_dispatches_site_history
+  ON policy_mutation_dispatches (
+    site_id,
+    reserved_at DESC,
+    dispatch_id DESC
+  );
+
+CREATE INDEX idx_policy_mutation_dispatch_events_history
+  ON policy_mutation_dispatch_events (
+    dispatch_id,
+    to_revision DESC,
+    event_id DESC
+  );
+
+COMMIT;
+),
+  CHECK (before_fingerprint ~ '^[0-9a-f]{64}
+  CHECK (after_fingerprint ~ '^[0-9a-f]{64}$'),
+  CHECK (before_fingerprint <> after_fingerprint),
+  CHECK (row_revision >= 1),
+  CHECK (forward_attempt_count BETWEEN 0 AND 1),
+  CHECK (rollback_attempt_count BETWEEN 0 AND 1),
+  CHECK (public_write_occurrence IN ('none','possible','confirmed')),
+  CHECK (rollback_occurrence IN ('none','possible','confirmed')),
+  CHECK (
+    provider_request_fingerprint IS NULL
+    OR provider_request_fingerprint ~ '^[0-9a-f]{64}$'
+  ),
+  CHECK (
+    provider_response_fingerprint IS NULL
+    OR provider_response_fingerprint ~ '^[0-9a-f]{64}$'
+  ),
+  CHECK (
+    verification_fingerprint IS NULL
+    OR verification_fingerprint ~ '^[0-9a-f]{64}$'
+  ),
+  CHECK (
+    state IN (
+      'reserved_prewrite',
+      'dispatch_started',
+      'forward_rejected_no_write',
+      'forward_verification_pending',
+      'forward_verified_live',
+      'rollback_required',
+      'rollback_started',
+      'rollback_verification_pending',
+      'rollback_verified_closed',
+      'cancelled_before_dispatch',
+      'manual_intervention_required'
+    )
+  ),
+  CHECK (
+    (state = 'reserved_prewrite' AND forward_attempt_count = 0)
+    OR
+    (state <> 'reserved_prewrite' AND state <> 'cancelled_before_dispatch'
+      AND forward_attempt_count = 1)
+    OR
+    (state = 'cancelled_before_dispatch' AND forward_attempt_count = 0)
+  ),
+  CHECK (
+    rollback_attempt_count = 0
+    OR state IN (
+      'rollback_started',
+      'rollback_verification_pending',
+      'rollback_verified_closed',
+      'manual_intervention_required'
+    )
+  ),
+  CHECK (
+    (forward_attempt_count = 0 AND dispatch_started_at IS NULL)
+    OR
+    (forward_attempt_count = 1 AND dispatch_started_at IS NOT NULL)
+  ),
+  CHECK (
+    (rollback_attempt_count = 0 AND rollback_started_at IS NULL)
+    OR
+    (rollback_attempt_count = 1 AND rollback_started_at IS NOT NULL)
+  ),
+  CHECK (
+    (
+      state IN (
+        'forward_rejected_no_write',
+        'forward_verified_live',
+        'rollback_verified_closed',
+        'cancelled_before_dispatch',
+        'manual_intervention_required'
+      )
+      AND terminal_at IS NOT NULL
+    )
+    OR
+    (
+      state NOT IN (
+        'forward_rejected_no_write',
+        'forward_verified_live',
+        'rollback_verified_closed',
+        'cancelled_before_dispatch',
+        'manual_intervention_required'
+      )
+      AND terminal_at IS NULL
+    )
+  )
+);
+
+CREATE TABLE policy_mutation_dispatch_events (
+  event_id text PRIMARY KEY,
+  event_version text NOT NULL,
+  event_fingerprint char(64) NOT NULL UNIQUE,
+  dispatch_id text NOT NULL
+    REFERENCES policy_mutation_dispatches(dispatch_id) ON DELETE RESTRICT,
+  site_id uuid NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  from_revision bigint,
+  from_state text,
+  to_revision bigint NOT NULL,
+  to_state text NOT NULL,
+  transition_reason text NOT NULL,
+  provider_request_fingerprint char(64),
+  public_write_occurrence text NOT NULL,
+  rollback_occurrence text NOT NULL,
+  effective_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT transaction_timestamp(),
+
+  CHECK (event_version = 'p8-8-w07-policy-dispatch-event-v1'),
+  CHECK (event_fingerprint ~ '^[0-9a-f]{64}$'),
+  CHECK (from_revision IS NULL OR from_revision >= 1),
+  CHECK (to_revision >= 1),
+  CHECK (
+    (from_revision IS NULL AND from_state IS NULL AND to_revision = 1)
+    OR
+    (from_revision IS NOT NULL AND from_state IS NOT NULL
+      AND to_revision = from_revision + 1)
+  ),
+  CHECK (
+    from_state IS NULL
+    OR from_state IN (
+      'reserved_prewrite','dispatch_started','forward_rejected_no_write',
+      'forward_verification_pending','forward_verified_live','rollback_required',
+      'rollback_started','rollback_verification_pending',
+      'rollback_verified_closed','cancelled_before_dispatch',
+      'manual_intervention_required'
+    )
+  ),
+  CHECK (
+    to_state IN (
+      'reserved_prewrite','dispatch_started','forward_rejected_no_write',
+      'forward_verification_pending','forward_verified_live','rollback_required',
+      'rollback_started','rollback_verification_pending',
+      'rollback_verified_closed','cancelled_before_dispatch',
+      'manual_intervention_required'
+    )
+  ),
+  CHECK (
+    provider_request_fingerprint IS NULL
+    OR provider_request_fingerprint ~ '^[0-9a-f]{64}$'
+  ),
+  CHECK (public_write_occurrence IN ('none','possible','confirmed')),
+  CHECK (rollback_occurrence IN ('none','possible','confirmed'))
+);
+
+CREATE UNIQUE INDEX ux_policy_mutation_dispatches_blocking_site
+  ON policy_mutation_dispatches (site_id)
+  WHERE state IN (
+    'reserved_prewrite','dispatch_started','forward_verification_pending',
+    'rollback_required','rollback_started','rollback_verification_pending',
+    'manual_intervention_required'
+  );
+
+CREATE UNIQUE INDEX ux_policy_mutation_dispatches_blocking_target
+  ON policy_mutation_dispatches (
+    site_id,provider,resource_kind,resource_gid,field
+  )
+  WHERE state IN (
+    'reserved_prewrite','dispatch_started','forward_verification_pending',
+    'rollback_required','rollback_started','rollback_verification_pending',
+    'manual_intervention_required'
+  );
+
+CREATE INDEX idx_policy_mutation_dispatches_site_history
+  ON policy_mutation_dispatches (
+    site_id,
+    reserved_at DESC,
+    dispatch_id DESC
+  );
+
+CREATE INDEX idx_policy_mutation_dispatch_events_history
+  ON policy_mutation_dispatch_events (
+    dispatch_id,
+    to_revision DESC,
+    event_id DESC
+  );
+
+COMMIT;
+),
   CHECK (after_fingerprint ~ '^[0-9a-f]{64}$'),
   CHECK (before_fingerprint <> after_fingerprint),
   CHECK (row_revision >= 1),
