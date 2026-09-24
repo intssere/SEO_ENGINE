@@ -157,7 +157,7 @@ function authorizationBoundary(): PlatformDetectionAuthorization {
 function requireBoundedString(
   value: unknown,
   code: string,
-  maxLength = UGP_PLATFORM_DETECTION_LIMITS.maxValueLength,
+  maxLength: number = UGP_PLATFORM_DETECTION_LIMITS.maxValueLength,
 ): string {
   if (
     typeof value !== "string"
