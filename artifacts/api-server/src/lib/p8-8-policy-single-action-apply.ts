@@ -53,6 +53,9 @@ export type P88W07DispatchIntent = Readonly<{
     policyVersion: string;
     policyFingerprint: string;
     credentialProfileId: string;
+    mutationQuotaMaxActions: 1;
+    mutationQuotaWindowHours: 24;
+    sameTargetCooldownHours: number;
   }>;
   lineage: Readonly<{
     evaluationId: string;
@@ -293,6 +296,9 @@ export function projectP88W07DispatchIntent(input: {
       policyVersion: preflight.lineage.policyVersion,
       policyFingerprint: preflight.lineage.policyFingerprint,
       credentialProfileId: grant.credentialProfileId,
+      mutationQuotaMaxActions: grant.mutationQuota.maxActions,
+      mutationQuotaWindowHours: grant.mutationQuota.windowHours,
+      sameTargetCooldownHours: grant.sameTargetCooldownHours,
     },
     lineage: {
       evaluationId: preflight.lineage.evaluationId,
