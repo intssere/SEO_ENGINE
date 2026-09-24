@@ -419,6 +419,22 @@ Permanent architecture under review:
 - provider-read addendum, Stage 0 persistence and W10 activation are separate future boundaries.
 
 
+### P8.8 W09-BE1–BE5 synthetic evidence engineering
+
+The W09-B engineering package is designed as a default-off, non-authoritative evidence-acquisition bridge with explicit separation between DB acquisition and W09-A policy evaluation.
+
+Permanent architecture under review:
+- BE1 is pure and defines the frozen 18-query SELECT-only query set, exact row/invocation caps, deterministic query-set/result/package fingerprints, immutable acquisition manifests and completeness states;
+- BE2 is the only DB-bound module and requires an explicit database URL; it uses direct `postgres`, a single connection and one read-only/repeatable-read transaction, with no `process.env`, no ambient `@workspace/db` pool, no arbitrary SQL surface and no provider/runtime dependency;
+- BE3 is pure/offline and accepts only integrity-valid acquisition packages; it emits W09-A `supplied_real_snapshot` inputs and never `production_read_snapshot`;
+- BE4 certification is localhost-only ephemeral PostgreSQL and proves full-schema behavior, missing W04/W05/W07 fail-closed behavior, row caps, ambiguity/integrity failures and zero row/table mutation;
+- BE5 statically proves no provider/fetch, mutation SQL, migration, persistence, route/startup/scheduler/worker binding, Task execution dependency or W10 activation;
+- provider-before evidence is authoritative only when persisted data contains an exact integrity-valid W06 `P88W06ProviderObservation` envelope with observed status, exact site/Product/field, non-null request provenance, exact W02-domain before fingerprint and valid freshness;
+- database/provider labels, matching text or crawler/storefront evidence never substitute for W06 provider observation integrity;
+- no W09-B migration or persistent evidence store is introduced;
+- merge of engineering remains non-authorizing for any real Production read or provider read.
+
+
 ### P8.8 W05 durable mutation-control bridge
 
 W05 materializes the mutation-specific durable control prerequisite identified by P9.8 without activating autonomous execution.
