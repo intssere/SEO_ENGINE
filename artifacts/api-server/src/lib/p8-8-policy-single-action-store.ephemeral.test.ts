@@ -5,6 +5,7 @@ import {
   projectP88W07DispatchIntent,
 } from "./p8-8-policy-single-action-apply.js";
 import { P88W07DispatchStore } from "./p8-8-policy-single-action-store.js";
+import { P8_8_W05_CLAIM_VERSION } from "./p8-8-mutation-control.js";
 import { buildP88W07TestFixture } from "./p8-8-w07-test-fixture.js";
 
 function dedicatedEphemeralUrl(): string | null {
@@ -180,7 +181,7 @@ test("P8.8 W07 dispatch store certifies 43-table fencing, closure, race, quota a
         + ") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::uuid,$10,$11,$12,$13,$14,$15,$16,$17::timestamptz)",
       [
         claim.claimId,
-        claim.version,
+        P8_8_W05_CLAIM_VERSION,
         claim.claimFingerprint,
         claim.reservationId,
         claim.reservationFingerprint,
