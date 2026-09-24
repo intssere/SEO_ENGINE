@@ -1,44 +1,36 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W08 autonomous audit projection implementation
+## Active engineering checkpoint — P8.8 W09 Stage 0 shadow certification specification/review
 
-W08 specification/review is merged and certified complete under issue #480 / PR #483.
+W08-E1–E5 implementation is merged and certified complete under issue #484 / PR #486.
 
-Specification closeout:
-- certified spec head: `85a23c9a03d91336cdd66aee552a809bf894e589`;
-- merge/canonical base for implementation: `d3d2c56214178b35de22b4cc5d63a5731bc20249`;
-- canonical base tree: `459656c42b82ecdd7d51ee1bd2c7d1e5d3339416`;
-- post-merge push CI #1003 and duplicate PR-triggered CI #1004: success;
-- Replit exact Git-only reconciled to the merge/tree, `0/0`, clean, with local-only branches preserved;
-- no Production migration/DB/provider/config/deployment/publication action occurred.
+W08 implementation closeout:
+- exact certified PR head: `d178424e7bd09b7ae98185a2291fcb336aa78d1d`;
+- merge/canonical main: `e396f4b454f3ee3e200913fa70c195c92975afcf`;
+- canonical tree: `cac5f41213e2aa91f9398c8a8229ae43866abb90`;
+- post-merge CI #1014 / run `35975380925`: success;
+- legacy schema, Task, P3.6, P12.2, W04/W05/W06/W07 PostgreSQL gates, workspace tests, P11.10, Chromium, typecheck and build all passed;
+- Replit exact Git-only reconciled to the merge/tree, ahead/behind `0/0`, clean, with all pre-existing local-only branches preserved;
+- no Production DB read/write, migration application, provider/public-site activity, rollback write, Task #51/#53/#54 execution, scheduler/worker/policy activation, config/gate change, deployment or publication occurred.
 
-W08-E1–E5 engineering is implemented under issue #484 / PR #486 on branch `p8-8-w08-autonomous-audit-projection-implementation-484`.
+W09 specification/review is active under issue #487 on branch `p8-8-w09-stage-0-shadow-certification-spec-487` from canonical W08 merge `e396f4b454f3ee3e200913fa70c195c92975afcf`.
 
-Current implementation:
-- E1 exact caller-supplied W01–W07 policy lineage verification rooted at exact W03 `policyActionId`;
-- E2 deterministic W08 policy audit events for policy/proposal/authorization/reservation/control/preflight/dispatch/verification/rollback/closure evidence;
-- E3 canonical chronology, exact replay collapse, conflicting replay fail-closed semantics and W07 same-time revision ordering;
-- E4 per-entry previous-fingerprint hash chain, deterministic summary/ledger fingerprint and independent integrity verifier;
-- E5 regression/static certification including upstream tamper, W07 event/revision/state integrity, attempt bounds, explicit provider+storefront verification evidence, unavailable/manual-intervention preservation, no inferred W04 transition and no site/time W05 attachment;
-- verified W07 terminal states require explicit caller-supplied exact provider plus independent storefront verification evidence; dispatch receipt/state alone cannot create success;
-- no human approval/action/deployment/Task #54 identity is fabricated;
-- no migration 0008, DB adapter, provider adapter, route, startup, scheduler or worker binding exists.
+The W09 review boundary defines:
+- Stage 0 is real-decision evaluation with **zero provider writes**;
+- W09-A engineering is pure/default-off and caller-supplied only;
+- W09-B real Stage 0 evidence is a separate future authorization if direct Production reads or persistence are needed;
+- shadow decisions call the certified W01 evaluator rather than duplicate policy logic;
+- exact replay collapses and conflicting replay fails closed;
+- human-governed comparison is descriptive only and requires exact target lineage;
+- the historical P8.7 collection pilot is not product-target-comparable to the initial W09 product class;
+- quota/cooldown/concurrency/control/manual-intervention/uncertain-write/rollback-failure rejection behavior must be certified explicitly;
+- shadow `admit` creates no W03 authorization, W04 reservation, W05 claim, W06 preflight or W07 dispatch;
+- no migration or persistent shadow authority store is required for initial engineering;
+- W10 remains a separate explicit live-activation package.
 
-Engineering exact-head checkpoint before continuity docs:
-- head `2cc7b19d334f56c0b37d04fbb5b1d9d99f739f03`;
-- CI #1009 / run `35973334309`: success;
-- legacy schema, Task, P3.6, P12.2, W04/W05/W06/W07 PostgreSQL gates: pass;
-- full workspace tests: pass;
-- P11.10: pass;
-- Chromium: pass;
-- typecheck: pass;
-- build: pass.
+**Current safe boundary:** W09 documentation/specification/review only. Generic `continue` does not authorize W09 implementation, a real Stage 0 Production read/persistence run, or W10.
 
-**Current safe boundary:** finish exact-head PR #486 certification after these continuity-document commits, then stop for separate merge authorization. Do not merge PR #486 from generic continuation.
-
-**Still excluded:** Production migrations 0005/0006/0007; migration 0008; Production DB reads/writes; provider/public-site reads/writes; rollback writes; Task #51/#53/#54 execution; route/startup/scheduler/worker/policy/autonomous activation; credential/scope/config/gate changes; deployment/publication; W09 Stage 0 and W10 Stage 1.
-
-**Next boundary after an explicitly authorized W08 implementation merge:** P8.8 W09 — Stage 0 shadow certification, separately scoped and zero provider writes.
+**Still excluded:** direct Production DB reads/writes; Production persistence; migrations/schema changes; provider/public-site reads/writes; W03–W07 authority/materialization; Task #51/#53/#54 execution; route/startup/scheduler/worker activation; credential/scope/config/gate changes; deployment/publication; W10.
 
 ## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
 
