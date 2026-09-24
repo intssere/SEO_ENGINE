@@ -84,6 +84,78 @@ test("compact mobile navigation closes with Escape and restores toggle focus", a
   assertBrowserClean(errors);
 });
 
+test("UGP-2.5 contextual guide is route-aware, keyboard dismissible, focus-restoring and axe-clean", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/content");
+
+  await expect(page.getByRole("dialog", { name: /guide/i })).toHaveCount(0);
+  const trigger = page.locator(".sidebar").getByRole("button", { name: "Guide this page" });
+  await trigger.focus();
+  await trigger.click();
+
+  const guide = page.getByRole("dialog", { name: "Move between workspaces" });
+  await expect(guide).toBeVisible();
+  await expect(page.locator(".sidebar .primaryNav")).toHaveAttribute("data-onboarding-active", "true");
+  await expect(guide.getByText("Step 1 of 3")).toBeVisible();
+  await expect(guide.getByRole("button", { name: "Close guide" })).toBeFocused();
+
+  await guide.getByRole("button", { name: "Next" }).click();
+  await expect(page.locator(".customerHubHero")).toHaveAttribute("data-onboarding-active", "true");
+  await expect(page.locator(".sidebar .primaryNav")).not.toHaveAttribute("data-onboarding-active", "true");
+  await expect(page.getByRole("dialog", { name: "Content overview" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Back" }).click();
+  await expect(page.locator(".sidebar .primaryNav")).toHaveAttribute("data-onboarding-active", "true");
+
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"])
+    .analyze();
+  expect(axe.violations.map((violation) => violation.id)).toEqual([]);
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await expect(page.locator(".sidebar .primaryNav")).not.toHaveAttribute("data-onboarding-active", "true");
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
+test("UGP-2.5 mobile Guide control and panel stay viewport-safe", async ({ page }) => {
+  const { boundary, errors } = await openSyntheticPage(
+    page,
+    "/settings",
+    { width: 390, height: 844 },
+  );
+
+  const trigger = page.locator(".mobileNav").getByRole("button", { name: "Guide this page" });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+
+  const guide = page.getByRole("dialog", { name: "Move between workspaces" });
+  await expect(guide).toBeVisible();
+  const geometry = await guide.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      left: rect.left,
+      right: rect.right,
+      bottom: rect.bottom,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+    };
+  });
+  expect(geometry.left).toBeGreaterThanOrEqual(0);
+  expect(geometry.right).toBeLessThanOrEqual(geometry.viewportWidth + 1);
+  expect(geometry.bottom).toBeLessThanOrEqual(geometry.viewportHeight + 1);
+
+  await page.getByRole("button", { name: "Close guide" }).click();
+  await expect(trigger).toBeFocused();
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
 test("P12.1 primary navigation excludes engineering-only routes while direct engineering access stays honest", async ({
   page,
 }) => {

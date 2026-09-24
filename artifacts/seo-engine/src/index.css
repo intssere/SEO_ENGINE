@@ -3577,9 +3577,9 @@ td:first-child {
 .contextualGuideHead,.contextualGuideFoot{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .contextualGuideHead span,.contextualGuideFoot>span{color:#647087;font-size:11px}
 .contextualGuideHead strong{display:block;margin-top:2px}
-.contextualGuideHead button{min-width:36px;min-height:36px}
+.contextualGuideHead button{min-width:44px;min-height:44px}
 .contextualGuide>p{margin:12px 0;color:#52627a;font-size:13px;line-height:1.55}
 .contextualGuideFoot{align-items:center}
 .contextualGuideFoot>div{display:flex;gap:8px}
-.contextualGuideFoot button{min-height:40px;border:1px solid #c9dcfa;border-radius:8px;background:#f3f7ff;color:#245ea8;padding:7px 11px;font-size:12px;font-weight:700}
+.contextualGuideFoot button{min-height:44px;border:1px solid #c9dcfa;border-radius:8px;background:#f3f7ff;color:#245ea8;padding:7px 11px;font-size:12px;font-weight:700}
 @media(width<=640px){.contextualGuide{right:12px;bottom:12px}.onboardingGuideButton{min-height:44px}}
