@@ -383,11 +383,17 @@ test("entry mutation, removal, reorder and lineage/target tampering are detected
   );
 
   const lineage = structuredClone(ledger) as any;
-  lineage.entries[0].lineage.policyActionId = "p88w03-action-foreign";
+  lineage.entries[0].lineage = {
+    ...lineage.entries[0].lineage,
+    policyActionId: "p88w03-action-foreign",
+  };
   assert.ok(p88W08AuditIntegrityIssues(lineage).includes("p88_w08_entry_lineage_mismatch"));
 
   const target = structuredClone(ledger) as any;
-  target.entries[0].target.resourceGid = "gid://shopify/Product/999";
+  target.entries[0].target = {
+    ...target.entries[0].target,
+    resourceGid: "gid://shopify/Product/999",
+  };
   assert.ok(p88W08AuditIntegrityIssues(target).includes("p88_w08_entry_target_mismatch"));
 });
 
