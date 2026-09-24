@@ -45,10 +45,11 @@ test("UGP-2.4 performs no network, persistence or provider mutation", () => {
 test("UGP-3.1 exposes truthful public-web URL onboarding checks without executing them", () => {
   assert.match(page, /Public web onboarding/);
   assert.match(page, /NOT RUN/);
-  assert.match(page, /DNS \/ public address/);
-  assert.match(page, /Redirect chain/);
-  assert.match(page, /robots\.txt/);
-  assert.match(page, /Sitemap hints/);
+  assert.match(page, /website\.publicWebOnboarding\.checks/);
+  assert.match(model, /DNS \/ public address/);
+  assert.match(model, /Redirect chain/);
+  assert.match(model, /robots\.txt/);
+  assert.match(model, /Sitemap hints/);
   assert.match(page, /final analysis origin must resolve to HTTPS/);
   assert.match(model, /planned_not_executed/);
   assert.match(model, /finalHttpsRequired: true/);
