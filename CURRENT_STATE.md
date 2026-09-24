@@ -1,44 +1,41 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W08 autonomous audit projection implementation
+## Active engineering checkpoint — P8.8 W09 Stage 0 shadow certification implementation
 
-W08 specification/review is merged and certified complete under issue #480 / PR #483.
+W09 specification/review is merged and certified complete under issue #487 / PR #490.
 
 Specification closeout:
-- certified spec head: `85a23c9a03d91336cdd66aee552a809bf894e589`;
-- merge/canonical base for implementation: `d3d2c56214178b35de22b4cc5d63a5731bc20249`;
-- canonical base tree: `459656c42b82ecdd7d51ee1bd2c7d1e5d3339416`;
-- post-merge push CI #1003 and duplicate PR-triggered CI #1004: success;
-- Replit exact Git-only reconciled to the merge/tree, `0/0`, clean, with local-only branches preserved;
-- no Production migration/DB/provider/config/deployment/publication action occurred.
+- exact certified spec head: `9c3eeb61c17566d7165a901c96b0600c30b9cafc`;
+- merge/canonical implementation base: `409ca6e61011caeaabffefc11f503a05623135a4`;
+- canonical base tree: `cea391f1f7ca1512812a121604cf0ed4f7d109cd`;
+- post-merge CI #1019 / run `35979404611`: success;
+- Replit exact Git-only reconciled to the merge/tree, ahead/behind `0/0`, clean, all pre-existing local-only branch tips preserved;
+- no W09 implementation, Production read/write/persistence, provider/public-site access, W03–W07 materialization, runtime activation, config/gate change, deployment or publication occurred during the spec phase.
 
-W08-E1–E5 engineering is implemented under issue #484 / PR #486 on branch `p8-8-w08-autonomous-audit-projection-implementation-484`.
+W09-E1–E5 engineering is implemented under issue #493 / PR #494 on branch `p8-8-w09-stage-0-shadow-certification-implementation-493`.
 
 Current implementation:
-- E1 exact caller-supplied W01–W07 policy lineage verification rooted at exact W03 `policyActionId`;
-- E2 deterministic W08 policy audit events for policy/proposal/authorization/reservation/control/preflight/dispatch/verification/rollback/closure evidence;
-- E3 canonical chronology, exact replay collapse, conflicting replay fail-closed semantics and W07 same-time revision ordering;
-- E4 per-entry previous-fingerprint hash chain, deterministic summary/ledger fingerprint and independent integrity verifier;
-- E5 regression/static certification including upstream tamper, W07 event/revision/state integrity, attempt bounds, explicit provider+storefront verification evidence, unavailable/manual-intervention preservation, no inferred W04 transition and no site/time W05 attachment;
-- verified W07 terminal states require explicit caller-supplied exact provider plus independent storefront verification evidence; dispatch receipt/state alone cannot create success;
-- no human approval/action/deployment/Task #54 identity is fabricated;
-- no migration 0008, DB adapter, provider adapter, route, startup, scheduler or worker binding exists.
+- E1 deterministic source-provenance envelopes and shadow-decision artifacts; every caller-supplied W01 evaluation is recomputed through the certified W01 evaluator and must match exactly;
+- `production_read_snapshot` is rejected by W09-A engineering; `supplied_real_snapshot` remains descriptive and does not prove W09-B completion;
+- E2 bounded sessions up to 1,000 caller-supplied items, canonical ordering, exact replay collapse, conflict fail-closed semantics, mixed-policy rejection, deterministic session fingerprints/summaries and independent integrity verification;
+- E3 optional P8.6 human-ledger comparison requires independent P8.6 integrity plus exact Product mutation class/resource GID/URL/field/before/after fingerprints; comparison is direction-only/descriptive and never correctness/causality scoring;
+- explicit tests prove Collection/P8.7-shaped evidence is not comparable to the initial W09 Product class;
+- E4 full W01 rejection/control certification including activation/expiry/revocation, pause/drain/drained/kill, unresolved manual intervention/provider-write uncertainty/rollback failure, proposal/evidence/quality/risk/target constraints, provider-before mismatch, prior deployment, concurrency, cooldown and quota;
+- E5 source/decision/session tamper detection plus static proof of no database/provider/network/runtime/migration binding;
+- shadow `admit` remains non-authorizing and creates no W03–W07 artifact.
 
-Engineering exact-head checkpoint before continuity docs:
-- head `2cc7b19d334f56c0b37d04fbb5b1d9d99f739f03`;
-- CI #1009 / run `35973334309`: success;
+Engineering exact-head checkpoint before continuity-doc commits:
+- head `c9f68168a63f74e3ee89b7c52c23b040b55ad334`;
+- CI #1021 / run `35981055157`: success;
 - legacy schema, Task, P3.6, P12.2, W04/W05/W06/W07 PostgreSQL gates: pass;
-- full workspace tests: pass;
-- P11.10: pass;
-- Chromium: pass;
-- typecheck: pass;
-- build: pass.
+- full workspace tests including the W09 E1–E5 certification matrix: pass;
+- P11.10, Chromium, typecheck and build: pass.
 
-**Current safe boundary:** finish exact-head PR #486 certification after these continuity-document commits, then stop for separate merge authorization. Do not merge PR #486 from generic continuation.
+**Current safe boundary:** re-certify the final documentation-updated PR #494 head, then stop for separate merge authorization. Do not merge PR #494 from generic continuation.
 
-**Still excluded:** Production migrations 0005/0006/0007; migration 0008; Production DB reads/writes; provider/public-site reads/writes; rollback writes; Task #51/#53/#54 execution; route/startup/scheduler/worker/policy/autonomous activation; credential/scope/config/gate changes; deployment/publication; W09 Stage 0 and W10 Stage 1.
+**Still excluded:** W09-B real Stage 0 Production reads/persistence; direct Production DB access; provider/public-site reads/writes; W03–W07 materialization/execution; Task #51/#53/#54 execution; scheduler/worker/startup activation; credential/scope/config/gate changes; migration/schema changes; deployment/publication; W10 Stage 1.
 
-**Next boundary after an explicitly authorized W08 implementation merge:** P8.8 W09 — Stage 0 shadow certification, separately scoped and zero provider writes.
+**Next boundary after an explicitly authorized W09-A implementation merge:** separately review the W09-B real Stage 0 evidence acquisition plan. Direct Production reads or persistence remain separately authorized. W10 remains blocked.
 
 ## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
 

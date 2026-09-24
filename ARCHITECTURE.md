@@ -382,6 +382,26 @@ Permanent architecture:
 - W08 has no database/provider/network/runtime adapter, no migration 0008, and no startup/route/scheduler/worker binding;
 - W09 Stage 0 shadow certification and W10 live activation remain separate explicit gates.
 
+### P8.8 W09 Stage 0 shadow certification
+
+W09-A is implemented as a pure/default-off shadow-certification layer after W08. It does not activate autonomous execution and it does not acquire Production evidence.
+
+Permanent architecture:
+- each caller-supplied source snapshot has an exact provenance class and deterministic integrity-bound fingerprint;
+- `production_read_snapshot` is rejected by the W09-A engineering module; a `supplied_real_snapshot` label is descriptive and never proves live provenance by itself;
+- the certified W01 evaluator remains the only policy decision engine; every supplied W01 evaluation is recomputed and exact-compared before shadow projection;
+- a shadow `admit` is not W03 authorization, W04 reservation, W05 claim, W06 preflight, W07 dispatch or provider-write permission;
+- bounded pure sessions canonicalize at most 1,000 caller-supplied items, collapse exact replay, fail closed on conflicting replay/mixed policy, and emit deterministic decision/session fingerprints and descriptive summaries;
+- optional human comparison accepts only independently integrity-verified P8.6 ledgers and only when mutation class, Product GID, target URL, field and exact before/after fingerprints all match;
+- comparison is descriptive direction/outcome evidence only; it never creates correctness, quality, confidence or causality conclusions;
+- Collection/P8.7-shaped historical evidence is explicitly not Product-target comparable to the initial W09 class;
+- W09 tests certify the full W01 rejection matrix plus pause/drain/drained/kill, unresolved side effects, quota, cooldown and concurrency without consuming or mutating any of those controls;
+- source, decision and session artifacts have independent integrity verification;
+- static certification forbids DB/provider/network/runtime imports/calls, migration creation and non-test runtime binding;
+- W09-B real Stage 0 evidence acquisition remains a separate future boundary; direct Production reads or persistence require exact separate authorization;
+- W10 Stage 1 remains separately reviewed and explicitly authorized.
+
+
 ### P8.8 W05 durable mutation-control bridge
 
 W05 materializes the mutation-specific durable control prerequisite identified by P9.8 without activating autonomous execution.
