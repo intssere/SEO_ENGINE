@@ -8,6 +8,7 @@ import {
 } from "./p8-8-policy-preflight.js";
 
 export const P8_8_W06_EXPECTED_TABLE_COUNT = 41 as const;
+export const P8_8_W06_W07_COMPATIBLE_TABLE_COUNT = 43 as const;
 
 type Sql = ReturnType<typeof postgres>;
 
@@ -219,7 +220,11 @@ export class P88W06SnapshotStore {
           "SELECT COUNT(*)::int AS count FROM information_schema.tables "
             + "WHERE table_schema='public' AND table_type='BASE TABLE'",
         );
-        if (Number(counts[0]?.count ?? 0) !== P8_8_W06_EXPECTED_TABLE_COUNT) {
+        const tableCount = Number(counts[0]?.count ?? 0);
+        if (
+          tableCount !== P8_8_W06_EXPECTED_TABLE_COUNT
+          && tableCount !== P8_8_W06_W07_COMPATIBLE_TABLE_COUNT
+        ) {
           throw new Error("p88_w06_schema_table_count_mismatch");
         }
 
@@ -320,6 +325,10 @@ export function p88W06SnapshotStoreCapability() {
   return Object.freeze({
     version: "p8-8-w06-read-only-snapshot-store-v1" as const,
     expectedPublicTableCount: P8_8_W06_EXPECTED_TABLE_COUNT,
+    expectedPublicTableCounts: Object.freeze([
+      P8_8_W06_EXPECTED_TABLE_COUNT,
+      P8_8_W06_W07_COMPATIBLE_TABLE_COUNT,
+    ]),
     explicitDatabaseUrlOnly: true,
     databaseTransactionClockAuthoritative: true,
     databaseReadPerformed: true,
