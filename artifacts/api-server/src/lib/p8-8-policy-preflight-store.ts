@@ -324,6 +324,7 @@ export class P88W06SnapshotStore {
 export function p88W06SnapshotStoreCapability() {
   return Object.freeze({
     version: "p8-8-w06-read-only-snapshot-store-v1" as const,
+    expectedPublicTableCount: P8_8_W06_EXPECTED_TABLE_COUNT,
     expectedPublicTableCounts: Object.freeze([
       P8_8_W06_EXPECTED_TABLE_COUNT,
       P8_8_W06_W07_COMPATIBLE_TABLE_COUNT,
