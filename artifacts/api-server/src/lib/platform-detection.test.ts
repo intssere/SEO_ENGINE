@@ -54,8 +54,8 @@ test("UGP-3.2 identifies Shopify from independent supplied evidence without gran
   assert.equal(result.evidenceGrade, "strong");
   assert.equal(result.confidence, "high");
   assert.deepEqual(result.supportingEvidence.map((item) => item.id), [
-    "header_shopify",
     "asset_shopify",
+    "header_shopify",
   ]);
   assert.deepEqual(result.contradictoryEvidence, []);
   assert.equal(result.provenance.mode, "supplied_observations_only");
