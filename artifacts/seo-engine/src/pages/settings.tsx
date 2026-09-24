@@ -21,7 +21,7 @@ export default function SettingsPage() {
         />
 
         <div className="grid grid-cols-1 gap-6 max-w-4xl">
-          <section className="card">
+          <section className="card" data-onboarding-target="settings-websites">
             <div className="settingsSectionHead">
               <div>
                 <h2 className="text-lg font-bold text-[#172033]">
@@ -45,7 +45,7 @@ export default function SettingsPage() {
             </div>
           </section>
 
-          <section className="card">
+          <section className="card" data-onboarding-target="settings-safety">
             <h2 className="text-lg font-bold text-[#172033] mb-4">
               Automation safeguards
             </h2>

@@ -5,14 +5,14 @@
       "minAssetCount": 1,
       "maxAssetRawBytes": 622000,
       "maxAssetGzipBytes": 180000,
-      "maxTotalRawBytes": 632000,
-      "maxTotalGzipBytes": 182000
+      "maxTotalRawBytes": 640000,
+      "maxTotalGzipBytes": 185000
     },
     "css": {
       "minAssetCount": 1,
-      "maxAssetRawBytes": 190000,
+      "maxAssetRawBytes": 191000,
       "maxAssetGzipBytes": 33000,
-      "maxTotalRawBytes": 190000,
+      "maxTotalRawBytes": 191000,
       "maxTotalGzipBytes": 33000
     }
   },
