@@ -497,11 +497,11 @@ export class P88W07DispatchStore {
             + "w06_preflight_id,w06_preflight_fingerprint,"
             + "credential_profile_id,control_revision,control_fingerprint,"
             + "provider,domain,resource_kind,resource_gid,target_url,"
-            + "action_type,field,required_provider_scope,before_fingerprint,"
-            + "after_fingerprint,state,reserved_at"
+            + "action_type,field,required_provider_scope,target_binding_fingerprint,"
+            + "before_fingerprint,after_fingerprint,state,reserved_at"
             + ") VALUES ($1,$2,$3,$4,$5,$6::uuid,$7,$8,$9,$10,$11,$12,$13,"
             + "$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,"
-            + "$29,$30,$31,$32,$33,$34,$35,$36,$37,'reserved_prewrite',$38::timestamptz) "
+            + "$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,'reserved_prewrite',$39::timestamptz) "
             + "RETURNING dispatch_id,dispatch_fingerprint,execution_id,"
             + "site_id::text AS site_id,state,row_revision,forward_attempt_count,"
             + "rollback_attempt_count,public_write_occurrence,rollback_occurrence,"
@@ -544,6 +544,7 @@ export class P88W07DispatchStore {
             intent.target.actionType,
             intent.target.field,
             intent.target.requiredProviderScope,
+            intent.target.targetBindingFingerprint,
             intent.state.beforeFingerprint,
             intent.state.afterFingerprint,
             now.toISOString(),
