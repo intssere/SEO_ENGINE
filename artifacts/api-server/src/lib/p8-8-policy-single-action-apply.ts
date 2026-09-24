@@ -84,6 +84,7 @@ export type P88W07DispatchIntent = Readonly<{
     actionType: "update_meta_description";
     field: "meta_description";
     requiredProviderScope: "write_products";
+    targetBindingFingerprint: string;
   }>;
   state: Readonly<{
     beforeValue: string | null;
@@ -323,6 +324,7 @@ export function projectP88W07DispatchIntent(input: {
       actionType: "update_meta_description",
       field: "meta_description",
       requiredProviderScope: "write_products",
+      targetBindingFingerprint: preflight.target.targetBindingFingerprint,
     },
     state: {
       beforeValue: preflight.state.beforeValue,
