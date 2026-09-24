@@ -13,34 +13,36 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W09 Stage 0 shadow certification implementation — issue #493 / PR #494
+### P8.8 W09-B real Stage 0 evidence acquisition review — issue #497
 
-Canonical implementation base is W09-spec merge `409ca6e61011caeaabffefc11f503a05623135a4` / tree `cea391f1f7ca1512812a121604cf0ed4f7d109cd`.
+Canonical baseline after W09-A is `3a265293106fe5ac78520f316f12ef659ca5693e` / tree `3c63748229b4fce27447f3793a58040913796118`.
 
-W09 specification is certified complete under issue #487 / PR #490. W09-E1–E5 implementation is active on branch `p8-8-w09-stage-0-shadow-certification-implementation-493`.
+W09-A E1–E5 is certified complete under issue #493 / PR #494:
+- exact certified head `eae1d6f91ed125ae88e4fd9f69e4e1cf0a588d76`;
+- post-merge push CI #1027 and duplicate #1028 success;
+- Replit exact-synced Git-only to canonical main, `0/0`, clean, all pre-existing feature branch tips preserved;
+- no Production/provider/runtime activation occurred.
 
-Implemented scope:
-- exact source snapshot identity/fingerprint and provenance class;
-- W01 is reused directly as the only policy engine, and supplied W01 evaluation must equal a fresh deterministic recomputation;
-- deterministic shadow decisions/session IDs/fingerprints;
-- exact replay collapse, conflicting replay fail closed, canonical ordering and mixed-policy session rejection;
-- bounded maximum 1,000 items per pure session;
-- integrity-verified P8.6 comparison only when exact Product target mutation class/GID/URL/field/before/after fingerprints match;
-- descriptive comparison states/directions only; no correctness, confidence, quality or causality inference;
-- explicit Collection/P8.7 non-comparability proof;
-- complete W01 rejection matrix and pause/drain/drained/kill, quota, cooldown, concurrency and unresolved-side-effect certification;
-- source/decision/session independent tamper detection;
-- static no DB/provider/runtime/migration binding.
+W09-B review is active on branch `p8-8-w09b-real-stage0-evidence-review-497`.
 
-Engineering exact-head checkpoint before continuity-doc updates:
-- head `c9f68168a63f74e3ee89b7c52c23b040b55ad334`;
-- CI #1021 / run `35981055157`: success through workspace tests, P11.10, Chromium, typecheck and build.
+Review decisions:
+- W09-B first run is DB-read-only, provider-network-free, non-persistent and one-shot;
+- B0 schema/readiness preflight, B1 bounded evidence extraction, B2 offline W09-A evaluation are separate conceptual phases;
+- W09-A never reads Production directly; raw Production provenance lives in a separate immutable acquisition manifest, then evidence-complete candidates enter W09-A as `supplied_real_snapshot`;
+- final candidate cap 25, source opportunity scan cap 100;
+- exact one active Shopify `diamondshelf.us` site;
+- frozen SELECT-only query set inside one repeatable-read/read-only transaction;
+- only reviewed tables/columns and row caps may be read;
+- missing 0005/0006/0007 Production objects cause `real_shadow_evidence_incomplete`; do not migrate or synthesize state;
+- Product GID must be persisted explicitly;
+- existing provider-before evidence must be demonstrably provider-authoritative and fresh; crawler/storefront/page snapshot evidence is not interchangeable;
+- P9.7 recommendation/proposal artifacts are recomputed in memory from real persisted source evidence;
+- optional human comparison remains exact-target P8.6-style evidence only;
+- outputs remain outside Production;
+- any fresh Shopify read requires a later provider-read addendum;
+- W10 remains blocked.
 
-**Current safe boundary:** re-certify the documentation-updated exact PR #494 head, then stop for explicit merge authorization. Do not merge without a separate user authorization.
-
-No W09-B Production read/persistence, provider/public-site access, W03–W07 execution/materialization, Task #51/#53/#54 execution, scheduler/worker activation, config/gate change, migration, deployment, publication or W10 work is authorized or performed.
-
-After W09-A is explicitly merged and post-merge certified, the next safe milestone is a **W09-B real Stage 0 evidence acquisition review**. Any direct Production reads/persistence require their own exact authorization; W10 remains separately gated.
+**Current safe boundary:** finish W09-B review/spec PR certification only. Do not implement the acquisition adapter, read Production, inspect the live schema, contact Shopify/providers, persist evidence, change runtime/config, deploy/publish or begin W10 from generic continuation.
 
 ### P8.8 W07 specification certified — implementation gate next
 
