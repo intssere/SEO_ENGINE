@@ -151,7 +151,14 @@ test("P8.8 W07 dispatch store certifies 43-table fencing, closure, race, quota a
       "INSERT INTO policy_mutation_control_state ("
         + "site_id,control_version,revision,previous_control_fingerprint,"
         + "mode,effective_at,control_fingerprint"
-        + ") VALUES ($1::uuid,$2,$3,$4,$5,$6::timestamptz,$7)",
+        + ") VALUES ($1::uuid,$2,$3,$4,$5,$6::timestamptz,$7) "
+        + "ON CONFLICT (site_id) DO UPDATE SET "
+        + "control_version=EXCLUDED.control_version,"
+        + "revision=EXCLUDED.revision,"
+        + "previous_control_fingerprint=EXCLUDED.previous_control_fingerprint,"
+        + "mode=EXCLUDED.mode,effective_at=EXCLUDED.effective_at,"
+        + "control_fingerprint=EXCLUDED.control_fingerprint,"
+        + "updated_at=transaction_timestamp()",
       [
         control.siteId,
         control.version,
@@ -438,19 +445,6 @@ test("P8.8 W07 dispatch store certifies 43-table fencing, closure, race, quota a
     });
     assert.equal(rejected.state, "forward_rejected_no_write");
 
-    await admin.unsafe(
-      "DELETE FROM policy_mutation_claims WHERE reservation_id=$1",
-      [first.intent.lineage.reservationId],
-    );
-    await admin.unsafe(
-      "DELETE FROM policy_mutation_reservations WHERE reservation_id=$1",
-      [first.intent.lineage.reservationId],
-    );
-    await admin.unsafe(
-      "DELETE FROM policy_mutation_control_state WHERE site_id=$1::uuid",
-      [first.intent.siteId],
-    );
-
     const second = await seed("640000007", "quota-second");
     await assert.rejects(
       store.reservePrewrite(second.intent),
@@ -470,10 +464,6 @@ test("P8.8 W07 dispatch store certifies 43-table fencing, closure, race, quota a
     await admin.unsafe(
       "DELETE FROM policy_mutation_reservations WHERE reservation_id=$1",
       [second.intent.lineage.reservationId],
-    );
-    await admin.unsafe(
-      "DELETE FROM policy_mutation_control_state WHERE site_id=$1::uuid",
-      [second.intent.siteId],
     );
 
     const sameTarget = await seed("640000006", "cooldown-same-target");
