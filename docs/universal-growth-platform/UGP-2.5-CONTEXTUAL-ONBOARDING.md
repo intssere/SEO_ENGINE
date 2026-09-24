@@ -92,3 +92,18 @@ It does not:
 No Driver.js, Intro.js or Shepherd.js package is added by this milestone.
 
 Any later external-engine adoption must update this record with exact version, license, measured bundle effect, accessibility certification and replacement/fallback behavior.
+
+
+## Measured bundle effect
+
+Exact GitHub CI on the pre-rebase UGP-2.5 candidate emitted:
+
+- entry JS: **621,879 raw / 178,225 gzip**;
+- contextual-onboarding chunk: **6,018 raw / 2,491 gzip**;
+- website-connection-wizard chunk: **9,609 raw / 3,224 gzip**;
+- total JS: **637,506 raw / 183,940 gzip**;
+- CSS: **190,206 raw / 31,717 gzip**.
+
+Compared with certified UGP-2.4, the contextual-onboarding milestone adds **6,788 raw / 2,727 gzip JS** and **1,302 raw / 247 gzip CSS**.
+
+The hard P11.1 checker still counts all emitted chunks. The reviewed ceilings are rebased only to **640,000 total JS raw / 185,000 total JS gzip** and **191,000 CSS raw**, while the existing JS per-asset ceilings and CSS gzip ceiling remain unchanged.
