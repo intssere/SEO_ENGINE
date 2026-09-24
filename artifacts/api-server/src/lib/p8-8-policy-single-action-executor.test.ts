@@ -275,6 +275,39 @@ test("accepted receipt alone is not success; failed verification performs exactl
   assert.equal(result.disposition, "rollback_verified_closed");
 });
 
+test("ambiguous rollback closes to manual intervention without a rollback retry", async () => {
+  const { fixture, intent } = base();
+  const store = new FakeStore();
+  let forwardWrites = 0;
+  let rollbackWrites = 0;
+  const result = await executeP88W07SingleAction({
+    bundle: fixture.bundle,
+    store,
+    publicSiteWritesEnabled: true,
+    policyMutationExecutionEnabled: true,
+    credentialProfileId: intent.policy.credentialProfileId,
+    credentialScopes: ["write_products"],
+    readProvider: async (purpose) =>
+      purpose === "after"
+        ? provider(intent, "after", "Third state")
+        : provider(intent, "before"),
+    mutateProvider: async (phase) => {
+      if (phase === "forward") {
+        forwardWrites += 1;
+        return receipt("accepted");
+      }
+      rollbackWrites += 1;
+      return receipt("uncertain");
+    },
+    verifyStorefront: async (expected) => storefront(expected),
+  });
+
+  assert.equal(forwardWrites, 1);
+  assert.equal(rollbackWrites, 1);
+  assert.equal(result.disposition, "manual_intervention_required");
+  assert.equal(result.automaticRollbackRetryPerformed, false);
+});
+
 test("forward transport uncertainty never retries the forward write", async () => {
   const { fixture, intent } = base();
   const store = new FakeStore();
