@@ -13,31 +13,34 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W08 autonomous audit projection specification/review — issue #480
+### P8.8 W08 autonomous audit projection implementation — issue #484 / PR #486
 
-Canonical GitHub `main` after W07 is `8d1836393e64d0cbe5d4b3ce904e50cbee788089` / tree `edfef3c14be4ae31160b12cdb2d68109830f461c`.
+Canonical implementation base is W08-spec merge `d3d2c56214178b35de22b4cc5d63a5731bc20249` / tree `459656c42b82ecdd7d51ee1bd2c7d1e5d3339416`.
 
-W07-E1–E5 implementation is certified complete under issue #474 / PR #477:
-- certified head `db603cbd91263b0bf2ae6ab084950bab49a4d61e`;
-- exact-head CI #997 success;
-- merge `8d1836393e64d0cbe5d4b3ce904e50cbee788089`;
-- post-merge CI #998 success;
-- Replit exact-synced Git-only, `0/0`, clean;
-- no Production migration/provider/config/deployment/publication action occurred.
+W08 specification is certified complete under issue #480 / PR #483. W08-E1–E5 implementation is active on branch `p8-8-w08-autonomous-audit-projection-implementation-484`.
 
-W08 specification/review is active on branch `p8-8-w08-autonomous-audit-projection-spec-480`. It defines a pure/default-off caller-supplied audit projection over exact W01–W07 policy lineage, reusing P8.6 hash-chain/replay principles and P10.1 deterministic chronology principles without creating a competing authority store.
+Implemented scope:
+- exact W03 `policyActionId` audit root with exact W01–W07 policy-specific lineage;
+- upstream W01–W07 canonical rebuild/validation via existing certified contracts;
+- deterministic W08 event taxonomy and chronology;
+- exact replay collapse / conflicting replay fail closed;
+- exact W07 append-only event ID/fingerprint/revision/state transition verification;
+- caller-supplied exact provider + independent storefront verification evidence required for verified W07 terminal states;
+- W04 transitions emitted only from authoritative timestamps; manual-intervention W04 transition is not invented;
+- W05 control events attach only by exact claimed revision/fingerprint lineage;
+- hash-chained entries, deterministic ledger fingerprint/summary and independent integrity verification;
+- static proof of no database/provider/runtime/migration-0008 binding.
 
-Key W08 review decisions:
-- audit root is exact W03 `policyActionId`;
-- policy-specific lineage remains distinct from human approval/action/deployment IDs;
-- exact W07 append-only dispatch events remain authoritative for dispatch-state chronology;
-- W04 transitions are not invented where migration 0005 has no append-only event history;
-- W05 site-level control events cannot attach by site/time proximity;
-- unavailable/uncertain/manual-intervention evidence stays explicit;
-- no migration 0008 is required for first implementation;
-- future W08 E1–E5 engineering remains separately authorized and pure/caller-supplied only.
+Engineering exact-head checkpoint before continuity-doc updates:
+- head `2cc7b19d334f56c0b37d04fbb5b1d9d99f739f03`;
+- CI #1009 / run `35973334309`: success through workspace tests, P11.10, Chromium, typecheck and build;
+- the earlier CI #1008 had one W08 tamper-test setup failure caused by shared structured-clone references; core behavior and all upstream DB gates passed; test setup was corrected on the current head.
 
-**Current safe boundary:** complete W08 specification/review and PR certification only. Do not implement W08 without separate authorization. Do not read/write Production, apply migrations, call providers, mutate public sites, execute Task #51/#53/#54, activate scheduler/worker/policy/autonomy, change credentials/config/gates, deploy/publish, or begin W09/W10.
+**Current safe boundary:** re-certify the documentation-updated exact PR #486 head, then stop for explicit merge authorization. Do not merge without a separate user authorization.
+
+No Production migration/DDL/DML/read, provider/public-site read/write, rollback write, Task #51/#53/#54 execution, scheduler/worker/policy activation, credential/config/gate change, deployment, publication, W09 or W10 work is authorized or performed.
+
+After W08 is explicitly merged and post-merge certified, the next defined milestone is **W09 — Stage 0 shadow certification** with real decision evaluation only, zero provider writes, and separately authorized Production read/persistence boundaries if needed.
 
 ### P8.8 W07 specification certified — implementation gate next
 
