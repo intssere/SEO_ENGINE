@@ -53,6 +53,7 @@ const customerMappedRoutes = [
   "/performance/experiments",
   "/performance/learning",
   "/settings/connections",
+  "/settings/add-website",
 ];
 
 test("UGP-2.1 primary navigation contains only customer product domains", () => {

@@ -23,6 +23,7 @@ const customerSources = [
   "pages/automation.tsx",
   "pages/dashboard.tsx",
   "pages/settings.tsx",
+  "pages/website-connection-wizard.tsx",
 ].map(read);
 
 const expectedPrimaryLabels = [
@@ -64,6 +65,7 @@ const customerMappedRoutes = [
   "/performance/experiments",
   "/performance/learning",
   "/settings/connections",
+  "/settings/add-website",
 ];
 
 const engineeringOnlyRoutes = [
