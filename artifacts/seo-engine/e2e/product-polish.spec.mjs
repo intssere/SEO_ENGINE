@@ -13,6 +13,7 @@ const ROUTES = [
   "/automation",
   "/performance",
   "/settings",
+  "/settings/add-website",
   "/governance",
   "/actions",
   "/approvals",

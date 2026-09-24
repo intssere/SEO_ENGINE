@@ -400,7 +400,7 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
   assertBrowserClean(errors);
 });
 
-for (const route of ["/", "/content", "/site-audit", "/authority", "/automation", "/settings", "/content/research", "/site-audit/technical", "/automation/safety", "/settings/connections", "/technical-seo", "/search-intelligence", "/ai-visibility", "/governance", "/connections"]) {
+for (const route of ["/", "/content", "/site-audit", "/authority", "/automation", "/settings", "/content/research", "/site-audit/technical", "/automation/safety", "/settings/connections", "/settings/add-website", "/technical-seo", "/search-intelligence", "/ai-visibility", "/governance", "/connections"]) {
   test(`axe serious/critical scan passes on ${route}`, async ({ page }) => {
     const { boundary, errors } = await openSyntheticPage(page, route);
 
