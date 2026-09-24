@@ -382,6 +382,24 @@ Permanent architecture:
 - W08 has no database/provider/network/runtime adapter, no migration 0008, and no startup/route/scheduler/worker binding;
 - W09 Stage 0 shadow certification and W10 live activation remain separate explicit gates.
 
+### P8.8 W09 Stage 0 shadow certification
+
+W09 introduces a zero-write policy shadow-certification layer after W08, but it does not activate autonomous execution.
+
+Permanent architecture:
+- Stage 0 calls the certified W01 evaluator over exact caller-supplied candidate snapshots rather than duplicating policy logic;
+- shadow decisions retain exact grant/candidate/evaluation/source fingerprints and are deterministic, replay-safe evidence only;
+- a shadow `admit` is not W03 authorization, W04 reservation, W05 claim, W06 preflight, W07 dispatch or provider-write permission;
+- W09-A engineering is pure/default-off and performs no DB/provider/network/runtime work;
+- W09-B real-decision certification is a separate future boundary; direct Production reads or Stage 0 persistence require separate authorization;
+- human-governed comparison is exact-target descriptive evidence only; timestamp/site/text similarity cannot create comparability;
+- P8.7's certified collection mutation remains historical human-path evidence and is not exact-target comparable to the initial Product W09 class;
+- pause/drain/kill, quota, cooldown, concurrency, manual-intervention, provider-write uncertainty, rollback failure and the complete W01 rejection matrix must be explicitly certified;
+- Stage 0 never consumes quota, starts cooldowns, claims concurrency or mutates control state;
+- zero-write certification must prove no W03–W07 materialization, Task #51/#53/#54 execution, provider write, scheduler/worker binding or gate activation;
+- W10 Stage 1 remains a separately reviewed and explicitly authorized live activation package.
+
+
 ### P8.8 W05 durable mutation-control bridge
 
 W05 materializes the mutation-specific durable control prerequisite identified by P9.8 without activating autonomous execution.
