@@ -423,7 +423,7 @@ Permanent architecture under review:
 
 The W09-B engineering package is designed as a default-off, non-authoritative evidence-acquisition bridge with explicit separation between DB acquisition and W09-A policy evaluation.
 
-Permanent architecture under review:
+Implementation candidate architecture in PR #504:
 - BE1 is pure and defines the frozen 18-query SELECT-only query set, exact row/invocation caps, deterministic query-set/result/package fingerprints, immutable acquisition manifests and completeness states;
 - BE2 is the only DB-bound module and requires an explicit database URL; it uses direct `postgres`, a single connection and one read-only/repeatable-read transaction, with no `process.env`, no ambient `@workspace/db` pool, no arbitrary SQL surface and no provider/runtime dependency;
 - BE3 is pure/offline and accepts only integrity-valid acquisition packages; it emits W09-A `supplied_real_snapshot` inputs and never `production_read_snapshot`;
