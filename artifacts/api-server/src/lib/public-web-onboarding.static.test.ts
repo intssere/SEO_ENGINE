@@ -30,13 +30,14 @@ test("UGP-3.1 core has no direct network, database, credential or runtime bindin
   }
 });
 
-test("UGP-3.1 core is not imported by non-test API runtime source", async () => {
+test("UGP-3.1 core is not imported by API runtime source outside certified pure successor layers", async () => {
   const entries = await readdir(libDir, { withFileTypes: true });
   const offenders: string[] = [];
   for (const entry of entries) {
     if (!entry.isFile() || !entry.name.endsWith(".ts")) continue;
     if (
       entry.name === "public-web-onboarding.ts"
+      || entry.name === "platform-detection.ts"
       || entry.name.endsWith(".test.ts")
     ) continue;
     const content = await readFile(join(libDir.pathname, entry.name), "utf8");
