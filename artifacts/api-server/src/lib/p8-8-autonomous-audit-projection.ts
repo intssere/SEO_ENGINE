@@ -267,7 +267,7 @@ function stable(value: unknown): unknown {
 }
 
 function stableJson(value: unknown): string {
-  return JSON.stringify(stable(value));
+  return JSON.stringify(stable(value)) ?? "undefined";
 }
 
 function hash(value: unknown): string {
