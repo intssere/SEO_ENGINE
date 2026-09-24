@@ -2540,7 +2540,8 @@ td:first-child {
     color: #7f91af;
     font-size: 10px;
   }
-  .mobileNavToggle {
+  .mobileNavToggle,
+  .mobileGuideToggle {
     border: 1px solid #334766;
     border-radius: 8px;
     background: #172744;
@@ -3095,6 +3096,7 @@ td:first-child {
     -webkit-overflow-scrolling: touch;
   }
   .mobileNavToggle,
+  .mobileGuideToggle,
   .mobileNavPanel .primaryNav a {
     min-height: 44px;
   }
