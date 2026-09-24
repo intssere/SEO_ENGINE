@@ -253,7 +253,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </div>
             </div>
             <div className="mobileNavActions">
-              <button type="button" className="mobileNavToggle" onClick={() => setGuideOpen(true)}>
+              <button type="button" className="mobileGuideToggle" onClick={() => setGuideOpen(true)}>
                 Guide this page
               </button>
               <button
