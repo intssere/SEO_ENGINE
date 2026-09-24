@@ -3,6 +3,10 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { executionStateFingerprint } from "./execution-foundation.js";
 import {
+  buildP88W06PolicyPreflight,
+  buildP88W06ProviderObservation,
+} from "./p8-8-policy-preflight.js";
+import {
   assertP88W07ExactW06Lineage,
   assertP88W07Transition,
   p88W07NoHumanAuthorityCapability,
@@ -61,6 +65,77 @@ test("W07 refuses shadow or blocked W06 policy preflight", () => {
   assert.throws(
     () => projectP88W07DispatchIntent({
       bundle: fixture.bundle,
+      databaseNow: fixture.snapshot.databaseNow,
+    }),
+    /p88_w07_w06_not_ready/,
+  );
+});
+
+test("W07 rejects unavailable and uncertain W06 provider preflight states", () => {
+  const fixture = buildP88W07TestFixture();
+
+  const unavailableObservation = buildP88W06ProviderObservation({
+    status: "unavailable",
+    siteId: fixture.intent.siteId,
+    provider: "shopify",
+    resourceKind: "product",
+    resourceGid: fixture.intent.target.resourceGid,
+    field: "meta_description",
+    rawValue: null,
+    observedBeforeFingerprint: null,
+    requestProvenanceFingerprint:
+      fixture.providerObservation.requestProvenanceFingerprint,
+    errorCategory: "synthetic_unavailable",
+  });
+  const unavailablePreflight = buildP88W06PolicyPreflight({
+    lineage: fixture.lineage,
+    preSnapshot: fixture.snapshot,
+    finalSnapshot: fixture.snapshot,
+    providerObservation: unavailableObservation,
+  });
+  assert.equal(
+    unavailablePreflight.disposition,
+    "provider_read_unavailable_no_dispatch",
+  );
+  assert.throws(
+    () => projectP88W07DispatchIntent({
+      bundle: {
+        ...fixture.bundle,
+        w06ProviderObservation: unavailableObservation,
+        w06Preflight: unavailablePreflight,
+      },
+      databaseNow: fixture.snapshot.databaseNow,
+    }),
+    /p88_w07_w06_not_ready/,
+  );
+
+  const uncertainObservation = buildP88W06ProviderObservation({
+    status: "observed",
+    siteId: fixture.intent.siteId,
+    provider: "shopify",
+    resourceKind: "product",
+    resourceGid: fixture.intent.target.resourceGid,
+    field: "meta_description",
+    rawValue: fixture.lineage.w02Materialization.before.value,
+    observedBeforeFingerprint: "0".repeat(64),
+    requestProvenanceFingerprint:
+      fixture.providerObservation.requestProvenanceFingerprint,
+    errorCategory: null,
+  });
+  const uncertainPreflight = buildP88W06PolicyPreflight({
+    lineage: fixture.lineage,
+    preSnapshot: fixture.snapshot,
+    finalSnapshot: fixture.snapshot,
+    providerObservation: uncertainObservation,
+  });
+  assert.equal(uncertainPreflight.disposition, "state_uncertain");
+  assert.throws(
+    () => projectP88W07DispatchIntent({
+      bundle: {
+        ...fixture.bundle,
+        w06ProviderObservation: uncertainObservation,
+        w06Preflight: uncertainPreflight,
+      },
       databaseNow: fixture.snapshot.databaseNow,
     }),
     /p88_w07_w06_not_ready/,
