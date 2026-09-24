@@ -150,7 +150,7 @@ function exactProviderMatch(input: {
       actionType: input.intent.target.actionType,
       field: input.intent.target.field,
       requiredProviderScope: input.intent.target.requiredProviderScope,
-      targetBindingFingerprint: "",
+      targetBindingFingerprint: input.intent.target.targetBindingFingerprint,
     },
     value: input.evidence.rawValue,
     purpose: input.purpose,
