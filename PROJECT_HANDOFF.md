@@ -13,34 +13,27 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W09 Stage 0 shadow certification implementation — issue #493 / PR #494
+### P8.8 W09-BE1–BE5 synthetic evidence engineering specification/review — issue #499
 
-Canonical implementation base is W09-spec merge `409ca6e61011caeaabffefc11f503a05623135a4` / tree `cea391f1f7ca1512812a121604cf0ed4f7d109cd`.
+Canonical baseline is W09-B review merge `882ec877e0f052f71c6dce3b15f352472b468f5e` / tree `6db5dcc0a85b25a8212b00c1b216aace11f85ac3`.
 
-W09 specification is certified complete under issue #487 / PR #490. W09-E1–E5 implementation is active on branch `p8-8-w09-stage-0-shadow-certification-implementation-493`.
+W09-B review is certified complete under issue #497 / PR #498 with post-merge CI #1040 success and Replit exact Git-only reconciliation.
 
-Implemented scope:
-- exact source snapshot identity/fingerprint and provenance class;
-- W01 is reused directly as the only policy engine, and supplied W01 evaluation must equal a fresh deterministic recomputation;
-- deterministic shadow decisions/session IDs/fingerprints;
-- exact replay collapse, conflicting replay fail closed, canonical ordering and mixed-policy session rejection;
-- bounded maximum 1,000 items per pure session;
-- integrity-verified P8.6 comparison only when exact Product target mutation class/GID/URL/field/before/after fingerprints match;
-- descriptive comparison states/directions only; no correctness, confidence, quality or causality inference;
-- explicit Collection/P8.7 non-comparability proof;
-- complete W01 rejection matrix and pause/drain/drained/kill, quota, cooldown, concurrency and unresolved-side-effect certification;
-- source/decision/session independent tamper detection;
-- static no DB/provider/runtime/migration binding.
+W09-BE1–BE5 specification/review is active on branch `p8-8-w09be1-be5-engineering-spec-499`.
 
-Engineering exact-head checkpoint before continuity-doc updates:
-- head `c9f68168a63f74e3ee89b7c52c23b040b55ad334`;
-- CI #1021 / run `35981055157`: success through workspace tests, P11.10, Chromium, typecheck and build.
+Key frozen engineering decisions:
+- BE1 owns pure frozen query descriptors, SQL/query-set fingerprints, acquisition package/manifest schemas, candidate completeness states and integrity verification;
+- BE2 uses an explicit database URL only, direct `postgres`, one connection and one read-only/repeatable-read transaction; no ambient `DATABASE_URL`, `@workspace/db`, arbitrary SQL API, persistence or provider/runtime binding;
+- exactly 18 SELECT-only query descriptors form v1; changing SQL/columns/parameters/caps/ordering changes the query-set fingerprint;
+- BE3 is pure/offline and converts only integrity-valid `complete_for_w09a` acquisition records into W09-A `supplied_real_snapshot`, after which W09-A independently recomputes W01 again;
+- BE4 uses only localhost/127.0.0.1 ephemeral PostgreSQL, dedicated `P8_8_W09B_EPHEMERAL_DATABASE_URL`, full 43-table W07 schema plus controlled missing-schema cases, and proves no table/row mutation;
+- BE5 statically forbids provider/fetch, mutation SQL, migrations, persistence, runtime binding and W10 activation;
+- Product GID must be persisted and integrity-bound;
+- provider-before authority requires an exact persisted W06 `P88W06ProviderObservation` envelope passing W06 integrity and freshness checks; labels/text alone are never sufficient;
+- no new migration or persistent evidence store;
+- engineering does not authorize the real Production Stage 0 read.
 
-**Current safe boundary:** re-certify the documentation-updated exact PR #494 head, then stop for explicit merge authorization. Do not merge without a separate user authorization.
-
-No W09-B Production read/persistence, provider/public-site access, W03–W07 execution/materialization, Task #51/#53/#54 execution, scheduler/worker activation, config/gate change, migration, deployment, publication or W10 work is authorized or performed.
-
-After W09-A is explicitly merged and post-merge certified, the next safe milestone is a **W09-B real Stage 0 evidence acquisition review**. Any direct Production reads/persistence require their own exact authorization; W10 remains separately gated.
+**Current safe boundary:** complete W09-BE1–BE5 specification/review and PR certification only. Do not implement, connect to Production, inspect live schema, contact providers, persist evidence, deploy/publish or begin W10 from generic continuation.
 
 ### P8.8 W07 specification certified — implementation gate next
 

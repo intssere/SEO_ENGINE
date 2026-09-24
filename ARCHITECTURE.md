@@ -402,6 +402,39 @@ Permanent architecture:
 - W10 Stage 1 remains separately reviewed and explicitly authorized.
 
 
+### P8.8 W09-B real Stage 0 evidence acquisition
+
+W09-B is the read-only evidence bridge between Production state and the already-merged pure W09-A shadow engine. It is not an execution or persistence layer.
+
+Permanent architecture under review:
+- Production acquisition provenance and W09-A shadow evaluation remain separated;
+- a future acquisition adapter may read only an explicitly authorized, frozen SELECT-only query set from one named Production database using an explicit read-only role;
+- the first acquisition is one-shot, max 25 final candidates, max 100 source opportunities, and no provider network access;
+- W09-A continues to reject direct `production_read_snapshot`; evidence-complete Production acquisitions become externally supplied immutable `supplied_real_snapshot` inputs linked by a W09-B manifest;
+- Product identity must be persisted explicitly; URL/text similarity cannot manufacture Shopify Product GID;
+- provider-before state must be persisted provider-authoritative evidence with exact provenance/freshness; crawl/storefront evidence cannot substitute;
+- missing W05/W07 Production schema/state is an evidence-incomplete stop condition, never implicit migration or synthetic state;
+- P9.7 recommendation/proposal artifacts remain deterministic in-memory reconstructions rather than a new durable recommendation authority;
+- all first-run outputs stay outside Production;
+- provider-read addendum, Stage 0 persistence and W10 activation are separate future boundaries.
+
+
+### P8.8 W09-BE1–BE5 synthetic evidence engineering
+
+The W09-B engineering package is designed as a default-off, non-authoritative evidence-acquisition bridge with explicit separation between DB acquisition and W09-A policy evaluation.
+
+Permanent architecture under review:
+- BE1 is pure and defines the frozen 18-query SELECT-only query set, exact row/invocation caps, deterministic query-set/result/package fingerprints, immutable acquisition manifests and completeness states;
+- BE2 is the only DB-bound module and requires an explicit database URL; it uses direct `postgres`, a single connection and one read-only/repeatable-read transaction, with no `process.env`, no ambient `@workspace/db` pool, no arbitrary SQL surface and no provider/runtime dependency;
+- BE3 is pure/offline and accepts only integrity-valid acquisition packages; it emits W09-A `supplied_real_snapshot` inputs and never `production_read_snapshot`;
+- BE4 certification is localhost-only ephemeral PostgreSQL and proves full-schema behavior, missing W04/W05/W07 fail-closed behavior, row caps, ambiguity/integrity failures and zero row/table mutation;
+- BE5 statically proves no provider/fetch, mutation SQL, migration, persistence, route/startup/scheduler/worker binding, Task execution dependency or W10 activation;
+- provider-before evidence is authoritative only when persisted data contains an exact integrity-valid W06 `P88W06ProviderObservation` envelope with observed status, exact site/Product/field, non-null request provenance, exact W02-domain before fingerprint and valid freshness;
+- database/provider labels, matching text or crawler/storefront evidence never substitute for W06 provider observation integrity;
+- no W09-B migration or persistent evidence store is introduced;
+- merge of engineering remains non-authorizing for any real Production read or provider read.
+
+
 ### P8.8 W05 durable mutation-control bridge
 
 W05 materializes the mutation-specific durable control prerequisite identified by P9.8 without activating autonomous execution.
