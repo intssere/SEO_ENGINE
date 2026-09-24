@@ -620,6 +620,132 @@ function controlEventsBoundToClaim(
   return [...byId.values()];
 }
 
+function normalizeVerificationEvidence(
+  input: P88W08Input,
+  intent: P88W07DispatchIntent,
+  referenceTime: string,
+): P88W08VerificationEvidence[] {
+  const byId = new Map<string, P88W08VerificationEvidence>();
+  for (const supplied of input.verificationEvidence ?? []) {
+    const evidenceId = exactId(supplied.evidenceId, "p88_w08_verification_evidence_id_invalid");
+    const occurredAt = canonicalIso(
+      supplied.occurredAt,
+      "p88_w08_verification_timestamp_invalid",
+    );
+    if (occurredAt > referenceTime) throw new Error("p88_w08_event_after_reference_time");
+    const verificationFingerprint = fingerprint(
+      supplied.verificationFingerprint,
+      "p88_w08_verification_fingerprint_invalid",
+    );
+    const providerEvidenceFingerprint = fingerprint(
+      supplied.provider.evidenceFingerprint,
+      "p88_w08_provider_evidence_fingerprint_invalid",
+    );
+    const storefrontEvidenceFingerprint = fingerprint(
+      supplied.storefront.evidenceFingerprint,
+      "p88_w08_storefront_evidence_fingerprint_invalid",
+    );
+    const expectedFingerprint = supplied.phase === "forward"
+      ? intent.state.afterFingerprint
+      : intent.state.beforeFingerprint;
+    const expectedValue = supplied.phase === "forward"
+      ? intent.state.afterValue
+      : intent.state.beforeValue;
+    if (supplied.expectedFingerprint !== expectedFingerprint) {
+      throw new Error("p88_w08_verification_expected_fingerprint_mismatch");
+    }
+    if (supplied.provider.resourceGid !== intent.target.resourceGid) {
+      throw new Error("p88_w08_verification_provider_resource_mismatch");
+    }
+    if (supplied.storefront.expectedValue !== expectedValue) {
+      throw new Error("p88_w08_verification_storefront_expected_value_mismatch");
+    }
+    const rebuilt = p88W07StableHash({
+      version: "p8-8-w07-policy-single-action-apply-v1",
+      purpose: "p8.8_w07_verification",
+      dispatchId: intent.dispatchId,
+      phase: supplied.phase,
+      providerEvidenceFingerprint,
+      storefrontEvidenceFingerprint,
+      expectedFingerprint,
+    });
+    if (rebuilt !== verificationFingerprint) {
+      throw new Error("p88_w08_verification_fingerprint_mismatch");
+    }
+
+    const normalized = deepFreeze({
+      evidenceId,
+      phase: supplied.phase,
+      occurredAt,
+      verificationFingerprint,
+      expectedFingerprint,
+      provider: deepFreeze({
+        ...supplied.provider,
+        evidenceFingerprint: providerEvidenceFingerprint,
+      }),
+      storefront: deepFreeze({
+        ...supplied.storefront,
+        evidenceFingerprint: storefrontEvidenceFingerprint,
+      }),
+    });
+    const existing = byId.get(evidenceId);
+    if (existing && !exactObjectEqual(existing, normalized)) {
+      throw new Error("p88_w08_source_replay_conflict");
+    }
+    byId.set(evidenceId, normalized);
+  }
+
+  const evidence = [...byId.values()];
+  const exactVerified = (candidate: P88W08VerificationEvidence) => {
+    const expectedValue = candidate.phase === "forward"
+      ? intent.state.afterValue
+      : intent.state.beforeValue;
+    return candidate.provider.status === "observed"
+      && candidate.provider.rawValue === expectedValue
+      && candidate.storefront.outcome === "verified"
+      && candidate.storefront.observedValue === expectedValue
+      && candidate.storefront.expectedValue === expectedValue;
+  };
+
+  if (input.dispatch.state === "forward_verified_live") {
+    const matches = evidence.filter(
+      (candidate) =>
+        candidate.phase === "forward"
+        && candidate.verificationFingerprint === input.dispatch.verificationFingerprint
+        && exactVerified(candidate),
+    );
+    if (matches.length !== 1) {
+      throw new Error("p88_w08_forward_verification_evidence_required");
+    }
+  }
+  if (input.dispatch.state === "rollback_verified_closed") {
+    const matches = evidence.filter(
+      (candidate) =>
+        candidate.phase === "rollback"
+        && candidate.verificationFingerprint === input.dispatch.verificationFingerprint
+        && exactVerified(candidate),
+    );
+    if (matches.length !== 1) {
+      throw new Error("p88_w08_rollback_verification_evidence_required");
+    }
+  }
+  return evidence;
+}
+
+function verificationEvidenceExact(
+  evidence: P88W08VerificationEvidence,
+  intent: P88W07DispatchIntent,
+): boolean {
+  const expectedValue = evidence.phase === "forward"
+    ? intent.state.afterValue
+    : intent.state.beforeValue;
+  return evidence.provider.status === "observed"
+    && evidence.provider.rawValue === expectedValue
+    && evidence.storefront.outcome === "verified"
+    && evidence.storefront.expectedValue === expectedValue
+    && evidence.storefront.observedValue === expectedValue;
+}
+
 function eventClassForW07(state: P88W07DispatchState): P88W08EventClass {
   if (state === "reserved_prewrite" || state === "dispatch_started") return "dispatch";
   if (state === "forward_verification_pending" || state === "forward_verified_live") {
@@ -665,6 +791,7 @@ function buildCandidates(
   intent: P88W07DispatchIntent,
   dispatchEvents: readonly P88W08DispatchEventEvidence[],
   controls: readonly P88W05ControlEvent[],
+  verificationEvidence: readonly P88W08VerificationEvidence[],
   lineage: P88W08Lineage,
   target: P88W08Target,
   referenceTime: string,
@@ -888,6 +1015,36 @@ function buildCandidates(
       claimReleaseEligibility: w06.claimReleaseEligibility,
     },
   });
+
+  for (const verification of verificationEvidence) {
+    const exact = verificationEvidenceExact(verification, intent);
+    add({
+      occurredAt: verification.occurredAt,
+      eventClass: verification.phase === "forward" ? "verification" : "rollback",
+      eventKind: verification.phase === "forward"
+        ? (exact ? "forward_verified_live" : "forward_verification_pending")
+        : (exact ? "rollback_verified_closed" : "rollback_verification_pending"),
+      source: {
+        system: "p8.8_w07_verification_evidence",
+        version: "p8-8-w07-policy-single-action-apply-v1",
+        sourceId: verification.evidenceId,
+        sourceFingerprint: verification.verificationFingerprint,
+      },
+      sourceRevision: null,
+      evidence: {
+        phase: verification.phase,
+        verificationFingerprint: verification.verificationFingerprint,
+        expectedFingerprint: verification.expectedFingerprint,
+        providerStatus: verification.provider.status,
+        providerEvidenceFingerprint: verification.provider.evidenceFingerprint,
+        providerObservedValue: verification.provider.rawValue,
+        storefrontOutcome: verification.storefront.outcome,
+        storefrontEvidenceFingerprint: verification.storefront.evidenceFingerprint,
+        storefrontObservedValue: verification.storefront.observedValue,
+        exactProviderAndStorefrontMatch: exact,
+      },
+    });
+  }
 
   for (const event of dispatchEvents) {
     add({
@@ -1113,6 +1270,11 @@ export function buildP88W08AutonomousAuditProjection(
   assertDispatchChain(intent, input.dispatch, dispatchEvents);
   assertReservationClosure(input.reservationFinal, input.dispatch);
   const controls = controlEventsBoundToClaim(input);
+  const verificationEvidence = normalizeVerificationEvidence(
+    input,
+    intent,
+    referenceTime,
+  );
 
   const candidates = dedupeCandidates(
     buildCandidates(
@@ -1120,6 +1282,7 @@ export function buildP88W08AutonomousAuditProjection(
       intent,
       dispatchEvents,
       controls,
+      verificationEvidence,
       lineage,
       target,
       referenceTime,
