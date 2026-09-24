@@ -136,8 +136,10 @@ export type P88W09BReadonlyAcquisitionOptions = Readonly<{
   sqlFactory?: (databaseUrl: string) => Sql;
 }>;
 
-function requiredTableNames(): string[] {
-  return Object.keys(P8_8_W09B_REQUIRED_COLUMNS).sort();
+function requiredColumnKeys(): string[] {
+  return Object.entries(P8_8_W09B_REQUIRED_COLUMNS)
+    .flatMap(([table, columns]) => columns.map((column) => table + "." + column))
+    .sort();
 }
 
 function schemaState(rows: readonly Row[]):
@@ -595,8 +597,8 @@ export async function acquireP88W09BEvidence(
 
     const schemaRows = await runQuery(
       "w09b.required_schema.v1",
-      [requiredTableNames()],
-      { requiredTables: requiredTableNames() },
+      [requiredColumnKeys()],
+      { requiredColumns: requiredColumnKeys() },
     );
     const detectedSchema = schemaState(schemaRows);
     if (detectedSchema !== "full_w07_schema") {
