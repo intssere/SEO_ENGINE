@@ -84,7 +84,7 @@ test("UGP-3.1 rejects malformed, credentialed, reserved, private and nonstandard
     "https://example.com:8443",
     "intranet",
   ]) {
-    assert.throws(() => buildPublicWebOnboardingPlan({ url: input }), undefined, input);
+    assert.throws(() => buildPublicWebOnboardingPlan({ url: input }), /ugp_public_web_/, input);
   }
 });
 
