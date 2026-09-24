@@ -358,11 +358,29 @@ Review decision:
 - kill does not retroactively roll back already completed/verified historical actions, but an in-flight write observed after kill should default to restoration unless it was already terminal before kill;
 - any unresolved write/rollback uncertainty blocks further autonomous mutation for the site.
 
-The P8.8 engineering foundation now implements the deterministic P9.7→governed-proposal bridge, pure policy grant/evaluation, provenance-distinct policy authorization, durable W04 reservation/idempotency and durable W05 mutation-control/claim persistence in engineering source only. P9.8 autonomous execution remains blocked pending W06 policy-aware preflight, W07 apply semantics, W08 audit projection, W09 shadow certification, W10 separately authorized live activation, Production schema/config authorization and all provider/runtime gates.
+The P8.8 engineering foundation now implements the deterministic P9.7→governed-proposal bridge, pure policy grant/evaluation, provenance-distinct policy authorization, durable W04 reservation/idempotency, durable W05 mutation-control/claim persistence, mutation-free W06 preflight, default-off W07 single-action apply/safety closure, and pure caller-supplied W08 autonomous audit projection in engineering source. Live autonomous execution remains blocked pending W09 shadow certification, W10 separately authorized live activation, Production schema/config authorization and all provider/runtime gates.
 
 Initial future blast-radius proposal is shadow-only first, then at most one product-meta-description forward action per 24 hours/site with one active site mutation and a 14-day same-target cooldown. Expansion requires a new policy version and separate authorization; no stage automatically unlocks new fields/resources/scopes.
 
 P9.8 review completion does not authorize implementation or activation.
+
+### P8.8 W08 autonomous audit projection
+
+W08 is the policy-path audit counterpart to P8.6 and remains a pure/default-off projection layer rather than a new authority or persistence system.
+
+Permanent architecture:
+- exact W03 `policyActionId` is the audit root;
+- policy-specific W01–W07 IDs/fingerprints remain distinct from human approvals/actions/deployments;
+- W01–W07 caller-supplied artifacts are rebuilt or validated through existing certified contracts before projection;
+- exact W07 append-only dispatch events are the transition-history source; event IDs/fingerprints, revisions and state transitions are integrity-checked;
+- verified W07 terminal states require explicit caller-supplied exact provider plus independent storefront verification evidence; provider receipt or terminal label alone is insufficient;
+- W04 reservation events are projected only when an authoritative timestamp exists; missing/manual-intervention transition times are not invented;
+- W05 site-level control events attach only by exact claimed control revision/fingerprint, never site/time proximity;
+- exact replay collapses and conflicting source replay fails closed;
+- deterministic chronology is serialization only and does not create current state, authority, success, risk, priority, quality or causality;
+- entries form a previous-fingerprint hash chain and the ledger has a deterministic integrity-bound fingerprint/summary;
+- W08 has no database/provider/network/runtime adapter, no migration 0008, and no startup/route/scheduler/worker binding;
+- W09 Stage 0 shadow certification and W10 live activation remain separate explicit gates.
 
 ### P8.8 W05 durable mutation-control bridge
 
