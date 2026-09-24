@@ -13,35 +13,34 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W09 Stage 0 shadow certification specification/review — issue #487
+### P8.8 W09 Stage 0 shadow certification implementation — issue #493 / PR #494
 
-Canonical GitHub `main` after W08 is `e396f4b454f3ee3e200913fa70c195c92975afcf` / tree `cac5f41213e2aa91f9398c8a8229ae43866abb90`.
+Canonical implementation base is W09-spec merge `409ca6e61011caeaabffefc11f503a05623135a4` / tree `cea391f1f7ca1512812a121604cf0ed4f7d109cd`.
 
-W08-E1–E5 implementation is certified complete under issue #484 / PR #486:
-- exact head `d178424e7bd09b7ae98185a2291fcb336aa78d1d`;
-- merge `e396f4b454f3ee3e200913fa70c195c92975afcf`;
-- post-merge CI #1014 success;
-- Replit exact-synced Git-only, `0/0`, clean, local-only branches preserved;
-- no Production DB/provider/config/deployment/publication action occurred.
+W09 specification is certified complete under issue #487 / PR #490. W09-E1–E5 implementation is active on branch `p8-8-w09-stage-0-shadow-certification-implementation-493`.
 
-W09 specification/review is active on branch `p8-8-w09-stage-0-shadow-certification-spec-487`.
+Implemented scope:
+- exact source snapshot identity/fingerprint and provenance class;
+- W01 is reused directly as the only policy engine, and supplied W01 evaluation must equal a fresh deterministic recomputation;
+- deterministic shadow decisions/session IDs/fingerprints;
+- exact replay collapse, conflicting replay fail closed, canonical ordering and mixed-policy session rejection;
+- bounded maximum 1,000 items per pure session;
+- integrity-verified P8.6 comparison only when exact Product target mutation class/GID/URL/field/before/after fingerprints match;
+- descriptive comparison states/directions only; no correctness, confidence, quality or causality inference;
+- explicit Collection/P8.7 non-comparability proof;
+- complete W01 rejection matrix and pause/drain/drained/kill, quota, cooldown, concurrency and unresolved-side-effect certification;
+- source/decision/session independent tamper detection;
+- static no DB/provider/runtime/migration binding.
 
-The W09 boundary separates:
-- **W09-A engineering:** pure/default-off caller-supplied shadow evaluation and certification, zero DB/provider/runtime access;
-- **W09-B real Stage 0 evidence:** future separately authorized real candidate evidence, with direct Production reads/persistence allowed only if explicitly scoped.
+Engineering exact-head checkpoint before continuity-doc updates:
+- head `c9f68168a63f74e3ee89b7c52c23b040b55ad334`;
+- CI #1021 / run `35981055157`: success through workspace tests, P11.10, Chromium, typecheck and build.
 
-Key W09 decisions:
-- certified W01 evaluator is the only policy decision engine;
-- shadow admit/reject decisions are descriptive only and create no W03–W07 authority;
-- exact source/grant/candidate/evaluation fingerprints are integrity-bound;
-- exact replay collapses; conflicting replay fails closed;
-- human-governed comparison uses exact P8.6/P8.7-style lineage and is descriptive, never correctness/causality scoring;
-- P8.7 collection live-pilot evidence is historical execution evidence, not product-target-comparable to W09's initial Product class;
-- Stage 0 must certify pause/drain/kill, quota, cooldown, concurrency, unresolved manual intervention, uncertain provider write, rollback failure and the full W01 rejection matrix;
-- no migration or persistent shadow authority store is required for first engineering;
-- W10 live activation remains separately authorized.
+**Current safe boundary:** re-certify the documentation-updated exact PR #494 head, then stop for explicit merge authorization. Do not merge without a separate user authorization.
 
-**Current safe boundary:** complete W09 specification/review and PR certification only. Do not implement W09, read/write Production, call providers, persist Stage 0 decisions, activate workers/schedulers, change gates/config, deploy/publish or begin W10 from generic continuation.
+No W09-B Production read/persistence, provider/public-site access, W03–W07 execution/materialization, Task #51/#53/#54 execution, scheduler/worker activation, config/gate change, migration, deployment, publication or W10 work is authorized or performed.
+
+After W09-A is explicitly merged and post-merge certified, the next safe milestone is a **W09-B real Stage 0 evidence acquisition review**. Any direct Production reads/persistence require their own exact authorization; W10 remains separately gated.
 
 ### P8.8 W07 specification certified — implementation gate next
 
