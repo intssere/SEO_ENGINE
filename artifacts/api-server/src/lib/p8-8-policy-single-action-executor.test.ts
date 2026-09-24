@@ -280,6 +280,35 @@ test("accepted receipt alone is not success; failed verification performs exactl
   assert.equal(result.disposition, "rollback_verified_closed");
 });
 
+test("exact provider after-state still requires independent storefront verification", async () => {
+  const { fixture, intent } = base();
+  const store = new FakeStore();
+  let forwardWrites = 0;
+  let rollbackWrites = 0;
+  const result = await executeP88W07SingleAction({
+    bundle: fixture.bundle,
+    store,
+    publicSiteWritesEnabled: true,
+    policyMutationExecutionEnabled: true,
+    credentialProfileId: intent.policy.credentialProfileId,
+    credentialScopes: ["write_products"],
+    readProvider: async (purpose) => provider(intent, purpose),
+    mutateProvider: async (phase) => {
+      if (phase === "forward") forwardWrites += 1;
+      else rollbackWrites += 1;
+      return receipt("accepted");
+    },
+    verifyStorefront: async (expected) =>
+      expected === intent.state.afterValue
+        ? storefront(expected, "mismatch")
+        : storefront(expected),
+  });
+
+  assert.equal(forwardWrites, 1);
+  assert.equal(rollbackWrites, 1);
+  assert.equal(result.disposition, "rollback_verified_closed");
+});
+
 test("ambiguous rollback closes to manual intervention without a rollback retry", async () => {
   const { fixture, intent } = base();
   const store = new FakeStore();
