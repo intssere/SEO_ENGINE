@@ -12,7 +12,7 @@ import {
 export const P8_8_W07_EXPECTED_TABLE_COUNT = 43 as const;
 
 type Sql = ReturnType<typeof postgres>;
-type Tx = Parameters<Parameters<Sql["begin"]>[0]>[0];
+type Tx = Pick<Sql, "unsafe">;
 
 export type P88W07DispatchRecord = Readonly<{
   dispatchId: string;
@@ -140,17 +140,13 @@ const DISPATCH_SELECT =
   + "dispatch_started_at,rollback_started_at,terminal_at,terminal_reason "
   + "FROM policy_mutation_dispatches";
 
-function intentMatchesRows(
+function durableLineageMatches(
   intent: P88W07DispatchIntent,
-  control: ControlRow,
   reservation: ReservationRow,
   claim: ClaimRow,
 ): boolean {
   return (
-    control.site_id === intent.siteId
-    && Number(control.revision) === intent.control.revision
-    && control.control_fingerprint === intent.control.fingerprint
-    && reservation.reservation_id === intent.lineage.reservationId
+    reservation.reservation_id === intent.lineage.reservationId
     && reservation.reservation_fingerprint === intent.lineage.reservationFingerprint
     && reservation.site_id === intent.siteId
     && reservation.w03_authorization_id === intent.lineage.w03AuthorizationId
@@ -177,6 +173,15 @@ function intentMatchesRows(
     && claim.before_fingerprint === intent.state.beforeFingerprint
     && claim.after_fingerprint === intent.state.afterFingerprint
   );
+}
+
+function controlEpochMatches(
+  intent: P88W07DispatchIntent,
+  control: ControlRow,
+): boolean {
+  return control.site_id === intent.siteId
+    && Number(control.revision) === intent.control.revision
+    && control.control_fingerprint === intent.control.fingerprint;
 }
 
 function dispatchIdentityMatches(
@@ -254,6 +259,7 @@ export class P88W07DispatchStore {
   private async lockLineage(
     tx: Tx,
     intent: P88W07DispatchIntent,
+    requireCurrentControlMatch: boolean,
   ): Promise<{ control: ControlRow; reservation: ReservationRow; claim: ClaimRow; now: Date }> {
     const controls = await tx.unsafe<ControlRow[]>(
       "SELECT site_id::text AS site_id,revision,mode,control_fingerprint "
@@ -284,8 +290,11 @@ export class P88W07DispatchStore {
     const claim = claims[0];
     if (!claim) throw new Error("p88_w07_claim_missing");
 
-    if (!intentMatchesRows(intent, control, reservation, claim)) {
+    if (!durableLineageMatches(intent, reservation, claim)) {
       throw new Error("p88_w07_durable_lineage_mismatch");
+    }
+    if (requireCurrentControlMatch && !controlEpochMatches(intent, control)) {
+      throw new Error("p88_w07_control_epoch_not_forward_eligible");
     }
 
     const clocks = await tx.unsafe<{ now: Date }[]>(
@@ -370,7 +379,7 @@ export class P88W07DispatchStore {
     try {
       await this.assertSchemaAndIdentity(sql, intent.siteId);
       return await sql.begin(async (tx) => {
-        const { control, reservation, now } = await this.lockLineage(tx, intent);
+        const { control, reservation, now } = await this.lockLineage(tx, intent, true);
         if (control.mode !== "running") throw new Error("p88_w07_control_not_running");
         if (reservation.status !== "claimed") {
           throw new Error("p88_w07_reservation_not_claimed");
@@ -568,6 +577,7 @@ export class P88W07DispatchStore {
         const { control, reservation, now } = await this.lockLineage(
           tx,
           input.intent,
+          true,
         );
         if (
           control.mode !== "running"
@@ -680,7 +690,7 @@ export class P88W07DispatchStore {
     try {
       await this.assertSchemaAndIdentity(sql, input.intent.siteId);
       return await sql.begin(async (tx) => {
-        const { reservation, now } = await this.lockLineage(tx, input.intent);
+        const { reservation, now } = await this.lockLineage(tx, input.intent, false);
         if (
           reservation.status !== "claimed"
           && !(
