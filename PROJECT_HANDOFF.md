@@ -13,14 +13,31 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W07 implementation — issue #474
+### P8.8 W08 autonomous audit projection specification/review — issue #480
 
-W07-E1–E5 engineering is authorized and in progress on branch `p8-8-w07-single-action-apply-implementation-474` from canonical base `57d4fc640f876b958d3ad87eca8391b1849a00bb`.
+Canonical GitHub `main` after W07 is `8d1836393e64d0cbe5d4b3ce904e50cbee788089` / tree `edfef3c14be4ae31160b12cdb2d68109830f461c`.
 
-The branch implements only the certified default-off W07 contract: exact W01–W06 lineage, durable two-phase dispatch fencing, future migration 0007 source, 43-table localhost-only certification, byte-exact Product meta-description forward/rollback adapters with injected transports, at-most-one forward/rollback writes, independent provider/storefront verification, and W04 terminal safety closure.
+W07-E1–E5 implementation is certified complete under issue #474 / PR #477:
+- certified head `db603cbd91263b0bf2ae6ab084950bab49a4d61e`;
+- exact-head CI #997 success;
+- merge `8d1836393e64d0cbe5d4b3ce904e50cbee788089`;
+- post-merge CI #998 success;
+- Replit exact-synced Git-only, `0/0`, clean;
+- no Production migration/provider/config/deployment/publication action occurred.
 
-**Current safe boundary:** complete W07 engineering and exact-head PR certification only. Do not merge without separate authorization. Do not apply Production migrations 0005/0006/0007, mutate Production policy rows, call live providers, perform real provider/rollback writes, execute Task #51/#53/#54, activate policy/scheduler/worker/autonomy, change credentials/config/gates, deploy/publish, or begin W08–W10.
+W08 specification/review is active on branch `p8-8-w08-autonomous-audit-projection-spec-480`. It defines a pure/default-off caller-supplied audit projection over exact W01–W07 policy lineage, reusing P8.6 hash-chain/replay principles and P10.1 deterministic chronology principles without creating a competing authority store.
 
+Key W08 review decisions:
+- audit root is exact W03 `policyActionId`;
+- policy-specific lineage remains distinct from human approval/action/deployment IDs;
+- exact W07 append-only dispatch events remain authoritative for dispatch-state chronology;
+- W04 transitions are not invented where migration 0005 has no append-only event history;
+- W05 site-level control events cannot attach by site/time proximity;
+- unavailable/uncertain/manual-intervention evidence stays explicit;
+- no migration 0008 is required for first implementation;
+- future W08 E1–E5 engineering remains separately authorized and pure/caller-supplied only.
+
+**Current safe boundary:** complete W08 specification/review and PR certification only. Do not implement W08 without separate authorization. Do not read/write Production, apply migrations, call providers, mutate public sites, execute Task #51/#53/#54, activate scheduler/worker/policy/autonomy, change credentials/config/gates, deploy/publish, or begin W09/W10.
 
 ### P8.8 W07 specification certified — implementation gate next
 
