@@ -84,6 +84,35 @@ test("compact mobile navigation closes with Escape and restores toggle focus", a
   assertBrowserClean(errors);
 });
 
+test("UGP-3.1 URL onboarding stays network-closed and shows pending safety checks", async ({ page }) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/settings/add-website");
+
+  const input = page.getByRole("textbox", { name: "Website URL" });
+  await input.fill("http://www.example.com/products?q=1#fragment");
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await expect(page.getByRole("heading", { name: "Platform hint" })).toBeVisible();
+  await expect(page.getByText("http://www.example.com", { exact: true })).toBeVisible();
+
+  const onboarding = page.getByRole("region", { name: "Public web onboarding" });
+  await expect(onboarding).toBeVisible();
+  await expect(onboarding.getByText("NOT RUN")).toBeVisible();
+  for (const label of ["DNS / public address", "Redirect chain", "robots.txt", "Sitemap hints"]) {
+    await expect(onboarding.getByText(label, { exact: true })).toBeVisible();
+  }
+  await expect(onboarding.getByText("PENDING")).toHaveCount(4);
+  await expect(onboarding).toContainText("final analysis origin must resolve to HTTPS");
+  await expect(onboarding).toContainText("No DNS lookup");
+
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"])
+    .analyze();
+  expect(axe.violations.map((violation) => violation.id)).toEqual([]);
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
 test("UGP-2.5 contextual guide is route-aware, keyboard dismissible, focus-restoring and axe-clean", async ({
   page,
 }) => {

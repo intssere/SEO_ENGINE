@@ -46,6 +46,7 @@ test("critical paths include focus, grid, dialog, axe and browser-error gates", 
   assert.ok(critical.includes("Ask dialog traps focus"));
   assert.ok(critical.includes("UGP-2.5 contextual guide is route-aware"));
   assert.ok(critical.includes("UGP-2.5 mobile Guide control"));
+  assert.ok(critical.includes("UGP-3.1 URL onboarding stays network-closed"));
   assert.ok(critical.includes('new AxeBuilder({ page })'));
   assert.ok(critical.includes('"/technical-seo"'));
   assert.ok(critical.includes('"/connections"'));
