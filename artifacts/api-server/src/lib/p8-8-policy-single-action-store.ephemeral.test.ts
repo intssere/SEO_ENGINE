@@ -384,6 +384,23 @@ test("P8.8 W07 dispatch store certifies 43-table fencing, closure, race, quota a
     assert.equal(closed.state, "rollback_verified_closed");
     assert.equal(closed.rollbackAttemptCount, 1);
     assert.equal((await reservationStatus(intent.lineage.reservationId)).status, "consumed");
+    const immutableClaim = await admin.unsafe<{
+      claim_fingerprint: string;
+      reservation_fingerprint: string;
+      control_revision: number;
+      control_fingerprint: string;
+    }[]>(
+      "SELECT claim_fingerprint,reservation_fingerprint,control_revision,"
+        + "control_fingerprint FROM policy_mutation_claims WHERE claim_id=$1",
+      [intent.lineage.claimId],
+    );
+    assert.equal(immutableClaim[0]?.claim_fingerprint, intent.lineage.claimFingerprint);
+    assert.equal(
+      immutableClaim[0]?.reservation_fingerprint,
+      intent.lineage.reservationFingerprint,
+    );
+    assert.equal(Number(immutableClaim[0]?.control_revision), intent.control.revision);
+    assert.equal(immutableClaim[0]?.control_fingerprint, intent.control.fingerprint);
   }
 
   await cleanup();
