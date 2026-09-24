@@ -821,7 +821,7 @@ function candidateScores(
   const woo = scores.get("woocommerce")!;
   const wordpress = scores.get("wordpress")!;
   if (woo.score > 0 && wordpress.score > 0) {
-    woo.score += Math.min(2, wordpress.score);
+    woo.score += Math.min(4, wordpress.score);
   }
 
   return PLATFORM_ORDER.map((family) => {
