@@ -1,5 +1,20 @@
 # SEO ENGINE — Current State Checkpoint
 
+## Active engineering checkpoint — P8.8 W07 implementation in progress
+
+W07-E1–E5 implementation is authorized under issue #474 on branch `p8-8-w07-single-action-apply-implementation-474` from canonical base `57d4fc640f876b958d3ad87eca8391b1849a00bb`.
+
+Engineering scope on the branch:
+- E1 exact W01–W06 rebuild and deterministic policy-only W07 execution/dispatch identities;
+- E2 additive migration source `0007_p8_8_policy_mutation_dispatch.sql`, future 43-table schema recognition, explicit-URL dispatch store and two-phase `reserved_prewrite -> dispatch_started` fencing;
+- E3 policy-specific byte-exact Shopify Product SEO mutation adapter with injected transport and no Task #53 normalization;
+- E4 exact provider plus independent storefront verification, one-rollback safety closure, and W04 released/consumed/manual-intervention terminal mapping;
+- E5 pure/static tests plus dedicated localhost PostgreSQL concurrency/race certification through `P8_8_W07_EPHEMERAL_DATABASE_URL`.
+
+The engineering implementation remains default-off and test-isolated. No live provider transport is bundled into the runtime path and no API/startup/scheduler/worker binding is authorized.
+
+**Still excluded:** Production migrations 0005/0006/0007; Production DDL/DML/control/reservation/claim/dispatch changes; live Production provider reads; all real provider/public-site and rollback writes; Task #51/#53/#54 execution; scheduler/worker/policy/autonomous activation; credentials/scopes/config changes; deployment/publication; W08–W10.
+
 ## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
 
 W07 specification/review is certified complete under issue #461 / PR #462.
