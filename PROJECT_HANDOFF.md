@@ -13,6 +13,15 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
+### P8.8 W07 implementation — issue #474
+
+W07-E1–E5 engineering is authorized and in progress on branch `p8-8-w07-single-action-apply-implementation-474` from canonical base `57d4fc640f876b958d3ad87eca8391b1849a00bb`.
+
+The branch implements only the certified default-off W07 contract: exact W01–W06 lineage, durable two-phase dispatch fencing, future migration 0007 source, 43-table localhost-only certification, byte-exact Product meta-description forward/rollback adapters with injected transports, at-most-one forward/rollback writes, independent provider/storefront verification, and W04 terminal safety closure.
+
+**Current safe boundary:** complete W07 engineering and exact-head PR certification only. Do not merge without separate authorization. Do not apply Production migrations 0005/0006/0007, mutate Production policy rows, call live providers, perform real provider/rollback writes, execute Task #51/#53/#54, activate policy/scheduler/worker/autonomy, change credentials/config/gates, deploy/publish, or begin W08–W10.
+
+
 ### P8.8 W07 specification certified — implementation gate next
 
 Canonical GitHub `main` is `15846991123b6664c37176b844550d4b0095b39a` / tree `94f2ccfa5b265e2ee0a8f470546428c1d6d7b9e1`.
