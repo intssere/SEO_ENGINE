@@ -72,10 +72,6 @@ test("W09-BE4 full 43-table localhost acquisition is read-only and translates of
     connect_timeout: 5,
     idle_timeout: 2,
   });
-  t.after(async () => {
-    await admin.end({ timeout: 1 }).catch(() => undefined);
-  });
-
   const tableCounts = await admin.unsafe<{ count: number }[]>(
     "SELECT COUNT(*)::int AS count FROM information_schema.tables "
       + "WHERE table_schema='public' AND table_type='BASE TABLE'",
@@ -129,7 +125,10 @@ test("W09-BE4 full 43-table localhost acquisition is read-only and translates of
     );
   };
   await cleanup();
-  t.after(cleanup);
+  t.after(async () => {
+    await cleanup().catch(() => undefined);
+    await admin.end({ timeout: 1 }).catch(() => undefined);
+  });
 
   const clockRows = await admin.unsafe<{ now: Date; role: string }[]>(
     "SELECT transaction_timestamp() AS now,current_user AS role",
