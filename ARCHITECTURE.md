@@ -384,20 +384,22 @@ Permanent architecture:
 
 ### P8.8 W09 Stage 0 shadow certification
 
-W09 introduces a zero-write policy shadow-certification layer after W08, but it does not activate autonomous execution.
+W09-A is implemented as a pure/default-off shadow-certification layer after W08. It does not activate autonomous execution and it does not acquire Production evidence.
 
 Permanent architecture:
-- Stage 0 calls the certified W01 evaluator over exact caller-supplied candidate snapshots rather than duplicating policy logic;
-- shadow decisions retain exact grant/candidate/evaluation/source fingerprints and are deterministic, replay-safe evidence only;
+- each caller-supplied source snapshot has an exact provenance class and deterministic integrity-bound fingerprint;
+- `production_read_snapshot` is rejected by the W09-A engineering module; a `supplied_real_snapshot` label is descriptive and never proves live provenance by itself;
+- the certified W01 evaluator remains the only policy decision engine; every supplied W01 evaluation is recomputed and exact-compared before shadow projection;
 - a shadow `admit` is not W03 authorization, W04 reservation, W05 claim, W06 preflight, W07 dispatch or provider-write permission;
-- W09-A engineering is pure/default-off and performs no DB/provider/network/runtime work;
-- W09-B real-decision certification is a separate future boundary; direct Production reads or Stage 0 persistence require separate authorization;
-- human-governed comparison is exact-target descriptive evidence only; timestamp/site/text similarity cannot create comparability;
-- P8.7's certified collection mutation remains historical human-path evidence and is not exact-target comparable to the initial Product W09 class;
-- pause/drain/kill, quota, cooldown, concurrency, manual-intervention, provider-write uncertainty, rollback failure and the complete W01 rejection matrix must be explicitly certified;
-- Stage 0 never consumes quota, starts cooldowns, claims concurrency or mutates control state;
-- zero-write certification must prove no W03–W07 materialization, Task #51/#53/#54 execution, provider write, scheduler/worker binding or gate activation;
-- W10 Stage 1 remains a separately reviewed and explicitly authorized live activation package.
+- bounded pure sessions canonicalize at most 1,000 caller-supplied items, collapse exact replay, fail closed on conflicting replay/mixed policy, and emit deterministic decision/session fingerprints and descriptive summaries;
+- optional human comparison accepts only independently integrity-verified P8.6 ledgers and only when mutation class, Product GID, target URL, field and exact before/after fingerprints all match;
+- comparison is descriptive direction/outcome evidence only; it never creates correctness, quality, confidence or causality conclusions;
+- Collection/P8.7-shaped historical evidence is explicitly not Product-target comparable to the initial W09 class;
+- W09 tests certify the full W01 rejection matrix plus pause/drain/drained/kill, unresolved side effects, quota, cooldown and concurrency without consuming or mutating any of those controls;
+- source, decision and session artifacts have independent integrity verification;
+- static certification forbids DB/provider/network/runtime imports/calls, migration creation and non-test runtime binding;
+- W09-B real Stage 0 evidence acquisition remains a separate future boundary; direct Production reads or persistence require exact separate authorization;
+- W10 Stage 1 remains separately reviewed and explicitly authorized.
 
 
 ### P8.8 W05 durable mutation-control bridge
