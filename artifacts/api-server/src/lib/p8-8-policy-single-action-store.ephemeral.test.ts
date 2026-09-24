@@ -416,11 +416,137 @@ test("P8.8 W07 dispatch store certifies 43-table fencing, closure, race, quota a
       }),
       /p88_w07_write_credential_binding_invalid/,
     );
+    await assert.rejects(
+      store.startDispatch({
+        intent,
+        expectedRowRevision: reserved.record.rowRevision,
+        observedBeforeValue: intent.state.beforeValue,
+        observedBeforeFingerprint: intent.state.beforeFingerprint,
+        publicSiteWritesEnabled: true,
+        policyMutationExecutionEnabled: false,
+        credentialProfileId: intent.policy.credentialProfileId,
+        credentialScopes: ["write_products"],
+      }),
+      /p88_w07_execution_gate_disabled/,
+    );
+    await assert.rejects(
+      store.startDispatch({
+        intent,
+        expectedRowRevision: reserved.record.rowRevision,
+        observedBeforeValue: intent.state.beforeValue,
+        observedBeforeFingerprint: intent.state.beforeFingerprint,
+        publicSiteWritesEnabled: true,
+        policyMutationExecutionEnabled: true,
+        credentialProfileId: intent.policy.credentialProfileId,
+        credentialScopes: [],
+      }),
+      /p88_w07_write_credential_binding_invalid/,
+    );
     const cancelled = await store.cancelBeforeDispatch({
       intent,
       expectedRowRevision: reserved.record.rowRevision,
     });
     assert.equal(cancelled.state, "cancelled_before_dispatch");
+  }
+
+  await cleanup();
+  {
+    const { intent } = await seed("640000009", "reservation-not-claimed");
+    await admin.unsafe(
+      "UPDATE policy_mutation_reservations SET status='authorized' "
+        + "WHERE reservation_id=$1",
+      [intent.lineage.reservationId],
+    );
+    await assert.rejects(
+      store.reservePrewrite(intent),
+      /p88_w07_reservation_not_claimed/,
+    );
+  }
+
+  await cleanup();
+  {
+    const { intent } = await seed("640000010", "w05-lineage-mismatch");
+    await admin.unsafe(
+      "UPDATE policy_mutation_claims SET claim_fingerprint=$2 WHERE claim_id=$1",
+      [intent.lineage.claimId, "f".repeat(64)],
+    );
+    await assert.rejects(
+      store.reservePrewrite(intent),
+      /p88_w07_durable_lineage_mismatch/,
+    );
+  }
+
+  await cleanup();
+  {
+    const { intent } = await seed("640000011", "control-missing");
+    await admin.unsafe(
+      "DELETE FROM policy_mutation_control_state WHERE site_id=$1::uuid",
+      [intent.siteId],
+    );
+    await assert.rejects(
+      store.reservePrewrite(intent),
+      /p88_w07_control_missing/,
+    );
+  }
+
+  await cleanup();
+  {
+    const { intent } = await seed("640000012", "control-paused");
+    await admin.unsafe(
+      "UPDATE policy_mutation_control_state SET mode='paused' WHERE site_id=$1::uuid",
+      [intent.siteId],
+    );
+    await assert.rejects(
+      store.reservePrewrite(intent),
+      /p88_w07_control_not_running/,
+    );
+  }
+
+  await cleanup();
+  {
+    const { intent } = await seed("640000013", "before-and-control-epoch");
+    const reserved = await store.reservePrewrite(intent);
+    await assert.rejects(
+      store.startDispatch({
+        intent,
+        expectedRowRevision: reserved.record.rowRevision,
+        observedBeforeValue:
+          intent.state.beforeValue === null ? " " : intent.state.beforeValue + " ",
+        observedBeforeFingerprint: intent.state.beforeFingerprint,
+        publicSiteWritesEnabled: true,
+        policyMutationExecutionEnabled: true,
+        credentialProfileId: intent.policy.credentialProfileId,
+        credentialScopes: ["write_products"],
+      }),
+      /p88_w07_final_before_state_mismatch/,
+    );
+    const stillReserved = await store.read(intent.dispatchId);
+    assert.equal(stillReserved?.state, "reserved_prewrite");
+    assert.equal(stillReserved?.forwardAttemptCount, 0);
+
+    await admin.unsafe(
+      "UPDATE policy_mutation_control_state SET "
+        + "revision=revision+1,previous_control_fingerprint=control_fingerprint,"
+        + "control_fingerprint=$2,updated_at=transaction_timestamp() "
+        + "WHERE site_id=$1::uuid",
+      [intent.siteId, "9".repeat(64)],
+    );
+    await assert.rejects(
+      store.startDispatch({
+        intent,
+        expectedRowRevision: reserved.record.rowRevision,
+        observedBeforeValue: intent.state.beforeValue,
+        observedBeforeFingerprint: intent.state.beforeFingerprint,
+        publicSiteWritesEnabled: true,
+        policyMutationExecutionEnabled: true,
+        credentialProfileId: intent.policy.credentialProfileId,
+        credentialScopes: ["write_products"],
+      }),
+      /p88_w07_control_epoch_not_forward_eligible/,
+    );
+    const afterEpochChange = await store.read(intent.dispatchId);
+    assert.equal(afterEpochChange?.state, "reserved_prewrite");
+    assert.equal(afterEpochChange?.forwardAttemptCount, 0);
   }
 
   await cleanup();
