@@ -33,10 +33,16 @@ export default function SettingsPage() {
               </div>
               <StatusBadge tone="info">MANAGE HERE</StatusBadge>
             </div>
-            <Link href="/settings/connections" className="customerHubAction settingsPrimaryAction">
-              Manage connections
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/settings/add-website" className="customerHubAction settingsPrimaryAction">
+                Add website
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+              <Link href="/settings/connections" className="customerHubAction settingsPrimaryAction">
+                Manage connections
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            </div>
           </section>
 
           <section className="card">

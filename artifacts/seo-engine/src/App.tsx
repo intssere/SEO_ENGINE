@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -37,6 +37,8 @@ import SearchIntelligencePage from './pages/search-intelligence';
 import LearningPage from './pages/learning';
 import ImpactPage from './pages/impact';
 import ReportsPage from './pages/reports';
+
+const WebsiteConnectionWizardPage = lazy(() => import('./pages/website-connection-wizard'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -84,6 +86,11 @@ function Router() {
           <Route path="/performance/learning" component={LearningPage} />
 
           <Route path="/settings/connections" component={ConnectionsPage} />
+          <Route path="/settings/add-website">
+            <Suspense fallback={<div className="content"><div className="card" role="status">Loading website setup…</div></div>}>
+              <WebsiteConnectionWizardPage />
+            </Suspense>
+          </Route>
 
           {/* Legacy/engineering URLs remain mounted for compatibility and certification. */}
           <Route path="/governance" component={GovernancePage} />
