@@ -773,9 +773,7 @@ export class P88W07DispatchStore {
           terminal
             ? "terminal_at=$10::timestamptz"
             : "terminal_at=terminal_at",
-          terminal
-            ? "terminal_reason=$11"
-            : "terminal_reason=terminal_reason",
+          "terminal_reason=COALESCE($11::text,terminal_reason)",
         ];
         const updated = await tx.unsafe<DispatchRow[]>(
           "UPDATE policy_mutation_dispatches SET " + sets.join(",")
@@ -797,7 +795,7 @@ export class P88W07DispatchStore {
             input.providerResponseFingerprint ?? current.provider_response_fingerprint,
             input.verificationFingerprint ?? current.verification_fingerprint,
             now.toISOString(),
-            input.reason,
+            terminal ? input.reason : null,
             input.expectedState,
             input.expectedRowRevision,
           ],
