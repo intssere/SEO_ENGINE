@@ -3568,3 +3568,18 @@ td:first-child {
     margin-left: 0;
   }
 }
+
+/* UGP-2.5 contextual onboarding */
+.mobileNavActions{display:flex;gap:8px}
+.onboardingGuideButton{width:100%;min-height:40px;margin:0 0 14px;border:1px solid #334766;border-radius:8px;background:#13223d;color:#dce6f4;font-size:12px;font-weight:700}
+[data-onboarding-active="true"]{outline:3px solid #3c82f6!important;outline-offset:4px}
+.contextualGuide{position:fixed;right:18px;bottom:18px;z-index:90;width:min(360px,calc(100vw - 24px));border:1px solid #c9dcfa;border-radius:12px;background:#fff;padding:16px;box-shadow:0 16px 40px rgba(12,23,48,.2);color:#172033}
+.contextualGuideHead,.contextualGuideFoot{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.contextualGuideHead span,.contextualGuideFoot>span{color:#647087;font-size:11px}
+.contextualGuideHead strong{display:block;margin-top:2px}
+.contextualGuideHead button{min-width:36px;min-height:36px}
+.contextualGuide>p{margin:12px 0;color:#52627a;font-size:13px;line-height:1.55}
+.contextualGuideFoot{align-items:center}
+.contextualGuideFoot>div{display:flex;gap:8px}
+.contextualGuideFoot button{min-height:40px;border:1px solid #c9dcfa;border-radius:8px;background:#f3f7ff;color:#245ea8;padding:7px 11px;font-size:12px;font-weight:700}
+@media(width<=640px){.contextualGuide{right:12px;bottom:12px}.onboardingGuideButton{min-height:44px}}

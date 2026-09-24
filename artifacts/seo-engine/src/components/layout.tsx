@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   type ReactNode,
   useCallback,
   useEffect,
@@ -23,6 +25,8 @@ import { AskModal } from "./ask-modal";
 import { useGetDashboard } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth-client";
 import navigation from "@/navigation.json";
+
+const ContextualOnboarding = lazy(() => import("./contextual-onboarding"));
 
 export const AskModalContext = createContext<(open: boolean) => void>(() => {});
 export const useAskModal = () => useContext(AskModalContext);
@@ -109,7 +113,9 @@ export function Layout({ children }: { children: ReactNode }) {
   const { data, isLoading } = useGetDashboard();
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const askReturnFocusRef = useRef<HTMLElement | null>(null);
+  const guideReturnFocusRef = useRef<HTMLElement | null>(null);
   const mobileNavToggleRef = useRef<HTMLButtonElement>(null);
   const mainContentRef = useRef<HTMLElement>(null);
   const previousLocationRef = useRef(location);
@@ -130,6 +136,20 @@ export function Layout({ children }: { children: ReactNode }) {
     setIsAskModalOpen(false);
     const returnTarget = askReturnFocusRef.current;
     askReturnFocusRef.current = null;
+    window.requestAnimationFrame(() => returnTarget?.focus());
+  }, []);
+
+  const setGuideOpen = useCallback((open: boolean) => {
+    if (open) {
+      const active = document.activeElement;
+      guideReturnFocusRef.current = active instanceof HTMLElement ? active : null;
+      setIsMobileNavOpen(false);
+      setIsGuideOpen(true);
+      return;
+    }
+    setIsGuideOpen(false);
+    const returnTarget = guideReturnFocusRef.current;
+    guideReturnFocusRef.current = null;
     window.requestAnimationFrame(() => returnTarget?.focus());
   }, []);
 
@@ -186,6 +206,9 @@ export function Layout({ children }: { children: ReactNode }) {
           />
 
           <div className="sidebarFoot">
+            <button type="button" className="onboardingGuideButton" onClick={() => setGuideOpen(true)}>
+              Guide this page
+            </button>
             {auth.enforcementEnabled && auth.authenticated && auth.user ? (
               <div className="mb-3 border-b border-[#24344f] pb-3 text-xs leading-5 text-[#9fb0c9]">
                 <strong className="block truncate text-[#dce6f4]">
@@ -229,7 +252,11 @@ export function Layout({ children }: { children: ReactNode }) {
                 <small>Search workspace</small>
               </div>
             </div>
-            <button
+            <div className="mobileNavActions">
+              <button type="button" className="mobileNavToggle" onClick={() => setGuideOpen(true)}>
+                Guide this page
+              </button>
+              <button
               ref={mobileNavToggleRef}
               type="button"
               className="mobileNavToggle"
@@ -239,7 +266,8 @@ export function Layout({ children }: { children: ReactNode }) {
               onClick={() => setIsMobileNavOpen((open) => !open)}
             >
               {isMobileNavOpen ? "Close" : "Menu"}
-            </button>
+              </button>
+            </div>
           </div>
           <div
             id="mobile-primary-navigation"
@@ -274,6 +302,11 @@ export function Layout({ children }: { children: ReactNode }) {
           {children}
         </main>
 
+        {isGuideOpen ? (
+          <Suspense fallback={null}>
+            <ContextualOnboarding location={location} onClose={() => setGuideOpen(false)} />
+          </Suspense>
+        ) : null}
         <AskModal open={isAskModalOpen} onOpenChange={setAskModalOpen} />
       </div>
     </AskModalContext.Provider>
