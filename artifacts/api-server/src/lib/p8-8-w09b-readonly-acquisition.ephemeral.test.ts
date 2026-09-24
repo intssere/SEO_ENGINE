@@ -285,7 +285,32 @@ test("W09-BE4 full 43-table localhost acquisition is read-only and translates of
   assert.equal(pkg.transaction.transactionIsolation, "repeatable_read");
   assert.equal(pkg.schemaState, "full_w07_schema");
   assert.equal(pkg.candidates.length, 1);
-  assert.equal(pkg.candidates[0]!.completeness, "complete_for_w09a");
+  const legacyResult = pkg.queryResults.find(
+    (result) => result.queryId === "w09b.legacy_evidence.v1",
+  );
+  assert.equal(legacyResult?.rowCount, 1, JSON.stringify(legacyResult?.rows));
+  assert.equal(
+    pkg.candidates[0]!.legacyEvidence.length,
+    1,
+    JSON.stringify(pkg.candidates[0]!.incompleteReasons),
+  );
+  assert.ok(
+    pkg.candidates[0]!.productGidWitness,
+    JSON.stringify(pkg.candidates[0]!.legacyEvidence),
+  );
+  assert.ok(
+    pkg.candidates[0]!.reconstruction,
+    JSON.stringify(pkg.candidates[0]!.legacyEvidence),
+  );
+  assert.ok(
+    pkg.candidates[0]!.providerBeforeWitness,
+    JSON.stringify(pkg.candidates[0]!.normalizedObservations),
+  );
+  assert.equal(
+    pkg.candidates[0]!.completeness,
+    "complete_for_w09a",
+    JSON.stringify(pkg.candidates[0]!.incompleteReasons),
+  );
   assert.equal(pkg.candidates[0]!.productGidWitness?.resourceGid, w02.w01Facts.resourceGid);
   assert.equal(
     pkg.candidates[0]!.providerBeforeWitness?.observation.observationFingerprint,
