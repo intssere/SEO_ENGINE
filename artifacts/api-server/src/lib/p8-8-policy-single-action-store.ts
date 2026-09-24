@@ -358,6 +358,30 @@ export class P88W07DispatchStore {
     );
   }
 
+  async readCurrentControl(siteId: string): Promise<Readonly<{
+    revision: number;
+    mode: string;
+    fingerprint: string;
+  }> | null> {
+    const sql = this.sqlFactory(this.databaseUrl);
+    try {
+      await this.assertSchemaAndIdentity(sql, siteId);
+      const rows = await sql.unsafe<ControlRow[]>(
+        "SELECT site_id::text AS site_id,revision,mode,control_fingerprint "
+          + "FROM policy_mutation_control_state WHERE site_id=$1::uuid",
+        [siteId],
+      );
+      if (!rows[0]) return null;
+      return Object.freeze({
+        revision: Number(rows[0].revision),
+        mode: rows[0].mode,
+        fingerprint: rows[0].control_fingerprint,
+      });
+    } finally {
+      await sql.end({ timeout: 1 }).catch(() => undefined);
+    }
+  }
+
   async read(dispatchId: string): Promise<P88W07DispatchRecord | null> {
     const sql = this.sqlFactory(this.databaseUrl);
     try {
