@@ -358,7 +358,10 @@ function targetFor(intent: P88W07DispatchIntent): P88W08Target {
 function assertReservationBinding(
   reservation: P88W06ReservationSnapshot,
   intent: P88W07DispatchIntent,
+  bundle: P88W07LineageBundle,
 ): void {
+  const w02 = bundle.w06Lineage.w02Materialization;
+  const w03 = bundle.w06Lineage.w03Authorization;
   if (
     reservation.reservationId !== intent.lineage.reservationId
     || reservation.reservationFingerprint !== intent.lineage.reservationFingerprint
@@ -372,6 +375,16 @@ function assertReservationBinding(
     || reservation.materializationFingerprint !== intent.lineage.materializationFingerprint
     || reservation.proposalId !== intent.lineage.proposalId
     || reservation.proposalFingerprint !== intent.lineage.proposalFingerprint
+    || reservation.materializationIdempotencyFingerprint !== w02.materializationIdempotencyFingerprint
+    || reservation.recommendationFingerprint !== w02.recommendation.recommendationFingerprint
+    || reservation.recommendationIdempotencyKey !== w02.recommendation.idempotencyKey
+    || reservation.targetBindingFingerprint !== intent.target.targetBindingFingerprint
+    || reservation.provider !== intent.target.provider
+    || reservation.domain !== intent.target.domain
+    || reservation.resourceKind !== intent.target.resourceKind
+    || reservation.actionType !== intent.target.actionType
+    || reservation.requiredProviderScope !== intent.target.requiredProviderScope
+    || reservation.w03ReservationDescriptorFingerprint !== w03.reservation.descriptorFingerprint
     || reservation.w03AuthorizationId !== intent.lineage.w03AuthorizationId
     || reservation.w03AuthorizationFingerprint !== intent.lineage.w03AuthorizationFingerprint
     || reservation.policyActionId !== intent.lineage.policyActionId
@@ -472,6 +485,9 @@ function normalizeDispatchEvent(event: P88W08DispatchEventEvidence): P88W08Dispa
   const expected = dispatchEventFingerprint(normalized);
   if (expected !== eventFingerprint) {
     throw new Error("p88_w08_dispatch_event_fingerprint_mismatch");
+  }
+  if (normalized.eventId !== "p88w07-event-" + eventFingerprint.slice(0, 24)) {
+    throw new Error("p88_w08_dispatch_event_id_mismatch");
   }
   return deepFreeze({ ...normalized, eventFingerprint });
 }
@@ -1265,7 +1281,7 @@ export function buildP88W08AutonomousAuditProjection(
   const lineage = lineageFor(intent);
   const target = targetFor(intent);
 
-  assertReservationBinding(input.reservationFinal, intent);
+  assertReservationBinding(input.reservationFinal, intent, input.w07Bundle);
   const dispatchEvents = dedupeDispatchEvents(input.dispatchEvents);
   assertDispatchChain(intent, input.dispatch, dispatchEvents);
   assertReservationClosure(input.reservationFinal, input.dispatch);
