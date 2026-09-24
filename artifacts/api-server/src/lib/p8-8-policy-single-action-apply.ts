@@ -87,6 +87,9 @@ export type P88W07DispatchIntent = Readonly<{
     actionType: "update_meta_description";
     field: "meta_description";
     requiredProviderScope: "write_products";
+    sourceSystem: string;
+    sourceIdentity: string;
+    sourceFingerprint: string;
     targetBindingFingerprint: string;
   }>;
   state: Readonly<{
@@ -109,37 +112,37 @@ const TERMINAL_STATES = new Set<P88W07DispatchState>([
 
 const TRANSITIONS: Readonly<Record<P88W07DispatchState, readonly P88W07DispatchState[]>> =
   Object.freeze({
-    reserved_prewrite: Object.freeze([
+    reserved_prewrite: Object.freeze<P88W07DispatchState[]>([
       "dispatch_started",
       "cancelled_before_dispatch",
     ]),
-    dispatch_started: Object.freeze([
+    dispatch_started: Object.freeze<P88W07DispatchState[]>([
       "forward_rejected_no_write",
       "forward_verification_pending",
       "manual_intervention_required",
     ]),
-    forward_rejected_no_write: Object.freeze([]),
-    forward_verification_pending: Object.freeze([
+    forward_rejected_no_write: Object.freeze<P88W07DispatchState[]>([]),
+    forward_verification_pending: Object.freeze<P88W07DispatchState[]>([
       "forward_verified_live",
       "rollback_required",
       "manual_intervention_required",
     ]),
-    forward_verified_live: Object.freeze([]),
-    rollback_required: Object.freeze([
+    forward_verified_live: Object.freeze<P88W07DispatchState[]>([]),
+    rollback_required: Object.freeze<P88W07DispatchState[]>([
       "rollback_started",
       "manual_intervention_required",
     ]),
-    rollback_started: Object.freeze([
+    rollback_started: Object.freeze<P88W07DispatchState[]>([
       "rollback_verification_pending",
       "manual_intervention_required",
     ]),
-    rollback_verification_pending: Object.freeze([
+    rollback_verification_pending: Object.freeze<P88W07DispatchState[]>([
       "rollback_verified_closed",
       "manual_intervention_required",
     ]),
-    rollback_verified_closed: Object.freeze([]),
-    cancelled_before_dispatch: Object.freeze([]),
-    manual_intervention_required: Object.freeze([]),
+    rollback_verified_closed: Object.freeze<P88W07DispatchState[]>([]),
+    cancelled_before_dispatch: Object.freeze<P88W07DispatchState[]>([]),
+    manual_intervention_required: Object.freeze<P88W07DispatchState[]>([]),
   });
 
 function stableJson(value: unknown): string {
@@ -330,6 +333,9 @@ export function projectP88W07DispatchIntent(input: {
       actionType: "update_meta_description",
       field: "meta_description",
       requiredProviderScope: "write_products",
+      sourceSystem: lineage.w02Materialization.target.sourceSystem,
+      sourceIdentity: lineage.w02Materialization.target.sourceIdentity,
+      sourceFingerprint: lineage.w02Materialization.target.sourceFingerprint,
       targetBindingFingerprint: preflight.target.targetBindingFingerprint,
     },
     state: {
