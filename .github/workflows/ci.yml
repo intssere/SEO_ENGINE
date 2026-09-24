@@ -116,6 +116,13 @@ jobs:
           pnpm --filter @workspace/api-server test:p8-8-w07-persistence-ephemeral
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^43$'
 
+      - name: Test P8.8 W09-B synthetic read-only acquisition certification
+        env:
+          P8_8_W09B_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
+        run: |
+          pnpm --filter @workspace/api-server test:p8-8-w09b-evidence-ephemeral
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^43$'
+
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
 

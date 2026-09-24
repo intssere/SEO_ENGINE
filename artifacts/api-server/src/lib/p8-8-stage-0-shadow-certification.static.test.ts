@@ -35,6 +35,7 @@ test("W09 module is not imported by non-test runtime source", async () => {
     if (
       entry.name === "p8-8-stage-0-shadow-certification.ts"
       || entry.name === "p8-8-w09-test-fixture.ts"
+      || entry.name === "p8-8-w09b-offline-translator.ts"
       || entry.name.endsWith(".test.ts")
     ) continue;
     const content = await readFile(join(libDir.pathname, entry.name), "utf8");

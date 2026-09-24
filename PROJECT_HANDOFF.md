@@ -13,27 +13,24 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W09-BE1–BE5 synthetic evidence engineering specification/review — issue #499
+### P8.8 W09-BE1–BE5 synthetic evidence implementation — issue #503 / PR #504
 
-Canonical baseline is W09-B review merge `882ec877e0f052f71c6dce3b15f352472b468f5e` / tree `6db5dcc0a85b25a8212b00c1b216aace11f85ac3`.
+Canonical merged baseline is the W09-BE specification merge `c10fe53cec704bb5245df4805dcbd98706f349ce` / tree `ba262ceab710a2fcbea49f24a84b95f10a429996`.
 
-W09-B review is certified complete under issue #497 / PR #498 with post-merge CI #1040 success and Replit exact Git-only reconciliation.
+Implementation branch: `p8-8-w09be1-be5-implementation-503`.
 
-W09-BE1–BE5 specification/review is active on branch `p8-8-w09be1-be5-engineering-spec-499`.
+Implemented:
+- BE1 frozen 18-query SELECT-only contracts, deterministic query/result/candidate/package fingerprints, immutable manifest/package and fail-closed integrity verification;
+- BE2 explicit-URL direct-`postgres` acquisition with one connection, read-only/repeatable-read transaction, strict timeouts/caps and no ambient `DATABASE_URL`/`@workspace/db` or provider/runtime dependency;
+- BE3 pure offline translator that recomputes W02/W01 and enters W09-A only via `supplied_real_snapshot`; W09-A recomputes W01 independently;
+- BE4 localhost-only `P8_8_W09B_EPHEMERAL_DATABASE_URL` certification against full 43-table engineering schema plus controlled missing core/W04/W05/W07 cases, with zero row/table mutation proof;
+- BE5 static no-provider/fetch, no write SQL, no migration/persistence, no route/startup/scheduler/worker/Task execution and no W10 proof;
+- exact persisted Product GID and exact integrity-valid/fresh W06 provider observation are required; labels, matching text and crawler/storefront evidence cannot manufacture authority;
+- no migration and no persistent Stage 0 evidence store.
 
-Key frozen engineering decisions:
-- BE1 owns pure frozen query descriptors, SQL/query-set fingerprints, acquisition package/manifest schemas, candidate completeness states and integrity verification;
-- BE2 uses an explicit database URL only, direct `postgres`, one connection and one read-only/repeatable-read transaction; no ambient `DATABASE_URL`, `@workspace/db`, arbitrary SQL API, persistence or provider/runtime binding;
-- exactly 18 SELECT-only query descriptors form v1; changing SQL/columns/parameters/caps/ordering changes the query-set fingerprint;
-- BE3 is pure/offline and converts only integrity-valid `complete_for_w09a` acquisition records into W09-A `supplied_real_snapshot`, after which W09-A independently recomputes W01 again;
-- BE4 uses only localhost/127.0.0.1 ephemeral PostgreSQL, dedicated `P8_8_W09B_EPHEMERAL_DATABASE_URL`, full 43-table W07 schema plus controlled missing-schema cases, and proves no table/row mutation;
-- BE5 statically forbids provider/fetch, mutation SQL, migrations, persistence, runtime binding and W10 activation;
-- Product GID must be persisted and integrity-bound;
-- provider-before authority requires an exact persisted W06 `P88W06ProviderObservation` envelope passing W06 integrity and freshness checks; labels/text alone are never sufficient;
-- no new migration or persistent evidence store;
-- engineering does not authorize the real Production Stage 0 read.
+PR #504 remains an engineering-only review. It does not authorize a Production DB read, Production schema inspection, provider read/write, persistence, runtime activation, deployment/publication or W10.
 
-**Current safe boundary:** complete W09-BE1–BE5 specification/review and PR certification only. Do not implement, connect to Production, inspect live schema, contact providers, persist evidence, deploy/publish or begin W10 from generic continuation.
+**Current safe boundary:** finish exact-head PR #504 certification and stop at the separate merge gate. After an authorized merge/post-merge certification, any real W09-B Production DB read remains separately reviewed and authorized.
 
 ### P8.8 W07 specification certified — implementation gate next
 
