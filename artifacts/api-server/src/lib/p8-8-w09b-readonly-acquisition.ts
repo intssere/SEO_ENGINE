@@ -555,7 +555,7 @@ export async function acquireP88W09BEvidence(
   let committed = false;
   const runQuery = async (
     queryId: P88W09BQueryId,
-    parameters: unknown[],
+    parameters: Parameters<typeof reserved.unsafe>[1],
     parameterIdentity: unknown,
   ): Promise<readonly Row[]> => {
     const d = descriptor(queryId);
