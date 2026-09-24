@@ -1,5 +1,38 @@
 # SEO ENGINE — Current State Checkpoint
 
+## Active engineering checkpoint — P8.8 W08 autonomous audit projection specification/review
+
+W07 implementation is merged and certified complete under issue #474 / PR #477.
+
+W07 implementation closeout:
+- certified implementation head: `db603cbd91263b0bf2ae6ab084950bab49a4d61e`;
+- exact-head CI #997 / run `35967557613`: success;
+- merge/canonical main: `8d1836393e64d0cbe5d4b3ce904e50cbee788089`;
+- canonical tree: `edfef3c14be4ae31160b12cdb2d68109830f461c`;
+- post-merge CI #998 / run `35968433948`: success;
+- W04/W05/W06/W07 PostgreSQL gates, workspace tests, P11.10, Chromium, typecheck and build all passed;
+- Replit exact Git-only reconciled to the merge/tree, ahead/behind `0/0`, clean;
+- the prior Replit-only W07 commit `593d618f7dae8442f46fd65c1ecb0578862d64f8` remains preserved on its local feature branch;
+- no Production migration/DDL/DML, live provider read/write, rollback write, Task #51/#53/#54 execution, scheduler/worker/policy activation, credential/scope/gate change, deployment or publication occurred.
+
+W08 specification/review is now active under issue #480 on branch `p8-8-w08-autonomous-audit-projection-spec-480` from canonical W07 merge `8d1836393e64d0cbe5d4b3ce904e50cbee788089`.
+
+The W08 review boundary defines:
+- one exact policy-action audit root = W03 `policyActionId`;
+- exact W01–W07 IDs/fingerprints retained without fabricating human approval/action/deployment identities;
+- caller-supplied deterministic projection only;
+- direct-lineage binding; no timestamp/site/target proximity inference;
+- P10.1-style canonical chronology and replay conflict semantics;
+- P8.6-style deterministic ordering, hash chaining and independent integrity verification;
+- one-for-one W07 dispatch-event projection with exact revision/state preservation;
+- unavailable/uncertain/manual-intervention evidence preserved without promotion to success;
+- no migration 0008 and no competing audit/execution authority store;
+- W08 implementation split into E1–E5 only after separate explicit authorization.
+
+**Current safe boundary:** W08 documentation/specification/review only. Generic `continue` does not authorize W08 implementation, Production reads/writes, migration application, provider access, scheduler/worker activation, deployment/publication, W09 or W10.
+
+**Still excluded:** Production migrations 0005/0006/0007; any new migration; Production DB reads/writes; provider/public-site reads/writes; rollback writes; Task #51/#53/#54 execution; scheduler/worker/policy/autonomous activation; credential/scope/config/gate changes; deployment/publication; W09–W10.
+
 ## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
 
 W07 specification/review is certified complete under issue #461 / PR #462.

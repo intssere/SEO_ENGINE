@@ -13,6 +13,32 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
+### P8.8 W08 autonomous audit projection specification/review — issue #480
+
+Canonical GitHub `main` after W07 is `8d1836393e64d0cbe5d4b3ce904e50cbee788089` / tree `edfef3c14be4ae31160b12cdb2d68109830f461c`.
+
+W07-E1–E5 implementation is certified complete under issue #474 / PR #477:
+- certified head `db603cbd91263b0bf2ae6ab084950bab49a4d61e`;
+- exact-head CI #997 success;
+- merge `8d1836393e64d0cbe5d4b3ce904e50cbee788089`;
+- post-merge CI #998 success;
+- Replit exact-synced Git-only, `0/0`, clean;
+- no Production migration/provider/config/deployment/publication action occurred.
+
+W08 specification/review is active on branch `p8-8-w08-autonomous-audit-projection-spec-480`. It defines a pure/default-off caller-supplied audit projection over exact W01–W07 policy lineage, reusing P8.6 hash-chain/replay principles and P10.1 deterministic chronology principles without creating a competing authority store.
+
+Key W08 review decisions:
+- audit root is exact W03 `policyActionId`;
+- policy-specific lineage remains distinct from human approval/action/deployment IDs;
+- exact W07 append-only dispatch events remain authoritative for dispatch-state chronology;
+- W04 transitions are not invented where migration 0005 has no append-only event history;
+- W05 site-level control events cannot attach by site/time proximity;
+- unavailable/uncertain/manual-intervention evidence stays explicit;
+- no migration 0008 is required for first implementation;
+- future W08 E1–E5 engineering remains separately authorized and pure/caller-supplied only.
+
+**Current safe boundary:** complete W08 specification/review and PR certification only. Do not implement W08 without separate authorization. Do not read/write Production, apply migrations, call providers, mutate public sites, execute Task #51/#53/#54, activate scheduler/worker/policy/autonomy, change credentials/config/gates, deploy/publish, or begin W09/W10.
+
 ### P8.8 W07 specification certified — implementation gate next
 
 Canonical GitHub `main` is `15846991123b6664c37176b844550d4b0095b39a` / tree `94f2ccfa5b265e2ee0a8f470546428c1d6d7b9e1`.
