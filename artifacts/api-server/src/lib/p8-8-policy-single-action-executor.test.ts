@@ -261,9 +261,14 @@ test("accepted receipt alone is not success; failed verification performs exactl
       }
       return provider(intent, "before");
     },
-    mutateProvider: async (phase) => {
-      if (phase === "forward") forwardWrites += 1;
-      else rollbackWrites += 1;
+    mutateProvider: async (phase, value) => {
+      if (phase === "forward") {
+        forwardWrites += 1;
+        assert.equal(value, intent.state.afterValue);
+      } else {
+        rollbackWrites += 1;
+        assert.equal(value, intent.state.beforeValue);
+      }
       return receipt("accepted");
     },
     verifyStorefront: async (expected) => storefront(expected),
