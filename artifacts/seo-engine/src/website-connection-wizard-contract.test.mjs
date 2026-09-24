@@ -40,3 +40,16 @@ test("UGP-2.4 performs no network, persistence or provider mutation", () => {
   assert.doesNotMatch(source, /DATABASE_URL|postgres|drizzle|productUpdate|PUBLIC_SITE_WRITES_ENABLED/);
   assert.doesNotMatch(source, /Task\s*#|UGP-[0-9]|P[0-9]+\.[0-9]+/);
 });
+
+
+test("UGP-3.1 exposes truthful public-web URL onboarding checks without executing them", () => {
+  assert.match(page, /Public web onboarding/);
+  assert.match(page, /NOT RUN/);
+  assert.match(page, /DNS \/ public address/);
+  assert.match(page, /Redirect chain/);
+  assert.match(page, /robots\.txt/);
+  assert.match(page, /Sitemap hints/);
+  assert.match(page, /final analysis origin must resolve to HTTPS/);
+  assert.match(model, /planned_not_executed/);
+  assert.match(model, /finalHttpsRequired: true/);
+});

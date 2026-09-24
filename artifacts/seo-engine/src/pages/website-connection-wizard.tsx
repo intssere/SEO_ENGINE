@@ -64,6 +64,7 @@ export default function WebsiteConnectionWizardPage() {
   const review = website ? [
     ["Website", website.canonicalOrigin],
     ["Platform", platform?.label + " · unverified"],
+    ["Public web checks", "Planned · not run"],
     ["Analysis", analysisLevel === "public" ? "Public website analysis" : "Connected platform + search data"],
     ["Search data", searchPlan === "google" ? "Connect Google after review" : "Skip for now"],
     ["Automation", automationMode === "recommend_only" ? "Recommendations only" : "Review required"],
@@ -105,12 +106,28 @@ export default function WebsiteConnectionWizardPage() {
                 <div className="flex items-center justify-between gap-4 mt-4"><span className="text-sm font-semibold text-[#455168]">{platform?.label}</span>
                   <StatusBadge tone={platform?.evidence === "url_pattern_only" ? "info" : "neutral"}>{platform?.evidence === "url_pattern_only" ? "PATTERN HINT" : "UNVERIFIED"}</StatusBadge></div>
               </div>
-              <p className="text-xs text-[#647087]">Evidence-based detection and public-site inspection are not active in this wizard.</p>
+              <section className={box} aria-labelledby="public-web-onboarding-title">
+                <div className="flex items-center justify-between gap-4">
+                  <strong id="public-web-onboarding-title" className="text-sm text-[#455168]">Public web onboarding</strong>
+                  <StatusBadge tone="neutral">NOT RUN</StatusBadge>
+                </div>
+                <p className="text-xs text-[#647087] mt-2">Before any read-only analysis, each request and redirect hop must pass public-address and scope checks.</p>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                  {website.publicWebOnboarding.checks.map((check) => (
+                    <div key={check.id} className="flex items-center justify-between gap-3 border border-[#e5e9f0] rounded-md bg-white px-3 py-2">
+                      <dt className="text-xs font-semibold text-[#455168]">{check.label}</dt>
+                      <dd><StatusBadge tone="neutral">PENDING</StatusBadge></dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="text-xs text-[#647087] mt-3">The final analysis origin must resolve to HTTPS. No DNS lookup, redirect request, robots request, or sitemap request has run here.</p>
+              </section>
+              <p className="text-xs text-[#647087]">Platform detection remains unverified until evidence is collected in a later read-only analysis stage.</p>
             </div>}
 
             {step === 2 && <fieldset className="space-y-4">
               <StepIntro title="Choose analysis depth" detail="This describes your intended setup; it does not start analysis." />
-              <Choice name="analysis" value="public" current={analysisLevel} set={setAnalysisLevel} title="Public website analysis" detail="Read-only public analysis is planned and is not executed here." />
+              <Choice name="analysis" value="public" current={analysisLevel} set={setAnalysisLevel} title="Public website analysis" detail="Read-only analysis becomes eligible only after the public-web checks pass; it is not executed here." />
               <Choice name="analysis" value="connected" current={analysisLevel} set={setAnalysisLevel} title="Connected platform + search data" detail="Use supported connections where available; unsupported connectors remain unavailable." />
             </fieldset>}
 
