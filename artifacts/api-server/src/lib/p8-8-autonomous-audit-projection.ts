@@ -15,6 +15,8 @@ import {
   type P88W07PublicWriteOccurrence,
 } from "./p8-8-policy-single-action-apply.js";
 import type { P88W07DispatchRecord } from "./p8-8-policy-single-action-store.js";
+import type { P88W07ProviderReadEvidence } from "./p8-8-policy-single-action-executor.js";
+import type { P88W07StorefrontEvidence } from "./p8-8-policy-single-action-shopify.js";
 
 export const P8_8_W08_VERSION = "p8-8-w08-autonomous-audit-projection-v1" as const;
 export const P8_8_W08_MAX_ENTRIES = 4096 as const;
@@ -115,6 +117,16 @@ export type P88W08DispatchEventEvidence = Readonly<{
   effectiveAt: string;
 }>;
 
+export type P88W08VerificationEvidence = Readonly<{
+  evidenceId: string;
+  phase: "forward" | "rollback";
+  occurredAt: string;
+  verificationFingerprint: string;
+  expectedFingerprint: string;
+  provider: P88W07ProviderReadEvidence;
+  storefront: P88W07StorefrontEvidence;
+}>;
+
 export type P88W08Input = Readonly<{
   referenceTime: string;
   w07DatabaseNow: string;
@@ -124,6 +136,7 @@ export type P88W08Input = Readonly<{
   controlEvents?: readonly P88W05ControlEvent[];
   dispatch: P88W07DispatchRecord;
   dispatchEvents: readonly P88W08DispatchEventEvidence[];
+  verificationEvidence?: readonly P88W08VerificationEvidence[];
 }>;
 
 export type P88W08AuditEntry = Readonly<{
@@ -433,10 +446,13 @@ function normalizeDispatchEvent(event: P88W08DispatchEventEvidence): P88W08Dispa
   if (event.eventVersion !== P8_8_W07_EVENT_VERSION) {
     throw new Error("p88_w08_dispatch_event_version_mismatch");
   }
-  const normalized = {
+  const eventFingerprint = fingerprint(
+    event.eventFingerprint,
+    "p88_w08_dispatch_event_fingerprint_invalid",
+  );
+  const normalized: Omit<P88W08DispatchEventEvidence, "eventFingerprint"> = {
     eventId: exactId(event.eventId, "p88_w08_dispatch_event_id_invalid"),
     eventVersion: event.eventVersion,
-    eventFingerprint: fingerprint(event.eventFingerprint, "p88_w08_dispatch_event_fingerprint_invalid"),
     dispatchId: exactId(event.dispatchId, "p88_w08_dispatch_id_invalid"),
     siteId: exactId(event.siteId, "p88_w08_dispatch_event_site_invalid"),
     fromRevision: event.fromRevision,
@@ -451,16 +467,13 @@ function normalizeDispatchEvent(event: P88W08DispatchEventEvidence): P88W08Dispa
     publicWriteOccurrence: event.publicWriteOccurrence,
     rollbackOccurrence: event.rollbackOccurrence,
     effectiveAt: canonicalIso(event.effectiveAt, "p88_w08_dispatch_event_timestamp_invalid"),
-  } satisfies Omit<P88W08DispatchEventEvidence, "eventFingerprint"> & { eventFingerprint: string };
+  };
 
-  const expected = dispatchEventFingerprint({
-    ...normalized,
-    eventFingerprint: undefined as never,
-  } as Omit<P88W08DispatchEventEvidence, "eventFingerprint">);
-  if (expected !== event.eventFingerprint) {
+  const expected = dispatchEventFingerprint(normalized);
+  if (expected !== eventFingerprint) {
     throw new Error("p88_w08_dispatch_event_fingerprint_mismatch");
   }
-  return deepFreeze({ ...normalized, eventFingerprint: event.eventFingerprint });
+  return deepFreeze({ ...normalized, eventFingerprint });
 }
 
 function dedupeDispatchEvents(
