@@ -357,7 +357,7 @@ const Q04 = descriptor({
   queryId: "w09b.candidate_opportunities.v1",
   queryVersion: "v1",
   purpose: "read bounded real opportunity and Product page source identities",
-  sql: "SELECT o.id::text AS opportunity_id,o.site_id::text AS site_id,o.page_id::text AS page_id,o.query_id::text AS query_id,o.opportunity_type,o.status,o.score,o.impact_estimate,o.effort_estimate,o.rationale,o.evidence_ids::text[] AS evidence_ids,o.created_at,o.updated_at,p.url,p.normalized_url,p.path,p.page_type,p.indexable,p.last_seen_at FROM opportunities o JOIN pages p ON p.id=o.page_id WHERE o.site_id=$1::uuid AND p.site_id=$1::uuid AND p.path LIKE '/products/%' ORDER BY o.updated_at DESC,o.id DESC LIMIT 101",
+  sql: "SELECT o.id::text AS opportunity_id,o.site_id::text AS site_id,o.page_id::text AS page_id,o.query_id::text AS query_id,o.opportunity_type,o.status,o.score,o.impact_estimate,o.effort_estimate,o.rationale,to_json(o.evidence_ids) AS evidence_ids,o.created_at,o.updated_at,p.url,p.normalized_url,p.path,p.page_type,p.indexable,p.last_seen_at FROM opportunities o JOIN pages p ON p.id=o.page_id WHERE o.site_id=$1::uuid AND p.site_id=$1::uuid AND p.path LIKE '/products/%' ORDER BY o.updated_at DESC,o.id DESC LIMIT 101",
   parameterKeys: ["siteId"],
   allowedTables: ["opportunities", "pages"],
   allowedColumns: ["id","site_id","page_id","query_id","opportunity_type","status","score","impact_estimate","effort_estimate","rationale","evidence_ids","created_at","updated_at","url","normalized_url","path","page_type","indexable","last_seen_at"],
