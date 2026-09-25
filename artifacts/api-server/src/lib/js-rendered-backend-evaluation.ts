@@ -340,7 +340,7 @@ function normalizeEvidence(
         throw new Error("ugp_render_eval_generic_signal_dimension_invalid");
       }
     } else {
-      const requiredDimension = SPECIFIC_SIGNAL_DIMENSION[item.signal];
+      const requiredDimension = SPECIFIC_SIGNAL_DIMENSION[item.signal as RenderGapSignal];
       if (item.dimension !== requiredDimension) {
         throw new Error("ugp_render_eval_signal_dimension_mismatch");
       }
