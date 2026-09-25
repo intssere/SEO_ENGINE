@@ -13,24 +13,35 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W09-BE1–BE5 synthetic evidence implementation — issue #503 / PR #504
+### P8.8 W09-C first real Stage 0 Production read-only authorization review — issue #509
 
-Canonical merged baseline is the W09-BE specification merge `c10fe53cec704bb5245df4805dcbd98706f349ce` / tree `ba262ceab710a2fcbea49f24a84b95f10a429996`.
+Canonical baseline after merged/certified BE1–BE5 is `261b9155ce9aa93fb468040c17cf55cb6172a46c` / tree `7fdd257f58992c2ae30ea512fd4e4b84f8ff4547`.
 
-Implementation branch: `p8-8-w09be1-be5-implementation-503`.
+BE1–BE5 implementation issue #503 / PR #504 is merged/certified:
+- exact implementation head `e1162cf6c34991d313a01d153759a0751f93eddc`;
+- post-merge CI #1077 success;
+- dedicated W09-B synthetic DB-read-only gate, workspace tests, P11.10, Chromium, typecheck and build passed;
+- Replit exact on merged main, `0/0`, clean.
 
-Implemented:
-- BE1 frozen 18-query SELECT-only contracts, deterministic query/result/candidate/package fingerprints, immutable manifest/package and fail-closed integrity verification;
-- BE2 explicit-URL direct-`postgres` acquisition with one connection, read-only/repeatable-read transaction, strict timeouts/caps and no ambient `DATABASE_URL`/`@workspace/db` or provider/runtime dependency;
-- BE3 pure offline translator that recomputes W02/W01 and enters W09-A only via `supplied_real_snapshot`; W09-A recomputes W01 independently;
-- BE4 localhost-only `P8_8_W09B_EPHEMERAL_DATABASE_URL` certification against full 43-table engineering schema plus controlled missing core/W04/W05/W07 cases, with zero row/table mutation proof;
-- BE5 static no-provider/fetch, no write SQL, no migration/persistence, no route/startup/scheduler/worker/Task execution and no W10 proof;
-- exact persisted Product GID and exact integrity-valid/fresh W06 provider observation are required; labels, matching text and crawler/storefront evidence cannot manufacture authority;
-- no migration and no persistent Stage 0 evidence store.
+W09-C review is active on branch `p8-8-w09c-real-stage0-run-authorization-review-509`.
 
-PR #504 remains an engineering-only review. It does not authorize a Production DB read, Production schema inspection, provider read/write, persistence, runtime activation, deployment/publication or W10.
+Exact real-run constants:
+- query-set version `p8-8-w09b-query-set-v1`;
+- 18 frozen query descriptors;
+- query-set fingerprint `fd117eb142807ac982808bf3cd30f96009884b3c66366489875693e44103cabd`;
+- canonical site `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `diamondshelf.us`.
 
-**Current safe boundary:** finish exact-head PR #504 certification and stop at the separate merge gate. After an authorized merge/post-merge certification, any real W09-B Production DB read remains separately reviewed and authorized.
+Current W09-C readiness is **blocked**:
+- canonical Production schema is still recorded as 34 tables;
+- BE2 requires W04/W05/W07 objects from migrations 0005/0006/0007;
+- exact Production database/project/environment and read-only role are unresolved;
+- external evidence artifact destination/retention is unresolved;
+- exact W01 shadow grant artifact/fingerprint is unresolved;
+- grant.siteId ↔ acquisitionPackage.site.siteId equality must be explicitly certified before BE3 translation.
+
+Do not connect to Production merely to confirm the known schema gap.
+
+**Immediate safe boundary:** finish W09-C review/spec PR only, then move to W09-C1 Production schema readiness review for migrations 0005/0006/0007. W09-C1 review still does not authorize DDL.
 
 ### P8.8 W07 specification certified — implementation gate next
 
