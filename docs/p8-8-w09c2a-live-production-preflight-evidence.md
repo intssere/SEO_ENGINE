@@ -1,56 +1,103 @@
 # P8.8 W09-C2A — Live Production Read-Only Preflight Evidence
 
 **Issue:** #517  
-**Status:** LIVE READ-ONLY PREFLIGHT — INCOMPLETE / DDL BLOCKED  
+**Status:** PREFLIGHT CORRECTION — RAILWAY OBSERVATIONS ARE STAGING-ONLY / PRODUCTION DDL BLOCKED  
 **Canonical Git baseline:** `1bd16ff506c40b7dacdb533358d1be050d65055f`
 
-## 1. Authorization boundary
+## 1. Correction and environment boundary
 
-This evidence run was limited to read-only Production identity/recovery/schema/runtime-fence observation. It performed no DDL, DML, migration, provider/public-site request, credential/config/gate mutation, deploy/redeploy action, scheduler/worker activation, or application persistence.
+The initial W09-C2A inspection observed Railway resources whose Railway environment is named `production`. Project operating context subsequently confirmed that these resources are the intentionally frozen **Railway staging/shadow environment** used while the application is being completed.
+
+The Railway environment label must therefore **not** be interpreted as evidence that Railway is the canonical SEO ENGINE Production database or deployment target.
+
+This correction supersedes the initial inference that the Railway Postgres service replaced or superseded the historical Production database lineage.
+
+No claim is made here that historical Neon identity is current Production proof either. The actual canonical Production database identity remains unresolved and must be independently established before W09-C2 can pass.
+
+## 2. Authorization boundary
+
+The inspection was limited to read-only infrastructure observation. It performed no DDL, DML, migration, provider/public-site request, credential/config/gate mutation, deploy/redeploy action, scheduler/worker activation, staged-patch mutation, or application persistence.
 
 No secret value is recorded here.
 
-## 2. Current Production hosting evidence
+## 3. Railway staging/shadow evidence
 
-Railway currently exposes:
+The observed Railway staging/shadow resources are:
 
-- project: `SEO ENGINE`;
+- Railway project: `SEO ENGINE`;
 - project ID: `52265e29-921b-4652-ac0d-9da4e5e69936`;
-- environment: `production`;
+- Railway environment label: `production`;
 - environment ID: `7f8d920f-f6c6-44f0-b9fe-252cb4f32298`;
 - application service: `seo-engine-shadow` / `1e8c1e7d-16f7-4c63-8193-1021bcbe6d90`;
 - database service: `Postgres` / `b69e0633-7ab9-40ab-85f3-c9edd6acb031`;
 - database image: `ghcr.io/railwayapp-templates/postgres-ssl:18`;
 - region: `europe-west4-drams3a`;
 - database volume: `postgres-volume` / `5e7f09d1-c436-4a49-9526-c3150d0e820a`, mounted at `/var/lib/postgresql/data`, 50,000 MB;
-- Postgres deployment `31895ebb-987b-47e7-a938-a52b902b62ef` is successful;
-- application `DATABASE_URL` is configured as a Railway reference to the Postgres service's `DATABASE_URL`.
+- Postgres deployment `31895ebb-987b-47e7-a938-a52b902b62ef` was successful;
+- `seo-engine-shadow` references this Railway Postgres service through its `DATABASE_URL`.
 
-Therefore the historical Neon P3.6 project/branch/timeline cannot be treated as the current Production database identity for W09-C2. The current application configuration points to the Railway Postgres service.
+These facts characterize **staging only**. They do not satisfy W09-C2 Gate A for canonical Production.
 
-The exact PostgreSQL database name and credential values are redacted by the connected Railway access and were not bypassed or exposed.
+The exact Railway PostgreSQL database name and credential values were redacted by connected access and were not bypassed or exposed.
 
-## 3. Application deployment observation
+## 4. Frozen Railway staging boundary
 
-The merge of W09-C2 PR #516 was followed automatically by Railway deployment `15db2e3f-c6e7-4e20-8789-9c20eed27b33`. No deployment action was invoked by this preflight. On the later read-only status check, that deployment was successful.
+Railway staging is intentionally frozen while the application is completed.
 
-A prior deployment was still being removed by Railway lifecycle processing at the observation time.
+Accordingly W09-C2 must not:
 
-This is runtime-state evidence only, not authorization for any deployment action.
+- run migrations 0005/0006/0007 against Railway staging;
+- use Railway staging schema state as the canonical Production pre-DDL baseline;
+- accept or discard staged Railway environment changes;
+- change Railway variables, credentials, services, volumes, gates or deployment settings;
+- deploy/redeploy/restart staging;
+- use staging runtime state as proof of Production runtime/write fences.
 
-## 4. Recovery / backup evidence
+The observed staged Railway patch `5d9ed802-32c2-4d0a-ac8a-b45a010ca535`, involving the application service and `AUTH_PUBLIC_ORIGIN`, remains untouched.
 
-Current Railway read-only tools used by this preflight do not expose sufficient backup, PITR, snapshot or restore-window evidence for this Postgres service.
+The automatic Railway application deployment observed after PR #516 was not initiated by W09-C2A. Its observation does not authorize further Railway deployment activity.
+
+## 5. Separate development-branch boundary
+
+A separate long-running development initiative is intentionally isolated from `main` and is to remain separate until its own completion, certification and explicit merge authorization.
+
+W09-C2A does not reconcile, merge, modify, or use that branch as authority for Production migration execution.
+
+Canonical Git `main` remains the completed-work integration line for this review, while isolated initiative development preserves its existing branch policy.
+
+## 6. Actual Production identity — unresolved
+
+Because the Railway resources are staging-only, the inspection did **not** establish the actual canonical Production database identity.
+
+The historical P3.6 Neon evidence remains historical evidence only. It may be used as a lead for identification, but it cannot satisfy the current Production gate without fresh verification.
+
+W09-C2 Gate A therefore requires an independently verified current Production target, including:
+
+- hosting/database provider;
+- project/account identifier as applicable;
+- exact Production branch/timeline or equivalent lineage identifier;
+- database name;
+- endpoint/compute identity sufficient to distinguish Production from staging/preview/development;
+- relationship to the previously certified Production lineage;
+- approved bounded operator/credential-injection path, without recording secrets.
+
+Until that target is identified, no Production catalog query or migration session should be aimed at any database merely because its platform environment is labeled `production`.
+
+## 7. Recovery / backup evidence
+
+No current recovery/PITR evidence for the **actual canonical Production database** was established by this inspection.
+
+Railway staging backup/recovery state is irrelevant to satisfying Production Gate B.
 
 Result: **Gate B not satisfied.**
 
-Before DDL, current usable recovery capability for the exact Railway Postgres volume/database must be independently proved. Historical Neon PITR evidence does not satisfy this requirement.
+After Gate A identifies the actual Production target, current usable recovery capability and recovery window must be proved for that exact target before DDL.
 
-## 5. Schema / no-drift evidence
+## 8. Schema / no-drift evidence
 
-Direct PostgreSQL catalog access was not available through the connected Railway read-only tool path because database credentials and connection details are intentionally redacted.
+No PostgreSQL catalog query was run against the actual canonical Production database.
 
-Accordingly this run could not independently prove:
+Therefore this run did not independently prove:
 
 - exact public base-table count = 34;
 - exact public table-name set;
@@ -61,59 +108,47 @@ Accordingly this run could not independently prove:
 - absence of unexplained schema drift;
 - absence of active/conflicting DDL sessions.
 
+Railway staging catalog state must not be substituted for these Production facts.
+
 Result: **Gate C not satisfied.**
 
-No attempt was made to bypass credential boundaries or execute SQL through an unapproved path.
+## 9. Runtime/write-fence evidence
 
-## 6. Runtime/write-fence evidence
+The observed Railway staging service contains the expected safety-related variable names, but this is staging-only evidence and their values were redacted.
 
-The `seo-engine-shadow` service contains the expected safety-related variable names, including:
-
-- `PUBLIC_SITE_WRITES_ENABLED`;
-- `COMPETITOR_COLLECTION_ENABLED`;
-- `PILOT_INGESTION_QUEUE_RESUME_ENABLED`;
-- `COMPETITOR_EVIDENCE_PERSISTENCE_ENABLED`;
-- `SIGNAL_COLLECTION_JOB_EXECUTION_ENABLED`;
-- `AI_PROPOSAL_GENERATION_ENABLED`;
-- `COMPETITOR_ONE_TARGET_DRY_RUN_EXECUTION_ENABLED`;
-- `GSC_READONLY_OAUTH_RUNTIME_ENABLED`.
-
-Their values are redacted by the connected Railway access, so disabled/non-executing state was not proved.
-
-Railway also reports an existing staged environment patch `5d9ed802-32c2-4d0a-ac8a-b45a010ca535` involving the application service and `AUTH_PUBLIC_ORIGIN`. This preflight did not accept, discard or otherwise mutate that patch.
+It does not establish the gate state of the actual Production runtime.
 
 Result: **Gate D not satisfied.**
 
-## 7. Gate status
+## 10. Corrected gate status
 
-| W09-C2 gate | Result |
+| W09-C2 gate | Corrected result |
 |---|---|
-| A — current Production identity/lineage | **PARTIAL** — Railway project/environment/app/database service and app→DB reference proved; exact DB name/operator path not proved |
-| B — current recovery capability | **BLOCKED** — current Railway recovery/PITR evidence unavailable |
-| C — exact pre-schema/no-drift catalog | **BLOCKED** — no approved direct PostgreSQL catalog path available through connected tools |
-| D — runtime/write fences | **BLOCKED** — variable names present but values redacted; staged environment patch also exists |
+| A — current Production identity/lineage | **BLOCKED / UNRESOLVED** — Railway observations are staging-only; actual Production target not yet independently identified |
+| B — current Production recovery capability | **BLOCKED** — must be proved on the actual Production target after Gate A |
+| C — exact Production pre-schema/no-drift catalog | **BLOCKED** — no catalog query has been run against an independently identified Production target |
+| D — Production runtime/write fences | **BLOCKED** — Railway staging variables cannot prove Production gate state |
 | E — bounded migration session | **NOT ELIGIBLE** — A–D are incomplete |
 
-## 8. Production DDL verdict
+## 11. Production DDL verdict
 
-**PRODUCTION DDL IS BLOCKED.**
+**PRODUCTION DDL REMAINS BLOCKED.**
 
-Do not execute migrations 0005/0006/0007. The current evidence packet does not satisfy W09-C2.
+Do not execute migrations 0005/0006/0007 against Railway staging or any unresolved/historical target.
 
-The blocker is stronger than the prior W09-C2 assumption: current application evidence points to Railway Postgres, not the historical Neon target. The DDL packet must therefore be reconciled to the actual Railway Production lineage before any migration authorization can be considered.
+The next W09-C2 step is **Production identity resolution only**. Once the actual Production target is independently established, recovery, catalog/no-drift and runtime-fence evidence can be acquired against that exact target under the appropriate read-only authorization boundary.
 
-## 9. Required next evidence
+## 12. Required next evidence
 
-A later read-only continuation must obtain, without exposing secrets:
+A later W09-C2 continuation should:
 
-1. exact Railway Postgres database identity/name and an approved bounded operator path;
-2. current backup/recovery capability and usable recovery window for the exact database/volume;
-3. direct read-only PostgreSQL catalog evidence for the 34-table baseline, `sites(id)`, zero partial 0005/0006/0007 objects, no unexplained drift, and no conflicting DDL;
-4. independently readable proof that required runtime/write gates are disabled/non-executing;
-5. resolution or explicit classification of the existing staged Railway environment patch before DDL eligibility.
+1. identify the actual canonical Production hosting/database target without mutating staging or the isolated development branch;
+2. verify whether the historical Neon lineage still corresponds to current Production, rather than assuming that it does;
+3. bind current Production recovery/PITR evidence to the independently verified target;
+4. obtain read-only catalog evidence from that exact target for the 34-table baseline, `sites(id)`, zero partial 0005/0006/0007 objects, no unexplained drift and no conflicting DDL;
+5. prove required Production runtime/write gates are disabled/non-executing;
+6. only then prepare Gate E for the exact target.
 
-Only after those items are captured and reviewed may Gate E be designed against the actual Railway Production target.
+## 13. Explicit non-authorization
 
-## 10. Explicit non-authorization
-
-This evidence record authorizes no DDL/migration execution, DML/persistence, repair/drop SQL, credential/config/gate mutation, staged-patch acceptance/discard, deployment/redeployment, provider/public-site access, W03–W07 runtime execution, Task #51/#53/#54 execution, scheduler/worker activation, W09-C Stage 0 run, provider-read addendum, or W10.
+This corrected evidence record authorizes no Railway staging mutation, staged-patch acceptance/discard, branch reconciliation/merge, Production DDL/migration execution, DML/persistence, repair/drop SQL, credential/config/gate mutation, deployment/redeployment, provider/public-site access, W03–W07 runtime execution, Task #51/#53/#54 execution, scheduler/worker activation, W09-C Stage 0 run, provider-read addendum, or W10.
