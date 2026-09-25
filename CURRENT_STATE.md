@@ -1,34 +1,31 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W09-BE1–BE5 synthetic evidence implementation in review
+## Active engineering checkpoint — P8.8 W09-C1 Production schema-readiness review
 
-W09-BE1–BE5 specification is merged and certified complete under issue #499 / PR #502.
+W09-C authorization review issue #509 / PR #510 is merged as canonical main `267a682ed58f898b6a550a1307a6f461ac178af7`.
 
-Specification closeout:
-- certified specification head: `329bbe43a23be183b39a56a67b9812babd07d23b`;
-- merge/canonical baseline: `c10fe53cec704bb5245df4805dcbd98706f349ce`;
-- canonical baseline tree: `ba262ceab710a2fcbea49f24a84b95f10a429996`;
-- post-merge CI #1045 / run `36006415041`: success;
-- Replit exact Git-only reconciled to the specification merge, ahead/behind `0/0`, clean;
-- specification merge authorized no Production/provider evidence acquisition or W10 activation.
+W09-C1 review is active under issue #511 on branch `p8-8-w09c1-production-schema-readiness-review-511`.
 
-W09-BE1–BE5 implementation is active under issue #503 / PR #504 on branch `p8-8-w09be1-be5-implementation-503`.
+Frozen migration source:
+- 0005 `lib/db/migrations/0005_p8_8_policy_mutation_reservations.sql` — blob `b25d111af1610ea1a13333b6fbdaf4f521aea131`;
+- 0006 `lib/db/migrations/0006_p8_8_policy_mutation_controls.sql` — blob `1079b9687472abf387cb67421efa7d1f1ffcbc35`;
+- 0007 `lib/db/migrations/0007_p8_8_policy_mutation_dispatch.sql` — blob `a98ca47f9735d7fe4f53feebde38562102cbf6f2`.
 
-Implemented engineering boundary:
-- BE1 pure immutable acquisition/query contracts with exactly 18 frozen SELECT-only descriptors, deterministic descriptor/query/result/candidate/package fingerprints, exact candidate completeness taxonomy and independent integrity verification;
-- BE2 explicit database URL only, direct `postgres`, one reserved connection and one `READ ONLY / REPEATABLE READ` transaction, bounded statement/lock/idle timeouts, frozen-query execution only, no ambient `DATABASE_URL`/`@workspace/db`, provider adapter or arbitrary caller SQL surface;
-- BE2 requires exactly one active Shopify `diamondshelf.us` site, bounded 100-opportunity scan / 25 final candidates and fail-closed row-cap/schema/cardinality/integrity behavior;
-- Product GID is accepted only from persisted integrity-bound evidence and is never inferred from URL/text;
-- provider-before authority is accepted only from an exact persisted W06 `P88W06ProviderObservation` envelope that independently passes W06 integrity, exact site/Product/field/provenance/before-fingerprint/freshness checks;
-- BE3 pure/offline translator accepts only integrity-valid `complete_for_w09a` packages, recomputes W02, rebuilds W01, emits W09-A `supplied_real_snapshot` only, and W09-A independently recomputes W01 again;
-- BE4 dedicated localhost-only PostgreSQL certification uses `P8_8_W09B_EPHEMERAL_DATABASE_URL`, exercises the existing 43-table engineering schema plus controlled missing core/W04/W05/W07 databases, and verifies zero adapter row/table mutation;
-- BE5 static guards prove no provider/fetch, mutation SQL, migration/persistence, route/startup/scheduler/worker binding, Task #51/#53/#54 execution or W10 activation;
-- no W09-B migration or persistent Stage 0 evidence store is added;
-- dedicated CI step: `Test P8.8 W09-B synthetic read-only acquisition certification`.
+Review result:
+- source DDL is additive CREATE-only and transaction bounded;
+- fixed dependency order is 0005 → 0006 → 0007;
+- exactly 6 new public base tables are expected, so an exact certified pre-state of 34 implies post-state 40;
+- no seed/backfill/application DML is present;
+- partial installation or unexpected existing objects must fail closed; no ad hoc repair;
+- historical P3.6 Production identity/recovery evidence is not current proof and must be re-verified before future DDL;
+- no destructive rollback is pre-authorized; committed partial installation requires a separately reviewed recovery/corrective decision;
+- independent post-migration verification must prove exact tables/columns/constraints/FKs/indexes, zero rows in all 6 new tables, and zero unexplained drift.
 
-**Current safe boundary:** complete PR #504 implementation review/certification only. The implementation remains unmerged until separate merge authorization.
+**Current safe boundary:** W09-C1 review/specification only. Production connection/schema inspection/SELECT and migration/DDL remain separately gated.
 
-**Still excluded:** Production database connection/SELECT/schema inspection; provider/public-site reads/writes; Production persistence; migrations/schema changes; W03–W07 materialization/mutation; Task #51/#53/#54 execution; route/startup/scheduler/worker activation; credential/scope/config/gate changes; deployment/publication; real Stage 0 run; provider-read addendum; W10.
+**W09-C remains blocked:** even after future schema installation it still requires exact current Production identity/read-only role, external evidence destination/retention, exact W01 shadow grant/fingerprint, site/grant/package equality and a separate explicit one-shot read authorization.
+
+**Still excluded:** Production DB connection/schema inspection/SELECT; migration/DDL; provider/public-site read/write; Production persistence; W03–W07 runtime execution; Task #51/#53/#54 execution; scheduler/worker/startup activation; credential/scope/config/gate changes; deployment/publication; real Stage 0 run; provider-read addendum; W10.
 
 ## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
 

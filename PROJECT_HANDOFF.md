@@ -13,24 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W09-BE1–BE5 synthetic evidence implementation — issue #503 / PR #504
+### P8.8 W09-C1 Production schema-readiness review — issue #511
 
-Canonical merged baseline is the W09-BE specification merge `c10fe53cec704bb5245df4805dcbd98706f349ce` / tree `ba262ceab710a2fcbea49f24a84b95f10a429996`.
+Canonical baseline after W09-C review merge: `267a682ed58f898b6a550a1307a6f461ac178af7`.
 
-Implementation branch: `p8-8-w09be1-be5-implementation-503`.
+W09-C review issue #509 / PR #510 is merged/closed. W09-C1 is review/specification only; no Production connection or DDL is authorized.
 
-Implemented:
-- BE1 frozen 18-query SELECT-only contracts, deterministic query/result/candidate/package fingerprints, immutable manifest/package and fail-closed integrity verification;
-- BE2 explicit-URL direct-`postgres` acquisition with one connection, read-only/repeatable-read transaction, strict timeouts/caps and no ambient `DATABASE_URL`/`@workspace/db` or provider/runtime dependency;
-- BE3 pure offline translator that recomputes W02/W01 and enters W09-A only via `supplied_real_snapshot`; W09-A recomputes W01 independently;
-- BE4 localhost-only `P8_8_W09B_EPHEMERAL_DATABASE_URL` certification against full 43-table engineering schema plus controlled missing core/W04/W05/W07 cases, with zero row/table mutation proof;
-- BE5 static no-provider/fetch, no write SQL, no migration/persistence, no route/startup/scheduler/worker/Task execution and no W10 proof;
-- exact persisted Product GID and exact integrity-valid/fresh W06 provider observation are required; labels, matching text and crawler/storefront evidence cannot manufacture authority;
-- no migration and no persistent Stage 0 evidence store.
+Frozen migration blobs:
+- 0005: `b25d111af1610ea1a13333b6fbdaf4f521aea131`;
+- 0006: `1079b9687472abf387cb67421efa7d1f1ffcbc35`;
+- 0007: `a98ca47f9735d7fe4f53feebde38562102cbf6f2`.
 
-PR #504 remains an engineering-only review. It does not authorize a Production DB read, Production schema inspection, provider read/write, persistence, runtime activation, deployment/publication or W10.
+The files are additive CREATE-only DDL and must execute, if separately authorized later, strictly 0005 → 0006 → 0007. They add 6 public base tables; exact pre-state 34 would imply post-state 40. They contain no seed/backfill DML.
 
-**Current safe boundary:** finish exact-head PR #504 certification and stop at the separate merge gate. After an authorized merge/post-merge certification, any real W09-B Production DB read remains separately reviewed and authorized.
+Historical P3.6 evidence identified Production as `neondb` on Neon project `late-sunset-42762033`, branch `br-super-frost-b341k9ms`, timeline `07b8ce1a7a41f71ba395a1bab2b03de3`, with 7-day PITR at that time. Treat all of this as historical only: current identity/recovery/no-drift must be re-proven before future DDL.
+
+No automatic/destructive rollback is authorized. A committed partial installation stops the sequence and requires a separate recovery/corrective decision.
+
+**Current safe boundary:** finish W09-C1 review/spec PR and stop at merge authorization. A later Production migration session requires separate explicit authorization.
+
+**W09-C remains separately blocked:** schema readiness/install is only one prerequisite; real Stage 0 still needs exact current Production/read-only identity, evidence destination/retention, exact shadow grant, site/grant/package equality, frozen query fingerprint and explicit one-shot read authorization.
 
 ### P8.8 W07 specification certified — implementation gate next
 
