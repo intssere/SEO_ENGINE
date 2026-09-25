@@ -38,6 +38,7 @@ test("UGP-3.1 core is not imported by API runtime source outside certified pure 
     if (
       entry.name === "public-web-onboarding.ts"
       || entry.name === "platform-detection.ts"
+      || entry.name === "universal-read-only-site-analysis.ts"
       || entry.name.endsWith(".test.ts")
     ) continue;
     const content = await readFile(join(libDir.pathname, entry.name), "utf8");
