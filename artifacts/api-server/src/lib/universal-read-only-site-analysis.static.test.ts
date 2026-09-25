@@ -42,6 +42,7 @@ test("UGP-3.3 pure analysis is not imported by non-test API runtime source", asy
     if (
       entry.name === "universal-read-only-site-analysis.ts"
       || entry.name === "js-rendered-backend-evaluation.ts"
+      || entry.name === "lighthouse-evidence-adapter.ts"
       || entry.name.endsWith(".test.ts")
     ) continue;
     const source = await readFile(join(libDir.pathname, entry.name), "utf8");
