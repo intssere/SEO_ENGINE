@@ -435,6 +435,29 @@ Implementation candidate architecture in PR #504:
 - merge of engineering remains non-authorizing for any real Production read or provider read.
 
 
+### P8.8 W09-C real Stage 0 Production-read authorization
+
+W09-C is an authorization-review layer, not a runtime component.
+
+It binds any future real Stage 0 session to:
+- exact merged BE1–BE5 SHA/tree;
+- exact 18-query set and fingerprint;
+- exact Diamond Shelf site UUID/origin/domain/platform;
+- one explicit Production database and read-only role;
+- one exact shadow grant artifact;
+- one connection and one read-only/repeatable-read transaction;
+- max 100 source opportunities / 25 final candidates;
+- zero provider/public-site network access;
+- zero Production persistence;
+- one external non-Production evidence package;
+- one offline BE3/W09-A session;
+- zero recurrence/runtime activation.
+
+Architecture remains fail-closed on schema readiness. The current canonical Production state is recorded as 34 tables, while BE2 requires the W04/W05/W07 objects introduced by migrations 0005/0006/0007. W09-C must therefore remain blocked until Production schema readiness is separately reviewed and, if later authorized, satisfied.
+
+The authorization layer must also enforce `grant.siteId === acquisitionPackage.site.siteId` before translation. Domain equality alone is insufficient.
+
+
 ### P8.8 W05 durable mutation-control bridge
 
 W05 materializes the mutation-specific durable control prerequisite identified by P9.8 without activating autonomous execution.
