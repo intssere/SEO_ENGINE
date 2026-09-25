@@ -13,35 +13,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W09-C first real Stage 0 Production read-only authorization review — issue #509
+### P8.8 W09-C1 Production schema-readiness review — issue #511
 
-Canonical baseline after merged/certified BE1–BE5 is `261b9155ce9aa93fb468040c17cf55cb6172a46c` / tree `7fdd257f58992c2ae30ea512fd4e4b84f8ff4547`.
+Canonical baseline after W09-C review merge: `267a682ed58f898b6a550a1307a6f461ac178af7`.
 
-BE1–BE5 implementation issue #503 / PR #504 is merged/certified:
-- exact implementation head `e1162cf6c34991d313a01d153759a0751f93eddc`;
-- post-merge CI #1077 success;
-- dedicated W09-B synthetic DB-read-only gate, workspace tests, P11.10, Chromium, typecheck and build passed;
-- Replit exact on merged main, `0/0`, clean.
+W09-C review issue #509 / PR #510 is merged/closed. W09-C1 is review/specification only; no Production connection or DDL is authorized.
 
-W09-C review is active on branch `p8-8-w09c-real-stage0-run-authorization-review-509`.
+Frozen migration blobs:
+- 0005: `b25d111af1610ea1a13333b6fbdaf4f521aea131`;
+- 0006: `1079b9687472abf387cb67421efa7d1f1ffcbc35`;
+- 0007: `a98ca47f9735d7fe4f53feebde38562102cbf6f2`.
 
-Exact real-run constants:
-- query-set version `p8-8-w09b-query-set-v1`;
-- 18 frozen query descriptors;
-- query-set fingerprint `fd117eb142807ac982808bf3cd30f96009884b3c66366489875693e44103cabd`;
-- canonical site `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `diamondshelf.us`.
+The files are additive CREATE-only DDL and must execute, if separately authorized later, strictly 0005 → 0006 → 0007. They add 6 public base tables; exact pre-state 34 would imply post-state 40. They contain no seed/backfill DML.
 
-Current W09-C readiness is **blocked**:
-- canonical Production schema is still recorded as 34 tables;
-- BE2 requires W04/W05/W07 objects from migrations 0005/0006/0007;
-- exact Production database/project/environment and read-only role are unresolved;
-- external evidence artifact destination/retention is unresolved;
-- exact W01 shadow grant artifact/fingerprint is unresolved;
-- grant.siteId ↔ acquisitionPackage.site.siteId equality must be explicitly certified before BE3 translation.
+Historical P3.6 evidence identified Production as `neondb` on Neon project `late-sunset-42762033`, branch `br-super-frost-b341k9ms`, timeline `07b8ce1a7a41f71ba395a1bab2b03de3`, with 7-day PITR at that time. Treat all of this as historical only: current identity/recovery/no-drift must be re-proven before future DDL.
 
-Do not connect to Production merely to confirm the known schema gap.
+No automatic/destructive rollback is authorized. A committed partial installation stops the sequence and requires a separate recovery/corrective decision.
 
-**Immediate safe boundary:** finish W09-C review/spec PR only, then move to W09-C1 Production schema readiness review for migrations 0005/0006/0007. W09-C1 review still does not authorize DDL.
+**Current safe boundary:** finish W09-C1 review/spec PR and stop at merge authorization. A later Production migration session requires separate explicit authorization.
+
+**W09-C remains separately blocked:** schema readiness/install is only one prerequisite; real Stage 0 still needs exact current Production/read-only identity, evidence destination/retention, exact shadow grant, site/grant/package equality, frozen query fingerprint and explicit one-shot read authorization.
 
 ### P8.8 W07 specification certified — implementation gate next
 

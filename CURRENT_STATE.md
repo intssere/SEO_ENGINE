@@ -1,38 +1,31 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W09-C real Stage 0 Production read-only authorization review
+## Active engineering checkpoint — P8.8 W09-C1 Production schema-readiness review
 
-W09-BE1–BE5 implementation is merged and certified complete under issue #503 / PR #504.
+W09-C authorization review issue #509 / PR #510 is merged as canonical main `267a682ed58f898b6a550a1307a6f461ac178af7`.
 
-Implementation closeout:
-- certified implementation head: `e1162cf6c34991d313a01d153759a0751f93eddc`;
-- merge/canonical main: `261b9155ce9aa93fb468040c17cf55cb6172a46c`;
-- canonical tree: `7fdd257f58992c2ae30ea512fd4e4b84f8ff4547`;
-- post-merge CI #1077 / run `36023252159`: success;
-- W04/W05/W06/W07 PostgreSQL gates, dedicated W09-B synthetic read-only acquisition certification, full workspace tests, P11.10, Chromium, typecheck and build all passed;
-- Replit is already exact on canonical main, origin/main exact, `0/0`, clean, no locks/writers;
-- no Production DB/schema access, provider/public-site access, persistence, migration, runtime activation, deployment/publication, real Stage 0 run or W10 activity occurred.
+W09-C1 review is active under issue #511 on branch `p8-8-w09c1-production-schema-readiness-review-511`.
 
-W09-C authorization review is active under issue #509 on branch `p8-8-w09c-real-stage0-run-authorization-review-509`.
+Frozen migration source:
+- 0005 `lib/db/migrations/0005_p8_8_policy_mutation_reservations.sql` — blob `b25d111af1610ea1a13333b6fbdaf4f521aea131`;
+- 0006 `lib/db/migrations/0006_p8_8_policy_mutation_controls.sql` — blob `1079b9687472abf387cb67421efa7d1f1ffcbc35`;
+- 0007 `lib/db/migrations/0007_p8_8_policy_mutation_dispatch.sql` — blob `a98ca47f9735d7fe4f53feebde38562102cbf6f2`.
 
-Frozen review facts:
-- eligible code baseline: `261b9155ce9aa93fb468040c17cf55cb6172a46c` / tree `7fdd257f58992c2ae30ea512fd4e4b84f8ff4547`;
-- W09-B query-set version `p8-8-w09b-query-set-v1`;
-- exact descriptor count: 18;
-- exact query-set fingerprint: `fd117eb142807ac982808bf3cd30f96009884b3c66366489875693e44103cabd`;
-- exact Diamond Shelf site binding: `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `https://diamondshelf.us`;
-- first real run remains DB-read-only, provider-network-free, non-persistent and one-shot;
-- max 100 source opportunities, max 25 final candidates, one connection, one READ ONLY / REPEATABLE READ transaction, no retry;
-- no ad hoc SQL beyond Q00–Q17;
-- exact W01 shadow grant artifact/fingerprint must be supplied separately and must bind to the canonical site;
-- grant.siteId must equal acquisitionPackage.site.siteId and the canonical site ID before translation;
-- exact Production project/environment/database, exact read-only role/write-incapability proof and exact external evidence destination are still unresolved;
-- canonical project state still records Production at 34 public tables while BE2 requires the full W07 schema including migrations 0005/0006/0007;
-- therefore a real W09-C Production read is currently blocked before connection; do not spend a Production connection merely to rediscover the already-recorded schema gap.
+Review result:
+- source DDL is additive CREATE-only and transaction bounded;
+- fixed dependency order is 0005 → 0006 → 0007;
+- exactly 6 new public base tables are expected, so an exact certified pre-state of 34 implies post-state 40;
+- no seed/backfill/application DML is present;
+- partial installation or unexpected existing objects must fail closed; no ad hoc repair;
+- historical P3.6 Production identity/recovery evidence is not current proof and must be re-verified before future DDL;
+- no destructive rollback is pre-authorized; committed partial installation requires a separately reviewed recovery/corrective decision;
+- independent post-migration verification must prove exact tables/columns/constraints/FKs/indexes, zero rows in all 6 new tables, and zero unexplained drift.
 
-**Immediate next safe milestone:** W09-C1 — Production schema readiness review for migrations 0005/0006/0007. Review/checksum/backup/rollback/post-migration requirements only; no Production DDL without separate explicit authorization.
+**Current safe boundary:** W09-C1 review/specification only. Production connection/schema inspection/SELECT and migration/DDL remain separately gated.
 
-**Still excluded:** Production DB connection/schema inspection/SELECT; migration/DDL; provider/public-site read/write; Production persistence; W03–W07 execution; Task #51/#53/#54 execution; scheduler/worker/startup activation; credential/scope/config/gate changes; deployment/publication; real Stage 0 run; provider-read addendum; W10.
+**W09-C remains blocked:** even after future schema installation it still requires exact current Production identity/read-only role, external evidence destination/retention, exact W01 shadow grant/fingerprint, site/grant/package equality and a separate explicit one-shot read authorization.
+
+**Still excluded:** Production DB connection/schema inspection/SELECT; migration/DDL; provider/public-site read/write; Production persistence; W03–W07 runtime execution; Task #51/#53/#54 execution; scheduler/worker/startup activation; credential/scope/config/gate changes; deployment/publication; real Stage 0 run; provider-read addendum; W10.
 
 ## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
 
