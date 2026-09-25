@@ -1,34 +1,38 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W09-BE1–BE5 synthetic evidence implementation in review
+## Active engineering checkpoint — P8.8 W09-C real Stage 0 Production read-only authorization review
 
-W09-BE1–BE5 specification is merged and certified complete under issue #499 / PR #502.
+W09-BE1–BE5 implementation is merged and certified complete under issue #503 / PR #504.
 
-Specification closeout:
-- certified specification head: `329bbe43a23be183b39a56a67b9812babd07d23b`;
-- merge/canonical baseline: `c10fe53cec704bb5245df4805dcbd98706f349ce`;
-- canonical baseline tree: `ba262ceab710a2fcbea49f24a84b95f10a429996`;
-- post-merge CI #1045 / run `36006415041`: success;
-- Replit exact Git-only reconciled to the specification merge, ahead/behind `0/0`, clean;
-- specification merge authorized no Production/provider evidence acquisition or W10 activation.
+Implementation closeout:
+- certified implementation head: `e1162cf6c34991d313a01d153759a0751f93eddc`;
+- merge/canonical main: `261b9155ce9aa93fb468040c17cf55cb6172a46c`;
+- canonical tree: `7fdd257f58992c2ae30ea512fd4e4b84f8ff4547`;
+- post-merge CI #1077 / run `36023252159`: success;
+- W04/W05/W06/W07 PostgreSQL gates, dedicated W09-B synthetic read-only acquisition certification, full workspace tests, P11.10, Chromium, typecheck and build all passed;
+- Replit is already exact on canonical main, origin/main exact, `0/0`, clean, no locks/writers;
+- no Production DB/schema access, provider/public-site access, persistence, migration, runtime activation, deployment/publication, real Stage 0 run or W10 activity occurred.
 
-W09-BE1–BE5 implementation is active under issue #503 / PR #504 on branch `p8-8-w09be1-be5-implementation-503`.
+W09-C authorization review is active under issue #509 on branch `p8-8-w09c-real-stage0-run-authorization-review-509`.
 
-Implemented engineering boundary:
-- BE1 pure immutable acquisition/query contracts with exactly 18 frozen SELECT-only descriptors, deterministic descriptor/query/result/candidate/package fingerprints, exact candidate completeness taxonomy and independent integrity verification;
-- BE2 explicit database URL only, direct `postgres`, one reserved connection and one `READ ONLY / REPEATABLE READ` transaction, bounded statement/lock/idle timeouts, frozen-query execution only, no ambient `DATABASE_URL`/`@workspace/db`, provider adapter or arbitrary caller SQL surface;
-- BE2 requires exactly one active Shopify `diamondshelf.us` site, bounded 100-opportunity scan / 25 final candidates and fail-closed row-cap/schema/cardinality/integrity behavior;
-- Product GID is accepted only from persisted integrity-bound evidence and is never inferred from URL/text;
-- provider-before authority is accepted only from an exact persisted W06 `P88W06ProviderObservation` envelope that independently passes W06 integrity, exact site/Product/field/provenance/before-fingerprint/freshness checks;
-- BE3 pure/offline translator accepts only integrity-valid `complete_for_w09a` packages, recomputes W02, rebuilds W01, emits W09-A `supplied_real_snapshot` only, and W09-A independently recomputes W01 again;
-- BE4 dedicated localhost-only PostgreSQL certification uses `P8_8_W09B_EPHEMERAL_DATABASE_URL`, exercises the existing 43-table engineering schema plus controlled missing core/W04/W05/W07 databases, and verifies zero adapter row/table mutation;
-- BE5 static guards prove no provider/fetch, mutation SQL, migration/persistence, route/startup/scheduler/worker binding, Task #51/#53/#54 execution or W10 activation;
-- no W09-B migration or persistent Stage 0 evidence store is added;
-- dedicated CI step: `Test P8.8 W09-B synthetic read-only acquisition certification`.
+Frozen review facts:
+- eligible code baseline: `261b9155ce9aa93fb468040c17cf55cb6172a46c` / tree `7fdd257f58992c2ae30ea512fd4e4b84f8ff4547`;
+- W09-B query-set version `p8-8-w09b-query-set-v1`;
+- exact descriptor count: 18;
+- exact query-set fingerprint: `fd117eb142807ac982808bf3cd30f96009884b3c66366489875693e44103cabd`;
+- exact Diamond Shelf site binding: `eb1da9ee-539c-4200-8f04-f64ccaea7768` / `https://diamondshelf.us`;
+- first real run remains DB-read-only, provider-network-free, non-persistent and one-shot;
+- max 100 source opportunities, max 25 final candidates, one connection, one READ ONLY / REPEATABLE READ transaction, no retry;
+- no ad hoc SQL beyond Q00–Q17;
+- exact W01 shadow grant artifact/fingerprint must be supplied separately and must bind to the canonical site;
+- grant.siteId must equal acquisitionPackage.site.siteId and the canonical site ID before translation;
+- exact Production project/environment/database, exact read-only role/write-incapability proof and exact external evidence destination are still unresolved;
+- canonical project state still records Production at 34 public tables while BE2 requires the full W07 schema including migrations 0005/0006/0007;
+- therefore a real W09-C Production read is currently blocked before connection; do not spend a Production connection merely to rediscover the already-recorded schema gap.
 
-**Current safe boundary:** complete PR #504 implementation review/certification only. The implementation remains unmerged until separate merge authorization.
+**Immediate next safe milestone:** W09-C1 — Production schema readiness review for migrations 0005/0006/0007. Review/checksum/backup/rollback/post-migration requirements only; no Production DDL without separate explicit authorization.
 
-**Still excluded:** Production database connection/SELECT/schema inspection; provider/public-site reads/writes; Production persistence; migrations/schema changes; W03–W07 materialization/mutation; Task #51/#53/#54 execution; route/startup/scheduler/worker activation; credential/scope/config/gate changes; deployment/publication; real Stage 0 run; provider-read addendum; W10.
+**Still excluded:** Production DB connection/schema inspection/SELECT; migration/DDL; provider/public-site read/write; Production persistence; W03–W07 execution; Task #51/#53/#54 execution; scheduler/worker/startup activation; credential/scope/config/gate changes; deployment/publication; real Stage 0 run; provider-read addendum; W10.
 
 ## Active engineering checkpoint — P8.8 W07 specification certified; implementation awaiting explicit authorization
 
