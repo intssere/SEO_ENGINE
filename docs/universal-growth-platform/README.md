@@ -37,6 +37,7 @@ The initiative branch should periodically incorporate current `main` after a con
 
 ## Documents
 
+- `00-AGENT-CONTINUATION-HANDOFF.md` — **start here when resuming UGP work**; records the exact continuation point, branch discipline, current milestone, safety boundary, and roadmap handoff for human/AI agents.
 - `ARCHITECTURE.md` — target system architecture and product boundaries.
 - `ROADMAP.md` — phased execution plan, dependencies, work-package IDs and merge gates.
 
