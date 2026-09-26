@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { build as esbuild } from "esbuild";
 import { createBuildProvenance, serializeBuildProvenance } from "./p8-8-w09c2f-build-provenance.js";
 import { loadServingProvenance, servingProvenanceArtifactPath } from "./p8-8-w09c2-h6-r1-serving-provenance.js";
@@ -73,10 +73,10 @@ test("esbuild-bundled loader resolves provenance beside the actual dist/index.mj
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), "h6-r2-bundle-"));
   try {
     const outfile = path.join(tempRoot, "dist", "index.mjs");
-    const loaderUrl = new URL("./p8-8-w09c2-h6-r1-serving-provenance.ts", import.meta.url).href;
+    const loaderPath = fileURLToPath(new URL("./p8-8-w09c2-h6-r1-serving-provenance.ts", import.meta.url));
     await esbuild({
       stdin: {
-        contents: `export { servingProvenanceArtifactPath } from ${JSON.stringify(loaderUrl)};`,
+        contents: `export { servingProvenanceArtifactPath } from ${JSON.stringify(loaderPath)};`,
         resolveDir: process.cwd(),
         sourcefile: "h6-r2-bundle-probe.ts",
         loader: "ts",
