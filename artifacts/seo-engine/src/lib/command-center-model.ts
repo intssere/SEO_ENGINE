@@ -129,8 +129,8 @@ export function buildCommandCenterModel(
       value: dataState.label,
       detail: dataState.detail,
       tone: dataState.tone,
-      href: "/settings",
-      linkLabel: "Review settings",
+      href: "/connections",
+      linkLabel: "Review connections",
     },
     {
       id: "coverage",
@@ -138,21 +138,21 @@ export function buildCommandCenterModel(
       value: coverageState.label,
       detail: coverageState.detail,
       tone: coverageState.tone,
-      href: "/site-audit",
-      linkLabel: "Open site audit",
+      href: "/technical-seo",
+      linkLabel: "Review technical evidence",
     },
     {
       id: "decisions",
-      label: "Items to review",
+      label: "Decision queue",
       value:
         snapshot.approvalsPending > 0
           ? `${snapshot.approvalsPending} approval${snapshot.approvalsPending === 1 ? "" : "s"} pending`
           : `${snapshot.opportunities.length} active opportunit${snapshot.opportunities.length === 1 ? "y" : "ies"}`,
       detail:
         snapshot.approvalsPending > 0
-          ? "Changes are waiting for review in Automation."
+          ? "Human review is required; Command Center does not approve or execute."
           : snapshot.opportunities.length > 0
-            ? "Current opportunities are ranked from persisted evidence."
+            ? "Current candidates are ranked from persisted evidence."
             : "No active persisted opportunities are available.",
       tone:
         snapshot.approvalsPending > 0
@@ -160,13 +160,13 @@ export function buildCommandCenterModel(
           : snapshot.opportunities.length > 0
             ? "info"
             : "neutral",
-      href: snapshot.approvalsPending > 0 ? "/automation" : "/opportunities",
+      href: snapshot.approvalsPending > 0 ? "/approvals" : "/opportunities",
       linkLabel:
-        snapshot.approvalsPending > 0 ? "Review changes" : "View opportunities",
+        snapshot.approvalsPending > 0 ? "Review approvals" : "View opportunities",
     },
     {
       id: "verification",
-      label: "Change verification",
+      label: "Verification",
       value:
         snapshot.verification.total > 0
           ? `${snapshot.verification.verified}/${snapshot.verification.total} verified`
@@ -178,8 +178,8 @@ export function buildCommandCenterModel(
             ? `${snapshot.verification.pending} verification${snapshot.verification.pending === 1 ? "" : "s"} pending.`
             : "Verification state is descriptive only.",
       tone: verificationTone,
-      href: "/automation",
-      linkLabel: "View change history",
+      href: "/deployments",
+      linkLabel: "View deployment proof",
     },
     {
       id: "measurement",
@@ -196,12 +196,12 @@ export function buildCommandCenterModel(
           : measurementAvailable
             ? "info"
             : "neutral",
-      href: "/performance",
-      linkLabel: "Open performance",
+      href: "/impact",
+      linkLabel: "Open impact workspace",
     },
     {
       id: "intelligence",
-      label: "Content & AI visibility",
+      label: "AI & learning signals",
       value:
         hasAiVisibility || hasLearningSignals
           ? "Persisted signals available"
@@ -211,8 +211,8 @@ export function buildCommandCenterModel(
           ? `${snapshot.learning.signalCount} learning signal${snapshot.learning.signalCount === 1 ? "" : "s"} · AI visibility uses persisted observations only.`
           : "No AI visibility or learning signal data is currently available.",
       tone: hasAiVisibility || hasLearningSignals ? "info" : "neutral",
-      href: "/content",
-      linkLabel: hasAiVisibility ? "Review content visibility" : "Open content workspace",
+      href: hasAiVisibility ? "/ai-visibility" : "/learning",
+      linkLabel: hasAiVisibility ? "Review AI visibility" : "Review learning status",
     },
   ];
 

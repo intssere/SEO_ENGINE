@@ -17,16 +17,10 @@ const WCAG_AA_TAGS = [
 const ROUTES = [
   "/",
   "/opportunities",
-  "/content",
-  "/site-audit",
-  "/authority",
-  "/automation",
-  "/performance",
-  "/settings",
-  "/settings/add-website",
   "/governance",
   "/actions",
   "/approvals",
+  "/performance",
   "/deployments",
   "/technical-seo",
   "/rankings",
@@ -38,6 +32,7 @@ const ROUTES = [
   "/impact",
   "/reports",
   "/connections",
+  "/settings",
   "/__p11-5-not-found",
 ];
 
@@ -330,11 +325,8 @@ test("P11.5 route navigation preserves visible, unobscured focus on main content
 }) => {
   const { boundary, errors } = await openSyntheticPage(page, "/");
 
-  await page
-    .locator(".sidebar .primaryNav")
-    .getByRole("link", { name: "Site Audit", exact: true })
-    .click();
-  await expect(page).toHaveURL(/\/site-audit$/);
+  await page.getByRole("link", { name: "Technical SEO" }).click();
+  await expect(page).toHaveURL(/\/technical-seo$/);
   const main = page.locator("#main-content");
   await expect(main).toBeFocused();
 

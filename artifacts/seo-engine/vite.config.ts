@@ -63,10 +63,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
-    // UGP-2.4 introduces the first route-level dynamic import. Native dynamic
-    // import is already exercised by the certified browser suite, so avoid
-    // adding Vite's module-preload helper to every application load.
-    modulePreload: false,
   },
   server: {
     port,

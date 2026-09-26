@@ -26,13 +26,10 @@ function profile(route, metrics) {
 
 test("P11.1 budget config is explicit and current", () => {
   assert.equal(budgets.version, PERFORMANCE_PROFILE_VERSION);
-  assert.equal(budgets.buildAssets.js.maxAssetRawBytes, 622000);
+  assert.equal(budgets.buildAssets.js.maxAssetRawBytes, 620000);
   assert.equal(budgets.buildAssets.js.maxAssetGzipBytes, 180000);
-  assert.equal(budgets.buildAssets.js.maxTotalRawBytes, 640000);
-  assert.equal(budgets.buildAssets.js.maxTotalGzipBytes, 185000);
-  assert.equal(budgets.buildAssets.css.maxAssetRawBytes, 191000);
+  assert.equal(budgets.buildAssets.css.maxAssetRawBytes, 190000);
   assert.equal(budgets.buildAssets.css.maxAssetGzipBytes, 33000);
-  assert.equal(budgets.buildAssets.css.maxTotalRawBytes, 191000);
   assert.equal(budgets.syntheticProfile.maxRegressionRatio, 1.25);
   assert.equal(budgets.syntheticProfile.noiseFloorMs, 100);
 });
@@ -68,8 +65,8 @@ test("build asset evaluator fails closed on a raw or gzip regression", () => {
       {
         path: "assets/index.js",
         kind: "js",
-        rawBytes: 640001,
-        gzipBytes: 185001,
+        rawBytes: 620001,
+        gzipBytes: 180001,
       },
       {
         path: "assets/index.css",
@@ -83,10 +80,10 @@ test("build asset evaluator fails closed on a raw or gzip regression", () => {
 
   assert.equal(report.pass, false);
   assert.deepEqual(report.violations, [
-    "js:asset_raw:assets/index.js:640001>622000",
-    "js:asset_gzip:assets/index.js:185001>180000",
-    "js:total_raw:640001>640000",
-    "js:total_gzip:185001>185000",
+    "js:asset_raw:assets/index.js:620001>620000",
+    "js:asset_gzip:assets/index.js:180001>180000",
+    "js:total_raw:620001>620000",
+    "js:total_gzip:180001>180000",
   ]);
 });
 

@@ -10,13 +10,13 @@ const read = (relativePath) => readFileSync(join(here, relativePath), "utf8");
 const dashboard = read("pages/dashboard.tsx");
 const model = read("lib/command-center-model.ts");
 
-test("UGP-2.1 Home remains the root dashboard route implementation", () => {
+test("Command Center remains the root dashboard route implementation", () => {
   assert.ok(dashboard.includes("export default function DashboardPage"));
-  assert.ok(dashboard.includes("HOME"));
-  assert.ok(dashboard.includes("Search growth overview"));
+  assert.ok(dashboard.includes("COMMAND CENTER"));
+  assert.ok(dashboard.includes("SEO operations overview"));
 });
 
-test("Home is read-only and cannot start the baseline pilot", () => {
+test("Command Center is read-only and cannot start the baseline pilot", () => {
   const source = [dashboard, model].join("\n");
   assert.doesNotMatch(source, /getPilotAuthorization/);
   assert.doesNotMatch(source, /startPilotRun/);
@@ -25,15 +25,14 @@ test("Home is read-only and cannot start the baseline pilot", () => {
   assert.doesNotMatch(source, /Run Baseline|Refresh Data/);
 });
 
-test("Home interactions are GET filters or customer-domain navigation", () => {
+test("Command Center interactions are GET filters or route navigation", () => {
   assert.ok(dashboard.includes("useGetDashboard"));
   assert.ok(dashboard.includes("updateParam"));
-  assert.ok(dashboard.includes('href="/settings"'));
-  assert.ok(dashboard.includes('href="/site-audit"'));
+  assert.ok(dashboard.includes('href="/connections"'));
+  assert.ok(dashboard.includes('href="/technical-seo"'));
   assert.ok(dashboard.includes('href="/opportunities"'));
-  assert.ok(model.includes('href: "/automation"'));
-  assert.ok(model.includes('href: "/performance"'));
-  assert.ok(model.includes('href: "/content"'));
+  assert.ok(dashboard.includes('href="/deployments"'));
+  assert.ok(dashboard.includes('href="/impact"'));
 });
 
 test("bounded certification and empty intelligence states stay explicit", () => {

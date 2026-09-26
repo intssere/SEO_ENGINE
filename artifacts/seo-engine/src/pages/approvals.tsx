@@ -194,14 +194,14 @@ function ProposalReviewCard({
       <div className="approvalDraftGrid">
         <div className="approvalReadonlyColumn">
           <div className="approvalDraftSection">
-            <span className="approvalLabel">Current state</span>
+            <span className="approvalLabel">Observed before</span>
             <p className="approvalReadOnlyText">
               {row.before_value || "— observed empty value —"}
             </p>
           </div>
           <div className="approvalDraftSection">
             <div className="approvalDraftSectionHead">
-              <span className="approvalLabel">Generated recommendation</span>
+              <span className="approvalLabel">Generated proposal</span>
               {row.proposal_generation_method && (
                 <StatusBadge tone="neutral">
                   {titleize(row.proposal_generation_method)}
@@ -216,7 +216,7 @@ function ProposalReviewCard({
 
         <div className="approvalEditColumn">
           <div className="approvalDraftHeader">
-            <label className="approvalLabel" htmlFor={draftTextareaId}>Recommended state</label>
+            <label className="approvalLabel" htmlFor={draftTextareaId}>Editable Draft</label>
             {row.human_edited && (
               <StatusBadge tone="info">
                 HUMAN EDITED ({row.revision_count})
@@ -352,7 +352,7 @@ function ProposalReviewCard({
 
       <div className="approvalDetailsGrid">
         <section>
-          <span className="approvalLabel">Problem / why / impact</span>
+          <span className="approvalLabel">Opportunity & rationale</span>
           <p>
             <b>{titleize(row.opportunity_type)}</b> · score{" "}
             {row.score.toFixed(1)}
@@ -361,7 +361,7 @@ function ProposalReviewCard({
           <p className="approvalBenefit">{row.expected_benefit}</p>
         </section>
         <section>
-          <span className="approvalLabel">Risk / safeguards</span>
+          <span className="approvalLabel">Risk & reversion</span>
           <p>
             <b>{titleize(row.effectiveExecutionRisk)} effective execution risk</b> ·{" "}
             {titleize(row.action_type)}
@@ -370,7 +370,6 @@ function ProposalReviewCard({
           <p>
             <RotateCcw className="inlineIcon" aria-hidden="true" /> {row.rollback}
           </p>
-          <p><b>Measurement:</b> unavailable in this review record</p>
           <p className="guardrailText">
             <ShieldCheck className="inlineIcon" aria-hidden="true" /> Non-executable review only ·
             public writes disabled

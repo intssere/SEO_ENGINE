@@ -52,11 +52,8 @@ test("app shell has a skip link, one focusable main landmark, and route focus ha
   assert.doesNotMatch(technical, /<main className="content auditWorkspace"/);
 });
 
-test("mobile navigation exposes list semantics and Escape returns focus to the toggle", () => {
-  assert.ok(layout.includes('<nav className="primaryNav" aria-label="Primary navigation">'));
-  assert.ok(layout.includes('<ul className="navList">'));
-  assert.ok(layout.includes('<li key={item.path}>'));
-  assert.ok(layout.includes('aria-current={isActive ? "page" : undefined}'));
+test("mobile navigation exposes group semantics and Escape returns focus to the toggle", () => {
+  assert.ok(layout.includes('role="group" aria-labelledby={domainId}'));
   assert.ok(layout.includes("mobileNavToggleRef"));
   assert.ok(layout.includes('e.key === "Escape" && isMobileNavOpen'));
   assert.ok(layout.includes("mobileNavToggleRef.current?.focus()"));

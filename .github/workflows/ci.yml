@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, initiative-universal-growth-platform]
+    branches: [main]
   push:
-    branches: [main, initiative-universal-growth-platform, "ugp-*"]
+    branches: [main]
 
 permissions:
   contents: read

@@ -8,15 +8,15 @@ const captureMode = process.env.P4_10_CAPTURE_VISUAL === "1";
 const cases = {
   "command-center-desktop": {
     path: "/",
-    ready: { role: "heading", name: "Search growth overview" },
+    ready: { role: "heading", name: "SEO operations overview" },
   },
   "command-center-tablet": {
     path: "/",
-    ready: { role: "heading", name: "Search growth overview" },
+    ready: { role: "heading", name: "SEO operations overview" },
   },
   "command-center-mobile": {
     path: "/",
-    ready: { role: "heading", name: "Search growth overview" },
+    ready: { role: "heading", name: "SEO operations overview" },
   },
   "audit-desktop": {
     path: "/technical-seo",

@@ -1,60 +1,72 @@
 [
   {
-    "label": "Home",
-    "path": "/"
-  },
-  {
-    "label": "Opportunities",
-    "path": "/opportunities"
-  },
-  {
-    "label": "Content",
-    "path": "/content",
-    "aliases": [
-      "/rankings",
-      "/ai-visibility"
+    "domain": "Command Center",
+    "items": [
+      {
+        "label": "Overview",
+        "path": "/"
+      }
     ]
   },
   {
-    "label": "Site Audit",
-    "path": "/site-audit",
-    "aliases": [
-      "/technical-seo",
-      "/internal-links"
+    "domain": "Discover",
+    "items": [
+      {
+        "label": "Opportunities",
+        "path": "/opportunities"
+      }
     ]
   },
   {
-    "label": "Authority",
-    "path": "/authority",
-    "aliases": [
-      "/search-intelligence"
+    "domain": "Audit",
+    "items": [
+      {
+        "label": "Technical SEO",
+        "path": "/technical-seo"
+      }
     ]
   },
   {
-    "label": "Automation",
-    "path": "/automation",
-    "aliases": [
-      "/governance",
-      "/actions",
-      "/approvals",
-      "/deployments"
+    "domain": "Execute",
+    "items": [
+      {
+        "label": "Governance",
+        "path": "/governance"
+      },
+      {
+        "label": "Actions",
+        "path": "/actions"
+      },
+      {
+        "label": "Approvals",
+        "path": "/approvals"
+      },
+      {
+        "label": "Deployments",
+        "path": "/deployments"
+      }
     ]
   },
   {
-    "label": "Performance",
-    "path": "/performance",
-    "aliases": [
-      "/impact",
-      "/reports",
-      "/experiments",
-      "/learning"
+    "domain": "Measure",
+    "items": [
+      {
+        "label": "Performance",
+        "path": "/performance"
+      }
     ]
   },
   {
-    "label": "Settings",
-    "path": "/settings",
-    "aliases": [
-      "/connections"
+    "domain": "System",
+    "items": [
+      {
+        "label": "Connections",
+        "path": "/connections"
+      },
+      {
+        "label": "Settings",
+        "path": "/settings"
+      }
     ]
   }
 ]

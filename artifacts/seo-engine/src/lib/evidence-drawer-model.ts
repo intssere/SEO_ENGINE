@@ -57,7 +57,6 @@ export type EvidenceDrawerModel = {
   expectedBenefit: string | null;
   whyQualifies: string | null;
   evidenceSufficient: boolean | null;
-  executionAuthorized: boolean | null;
   references: EvidenceReferenceState;
   quality: EvidenceQualitySummary;
   provenance: EvidenceProvenanceEntry[];
@@ -102,7 +101,6 @@ export type OpportunityEvidenceInput = Pick<
   | "rationale"
   | "evidence_count"
   | "why_qualifies"
-  | "execution_authorized"
 >;
 
 const DETAIL_UNAVAILABLE_REASON =
@@ -220,7 +218,6 @@ export function buildProposalEvidenceDrawerModel(
     expectedBenefit: input.expected_benefit,
     whyQualifies: null,
     evidenceSufficient: input.evidence_sufficient,
-    executionAuthorized: null,
     references: proposalReferenceState(input),
     quality: {
       status: input.quality_status,
@@ -255,7 +252,6 @@ export function buildOpportunityEvidenceDrawerModel(
     expectedBenefit: null,
     whyQualifies: input.why_qualifies,
     evidenceSufficient: null,
-    executionAuthorized: input.execution_authorized,
     references: {
       declaredCount,
       ids: [],

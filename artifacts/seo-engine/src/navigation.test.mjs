@@ -14,58 +14,27 @@ const layoutSource = readFileSync(
   "utf8",
 );
 const cssSource = readFileSync(join(here, "index.css"), "utf8");
-const read = (relativePath) => readFileSync(join(here, relativePath), "utf8");
-const customerSources = [
-  "components/customer-domain-hub.tsx",
-  "pages/content.tsx",
-  "pages/site-audit-hub.tsx",
-  "pages/authority.tsx",
-  "pages/automation.tsx",
-  "pages/dashboard.tsx",
-  "pages/settings.tsx",
-  "pages/website-connection-wizard.tsx",
-].map(read);
 
-const expectedPrimaryLabels = [
-  "Home",
-  "Opportunities",
-  "Content",
-  "Site Audit",
-  "Authority",
-  "Automation",
-  "Performance",
-  "Settings",
+const expectedDomains = [
+  "Command Center",
+  "Discover",
+  "Audit",
+  "Execute",
+  "Measure",
+  "System",
 ];
 
 const expectedPrimaryRoutes = [
   "/",
   "/opportunities",
-  "/content",
-  "/site-audit",
-  "/authority",
-  "/automation",
+  "/governance",
+  "/actions",
+  "/approvals",
   "/performance",
+  "/deployments",
+  "/technical-seo",
+  "/connections",
   "/settings",
-];
-
-const customerMappedRoutes = [
-  "/content/research",
-  "/content/rankings",
-  "/content/ai-visibility",
-  "/site-audit/technical",
-  "/site-audit/internal-links",
-  "/authority/backlinks",
-  "/authority/competitors",
-  "/automation/review",
-  "/automation/changes",
-  "/automation/history",
-  "/automation/safety",
-  "/performance/impact",
-  "/performance/reports",
-  "/performance/experiments",
-  "/performance/learning",
-  "/settings/connections",
-  "/settings/add-website",
 ];
 
 const engineeringOnlyRoutes = [
@@ -77,99 +46,63 @@ const engineeringOnlyRoutes = [
   "/learning",
   "/impact",
   "/reports",
-  "/governance",
-  "/actions",
-  "/approvals",
-  "/deployments",
-  "/technical-seo",
-  "/connections",
 ];
 
 const expectedRoutedPaths = [
   ...expectedPrimaryRoutes,
-  ...customerMappedRoutes,
   ...engineeringOnlyRoutes,
 ];
 
-test("UGP-2.1 exposes exactly eight customer product domains in order", () => {
+const items = navigation.flatMap((group) =>
+  group.items.map((item) => ({ ...item, domain: group.domain })),
+);
+
+test("P4.1 preserves exactly the six primary navigation domains in order", () => {
   assert.deepEqual(
-    navigation.map((item) => item.label),
-    expectedPrimaryLabels,
-  );
-  assert.deepEqual(
-    navigation.map((item) => item.path),
-    expectedPrimaryRoutes,
+    navigation.map((group) => group.domain),
+    expectedDomains,
   );
 });
 
-test("UGP-2.1 primary navigation excludes engineering and compatibility URLs", () => {
-  const paths = navigation.map((item) => item.path);
+test("P12.1 primary navigation exposes only production-operational surfaces", () => {
+  const paths = items.map((item) => item.path);
   assert.equal(new Set(paths).size, paths.length);
-  assert.equal(navigation.some((item) => item.status === "planned"), false);
+  assert.deepEqual([...paths].sort(), [...expectedPrimaryRoutes].sort());
+  assert.equal(items.some((item) => item.status === "planned"), false);
 
-  for (const route of [...engineeringOnlyRoutes, ...customerMappedRoutes]) {
+  for (const route of engineeringOnlyRoutes) {
     assert.equal(paths.includes(route), false, route);
   }
 });
 
-test("UGP-2.1 legacy engineering routes map to exactly one customer domain", () => {
-  const aliasOwners = new Map();
-  for (const item of navigation) {
-    for (const alias of item.aliases ?? []) {
-      assert.equal(aliasOwners.has(alias), false, alias);
-      aliasOwners.set(alias, item.label);
-    }
-  }
-
-  assert.deepEqual(
-    [...aliasOwners.keys()].sort(),
-    [...engineeringOnlyRoutes].sort(),
-  );
-  assert.equal(aliasOwners.get("/technical-seo"), "Site Audit");
-  assert.equal(aliasOwners.get("/approvals"), "Automation");
-  assert.equal(aliasOwners.get("/search-intelligence"), "Authority");
-  assert.equal(aliasOwners.get("/connections"), "Settings");
-});
-
-test("UGP-2.1 customer routes and legacy certification routes remain mounted", () => {
+test("P12.1 engineering-only surfaces remain routed for direct certification", () => {
   const routedPaths = [...appSource.matchAll(/<Route path="([^"]+)"/g)].map(
     (match) => match[1],
   );
   assert.equal(new Set(routedPaths).size, routedPaths.length);
   assert.deepEqual([...routedPaths].sort(), [...expectedRoutedPaths].sort());
+
+  for (const route of engineeringOnlyRoutes) {
+    assert.ok(routedPaths.includes(route), route);
+  }
 });
 
 test("active route and mobile accessibility contracts remain explicit", () => {
-  assert.ok(layoutSource.includes('aria-current={isActive ? "page" : undefined}'));
-  assert.ok(layoutSource.includes('aria-expanded={isMobileNavOpen}'));
-  assert.ok(layoutSource.includes('aria-controls="mobile-primary-navigation"'));
-  assert.ok(layoutSource.includes('id="mobile-primary-navigation"'));
-  assert.ok(layoutSource.includes('location.startsWith(item.path + "/")'));
-  assert.ok(layoutSource.includes('item.aliases?.includes(location)'));
+  assert.match(layoutSource, /aria-current=\{isActive \? "page" : undefined\}/);
+  assert.match(layoutSource, /aria-expanded=\{isMobileNavOpen\}/);
+  assert.match(layoutSource, /aria-controls="mobile-primary-navigation"/);
+  assert.match(layoutSource, /id="mobile-primary-navigation"/);
+  assert.match(layoutSource, /location === item\.path/);
 });
 
-test("customer navigation uses list semantics and the certified mobile shell", () => {
-  assert.ok(layoutSource.includes('<ul className="navList">'));
-  assert.ok(layoutSource.includes('<li key={item.path}>'));
-  assert.ok(cssSource.includes("@media (max-width: 640px)"));
-  assert.ok(cssSource.includes(".mobileNavBar"));
-  assert.ok(cssSource.includes("display: flex"));
-  assert.ok(cssSource.includes(".mobileNavPanel"));
-  assert.ok(cssSource.includes("display: block"));
-});
-
-
-test("UGP-2.1 customer-facing surfaces do not expose engineering task identifiers", () => {
-  const source = customerSources.join("\n");
-  assert.doesNotMatch(source, /Task\s*#/);
-  assert.doesNotMatch(source, /UGP-[0-9]/);
-  assert.doesNotMatch(source, /P[0-9]+\.[0-9]+/);
-});
-
-test("UGP-2.1 keeps unavailable and future capability states explicit", () => {
-  const source = customerSources.join("\n");
-  assert.match(source, /COMING NEXT/);
-  assert.match(source, /UNAVAILABLE/);
-  assert.match(source, /PREVIEW/);
-  assert.match(source, /No ranking metrics are invented/);
+test("mobile navigation replaces the hidden desktop sidebar below 640px", () => {
+  assert.match(cssSource, /@media \(max-width: 640px\)/);
+  assert.match(
+    cssSource,
+    /\.mobileNavBar\s*\{[\s\S]*?display:\s*flex;/,
+  );
+  assert.match(
+    cssSource,
+    /\.mobileNavPanel\s*\{[\s\S]*?display:\s*block;/,
+  );
 });
