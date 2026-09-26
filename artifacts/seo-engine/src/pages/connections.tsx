@@ -199,7 +199,7 @@ export default function ConnectionsPage() {
                     placeholder="e.g. my-store.myshopify.com"
                     value={shopDomain}
                     onChange={(e) => setShopDomain(e.target.value)}
-                    className="flex-1 border border-[#dce2eb] rounded-md px-3 py-2 text-sm focus:border-[#3c82f6] outline-none disabled:opacity-50"
+                    className="flex-1 min-h-11 border border-[#dce2eb] rounded-md px-3 py-2 text-sm focus:border-[#3c82f6] outline-none disabled:opacity-50"
                     required
                     disabled={oauthDisabled}
                   />
