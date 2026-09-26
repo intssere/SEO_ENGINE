@@ -119,3 +119,10 @@ Do not merge without that explicit authorization.
 UGP-3.5 is complete and current main has been reconciled into the initiative through PR #540. UGP-4.1 is tracked by Issue #541 on branch `ugp-041-controlled-mcp-connector`.
 
 UGP-4.1 initial certification is a pure controlled MCP inventory/policy layer only: exact allowlisted server identity, explicit remote operation → universal capability/resource mapping, deterministic fingerprints, and deny-by-default resolution. It contains no MCP SDK/transport, live discovery, credentials, network, persistence, scheduler/worker, external mutation, deployment, or publication. Any live MCP transport or dependency adoption requires a later separately reviewed step.
+
+
+## Continuation update — UGP-4.2
+
+UGP-4.1 completed through PR #544, merge commit `565513941e43c2985c73be15571e552222677cb1`. UGP-4.2 is tracked by Issue #546 on branch `ugp-042-controlled-openapi-connector`.
+
+UGP-4.2 initial certification is pure/read-only: caller-supplied OpenAPI 3.0/3.1 document identity plus bounded operation metadata, deterministic operation inventory, explicit operation-to-existing-capability/resource mapping, and a disabled transport-neutral typed-client generation boundary. No remote spec fetch, live API/network/provider call, credentials, runtime code generation/client execution, persistence, scheduler/worker, external mutation, deployment or publication is in scope.
