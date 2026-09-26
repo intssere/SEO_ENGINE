@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,12 +13,36 @@ const p122Bundle = await readFile(path.join(distDir, "p12-2-crawl.mjs"), "utf8")
 const p122SourceMap = await readFile(path.join(distDir, "p12-2-crawl.mjs.map"), "utf8");
 const provenanceRaw = await readFile(path.join(distDir, "build-provenance.json"), "utf8");
 const provenance = JSON.parse(provenanceRaw);
-const expectedCommit = process.env.EXPECTED_CANONICAL_COMMIT;
-const expectedTree = process.env.EXPECTED_CANONICAL_TREE;
-const expectedBranch = process.env.EXPECTED_SOURCE_BRANCH;
+function git(args) {
+  return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+}
 
-if (!expectedCommit || !expectedTree || !expectedBranch) {
-  throw new Error("Production API build provenance verification failed closed: expected source identity is missing.");
+const explicitIdentity = [
+  process.env.EXPECTED_CANONICAL_COMMIT,
+  process.env.EXPECTED_CANONICAL_TREE,
+  process.env.EXPECTED_SOURCE_BRANCH,
+];
+const suppliedIdentityParts = explicitIdentity.filter(Boolean).length;
+if (suppliedIdentityParts > 0 && suppliedIdentityParts < 3) {
+  throw new Error("Production API build provenance verification failed closed: explicit source identity is partial.");
+}
+
+let expectedCommit;
+let expectedTree;
+let expectedBranch;
+if (suppliedIdentityParts === 3) {
+  [expectedCommit, expectedTree, expectedBranch] = explicitIdentity;
+} else {
+  try {
+    if (git(["status", "--porcelain", "--untracked-files=no"]) !== "") {
+      throw new Error("dirty");
+    }
+    expectedCommit = git(["rev-parse", "HEAD"]);
+    expectedTree = git(["rev-parse", "HEAD^{tree}"]);
+    expectedBranch = git(["symbolic-ref", "--quiet", "--short", "HEAD"]);
+  } catch {
+    throw new Error("Production API build provenance verification failed closed: Git source identity is unavailable or dirty.");
+  }
 }
 
 const provenanceKeys = [

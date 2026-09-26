@@ -12,11 +12,10 @@ test("build integration runs provenance generation after bundle cleanup and befo
   assert.match(build, /node \.\/build\.mjs && tsx \.\/src\/lib\/p8-8-w09c2g-build-provenance-cli\.ts && node \.\/verify-build\.mjs/);
 });
 
-test("generator consumes only dedicated provenance identity environment inputs", async () => {
+test("generator resolves provenance identity only through the H5-R1 source identity boundary", async () => {
   const source = await readFile(fileURLToPath(new URL("./p8-8-w09c2g-build-provenance-cli.ts", import.meta.url)), "utf8");
-  for (const required of ["EXPECTED_CANONICAL_COMMIT","EXPECTED_CANONICAL_TREE","EXPECTED_SOURCE_BRANCH"]) {
-    assert.equal(source.includes(`process.env.${required}`), true);
-  }
+  assert.equal(source.includes("resolveBuildSourceIdentity"), true);
+  assert.equal(source.includes("process.env.EXPECTED_"), false);
   for (const forbidden of ["DATABASE_URL","late-sunset-42762033","br-super-frost-b341k9ms","ep-lucky-river-b3sh13is","ep-muddy-mouse-b34bjs0w"]) {
     assert.equal(source.includes(forbidden), false);
   }
@@ -31,6 +30,9 @@ test("post-build verifier requires exact provenance identity and fingerprint", a
     "EXPECTED_CANONICAL_COMMIT",
     "EXPECTED_CANONICAL_TREE",
     "EXPECTED_SOURCE_BRANCH",
+    "execFileSync",
+    "rev-parse",
+    "symbolic-ref",
     "provenance_fingerprint",
     "source identity or fingerprint mismatch",
   ]) assert.equal(verifier.includes(required), true);
