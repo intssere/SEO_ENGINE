@@ -126,6 +126,8 @@ const requiredBundleMarkers = [
   "AUTH_ENFORCEMENT_ENABLED",
   "google_oidc",
   "publicRegistrationEnabled",
+  "\"/provenance\"",
+  "p8-8-w09c2-h6-r1-serving-provenance-v1",
 ];
 
 
@@ -161,6 +163,8 @@ const requiredSourceMarkers = [
   "lib/task53-write-scope-authorization.ts",
   "lib/task53-resource-resolver.ts",
   "lib/task54-persistent-apply.ts",
+  "routes/provenance.ts",
+  "lib/p8-8-w09c2-h6-r1-serving-provenance.ts",
 ];
 
 const missingBundleMarkers = requiredBundleMarkers.filter((marker) => !bundle.includes(marker));
