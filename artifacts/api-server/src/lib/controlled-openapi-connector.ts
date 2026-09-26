@@ -20,7 +20,7 @@ function path(v:unknown){if(typeof v!=="string"||v.length<1||v.length>MAX_PATH||
 function kinds(v:readonly UniversalResourceKind[]){if(!Array.isArray(v)||v.length<1)throw new Error("ugp_openapi_resource_kinds_required");const n=[...v].sort();if(new Set(n).size!==n.length)throw new Error("ugp_openapi_duplicate_resource_kind");return Object.freeze(n);}
 export function buildControlledOpenApiPlan(input:{descriptor:UniversalConnectorDescriptor;openapi:string;documentId:string;documentFingerprint:string;operations:readonly OpenApiOperationInput[]}):ControlledOpenApiPlan{
  assertUniversalConnectorDescriptorIntegrity(input.descriptor); if(input.descriptor.connectorKind!=="openapi")throw new Error("ugp_openapi_connector_kind_required");
- const openapi=input.openapi==="3.0"||input.openapi.startsWith("3.0.")?"3.0":input.openapi==="3.1"||input.openapi.startsWith("3.1.")?"3.1":null; if(!openapi)throw new Error("ugp_openapi_unsupported_version");
+ const openapi: "3.0" | "3.1" | null=input.openapi==="3.0"||input.openapi.startsWith("3.0.")?"3.0":input.openapi==="3.1"||input.openapi.startsWith("3.1.")?"3.1":null; if(!openapi)throw new Error("ugp_openapi_unsupported_version");
  const documentId=key(input.documentId,"document_id"); if(!HEX.test(input.documentFingerprint))throw new Error("ugp_openapi_invalid_document_fingerprint");
  if(!Array.isArray(input.operations)||input.operations.length<1||input.operations.length>MAX_OPS)throw new Error("ugp_openapi_invalid_operation_count");
  const seenId=new Set<string>(),seenRoute=new Set<string>();
