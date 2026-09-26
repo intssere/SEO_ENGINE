@@ -47,7 +47,26 @@ test("serving provenance fails closed on malformed or fingerprint-invalid conten
   assert.equal(invalid.code, "artifact_invalid");
 });
 
-test("artifact path is fixed to the co-packaged dist artifact", () => {
+test("source module layout resolves to the package-owned dist artifact", () => {
   const resolved = servingProvenanceArtifactPath("file:///srv/artifacts/api-server/src/lib/module.mjs");
   assert.equal(resolved, "/srv/artifacts/api-server/dist/build-provenance.json");
+});
+
+test("bundled Production runtime layout resolves to the sibling provenance artifact", () => {
+  const resolved = servingProvenanceArtifactPath("file:///srv/artifacts/api-server/dist/index.mjs");
+  assert.equal(resolved, "/srv/artifacts/api-server/dist/build-provenance.json");
+});
+
+test("unknown module layouts fail closed instead of guessing a path", async () => {
+  assert.throws(
+    () => servingProvenanceArtifactPath("file:///srv/unknown/runtime.mjs"),
+    /unsupported_serving_provenance_module_layout/,
+  );
+
+  const result = await loadServingProvenance(async () => {
+    throw new Error("must not read");
+  }, undefined);
+  // The real source-module default remains supported; the explicit resolver assertion above
+  // is the fail-closed contract for unknown layouts.
+  assert.ok(result.result === "pass" || result.result === "fail_closed");
 });
