@@ -7,10 +7,16 @@ import {
 const ROUTES = [
   "/",
   "/opportunities",
+  "/content",
+  "/site-audit",
+  "/authority",
+  "/automation",
+  "/performance",
+  "/settings",
+  "/settings/add-website",
   "/governance",
   "/actions",
   "/approvals",
-  "/performance",
   "/deployments",
   "/technical-seo",
   "/rankings",
@@ -22,7 +28,6 @@ const ROUTES = [
   "/impact",
   "/reports",
   "/connections",
-  "/settings",
   "/__p11-6-not-found",
 ];
 

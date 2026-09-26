@@ -25,25 +25,27 @@ async function openSyntheticPage(page, path, viewport = { width: 1440, height: 1
   return { boundary, errors };
 }
 
-test("desktop Command Center navigates without live network and hands route focus to main", async ({
+test("desktop Home navigates through customer IA and hands route focus to main", async ({
   page,
 }) => {
   const { boundary, errors } = await openSyntheticPage(page, "/");
 
   await expect(
-    page.getByRole("heading", { name: "SEO operations overview" }),
+    page.getByRole("heading", { name: "Search growth overview" }),
   ).toBeVisible();
   await expect(
     page.getByText("Freshness marker: Synthetic fixture · 5 minutes").first(),
   ).toBeVisible();
   await expect(page.getByRole("main")).toHaveAttribute("id", "main-content");
 
-  const technicalLink = page.getByRole("link", { name: "Technical SEO" });
-  await technicalLink.click();
+  const siteAuditLink = page
+    .locator(".sidebar .primaryNav")
+    .getByRole("link", { name: "Site Audit", exact: true });
+  await siteAuditLink.click();
 
-  await expect(page).toHaveURL(/\/technical-seo$/);
+  await expect(page).toHaveURL(/\/site-audit$/);
   await expect(
-    page.getByRole("heading", { name: "Technical SEO & crawl explorer" }),
+    page.getByRole("heading", { name: "Site Audit" }),
   ).toBeVisible();
   await expect(page.locator("#main-content")).toBeFocused();
 
@@ -82,6 +84,107 @@ test("compact mobile navigation closes with Escape and restores toggle focus", a
   assertBrowserClean(errors);
 });
 
+test("UGP-3.1 URL onboarding stays network-closed and shows pending safety checks", async ({ page }) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/settings/add-website");
+
+  const input = page.getByRole("textbox", { name: "Website URL" });
+  await input.fill("http://www.example.com/products?q=1#fragment");
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await expect(page.getByRole("heading", { name: "Platform hint" })).toBeVisible();
+  await expect(page.getByText("http://www.example.com", { exact: true })).toBeVisible();
+
+  const onboarding = page.getByRole("region", { name: "Public web onboarding" });
+  await expect(onboarding).toBeVisible();
+  await expect(onboarding.getByText("NOT RUN")).toBeVisible();
+  for (const label of ["DNS / public address", "Redirect chain", "robots.txt", "Sitemap hints"]) {
+    await expect(onboarding.getByText(label, { exact: true })).toBeVisible();
+  }
+  await expect(onboarding.getByText("PENDING")).toHaveCount(4);
+  await expect(onboarding).toContainText("final analysis origin must resolve to HTTPS");
+  await expect(onboarding).toContainText("No DNS lookup");
+
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"])
+    .analyze();
+  expect(axe.violations.map((violation) => violation.id)).toEqual([]);
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
+test("UGP-2.5 contextual guide is route-aware, keyboard dismissible, focus-restoring and axe-clean", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/content");
+
+  await expect(page.getByRole("dialog", { name: /guide/i })).toHaveCount(0);
+  const trigger = page.locator(".sidebar").getByRole("button", { name: "Guide this page" });
+  await trigger.focus();
+  await trigger.click();
+
+  const guide = page.getByRole("dialog", { name: "Move between workspaces" });
+  await expect(guide).toBeVisible();
+  await expect(page.locator(".sidebar .primaryNav")).toHaveAttribute("data-onboarding-active", "true");
+  await expect(guide.getByText("Step 1 of 3")).toBeVisible();
+  await expect(guide.getByRole("button", { name: "Close guide" })).toBeFocused();
+
+  await guide.getByRole("button", { name: "Next" }).click();
+  await expect(page.locator(".customerHubHero")).toHaveAttribute("data-onboarding-active", "true");
+  await expect(page.locator(".sidebar .primaryNav")).not.toHaveAttribute("data-onboarding-active", "true");
+  await expect(page.getByRole("dialog", { name: "Content overview" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Back" }).click();
+  await expect(page.locator(".sidebar .primaryNav")).toHaveAttribute("data-onboarding-active", "true");
+
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"])
+    .analyze();
+  expect(axe.violations.map((violation) => violation.id)).toEqual([]);
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await expect(page.locator(".sidebar .primaryNav")).not.toHaveAttribute("data-onboarding-active", "true");
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
+test("UGP-2.5 mobile Guide control and panel stay viewport-safe", async ({ page }) => {
+  const { boundary, errors } = await openSyntheticPage(
+    page,
+    "/settings",
+    { width: 390, height: 844 },
+  );
+
+  const trigger = page.locator(".mobileNav").getByRole("button", { name: "Guide this page" });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+
+  const guide = page.getByRole("dialog", { name: "Move between workspaces" });
+  await expect(guide).toBeVisible();
+  const geometry = await guide.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      left: rect.left,
+      right: rect.right,
+      bottom: rect.bottom,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+    };
+  });
+  expect(geometry.left).toBeGreaterThanOrEqual(0);
+  expect(geometry.right).toBeLessThanOrEqual(geometry.viewportWidth + 1);
+  expect(geometry.bottom).toBeLessThanOrEqual(geometry.viewportHeight + 1);
+
+  await page.getByRole("button", { name: "Close guide" }).click();
+  await expect(trigger).toBeFocused();
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
 test("P12.1 primary navigation excludes engineering-only routes while direct engineering access stays honest", async ({
   page,
 }) => {
@@ -89,21 +192,25 @@ test("P12.1 primary navigation excludes engineering-only routes while direct eng
 
   const primary = page.locator(".sidebar .primaryNav");
   for (const label of [
-    "Overview",
+    "Home",
     "Opportunities",
-    "Technical SEO",
-    "Governance",
-    "Actions",
-    "Approvals",
-    "Deployments",
+    "Content",
+    "Site Audit",
+    "Authority",
+    "Automation",
     "Performance",
-    "Connections",
     "Settings",
   ]) {
     await expect(primary.getByRole("link", { name: new RegExp("^" + label) })).toBeVisible();
   }
 
   for (const label of [
+    "Technical SEO",
+    "Governance",
+    "Actions",
+    "Approvals",
+    "Deployments",
+    "Connections",
     "Rankings",
     "Search Intelligence",
     "AI Visibility",
@@ -124,6 +231,80 @@ test("P12.1 primary navigation excludes engineering-only routes while direct eng
   await expect(
     page.getByRole("navigation", { name: "Primary navigation" }).first(),
   ).not.toContainText("Search Intelligence");
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
+test("UGP-2.2 customer routes declare detail level and return to their parent", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/site-audit/technical");
+
+  const banner = page.getByRole("note");
+  await expect(banner).toContainText("ADVANCED VIEW");
+  await expect(banner).toContainText("Site Audit details");
+  const back = banner.getByRole("link", { name: "Back to Site Audit" });
+  await back.click();
+  await expect(page).toHaveURL(/\/site-audit$/);
+
+  await page.goto("/content/research");
+  await expect(page.getByRole("note")).toContainText("EVIDENCE VIEW");
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
+test("UGP-2.3 opportunity card exposes the complete customer decision grammar", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/opportunities");
+
+  const card = page.locator("article.approvalReviewCard").first();
+  await expect(card.getByRole("heading", { name: "Improve product meta description" })).toBeVisible();
+  for (const label of [
+    "Impact",
+    "Risk",
+    "Current state",
+    "Recommended state",
+    "Why",
+    "Review / apply",
+    "Measurement",
+  ]) {
+    await expect(card.getByText(label, { exact: true })).toBeVisible();
+  }
+  await expect(card.getByText("Impact not available.")).toBeVisible();
+  await expect(card.getByText("Not available", { exact: true })).toBeVisible();
+  await expect(card.getByText("Synthetic proposal")).toBeVisible();
+  await expect(card.getByText("Not measured")).toBeVisible();
+  await expect(card.getByText("Preview after proposal")).toBeVisible();
+  await expect(card.getByRole("button", { name: "See evidence" })).toBeVisible();
+  await expect(card.getByRole("link", { name: "Review workflow" })).toHaveAttribute("href", "/automation");
+
+  assertNetworkBoundary(boundary);
+  assertBrowserClean(errors);
+});
+
+test("UGP-2.2 opportunity evidence reveals traceability before technical details", async ({
+  page,
+}) => {
+  const { boundary, errors } = await openSyntheticPage(page, "/opportunities");
+
+  await page.getByRole("button", { name: "See evidence" }).first().click();
+  await expect(page.getByText("What supports this")).toBeVisible();
+
+  const evidence = page.getByText("Show traceable evidence");
+  const advanced = page.getByText("Show technical details");
+  await expect(evidence).toBeVisible();
+  await expect(advanced).toBeHidden();
+
+  await evidence.click();
+  await expect(page.getByRole("heading", { name: "Traceable evidence" })).toBeVisible();
+  await expect(advanced).toBeVisible();
+
+  await advanced.click();
+  await expect(page.getByText("Quality & provenance")).toBeVisible();
+  await expect(page.getByText("Unavailable technical dimensions")).toBeVisible();
 
   assertNetworkBoundary(boundary);
   assertBrowserClean(errors);
@@ -275,7 +456,9 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
 }) => {
   const { boundary, errors } = await openSyntheticPage(page, "/");
 
-  const restoreTarget = page.getByRole("link", { name: "Technical SEO" });
+  const restoreTarget = page
+    .locator(".sidebar .primaryNav")
+    .getByRole("link", { name: "Site Audit", exact: true });
   await restoreTarget.focus();
   await expect(restoreTarget).toBeFocused();
 
@@ -318,7 +501,7 @@ test("Ask dialog traps focus, answers from fixture, closes with Escape, and rest
   assertBrowserClean(errors);
 });
 
-for (const route of ["/", "/technical-seo", "/search-intelligence", "/ai-visibility", "/governance", "/connections"]) {
+for (const route of ["/", "/content", "/site-audit", "/authority", "/automation", "/settings", "/content/research", "/site-audit/technical", "/automation/safety", "/settings/connections", "/settings/add-website", "/technical-seo", "/search-intelligence", "/ai-visibility", "/governance", "/connections"]) {
   test(`axe serious/critical scan passes on ${route}`, async ({ page }) => {
     const { boundary, errors } = await openSyntheticPage(page, route);
 

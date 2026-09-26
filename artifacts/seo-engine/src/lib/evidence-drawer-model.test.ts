@@ -144,6 +144,7 @@ test("opportunity model treats evidence count as summary only", () => {
     rationale: "Gap observed.",
     evidence_count: 5,
     why_qualifies: "Meets deterministic guardrails.",
+    execution_authorized: false,
   } as any);
 
   assert.equal(model.references.declaredCount, 5);
@@ -151,5 +152,6 @@ test("opportunity model treats evidence count as summary only", () => {
   assert.equal(model.references.completeness, "unavailable");
   assert.match(model.references.note, /count but not/i);
   assert.equal(model.quality.status, "unavailable");
+  assert.equal(model.executionAuthorized, false);
   assert.equal(model.coverage.kind, "unavailable");
 });

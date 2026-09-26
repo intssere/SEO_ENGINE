@@ -134,12 +134,12 @@ export default function DashboardPage() {
       <div className="content commandCenter">
         <div className="commandCenterHero">
           <div>
-            <p className="eyebrow">COMMAND CENTER</p>
-            <h1>SEO operations overview</h1>
+            <p className="eyebrow">HOME</p>
+            <h1>Search growth overview</h1>
             <p className="muted">
-              Read-only operational truth from the current dashboard snapshot.
-              Provider execution, approvals, deployments and writes happen in
-              their governed workspaces—not here.
+              See what needs attention, what is changing, and where the strongest
+              search opportunities are coming from. Any site change still follows
+              the safeguards configured for your workspace.
             </p>
           </div>
           <div className="commandCenterHeroBadges">
@@ -182,8 +182,8 @@ export default function DashboardPage() {
           <article className="card commandCenterMetrics">
             <div className="sectionHead">
               <div>
-                <p className="eyebrow">PERFORMANCE SNAPSHOT</p>
-                <h2>Current KPI view</h2>
+                <p className="eyebrow">PERFORMANCE</p>
+                <h2>Search performance</h2>
               </div>
               <StatusBadge tone={model.dataState.tone}>
                 {data.state === "live" ? "SNAPSHOT" : "UNAVAILABLE"}
@@ -203,8 +203,8 @@ export default function DashboardPage() {
           <article className="card commandCenterCoverage">
             <div className="sectionHead">
               <div>
-                <p className="eyebrow">BASELINE TRUTH</p>
-                <h2>Coverage & certification</h2>
+                <p className="eyebrow">SITE HEALTH</p>
+                <h2>Coverage & data quality</h2>
               </div>
               <StatusBadge tone={model.coverageState.tone}>
                 {data.pilot.certification.status.replaceAll("_", " ").toUpperCase()}
@@ -266,7 +266,7 @@ export default function DashboardPage() {
 
             {data.pilot.blockers.length > 0 ? (
               <div className="commandCenterBlockers">
-                <strong>Current blockers</strong>
+                <strong>Needs attention</strong>
                 <span>
                   {data.pilot.blockers
                     .map((item) => item.replaceAll("_", " "))
@@ -276,11 +276,11 @@ export default function DashboardPage() {
             ) : null}
 
             <div className="commandCenterLinks">
-              <Link href="/connections" className="linkButton">
-                Review connections →
+              <Link href="/settings" className="linkButton">
+                Review settings →
               </Link>
-              <Link href="/technical-seo" className="linkButton">
-                Review technical evidence →
+              <Link href="/site-audit" className="linkButton">
+                Open site audit →
               </Link>
             </div>
           </article>
@@ -289,11 +289,11 @@ export default function DashboardPage() {
         <section className="card commandCenterEngine">
           <div className="sectionHead">
             <div>
-              <p className="eyebrow">OPERATIONS · LAST 24 HOURS</p>
-              <h2>Engine workload</h2>
+              <p className="eyebrow">RECENT ACTIVITY · LAST 24 HOURS</p>
+              <h2>What SEO Engine checked</h2>
               <p className="muted">
-                Descriptive counts only. No execution is initiated from Command
-                Center.
+                This is an activity summary only. Review and manage changes from
+                Automation.
               </p>
             </div>
             <StatusBadge tone={model.dataState.tone}>
@@ -336,7 +336,7 @@ export default function DashboardPage() {
           <article className="card">
             <div className="sectionHead">
               <div>
-                <p className="eyebrow">DECISION QUEUE</p>
+                <p className="eyebrow">NEXT ACTIONS</p>
                 <h2>Top opportunities</h2>
               </div>
               <Link href="/opportunities" className="linkButton">

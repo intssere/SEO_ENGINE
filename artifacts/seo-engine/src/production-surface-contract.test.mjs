@@ -17,9 +17,7 @@ const impact = read("pages/impact.tsx");
 const reports = read("pages/reports.tsx");
 const learning = read("pages/learning.tsx");
 
-const primaryPaths = navigation.flatMap((group) =>
-  group.items.map((item) => item.path),
-);
+const primaryPaths = navigation.map((item) => item.path);
 
 const engineeringOnlyRoutes = [
   "/rankings",
@@ -30,25 +28,71 @@ const engineeringOnlyRoutes = [
   "/learning",
   "/impact",
   "/reports",
+  "/governance",
+  "/actions",
+  "/approvals",
+  "/deployments",
+  "/technical-seo",
+  "/connections",
 ];
 
-test("P12.1 primary navigation has no planned or engineering-only surfaces", () => {
-  const items = navigation.flatMap((group) => group.items);
-  assert.equal(items.some((item) => item.status === "planned"), false);
+const customerMappedRoutes = [
+  "/content/research",
+  "/content/rankings",
+  "/content/ai-visibility",
+  "/site-audit/technical",
+  "/site-audit/internal-links",
+  "/authority/backlinks",
+  "/authority/competitors",
+  "/automation/review",
+  "/automation/changes",
+  "/automation/history",
+  "/automation/safety",
+  "/performance/impact",
+  "/performance/reports",
+  "/performance/experiments",
+  "/performance/learning",
+  "/settings/connections",
+  "/settings/add-website",
+];
+
+test("UGP-2.1 primary navigation contains only customer product domains", () => {
+  assert.deepEqual(
+    navigation.map((item) => item.label),
+    [
+      "Home",
+      "Opportunities",
+      "Content",
+      "Site Audit",
+      "Authority",
+      "Automation",
+      "Performance",
+      "Settings",
+    ],
+  );
   assert.equal(new Set(primaryPaths).size, primaryPaths.length);
 
-  for (const path of engineeringOnlyRoutes) {
+  for (const path of [...engineeringOnlyRoutes, ...customerMappedRoutes]) {
     assert.equal(primaryPaths.includes(path), false, path);
   }
 });
 
-test("P12.1 engineering-only surfaces remain directly routed", () => {
+test("UGP-2.1 engineering-only surfaces remain directly routed", () => {
   for (const path of engineeringOnlyRoutes) {
     assert.ok(appSource.includes('<Route path="' + path + '"'), path);
   }
 });
 
-test("P12.1 informational surfaces explicitly refuse fake production metrics", () => {
+test("UGP-2.1 customer-friendly routes map to existing advanced capabilities", () => {
+  for (const path of customerMappedRoutes) {
+    assert.ok(appSource.includes('<Route path="' + path + '"'), path);
+  }
+  assert.ok(appSource.includes('path="/automation/review" component={ApprovalsPage}'));
+  assert.ok(appSource.includes('path="/site-audit/technical" component={TechnicalSeoPage}'));
+  assert.ok(appSource.includes('path="/settings/connections" component={ConnectionsPage}'));
+});
+
+test("informational surfaces explicitly refuse fake production metrics", () => {
   assert.match(informational, /No synthetic data/);
   assert.match(
     informational,
@@ -58,7 +102,7 @@ test("P12.1 informational surfaces explicitly refuse fake production metrics", (
   assert.match(learning, /status="coming_soon"/);
 });
 
-test("P12.1 synthetic engineering workspaces remain visibly disclosed", () => {
+test("synthetic advanced workspaces remain visibly disclosed", () => {
   for (const [name, source] of [
     ["search-intelligence", searchIntelligence],
     ["ai-visibility", aiVisibility],
@@ -75,11 +119,11 @@ test("P12.1 synthetic engineering workspaces remain visibly disclosed", () => {
   assert.match(reports, /NO PUBLIC SHARE/);
 });
 
-test("P12.1 primary surface list remains a strict subset of mounted routes", () => {
+test("primary and customer-mapped surfaces remain a strict subset of mounted routes", () => {
   const routedPaths = [...appSource.matchAll(/<Route path="([^"]+)"/g)].map(
     (match) => match[1],
   );
-  for (const path of primaryPaths) {
+  for (const path of [...primaryPaths, ...customerMappedRoutes]) {
     assert.ok(routedPaths.includes(path), path);
   }
   assert.ok(routedPaths.length > primaryPaths.length);

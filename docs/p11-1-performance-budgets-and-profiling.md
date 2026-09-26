@@ -105,3 +105,44 @@ P11.1 does not:
 - deploy or publish.
 
 A later separately scoped task may add production-safe observability or load/scale certification, but this milestone does not authorize it.
+
+
+## UGP-2.4 reviewed JavaScript ceiling rebase
+
+UGP-2.4 introduced the first customer-facing route-level code split after the original P11.1 closeout. The pre-UGP initiative frontend had already consumed essentially all of the original JavaScript headroom. Exact GitHub CI measurements on the optimized UGP-2.4 candidate, with the existing browser target preserved, were:
+
+- entry JavaScript: approximately **621.1 kB raw / 178.0 kB gzip**;
+- website-wizard route chunk: approximately **9.6 kB raw / 3.2 kB gzip**;
+- total JavaScript: approximately **630.7 kB raw / 181.2 kB gzip**.
+
+The budget policy remains a hard total/per-asset regression gate and code splitting remains fully counted. The reviewed UGP-2.4 ceiling is therefore rebased narrowly to:
+
+| Asset class | Max asset raw | Max asset gzip | Max total raw | Max total gzip |
+|---|---:|---:|---:|---:|
+| JavaScript | 622,000 | 180,000 | 632,000 | 182,000 |
+| CSS | 190,000 | 33,000 | 190,000 | 33,000 |
+
+This is an intentional feature-baseline rebase, not a split-asset exclusion or checker bypass. The scanner and failure semantics are unchanged, and the Vite >500 kB advisory remains unsuppressed.
+
+
+## UGP-2.5 reviewed contextual-onboarding ceiling rebase
+
+UGP-2.5 adds a user-invoked contextual guide behind a lazy-loaded replaceable adapter boundary and does not add a third-party tour package. Exact GitHub CI measurements on the certified UGP-2.4 baseline and the UGP-2.5 candidate were:
+
+- UGP-2.4 total JavaScript: **630,718 bytes raw / 181,213 bytes gzip**;
+- UGP-2.5 total JavaScript: **637,506 bytes raw / 183,940 bytes gzip**;
+- intentional JavaScript delta: **6,788 bytes raw / 2,727 bytes gzip**;
+- UGP-2.4 CSS: **188,904 bytes raw / 31,470 bytes gzip**;
+- UGP-2.5 CSS: **190,206 bytes raw / 31,717 bytes gzip**;
+- intentional CSS delta: **1,302 bytes raw / 247 bytes gzip**.
+
+The entry JavaScript asset remains below the existing per-asset limits at **621,879 bytes raw / 178,225 bytes gzip**. The new lazy contextual-onboarding chunk is **6,018 bytes raw / 2,491 bytes gzip**.
+
+The budget checker remains unchanged and continues to count every emitted JavaScript/CSS asset. The reviewed UGP-2.5 ceilings are narrowly rebased to:
+
+| Asset class | Max asset raw | Max asset gzip | Max total raw | Max total gzip |
+|---|---:|---:|---:|---:|
+| JavaScript | 622,000 | 180,000 | 640,000 | 185,000 |
+| CSS | 191,000 | 33,000 | 191,000 | 33,000 |
+
+This is a measured feature-baseline rebase, not a code-split exclusion, hidden asset exemption, or checker bypass. The Vite >500 kB advisory remains unsuppressed.
