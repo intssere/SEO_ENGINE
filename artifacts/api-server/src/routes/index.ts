@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
+import provenanceRouter from "./provenance";
 import authRouter from "./auth";
 import dashboardRouter from "./dashboard";
 import operationalRouter from "./operational";
@@ -15,6 +16,7 @@ import { requireApiAuthentication, sensitiveMutationRateLimit } from "../middlew
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(provenanceRouter);
 router.use(authRouter);
 router.use(requireApiAuthentication);
 router.use((req, res, next) => {
