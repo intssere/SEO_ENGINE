@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +10,48 @@ const bundle = await readFile(path.join(distDir, "index.mjs"), "utf8");
 const sourceMap = await readFile(path.join(distDir, "index.mjs.map"), "utf8");
 const p122Bundle = await readFile(path.join(distDir, "p12-2-crawl.mjs"), "utf8");
 const p122SourceMap = await readFile(path.join(distDir, "p12-2-crawl.mjs.map"), "utf8");
+const provenanceRaw = await readFile(path.join(distDir, "build-provenance.json"), "utf8");
+const provenance = JSON.parse(provenanceRaw);
+const expectedCommit = process.env.EXPECTED_CANONICAL_COMMIT;
+const expectedTree = process.env.EXPECTED_CANONICAL_TREE;
+const expectedBranch = process.env.EXPECTED_SOURCE_BRANCH;
+
+if (!expectedCommit || !expectedTree || !expectedBranch) {
+  throw new Error("Production API build provenance verification failed closed: expected source identity is missing.");
+}
+
+const provenanceKeys = [
+  "schema_version", "canonical_commit_sha", "canonical_tree_sha",
+  "source_branch", "generated_at_build", "provenance_fingerprint",
+];
+if (
+  !provenance || typeof provenance !== "object" || Array.isArray(provenance) ||
+  Object.keys(provenance).length !== provenanceKeys.length ||
+  provenanceKeys.some((key) => !Object.prototype.hasOwnProperty.call(provenance, key))
+) {
+  throw new Error("Production API build provenance verification failed closed: artifact shape is invalid.");
+}
+
+const identityProjection = JSON.stringify({
+  schema_version: "p8-8-w09c2f-build-provenance-v1",
+  canonical_commit_sha: expectedCommit,
+  canonical_tree_sha: expectedTree,
+  source_branch: expectedBranch,
+});
+const expectedFingerprint = createHash("sha256").update(identityProjection).digest("hex");
+
+if (
+  provenance.schema_version !== "p8-8-w09c2f-build-provenance-v1" ||
+  provenance.canonical_commit_sha !== expectedCommit ||
+  provenance.canonical_tree_sha !== expectedTree ||
+  provenance.source_branch !== expectedBranch ||
+  provenance.provenance_fingerprint !== expectedFingerprint ||
+  typeof provenance.generated_at_build !== "string" ||
+  Number.isNaN(Date.parse(provenance.generated_at_build))
+) {
+  throw new Error("Production API build provenance verification failed closed: source identity or fingerprint mismatch.");
+}
+
 
 const requiredBundleMarkers = [
   '"/execution"',
@@ -116,4 +159,4 @@ if (
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, and the default-off P12.2 manual crawl engineering entrypoint are present.");
+console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, and the default-off P12.2 manual crawl engineering entrypoint are present.");

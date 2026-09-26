@@ -149,5 +149,11 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Prepare explicit W09-C2G build provenance identity
+        run: |
+          echo "EXPECTED_CANONICAL_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "EXPECTED_CANONICAL_TREE=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_ENV"
+          echo "EXPECTED_SOURCE_BRANCH=ci-build" >> "$GITHUB_ENV"
+
       - name: Build
         run: pnpm build
