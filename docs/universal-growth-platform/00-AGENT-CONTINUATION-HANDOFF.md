@@ -133,3 +133,12 @@ UGP-4.2 initial certification is pure/read-only: caller-supplied OpenAPI 3.0/3.1
 UGP-4.2 completed through PR #547, merge commit `6bf1529910f27630c1a2e34c9aca24c041601991`. UGP-4.3 is tracked by Issue #554 on branch `ugp-043-controlled-git-connector`.
 
 UGP-4.3 initial certification is pure/mock-first planning only: exact repository/default-branch/base-commit binding, caller-supplied framework/content-source evidence, exact expected blob identities, deterministic non-default-branch patch planning, required PR intent, and read-only CI/status observation via existing `read.metadata`. The plan may require existing `git.branch`, `git.commit`, and `git.pull_request` capability availability but grants no authorization and executes no Git/GitHub/network/filesystem operation. Octokit/ast-grep remain unadopted evaluation candidates pending separate security/license review.
+
+
+## Continuation update — UGP-4.4
+
+UGP-4.3 completed through PR #555, merge commit `7cbc9f139ffd31f832aac60fb5bf8aecde775e45`. UGP-4.4 is tracked by Issue #556 on branch `ugp-044-future-site-agent-spec`.
+
+UGP-4.4 is **specification-only**. The reserved `site_agent` connector kind is defined as a last-resort customer-controlled lane only when Public Web, Native API, MCP, OpenAPI, and Git cannot safely support a demonstrated environment. The specification requires exact site/connection/resource lineage, signed capability manifests, bounded validity, nonce/replay and idempotency controls, exact SEO ENGINE authorization/state binding for mutation, auditable receipts, independent read-after-write verification, explicit rollback semantics, key rotation/revocation, and fail-closed drift/uncertainty handling. Arbitrary commands/code, generic proxying, unrestricted filesystem/network/database/secret access, self-escalation, wildcard scope, autonomous scheduling, and agent-originated publication authority are prohibited.
+
+No Site Agent runtime/client/server, transport, cryptographic implementation/dependency, credentials, persistence, scheduler/worker, external call/write, deployment, or publication is authorized or implemented by UGP-4.4. A future implementation requires a demonstrated unsupported environment, separate threat/security and dependency review, explicit authorization, and a new certification milestone.
