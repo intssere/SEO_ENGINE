@@ -126,3 +126,10 @@ UGP-4.1 initial certification is a pure controlled MCP inventory/policy layer on
 UGP-4.1 completed through PR #544, merge commit `565513941e43c2985c73be15571e552222677cb1`. UGP-4.2 is tracked by Issue #546 on branch `ugp-042-controlled-openapi-connector`.
 
 UGP-4.2 initial certification is pure/read-only: caller-supplied OpenAPI 3.0/3.1 document identity plus bounded operation metadata, deterministic operation inventory, explicit operation-to-existing-capability/resource mapping, and a disabled transport-neutral typed-client generation boundary. No remote spec fetch, live API/network/provider call, credentials, runtime code generation/client execution, persistence, scheduler/worker, external mutation, deployment or publication is in scope.
+
+
+## Continuation update — UGP-4.3
+
+UGP-4.2 completed through PR #547, merge commit `6bf1529910f27630c1a2e34c9aca24c041601991`. UGP-4.3 is tracked by Issue #554 on branch `ugp-043-controlled-git-connector`.
+
+UGP-4.3 initial certification is pure/mock-first planning only: exact repository/default-branch/base-commit binding, caller-supplied framework/content-source evidence, exact expected blob identities, deterministic non-default-branch patch planning, required PR intent, and read-only CI/status observation via existing `read.metadata`. The plan may require existing `git.branch`, `git.commit`, and `git.pull_request` capability availability but grants no authorization and executes no Git/GitHub/network/filesystem operation. Octokit/ast-grep remain unadopted evaluation candidates pending separate security/license review.
