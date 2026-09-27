@@ -18,8 +18,6 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 const databaseBinding = process.env.DATABASE_URL;
-export const productionBindingSupplier =
-  createProductionBindingSupplier(databaseBinding);
 
 if (databaseBinding?.trim()) {
   const { ensureDiamondShelfIdentity } = await import("@workspace/db");
