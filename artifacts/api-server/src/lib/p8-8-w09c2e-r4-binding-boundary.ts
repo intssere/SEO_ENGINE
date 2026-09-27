@@ -6,11 +6,15 @@ export const P8_8_W09C2E_R4_BINDING_BOUNDARY_VERSION =
 /**
  * Side-effect-free Production composition boundary.
  *
- * Reading the already-bound process environment value does not connect to the
- * database, parse the binding, log it, hash it, persist it, or activate any
- * runtime subsystem. Consumers receive only the inert R2 supplier.
+ * The caller supplies only the allowlisted DATABASE_URL slot. Composition
+ * captures the opaque value without parsing, logging, hashing, persistence,
+ * network access, database initialization, or runtime activation.
  */
-const productionDatabaseBinding = process.env["DATABASE_URL"];
+export function composeProductionBindingSupplier(
+  environment: Pick<NodeJS.ProcessEnv, "DATABASE_URL">,
+) {
+  return createProductionBindingSupplier(environment["DATABASE_URL"]);
+}
 
 export const productionBindingSupplier =
-  createProductionBindingSupplier(productionDatabaseBinding);
+  composeProductionBindingSupplier(process.env);
