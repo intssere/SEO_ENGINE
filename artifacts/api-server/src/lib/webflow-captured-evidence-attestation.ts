@@ -34,7 +34,7 @@ export function attestCapturedWebflowEvidence(input:{observations:readonly Captu
   if(!/^application\/json(?:;|$)/i.test(o.contentType.trim()))throw new Error("ugp_webflow_captured_json_required");
   if(!Number.isSafeInteger(o.responseBytes)||o.responseBytes<0||o.responseBytes>1_000_000)throw new Error("ugp_webflow_captured_response_bounds");
   const isPages=resource==="pages";
-  const plan=buildWebflowReadPlan({descriptor:d,method:"GET",resource,resourceKind:isPages?"page":"collection",capability:isPages?"read.content":"read.resource",maxResults:100});
+  const plan=buildWebflowReadPlan({descriptor:d,method:"GET",resource,capability:isPages?"read.content":"read.resource",maxResults:100});
   const receipt=normalizeWebflowReadReceipt({plan,effectiveUrl:o.effectiveUrl,status:o.status,payload:o.payload});
   return Object.freeze({resource,responseBytes:o.responseBytes,receipt});
  });
