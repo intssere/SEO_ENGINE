@@ -11,7 +11,7 @@ export const P8_8_W09C2E_R4_BINDING_BOUNDARY_VERSION =
  * network access, database initialization, or runtime activation.
  */
 export function composeProductionBindingSupplier(
-  environment: Pick<NodeJS.ProcessEnv, "DATABASE_URL">,
+  environment: { DATABASE_URL?: string },
 ) {
   return createProductionBindingSupplier(environment["DATABASE_URL"]);
 }
