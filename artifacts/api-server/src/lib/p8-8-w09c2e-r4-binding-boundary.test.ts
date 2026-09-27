@@ -1,37 +1,51 @@
-import { describe, expect, it, vi } from "vitest";
+import assert from "node:assert/strict";
+import { afterEach, test } from "node:test";
 
-describe("P8.8 W09-C2E-R4 side-effect-free binding boundary", () => {
-  it("exports only an inert supplier over the single allowlisted binding source", async () => {
-    vi.resetModules();
-    vi.stubEnv("DATABASE_URL", "postgresql://user:secret@example.invalid:5432/db?sslmode=require");
+const originalDatabaseUrl = process.env["DATABASE_URL"];
+const originalPostgresUrl = process.env["POSTGRES_URL"];
+const originalNeonDatabaseUrl = process.env["NEON_DATABASE_URL"];
 
-    const mod = await import("./p8-8-w09c2e-r4-binding-boundary.js");
+afterEach(() => {
+  if (originalDatabaseUrl === undefined) delete process.env["DATABASE_URL"];
+  else process.env["DATABASE_URL"] = originalDatabaseUrl;
+  if (originalPostgresUrl === undefined) delete process.env["POSTGRES_URL"];
+  else process.env["POSTGRES_URL"] = originalPostgresUrl;
+  if (originalNeonDatabaseUrl === undefined) delete process.env["NEON_DATABASE_URL"];
+  else process.env["NEON_DATABASE_URL"] = originalNeonDatabaseUrl;
+});
 
-    expect(mod.P8_8_W09C2E_R4_BINDING_BOUNDARY_VERSION)
-      .toBe("p8-8-w09c2e-r4-binding-boundary-v1");
-    expect(typeof mod.productionBindingSupplier).toBe("function");
-    expect(mod.productionBindingSupplier())
-      .toBe("postgresql://user:secret@example.invalid:5432/db?sslmode=require");
-  });
+test("exports only an inert supplier over the single allowlisted binding source", async () => {
+  process.env["DATABASE_URL"] =
+    "postgresql://user:secret@example.invalid:5432/db?sslmode=require";
 
-  it("does not fall back to alternate binding variables", async () => {
-    vi.resetModules();
-    vi.stubEnv("DATABASE_URL", "");
-    vi.stubEnv("POSTGRES_URL", "postgresql://forbidden.example/db");
-    vi.stubEnv("NEON_DATABASE_URL", "postgresql://forbidden-neon.example/db");
+  const mod = await import("./p8-8-w09c2e-r4-binding-boundary.js?case=allowlisted");
 
-    const mod = await import("./p8-8-w09c2e-r4-binding-boundary.js");
+  assert.equal(
+    mod.P8_8_W09C2E_R4_BINDING_BOUNDARY_VERSION,
+    "p8-8-w09c2e-r4-binding-boundary-v1",
+  );
+  assert.equal(typeof mod.productionBindingSupplier, "function");
+  assert.equal(
+    mod.productionBindingSupplier(),
+    "postgresql://user:secret@example.invalid:5432/db?sslmode=require",
+  );
+});
 
-    expect(mod.productionBindingSupplier()).toBe("");
-  });
+test("does not fall back to alternate binding variables", async () => {
+  process.env["DATABASE_URL"] = "";
+  process.env["POSTGRES_URL"] = "postgresql://forbidden.example/db";
+  process.env["NEON_DATABASE_URL"] = "postgresql://forbidden-neon.example/db";
 
-  it("captures the binding once at module composition time", async () => {
-    vi.resetModules();
-    vi.stubEnv("DATABASE_URL", "postgresql://first.example/db");
+  const mod = await import("./p8-8-w09c2e-r4-binding-boundary.js?case=no-fallback");
 
-    const mod = await import("./p8-8-w09c2e-r4-binding-boundary.js");
-    vi.stubEnv("DATABASE_URL", "postgresql://second.example/db");
+  assert.equal(mod.productionBindingSupplier(), "");
+});
 
-    expect(mod.productionBindingSupplier()).toBe("postgresql://first.example/db");
-  });
+test("captures the binding once at module composition time", async () => {
+  process.env["DATABASE_URL"] = "postgresql://first.example/db";
+
+  const mod = await import("./p8-8-w09c2e-r4-binding-boundary.js?case=capture-once");
+  process.env["DATABASE_URL"] = "postgresql://second.example/db";
+
+  assert.equal(mod.productionBindingSupplier(), "postgresql://first.example/db");
 });
