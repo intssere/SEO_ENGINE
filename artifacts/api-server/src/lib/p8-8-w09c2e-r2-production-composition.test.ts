@@ -97,6 +97,7 @@ test("missing composition binding fails closed before parser invocation", async 
 test("adapter and composition root retain the static authority boundary", async () => {
   const adapter = await readFile(new URL("./p8-8-w09c2e-r2-production-composition.ts", import.meta.url), "utf8");
   const index = await readFile(new URL("../index.ts", import.meta.url), "utf8");
+  const boundary = await readFile(new URL("./p8-8-w09c2e-r4-binding-boundary.ts", import.meta.url), "utf8");
   const forbiddenAdapter = [
     "process" + ".env",
     "DATABASE" + "_URL",
@@ -116,7 +117,26 @@ test("adapter and composition root retain the static authority boundary", async 
   for (const marker of forbiddenAdapter) assert.equal(adapter.includes(marker), false, marker);
 
   assert.equal((index.match(/process\.env\.DATABASE_URL/g) ?? []).length, 1);
-  assert.equal(index.includes("createProductionBindingSupplier(databaseBinding)"), true);
+  assert.equal(index.includes("createProductionBindingSupplier(databaseBinding)"), false);
+  assert.equal(index.includes("productionBindingSupplier"), true);
+  assert.equal(index.includes("p8-8-w09c2e-r4-binding-boundary.js"), true);
   assert.equal(index.includes("resolveProductionBindingAttestation"), false);
   assert.equal(index.includes("/w09-c2e"), false);
+
+  assert.equal((boundary.match(/process\.env/g) ?? []).length, 1);
+  assert.equal((boundary.match(/DATABASE_URL/g) ?? []).length, 3);
+  assert.equal(boundary.includes("createProductionBindingSupplier"), true);
+  for (const marker of [
+    "postgres" + "(",
+    "fetch" + "(",
+    "http" + ".request",
+    "https" + ".request",
+    "dns" + ".",
+    "read" + "File(",
+    "write" + "File(",
+    "logger" + ".",
+    "scheduler" + ".",
+    "worker" + ".",
+    "resolveProduction" + "BindingAttestation",
+  ]) assert.equal(boundary.includes(marker), false, marker);
 });
