@@ -1,6 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { createProductionBindingSupplier } from "./lib/p8-8-w09c2e-r2-production-composition.js";
+import { productionBindingSupplier } from "./lib/p8-8-w09c2e-r4-binding-boundary.js";
 import { loadStartupRuntimeConfig } from "./lib/startup-runtime.js";
 
 const rawPort = process.env["PORT"];
