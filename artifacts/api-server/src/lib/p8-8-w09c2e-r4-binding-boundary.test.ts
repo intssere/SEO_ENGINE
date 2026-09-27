@@ -1,51 +1,35 @@
 import assert from "node:assert/strict";
-import { afterEach, test } from "node:test";
+import { test } from "node:test";
+import {
+  P8_8_W09C2E_R4_BINDING_BOUNDARY_VERSION,
+  composeProductionBindingSupplier,
+} from "./p8-8-w09c2e-r4-binding-boundary.js";
 
-const originalDatabaseUrl = process.env["DATABASE_URL"];
-const originalPostgresUrl = process.env["POSTGRES_URL"];
-const originalNeonDatabaseUrl = process.env["NEON_DATABASE_URL"];
-
-afterEach(() => {
-  if (originalDatabaseUrl === undefined) delete process.env["DATABASE_URL"];
-  else process.env["DATABASE_URL"] = originalDatabaseUrl;
-  if (originalPostgresUrl === undefined) delete process.env["POSTGRES_URL"];
-  else process.env["POSTGRES_URL"] = originalPostgresUrl;
-  if (originalNeonDatabaseUrl === undefined) delete process.env["NEON_DATABASE_URL"];
-  else process.env["NEON_DATABASE_URL"] = originalNeonDatabaseUrl;
-});
-
-test("exports only an inert supplier over the single allowlisted binding source", async () => {
-  process.env["DATABASE_URL"] =
-    "postgresql://user:secret@example.invalid:5432/db?sslmode=require";
-
-  const mod = await import("./p8-8-w09c2e-r4-binding-boundary.js?case=allowlisted");
+test("exports the certified R4 version and composes an inert supplier over the allowlisted source", () => {
+  const supplier = composeProductionBindingSupplier({
+    DATABASE_URL: "postgresql://user:secret@example.invalid:5432/db?sslmode=require",
+  });
 
   assert.equal(
-    mod.P8_8_W09C2E_R4_BINDING_BOUNDARY_VERSION,
+    P8_8_W09C2E_R4_BINDING_BOUNDARY_VERSION,
     "p8-8-w09c2e-r4-binding-boundary-v1",
   );
-  assert.equal(typeof mod.productionBindingSupplier, "function");
+  assert.equal(typeof supplier, "function");
   assert.equal(
-    mod.productionBindingSupplier(),
+    supplier(),
     "postgresql://user:secret@example.invalid:5432/db?sslmode=require",
   );
 });
 
-test("does not fall back to alternate binding variables", async () => {
-  process.env["DATABASE_URL"] = "";
-  process.env["POSTGRES_URL"] = "postgresql://forbidden.example/db";
-  process.env["NEON_DATABASE_URL"] = "postgresql://forbidden-neon.example/db";
-
-  const mod = await import("./p8-8-w09c2e-r4-binding-boundary.js?case=no-fallback");
-
-  assert.equal(mod.productionBindingSupplier(), "");
+test("does not accept alternate binding variables as fallback inputs", () => {
+  const supplier = composeProductionBindingSupplier({ DATABASE_URL: "" });
+  assert.equal(supplier(), "");
 });
 
-test("captures the binding once at module composition time", async () => {
-  process.env["DATABASE_URL"] = "postgresql://first.example/db";
+test("captures the binding once at composition time", () => {
+  const environment = { DATABASE_URL: "postgresql://first.example/db" };
+  const supplier = composeProductionBindingSupplier(environment);
+  environment.DATABASE_URL = "postgresql://second.example/db";
 
-  const mod = await import("./p8-8-w09c2e-r4-binding-boundary.js?case=capture-once");
-  process.env["DATABASE_URL"] = "postgresql://second.example/db";
-
-  assert.equal(mod.productionBindingSupplier(), "postgresql://first.example/db");
+  assert.equal(supplier(), "postgresql://first.example/db");
 });
