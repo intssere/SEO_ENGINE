@@ -68,17 +68,17 @@ The allowlisted logical observations are:
 5. the `sites.id` column and its key/constraint properties satisfy the exact FK prerequisites referenced by frozen migrations 0005/0006/0007;
 6. all six expected new tables are absent:
    - `policy_mutation_reservations`;
-   - `policy_mutation_reservation_events`;
-   - `policy_mutation_controls`;
+   - `policy_mutation_control_state`;
    - `policy_mutation_control_events`;
+   - `policy_mutation_claims`;
    - `policy_mutation_dispatches`;
    - `policy_mutation_dispatch_events`;
-7. every index/constraint name introduced by frozen 0005/0006/0007 is absent;
-8. no migration marker or catalog evidence indicates a partial 0005/0006/0007 installation;
+7. every explicitly created index introduced by frozen 0005/0006/0007 is absent; the migrations contain no explicitly named `CONSTRAINT` clauses;
+8. no migration-like catalog object indicates a partial 0005/0006/0007 installation;
 9. no conflicting active DDL/migration session is observed;
-10. no unexplained catalog difference exists relative to the certified 34-table baseline.
+10. the exact public table-name set equals the separately certified 34-table baseline.
 
-The future implementation/execution packet must freeze the exact SELECT-only SQL text before authorization. Queries must target only PostgreSQL identity/catalog/activity metadata required above. They must not select application/business rows, invoke volatile mutation functions, create temporary objects, change schema, acquire advisory locks, or execute DDL/DML.
+The exact SELECT-only contract is frozen in `docs/p8-8-w09c2g-gate-c-query-set.md` version `p8-8-w09c2g-gate-c-query-set-v1`. A future authorization must bind that exact file identity/fingerprint; operators may not improvise or expand SQL.
 
 Any count other than 34, unexpected object, partial installation, prerequisite mismatch, conflicting DDL, query error, timeout, or ambiguity fails Gate C closed. No repair SQL is authorized.
 
@@ -113,7 +113,7 @@ A future preflight may retain only non-secret evidence needed for review:
 - operator identity;
 - credential-injection path/name without value;
 - read-only session identifier if non-secret;
-- query-set fingerprint once exact SQL is frozen;
+- query-set fingerprint;
 - overall Gate A/B/C/D verdicts;
 - evidence destination/retention;
 - safety counters/flags.
@@ -161,24 +161,22 @@ A future live W09-C2F authorization must explicitly bind:
 - operator identity;
 - zero-write and no-retry constraints.
 
-If exact SELECT-only SQL has not yet been frozen and certified, Gate C remains ineligible for live execution.
-
 ## 8. Certification criteria
 
 This specification is merge-certifiable only when:
 
 - its branch starts from the exact canonical main at creation;
-- only W09-C2F specification/static or synthetic certification material changes;
+- only W09-C2F/W09-C2G specification/static or synthetic certification material changes;
 - exact-head required CI passes;
 - zero unresolved review threads remain;
-- no Production/Replit runtime action, provider observation, database session, SQL, secret access, migration, Railway mutation, UGP action, or Stage 0 occurred.
+- no Production/Replit runtime action, provider observation, database session, SQL execution, secret access, migration, Railway mutation, UGP action, or Stage 0 occurred.
 
 Merge requires separate explicit authorization. Merge does not authorize live preflight, DDL, or Stage 0.
 
 ## 9. Current verdict
 
-**W09-C2F runbook design:** ready for offline review/certification.
+**W09-C2F runbook design:** ready with the W09-C2G exact query contract.
 
-**Live Gates A–D evidence acquisition:** blocked pending exact Gate-C SELECT-only query-set certification and separate explicit Production preflight authorization.
+**Live Gates A–D evidence acquisition:** blocked pending W09-C2G merge/certification and separate explicit Production preflight authorization.
 
 **Gate E / Production DDL:** blocked pending A–D PASS, review, a separately certified bounded migration runbook, and separate explicit DDL authorization.
