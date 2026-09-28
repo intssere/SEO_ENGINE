@@ -50,7 +50,7 @@ test("missing concrete mechanism cannot be promoted from prose-like material", (
 });
 
 test("unknown fields fail closed rather than accepting support prose", () => {
-  const value: Record<string, unknown> = fixture();
+  const value = fixture() as unknown as Record<string, unknown>;
   value.supportResponseText = "Your production database is Neon project synthetic-project";
   assert.deepEqual(evaluateSupportMechanism(value), {
     classification: "INSUFFICIENT_RESPONSE",
@@ -64,7 +64,7 @@ test("credential-shaped keys or values fail closed and are not echoed", () => {
     (x: Record<string, unknown>) => { x.DATABASE_URL = "postgresql://user:pass@example.invalid/db"; },
     (x: Record<string, unknown>) => { x.documentationReference = "postgresql://user:pass@example.invalid/db"; },
   ]) {
-    const value: Record<string, unknown> = fixture();
+    const value = fixture() as unknown as Record<string, unknown>;
     mutate(value);
     const result = evaluateSupportMechanism(value);
     assert.equal(result.classification, "INSUFFICIENT_RESPONSE");
