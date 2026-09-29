@@ -27,7 +27,7 @@ The pull request containing this file must remain unmerged during live certifica
 `;
 const proposedContentFingerprint=createHash("sha256").update(fixtureContent).digest("hex");
 
-const site=buildUniversalSiteIdentity({siteId:"ugp-047-git-certification",canonicalOrigin:"https://github.com/intssere/SEO_ENGINE"});
+const site=buildUniversalSiteIdentity({siteId:"ugp-047-git-certification",canonicalOrigin:"https://github.com"});
 const connection=buildUniversalConnectionIdentity({site,connectionId:"github-certification",provider:"github",externalAccountId:"intssere/SEO_ENGINE",connectionMode:"git"});
 const registry=buildUniversalCapabilityRegistry({provider:"github",connectorVersion:"git-v1",site,connection,credentialProfileId:"captured-evidence-only",capabilities:[
  {capability:"git.branch",resourceKinds:["page"],verification:"required",rollback:"unsupported",maxOperationsPerRequest:1,maxPayloadBytes:1000000},
