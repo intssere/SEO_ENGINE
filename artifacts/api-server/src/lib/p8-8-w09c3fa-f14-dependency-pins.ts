@@ -62,6 +62,7 @@ export interface F14DependencyPinEvidence {
   schema: typeof F14_DEPENDENCY_PIN_SCHEMA;
   repository: "intssere/SEO_ENGINE";
   parentCanonicalCommitSha: string;
+  parentCanonicalTreeSha: string;
   dockerfilePath: "Dockerfile";
   pinnedDockerfileSha256: string;
   workflowSourcePath: "docs/p8-8-w09c3fa-f14-oci-release.inert.yml";
