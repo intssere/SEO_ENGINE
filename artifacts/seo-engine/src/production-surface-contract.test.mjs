@@ -89,7 +89,9 @@ test("UGP-2.1 customer-friendly routes map to existing advanced capabilities", (
   }
   assert.ok(appSource.includes('path="/automation/review" component={ApprovalsPage}'));
   assert.ok(appSource.includes('path="/site-audit/technical" component={TechnicalSeoPage}'));
-  assert.ok(appSource.includes('path="/settings/connections" component={ConnectionsPage}'));
+  assert.ok(appSource.includes('path="/settings/connections"'));
+  assert.ok(appSource.includes('<ConnectionsPage />'));
+  assert.ok(appSource.includes('lazy(() => import(\'./pages/connections\'))'));
 });
 
 test("informational surfaces explicitly refuse fake production metrics", () => {
