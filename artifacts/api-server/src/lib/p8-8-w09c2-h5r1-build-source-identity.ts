@@ -9,7 +9,10 @@ export type BuildSourceIdentity = {
 
 export type BuildSourceIdentityResult =
   | { result: "pass"; code: "ok"; identity: BuildSourceIdentity }
-  | { result: "fail_closed"; code: "partial_explicit_identity" | "git_identity_unavailable" | "dirty_source_tree" };
+  | { result: "fail_closed"; code: "partial_explicit_identity" | "invalid_explicit_identity" | "git_identity_unavailable" | "dirty_source_tree" };
+
+const SHA40 = /^[0-9a-f]{40}$/;
+const BRANCH = /^(?!\/)(?!.*\.\.)(?!.*(?:^|\/)\.)(?!.*[~^:?*\\\[\]\s])(?!.+\/$).+$/;
 
 function git(args: string[]): string {
   return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
@@ -24,19 +27,23 @@ export function resolveBuildSourceIdentity(
     env.EXPECTED_CANONICAL_TREE,
     env.EXPECTED_SOURCE_BRANCH,
   ];
-  const supplied = explicit.filter(Boolean).length;
+  const supplied = explicit.filter((value) => value !== undefined && value !== "").length;
 
   if (supplied > 0 && supplied < 3) {
     return { result: "fail_closed", code: "partial_explicit_identity" };
   }
   if (supplied === 3) {
+    const [commit, tree, branch] = explicit as [string, string, string];
+    if (!SHA40.test(commit) || !SHA40.test(tree) || !BRANCH.test(branch)) {
+      return { result: "fail_closed", code: "invalid_explicit_identity" };
+    }
     return {
       result: "pass",
       code: "ok",
       identity: {
-        canonical_commit_sha: explicit[0]!,
-        canonical_tree_sha: explicit[1]!,
-        source_branch: explicit[2]!,
+        canonical_commit_sha: commit,
+        canonical_tree_sha: tree,
+        source_branch: branch,
         source: "explicit",
       },
     };
@@ -49,7 +56,7 @@ export function resolveBuildSourceIdentity(
     const commit = gitRead(["rev-parse", "HEAD"]);
     const tree = gitRead(["rev-parse", "HEAD^{tree}"]);
     const branch = gitRead(["symbolic-ref", "--quiet", "--short", "HEAD"]);
-    if (!commit || !tree || !branch) {
+    if (!SHA40.test(commit) || !SHA40.test(tree) || !BRANCH.test(branch)) {
       return { result: "fail_closed", code: "git_identity_unavailable" };
     }
     return {

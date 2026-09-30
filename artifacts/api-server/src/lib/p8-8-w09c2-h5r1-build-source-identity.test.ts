@@ -68,3 +68,37 @@ test("missing or detached Git identity fails closed", () => {
   });
   assert.deepEqual(result, { result: "fail_closed", code: "git_identity_unavailable" });
 });
+
+test("explicit identity rejects malformed commit, tree, or branch and never consults Git", () => {
+  const cases = [
+    { EXPECTED_CANONICAL_COMMIT: "not-a-sha", EXPECTED_CANONICAL_TREE: TREE, EXPECTED_SOURCE_BRANCH: "main" },
+    { EXPECTED_CANONICAL_COMMIT: COMMIT, EXPECTED_CANONICAL_TREE: "B".repeat(40), EXPECTED_SOURCE_BRANCH: "main" },
+    { EXPECTED_CANONICAL_COMMIT: COMMIT, EXPECTED_CANONICAL_TREE: TREE, EXPECTED_SOURCE_BRANCH: "bad branch" },
+  ];
+  for (const env of cases) {
+    let gitCalls = 0;
+    const result = resolveBuildSourceIdentity(env, () => { gitCalls++; return ""; });
+    assert.deepEqual(result, { result: "fail_closed", code: "invalid_explicit_identity" });
+    assert.equal(gitCalls, 0);
+  }
+});
+
+test("empty Docker build args do not count as partial explicit identity", () => {
+  const responses = new Map([
+    ["status --porcelain --untracked-files=no", ""],
+    ["rev-parse HEAD", COMMIT],
+    ["rev-parse HEAD^{tree}", TREE],
+    ["symbolic-ref --quiet --short HEAD", "main"],
+  ]);
+  const result = resolveBuildSourceIdentity({
+    EXPECTED_CANONICAL_COMMIT: "",
+    EXPECTED_CANONICAL_TREE: "",
+    EXPECTED_SOURCE_BRANCH: "",
+  }, (args) => {
+    const value = responses.get(args.join(" "));
+    if (value === undefined) throw new Error("unexpected git call");
+    return value;
+  });
+  assert.equal(result.result, "pass");
+  if (result.result === "pass") assert.equal(result.identity.source, "git");
+});
