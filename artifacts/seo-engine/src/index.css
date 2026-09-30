@@ -3790,7 +3790,7 @@ td:first-child {
   display: block;
 }
 .connectionScope span {
-  color: #7a8596;
+  color: #5f6d83;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: .06em;
@@ -3833,7 +3833,7 @@ button.connectionPrimaryAction:disabled {
   display: inline-flex;
   min-height: 36px;
   align-items: center;
-  color: #7a8596;
+  color: #5f6d83;
   font-size: 10px;
   line-height: 1.4;
 }
@@ -3894,7 +3894,7 @@ button.connectionPrimaryAction:disabled {
   padding: 10px 11px;
 }
 .connectionHealthGrid dt {
-  color: #7a8596;
+  color: #5f6d83;
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
