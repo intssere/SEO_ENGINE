@@ -6,7 +6,14 @@ const root = new URL("../../../../", import.meta.url);
 
 test("Railway container uses reproducible builds and a single production process", async () => {
   const dockerfile = await readFile(new URL("Dockerfile", root), "utf8");
-  assert.match(dockerfile, /^FROM node:24\.19\.0-bookworm-slim AS build$/m);
+  assert.match(
+    dockerfile,
+    /^FROM node:24\.19\.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS build$/m,
+  );
+  assert.match(
+    dockerfile,
+    /^FROM node:24\.19\.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS runtime$/m,
+  );
   assert.match(dockerfile, /pnpm install --frozen-lockfile/);
   assert.match(dockerfile, /@workspace\/api-server run build:production/);
   assert.match(dockerfile, /@workspace\/seo-engine run build/);
