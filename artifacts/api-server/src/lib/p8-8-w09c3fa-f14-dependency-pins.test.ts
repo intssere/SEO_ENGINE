@@ -30,7 +30,7 @@ test("base image and Dockerfile identities are immutable", () => {
 });
 
 test("changed action revision fails closed", () => {
-  const altered = structuredClone(F14_CERTIFIED_EVIDENCE);
+  const altered = structuredClone(F14_CERTIFIED_EVIDENCE) as any;
   altered.actions[0]!.commitSha = "a".repeat(40);
   assert.deepEqual(validateF14DependencyPins(altered), {
     result: "fail_closed",
@@ -39,7 +39,7 @@ test("changed action revision fails closed", () => {
 });
 
 test("mutable or changed base image evidence fails closed", () => {
-  const altered = structuredClone(F14_CERTIFIED_EVIDENCE);
+  const altered = structuredClone(F14_CERTIFIED_EVIDENCE) as any;
   altered.baseImages[0]!.digest = "sha256:" + "b".repeat(64);
   assert.deepEqual(validateF14DependencyPins(altered), {
     result: "fail_closed",
@@ -48,14 +48,14 @@ test("mutable or changed base image evidence fails closed", () => {
 });
 
 test("workflow source must remain inert and outside GitHub workflows", () => {
-  const enabled = structuredClone(F14_CERTIFIED_EVIDENCE);
+  const enabled = structuredClone(F14_CERTIFIED_EVIDENCE) as any;
   enabled.publishingTriggerEnabled = true;
   assert.deepEqual(validateF14DependencyPins(enabled), {
     result: "fail_closed",
     code: "workflow_not_inert",
   });
 
-  const executable = structuredClone(F14_CERTIFIED_EVIDENCE);
+  const executable = structuredClone(F14_CERTIFIED_EVIDENCE) as any;
   executable.workflowUnderGitHubWorkflows = true;
   assert.deepEqual(validateF14DependencyPins(executable), {
     result: "fail_closed",
@@ -64,7 +64,7 @@ test("workflow source must remain inert and outside GitHub workflows", () => {
 });
 
 test("build platform, target, args, provenance and SBOM are exact", () => {
-  const altered = structuredClone(F14_CERTIFIED_EVIDENCE);
+  const altered = structuredClone(F14_CERTIFIED_EVIDENCE) as any;
   altered.platform = "linux/arm64" as "linux/amd64";
   assert.deepEqual(validateF14DependencyPins(altered), {
     result: "fail_closed",
@@ -73,7 +73,7 @@ test("build platform, target, args, provenance and SBOM are exact", () => {
 });
 
 test("live release execution remains explicitly unauthorized", () => {
-  const altered = structuredClone(F14_CERTIFIED_EVIDENCE);
+  const altered = structuredClone(F14_CERTIFIED_EVIDENCE) as any;
   altered.liveExecutionAuthorized = true;
   assert.deepEqual(validateF14DependencyPins(altered), {
     result: "fail_closed",
