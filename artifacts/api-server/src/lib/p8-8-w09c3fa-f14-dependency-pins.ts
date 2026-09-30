@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 
 export const F14_DEPENDENCY_PIN_SCHEMA = "p8-8-w09c3fa-f14-dependency-pins-v1" as const;
-export const F14_PARENT_CANONICAL_COMMIT = "1fd9055d08b2891ffdb3d30b1ad774f4ef1d0e9c" as const;\nexport const F14_PARENT_CANONICAL_TREE = "9338242983577e6905275f79b83c7da8e14e40aa" as const;
+export const F14_PARENT_CANONICAL_COMMIT = "1fd9055d08b2891ffdb3d30b1ad774f4ef1d0e9c" as const;
+export const F14_PARENT_CANONICAL_TREE = "9338242983577e6905275f79b83c7da8e14e40aa" as const;
 export const F14_PINNED_DOCKERFILE_SHA256 = "406c49b7d8dec8e3c0fb48e0c4b05d4f1f2dce82c1a82535a48a2c2a08f48b40" as const;
 export const F14_BASE_IMAGE_DIGEST = "sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6" as const;
 
@@ -145,7 +146,8 @@ export function validateF14DependencyPins(value: unknown): F14ValidationResult {
   ) {
     return { result: "fail_closed", code: "invalid_shape" };
   }
-  if (raw.parentCanonicalCommitSha !== F14_PARENT_CANONICAL_COMMIT ||\n      raw.parentCanonicalTreeSha !== F14_PARENT_CANONICAL_TREE) {
+  if (raw.parentCanonicalCommitSha !== F14_PARENT_CANONICAL_COMMIT ||
+      raw.parentCanonicalTreeSha !== F14_PARENT_CANONICAL_TREE) {
     return { result: "fail_closed", code: "lineage_mismatch" };
   }
   if (
