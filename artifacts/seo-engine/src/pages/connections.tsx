@@ -1,17 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import {
-  AlertCircle,
-  BarChart3,
-  CheckCircle2,
-  ChevronRight,
-  Globe2,
-  Link2,
-  Loader2,
-  PanelsTopLeft,
-  RefreshCw,
-  Search,
-  ShieldCheck,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearch } from "wouter";
 import { StatusBadge } from "../components/status-badge";
 import {
@@ -48,12 +35,12 @@ const errorMessages: Record<string, string> = {
   google_selection: "The selected Google properties could not be saved. Please authorize again.",
 };
 
-const icons: Record<ConnectionCardModel["domain"], ReactNode> = {
-  website: <Globe2 aria-hidden="true" />,
-  search_console: <Search aria-hidden="true" />,
-  analytics: <BarChart3 aria-hidden="true" />,
-  cms: <PanelsTopLeft aria-hidden="true" />,
-  backlink_serp: <Link2 aria-hidden="true" />,
+const domainMark: Record<ConnectionCardModel["domain"], string> = {
+  website: "W",
+  search_console: "SC",
+  analytics: "A",
+  cms: "CMS",
+  backlink_serp: "SERP",
 };
 
 function discoveryLabel(status?: DiscoveryStatus | null) {
@@ -66,54 +53,46 @@ function discoveryLabel(status?: DiscoveryStatus | null) {
   return "Invalid provider response";
 }
 
-function ConnectionCard({
-  card,
-  loading,
-}: {
-  card: ConnectionCardModel;
-  loading: boolean;
-}) {
+function actionClass() {
+  return "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#c9dcfa] bg-[#f3f7ff] px-3 py-2 text-xs font-bold text-[#245ea8] no-underline hover:bg-[#e8f1ff]";
+}
+
+function ConnectionCard({ card, loading }: { card: ConnectionCardModel; loading: boolean }) {
   return (
-    <article className="connectionCard">
-      <div className="connectionCardHeader">
-        <div className={`connectionIcon connectionIcon--${card.domain}`}>
-          {icons[card.domain]}
-        </div>
+    <article className="flex min-w-0 flex-col rounded-xl border border-[#e2e7ef] bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <span
+          aria-hidden="true"
+          className="grid min-h-10 min-w-10 place-items-center rounded-lg bg-[#f1f5fa] px-2 text-[10px] font-extrabold text-[#455168]"
+        >
+          {domainMark[card.domain]}
+        </span>
         <StatusBadge tone={card.tone}>{card.statusLabel}</StatusBadge>
       </div>
 
-      <div className="connectionCardBody">
-        <h2>{card.title}</h2>
-        <p>{card.description}</p>
+      <h2 className="mt-3 text-base font-bold text-[#172033]">{card.title}</h2>
+      <p className="mt-1 min-h-10 text-[11px] leading-5 text-[#647087]">{card.description}</p>
+
+      <div className="mt-3 rounded-lg border border-[#edf0f5] bg-[#fbfcfe] p-2.5">
+        <span className="block text-[9px] font-extrabold uppercase tracking-wide text-[#5f6d83]">Site scope</span>
+        <strong className="mt-1 block break-words text-[10px] text-[#34445d]">{card.scopeLabel}</strong>
       </div>
 
-      <div className="connectionScope">
-        <span>Site scope</span>
-        <strong>{card.scopeLabel}</strong>
-      </div>
+      <p className="my-3 flex-1 text-[10px] leading-4 text-[#647087]">
+        {loading ? "Checking connection state…" : card.detail}
+      </p>
 
-      <p className="connectionDetail">{loading ? "Checking connection state…" : card.detail}</p>
-
-      <div className="connectionCardActions">
+      <div>
         {card.recoveryHref && card.recoveryLabel ? (
-          <a className="connectionPrimaryAction" href={card.recoveryHref}>
-            <RefreshCw aria-hidden="true" />
-            {card.recoveryLabel}
-          </a>
+          <a className={actionClass()} href={card.recoveryHref}>{card.recoveryLabel}</a>
         ) : card.connectHref && card.connectLabel ? (
           card.connectHref.startsWith("/api/") ? (
-            <a className="connectionPrimaryAction" href={card.connectHref}>
-              {card.connectLabel}
-              <ChevronRight aria-hidden="true" />
-            </a>
+            <a className={actionClass()} href={card.connectHref}>{card.connectLabel}</a>
           ) : (
-            <Link className="connectionPrimaryAction" href={card.connectHref}>
-              {card.connectLabel}
-              <ChevronRight aria-hidden="true" />
-            </Link>
+            <Link className={actionClass()} href={card.connectHref}>{card.connectLabel}</Link>
           )
         ) : (
-          <span className="connectionUnavailable">
+          <span className="inline-flex min-h-9 items-center text-[10px] leading-4 text-[#5f6d83]">
             {card.disabled ? "No live connection available in this milestone" : "No action required"}
           </span>
         )}
@@ -152,11 +131,7 @@ export default function ConnectionsPage() {
       .catch(() => undefined);
   }, []);
 
-  const model = useMemo(
-    () => status ? buildConnectionsUiModel(status) : null,
-    [status],
-  );
-
+  const model = useMemo(() => status ? buildConnectionsUiModel(status) : null, [status]);
   const task53WriteConnected = task53Capability?.connected === true
     && task53Capability.writeProductsScopePresent === true
     && task53Capability.credentialAvailable === true;
@@ -170,59 +145,53 @@ export default function ConnectionsPage() {
   return (
     <>
       <header className="topbar">
-        <div>
-          <strong>Settings</strong>
-          <span className="muted"> Connections</span>
-        </div>
+        <div><strong>Settings</strong><span className="muted"> Connections</span></div>
       </header>
 
-      <div className="content connectionsWorkspace">
-        <section className="connectionsHero">
-          <div>
+      <div className="content flex min-w-0 flex-col gap-5">
+        <section className="flex items-start justify-between gap-6 max-[820px]:flex-col">
+          <div className="max-w-[760px]">
             <p className="eyebrow">CONNECTIONS</p>
-            <h1>Connect the data sources that explain your site</h1>
-            <p className="muted">
+            <h1 className="m-0 text-3xl font-bold leading-tight tracking-tight text-[#172033] max-[640px]:text-2xl">
+              Connect the data sources that explain your site
+            </h1>
+            <p className="muted mt-2 text-[13px] leading-6">
               Each source is scoped to one website. Connecting a provider makes data available;
               it does not authorize SEO ENGINE to publish or modify your site.
             </p>
           </div>
-          <Link className="connectionHeroAction" href="/settings/add-website">
-            <Globe2 aria-hidden="true" />
+          <Link className={actionClass() + " shrink-0 max-[820px]:w-full"} href="/settings/add-website">
             Add or review website
           </Link>
         </section>
 
         {successMessage && (
-          <div role="status" aria-live="polite" className="connectionAlert connectionAlert--success">
-            <CheckCircle2 aria-hidden="true" />
-            <span>{successMessage}</span>
+          <div role="status" aria-live="polite" className="flex items-start gap-2 rounded-lg border border-[var(--status-success-border)] bg-[var(--status-success-bg)] p-3 text-xs font-semibold text-[var(--status-success-fg)]">
+            <span aria-hidden="true">✓</span><span>{successMessage}</span>
           </div>
         )}
-
         {errorMessage && (
-          <div role="alert" className="connectionAlert connectionAlert--danger">
-            <AlertCircle aria-hidden="true" />
-            <span>{errorMessage}</span>
+          <div role="alert" className="flex items-start gap-2 rounded-lg border border-[var(--status-danger-border)] bg-[var(--status-danger-bg)] p-3 text-xs font-semibold text-[var(--status-danger-fg)]">
+            <span aria-hidden="true">!</span><span>{errorMessage}</span>
           </div>
         )}
 
-        <section className="connectionScopeBanner" aria-label="Active website scope">
-          <div className="connectionScopeIcon"><ShieldCheck aria-hidden="true" /></div>
+        <section aria-label="Active website scope" className="grid grid-cols-[38px_minmax(0,1fr)_auto] items-start gap-3 rounded-xl border border-[#dce5f3] bg-[#f8fbff] p-4 max-[820px]:grid-cols-[38px_minmax(0,1fr)]">
+          <span aria-hidden="true" className="grid h-[38px] w-[38px] place-items-center rounded-lg bg-[#e8f1ff] text-xs font-extrabold text-[#245ea8]">SITE</span>
           <div>
-            <span>Active website scope</span>
-            <strong>{model?.siteScopeLabel ?? "Checking website scope…"}</strong>
-            <p>
-              Search, analytics, CMS, and future authority data must resolve to this same site scope
-              before they are treated as connected.
+            <span className="block text-[10px] font-extrabold uppercase tracking-wide text-[#647087]">Active website scope</span>
+            <strong className="mt-1 block break-words text-sm text-[#172033]">{model?.siteScopeLabel ?? "Checking website scope…"}</strong>
+            <p className="mt-1 text-[10px] leading-4 text-[#647087]">
+              Search, analytics, CMS, and future authority data must resolve to this same site scope before they are treated as connected.
             </p>
           </div>
-          <StatusBadge tone={model?.activeSiteScope ? "success" : "warning"}>
+          <StatusBadge className="max-[820px]:col-start-2 max-[820px]:justify-self-start" tone={model?.activeSiteScope ? "success" : "warning"}>
             {model?.activeSiteScope ? "Scope confirmed" : "Scope required"}
           </StatusBadge>
         </section>
 
         <section aria-labelledby="connection-sources-title">
-          <div className="sectionHead connectionSectionHead">
+          <div className="sectionHead mb-3">
             <div>
               <h2 id="connection-sources-title">Data sources</h2>
               <p className="muted">Connection health and recovery are visible without exposing credentials.</p>
@@ -230,53 +199,44 @@ export default function ConnectionsPage() {
           </div>
 
           {model ? (
-            <div className="connectionsGrid">
-              {model.cards.map((card) => (
-                <ConnectionCard key={card.domain} card={card} loading={loading} />
-              ))}
+            <div className="grid grid-cols-3 gap-3 max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1">
+              {model.cards.map((card) => <ConnectionCard key={card.domain} card={card} loading={loading} />)}
             </div>
           ) : (
-            <div className="connectionsLoading card" role="status" aria-live="polite">
-              <Loader2 className="animate-spin" aria-hidden="true" />
-              <span>{loading ? "Loading connection status…" : "Connection status is temporarily unavailable."}</span>
+            <div className="card flex min-h-[120px] items-center justify-center text-xs text-[#647087]" role="status" aria-live="polite">
+              {loading ? "Loading connection status…" : "Connection status is temporarily unavailable."}
             </div>
           )}
         </section>
 
         {status?.google.needsConfirmation && (
-          <section className="card connectionSetupPanel" aria-labelledby="google-setup-title">
+          <section className="card flex flex-col gap-4" aria-labelledby="google-setup-title">
             <div className="sectionHead">
               <div>
                 <p className="eyebrow">ACTION REQUIRED</p>
                 <h2 id="google-setup-title">Finish Google property setup</h2>
-                <p className="muted">
-                  Authorization succeeded. Choose the Search Console and GA4 properties that match the active website.
-                </p>
+                <p className="muted">Choose the Search Console and GA4 properties that match the active website.</p>
               </div>
               <StatusBadge tone="warning">Needs confirmation</StatusBadge>
             </div>
-            <form action="/api/connections/google/select" method="POST" className="connectionPropertyGrid">
-              <label>
-                <span>Search Console property</span>
-                <select name="gscSiteUrl" required>
+            <form action="/api/connections/google/select" method="POST" className="grid grid-cols-[1fr_1fr_auto] items-end gap-3 max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1">
+              <label className="text-[10px] font-bold text-[#52627a]">
+                Search Console property
+                <select name="gscSiteUrl" required className="mt-1 min-h-11 w-full rounded-lg border border-[#dce2eb] bg-white px-2.5 text-xs">
                   <option value="">Select a property</option>
-                  {status.google.searchConsoleProperties?.map((item) => item.siteUrl ? (
-                    <option key={item.siteUrl} value={item.siteUrl}>{item.siteUrl}</option>
-                  ) : null)}
+                  {status.google.searchConsoleProperties?.map((item) => item.siteUrl ? <option key={item.siteUrl} value={item.siteUrl}>{item.siteUrl}</option> : null)}
                 </select>
               </label>
-              <label>
-                <span>GA4 property</span>
-                <select name="ga4PropertyId" required>
+              <label className="text-[10px] font-bold text-[#52627a]">
+                GA4 property
+                <select name="ga4PropertyId" required className="mt-1 min-h-11 w-full rounded-lg border border-[#dce2eb] bg-white px-2.5 text-xs">
                   <option value="">Select a property</option>
                   {status.google.ga4Properties?.map((item) => item.propertyId ? (
-                    <option key={item.propertyId} value={item.propertyId}>
-                      {item.displayName ?? "GA4"} · {item.propertyId}
-                    </option>
+                    <option key={item.propertyId} value={item.propertyId}>{item.displayName ?? "GA4"} · {item.propertyId}</option>
                   ) : null)}
                 </select>
               </label>
-              <button type="submit" disabled={oauthDisabled} className="connectionPrimaryAction">
+              <button type="submit" disabled={oauthDisabled} className={actionClass() + " disabled:cursor-not-allowed disabled:opacity-50 max-[1100px]:col-span-2 max-[1100px]:w-fit max-[640px]:col-span-1 max-[640px]:w-full"}>
                 Confirm matching properties
               </button>
             </form>
@@ -284,40 +244,37 @@ export default function ConnectionsPage() {
         )}
 
         {status?.google.authorized && !status.google.connected && !status.google.needsConfirmation && (
-          <section className="card connectionHealthPanel" aria-labelledby="google-health-title">
+          <section className="card flex flex-col gap-4" aria-labelledby="google-health-title">
             <div className="sectionHead">
-              <div>
-                <p className="eyebrow">CONNECTION HEALTH</p>
-                <h2 id="google-health-title">Google authorization needs attention</h2>
-              </div>
+              <div><p className="eyebrow">CONNECTION HEALTH</p><h2 id="google-health-title">Google authorization needs attention</h2></div>
               <StatusBadge tone="warning">Recoverable</StatusBadge>
             </div>
-            <dl className="connectionHealthGrid">
-              <div><dt>Refresh access</dt><dd>{status.google.hasRefreshToken ? "Ready" : "Reauthorization required"}</dd></div>
-              <div><dt>Search Console discovery</dt><dd>{discoveryLabel(status.google.searchConsoleDiscovery)}</dd></div>
-              <div><dt>GA4 discovery</dt><dd>{discoveryLabel(status.google.ga4Discovery)}</dd></div>
+            <dl className="grid grid-cols-3 gap-2 max-[640px]:grid-cols-1">
+              {[
+                ["Refresh access", status.google.hasRefreshToken ? "Ready" : "Reauthorization required"],
+                ["Search Console discovery", discoveryLabel(status.google.searchConsoleDiscovery)],
+                ["GA4 discovery", discoveryLabel(status.google.ga4Discovery)],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg border border-[#edf0f5] bg-[#fbfcfe] p-2.5">
+                  <dt className="text-[9px] font-extrabold uppercase tracking-wide text-[#5f6d83]">{label}</dt>
+                  <dd className="mt-1 text-[11px] font-bold text-[#34445d]">{value}</dd>
+                </div>
+              ))}
             </dl>
-            {!oauthDisabled && (
-              <a className="connectionPrimaryAction" href="/api/connections/google/start">
-                <RefreshCw aria-hidden="true" />
-                Reconnect Google
-              </a>
-            )}
+            {!oauthDisabled && <a className={actionClass() + " w-fit"} href="/api/connections/google/start">Reconnect Google</a>}
           </section>
         )}
 
-        <details className="card connectionAdvanced">
-          <summary>Advanced provider setup</summary>
-          <div className="connectionAdvancedBody">
+        <details className="card overflow-hidden p-0">
+          <summary className="flex min-h-12 cursor-pointer items-center px-4 text-xs font-bold text-[#455168]">Advanced provider setup</summary>
+          <div className="grid grid-cols-2 gap-4 border-t border-[#edf0f5] p-4 max-[820px]:grid-cols-1">
             <section>
-              <h3>Direct Shopify authorization</h3>
-              <p className="muted">
-                Existing Shopify authorization remains available for compatibility. New customers should normally use the website setup flow above.
-              </p>
-              {!status?.shopify.connected && (
-                <form action="/api/connections/shopify/start" method="GET" className="connectionInlineForm">
-                  <label htmlFor="shopify-domain">Shopify store domain</label>
-                  <div>
+              <h3 className="m-0 text-[13px] font-bold text-[#263249]">Direct Shopify authorization</h3>
+              <p className="muted my-2 text-[10px] leading-4">Existing Shopify authorization remains available for compatibility. New customers should normally use the website setup flow.</p>
+              {!status?.shopify.connected ? (
+                <form action="/api/connections/shopify/start" method="GET">
+                  <label htmlFor="shopify-domain" className="mb-1 block text-[10px] font-bold text-[#52627a]">Shopify store domain</label>
+                  <div className="flex gap-2 max-[640px]:flex-col">
                     <input
                       id="shopify-domain"
                       type="text"
@@ -327,45 +284,32 @@ export default function ConnectionsPage() {
                       onChange={(event) => setShopDomain(event.target.value)}
                       required
                       disabled={oauthDisabled}
+                      className="min-h-11 min-w-0 flex-1 rounded-lg border border-[#dce2eb] bg-white px-2.5 text-xs"
                     />
-                    <button type="submit" disabled={oauthDisabled} className="connectionSecondaryAction">
-                      Connect Shopify
-                    </button>
+                    <button type="submit" disabled={oauthDisabled} className={actionClass() + " disabled:cursor-not-allowed disabled:opacity-50"}>Connect Shopify</button>
                   </div>
                 </form>
-              )}
-              {status?.shopify.connected && (
-                <p className="connectionProviderFact">
-                  Connected store: <strong>{status.shopify.domain}</strong>
-                </p>
+              ) : (
+                <p className="rounded-lg border border-[#edf0f5] bg-[#fbfcfe] p-2.5 text-[10px] text-[#52627a]">Connected store: <strong>{status.shopify.domain}</strong></p>
               )}
             </section>
 
             {status?.shopify.connected && (
               <section>
-                <h3>Task #53 isolated write credential</h3>
+                <h3 className="m-0 text-[13px] font-bold text-[#263249]">Task #53 isolated write credential</h3>
                 {task53WriteConnected ? (
-                  <p className="connectionProviderFact connectionProviderFact--success">
-                    <CheckCircle2 aria-hidden="true" />
-                    <span>
-                      <strong>write_products is connected.</strong> This credential does not enable a public-site write by itself.
-                    </span>
+                  <p className="rounded-lg border border-[var(--status-success-border)] bg-[var(--status-success-bg)] p-2.5 text-[10px] leading-4 text-[var(--status-success-fg)]">
+                    <strong>write_products is connected.</strong> This credential does not enable a public-site write by itself.
                   </p>
                 ) : task53EligibleShop && !oauthDisabled ? (
-                  <form action="/api/connections/shopify/task53-write/start" method="POST" className="connectionTaskForm">
+                  <form action="/api/connections/shopify/task53-write/start" method="POST">
                     <input type="hidden" name="shop" value="vcuxm7-76.myshopify.com" />
                     <input type="hidden" name="confirmation" value="AUTHORIZE_SHOPIFY_WRITE_SCOPE:write_products" />
-                    <p className="muted">
-                      Requests only the isolated <strong>write_products</strong> credential. Execution authorization remains separate.
-                    </p>
-                    <button type="submit" className="connectionSecondaryAction">
-                      Authorize Task #53 write_products
-                    </button>
+                    <p className="muted my-2 text-[10px] leading-4">Requests only the isolated <strong>write_products</strong> credential. Execution authorization remains separate.</p>
+                    <button type="submit" className={actionClass()}>Authorize Task #53 write_products</button>
                   </form>
                 ) : (
-                  <p className="muted">
-                    The isolated write-scope flow is unavailable unless the approved Diamond Shelf store is connected in read-only mode.
-                  </p>
+                  <p className="muted text-[10px] leading-4">The isolated write-scope flow is unavailable unless the approved Diamond Shelf store is connected in read-only mode.</p>
                 )}
               </section>
             )}
