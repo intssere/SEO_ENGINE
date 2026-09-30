@@ -28,7 +28,7 @@ export type ContentAddressedTransportResult =
 const SHA40 = /^[0-9a-f]{40}$/;
 const SHA256 = /^[0-9a-f]{64}$/;
 const OCI_DIGEST = /^sha256:[0-9a-f]{64}$/;
-const SAFE = /^[A-Za-z0-9][A-Za-z0-9._:/+-]{0,511}$/;
+const SAFE = /^[A-Za-z0-9][A-Za-z0-9._:/+@-]{0,511}$/;
 const CREDENTIAL_KEY = /(token|secret|password|credential|database[_-]?url|api[_-]?key|private[_-]?key)/i;
 const CREDENTIAL_VALUE = /(bearer\s+[A-Za-z0-9._~+\/-]+=*|postgres(?:ql)?:\/\/[^\s]+:[^\s]+@|sk-[A-Za-z0-9_-]{16,})/i;
 
