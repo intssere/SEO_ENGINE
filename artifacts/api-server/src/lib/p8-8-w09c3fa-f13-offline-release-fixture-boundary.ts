@@ -92,8 +92,7 @@ const SAFE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 const ACTION_PIN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+@[0-9a-f]{40}$/;
 const PLATFORM = /^[a-z0-9]+\/[a-z0-9_]+(?:\/[a-z0-9._-]+)?$/;
 const TAG = /^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$/;
-const CREDENTIAL_KEY =
-  /(token|secret|password|credential|database[_-]?url|api[_-]?key|private[_-]?key)/i;
+const CREDENTIAL_KEY =\n  /^(?:token|secret|password|credential|database[_-]?url|api[_-]?key|private[_-]?key)$/i;
 const CREDENTIAL_VALUE =
   /(bearer\s+[A-Za-z0-9._~+\/-]+=*|postgres(?:ql)?:\/\/[^\s]+:[^\s]+@|sk-[A-Za-z0-9_-]{16,})/i;
 
