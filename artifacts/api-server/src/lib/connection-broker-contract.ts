@@ -218,9 +218,61 @@ function assertSite(site:UniversalSiteIdentity):void{
   if(stableJson(rebuilt)!==stableJson(site))throw new Error("ugp_broker_site_integrity_failed");
 }
 function assertConnection(connection:UniversalConnectionIdentity):void{
-  const site={version:connection.version,siteId:connection.siteId,canonicalOrigin:"https://placeholder.invalid",hostname:"placeholder.invalid",siteIdentityFingerprint:connection.siteIdentityFingerprint} as UniversalSiteIdentity;
-  void site;
-  if(typeof connection.connectionIdentityFingerprint!=="string"||!/^[0-9a-f]{64}$/.test(connection.connectionIdentityFingerprint))throw new Error("ugp_broker_connection_integrity_failed");
+  if(!connection||typeof connection!=="object"||Array.isArray(connection))throw new Error("ugp_broker_connection_integrity_failed");
+  const base={
+    version:connection.version,
+    siteId:exactKey(connection.siteId,"connection_site_id"),
+    siteIdentityFingerprint:connection.siteIdentityFingerprint,
+    connectionId:exactKey(connection.connectionId,"connection_id"),
+    provider:exactProvider(connection.provider),
+    externalAccountId:exactPrintable(connection.externalAccountId,"external_account_id",true),
+    connectionMode:connection.connectionMode==null?null:exactKey(connection.connectionMode,"connection_mode"),
+  };
+  if(typeof base.siteIdentityFingerprint!=="string"||!/^[0-9a-f]{64}$/.test(base.siteIdentityFingerprint))throw new Error("ugp_broker_connection_integrity_failed");
+  const expected=stableHash({purpose:"ugp_connection_identity",...base});
+  if(expected!==connection.connectionIdentityFingerprint)throw new Error("ugp_broker_connection_integrity_failed");
+}
+function assertHandle(handle:ConnectionHandle):void{
+  assertConnection(handle.connection);
+  if(handle.version!==UGP_CONNECTION_BROKER_VERSION||handle.state!=="connected")throw new Error("ugp_broker_handle_integrity_failed");
+  const expected=stableHash({purpose:"ugp_connection_handle",
+    version:handle.version,
+    connection:handle.connection,
+    credentialProfileId:exactPrintable(handle.credentialProfileId,"credential_profile_id",false) as string,
+    state:handle.state,
+    connectedAt:exactTime(handle.connectedAt,"connected_at"),
+    lastConfirmedAt:exactTime(handle.lastConfirmedAt,"last_confirmed_at"),
+    brokerPolicy:BROKER_POLICY,
+  });
+  if(stableJson(handle.brokerPolicy)!==stableJson(BROKER_POLICY)||expected!==handle.handleFingerprint)throw new Error("ugp_broker_handle_integrity_failed");
+}
+function assertLease(lease:CredentialLease):void{
+  if(lease.version!==UGP_CONNECTION_BROKER_VERSION||lease.credentialMaterialPresent!==false||lease.grantsAuthorization!==false)throw new Error("ugp_broker_lease_integrity_failed");
+  const base={
+    version:lease.version,
+    connectionIdentityFingerprint:lease.connectionIdentityFingerprint,
+    credentialProfileId:lease.credentialProfileId,
+    leaseId:lease.leaseId,
+    issuedAt:lease.issuedAt,
+    expiresAt:lease.expiresAt,
+    renewable:lease.renewable,
+    credentialMaterialPresent:false as const,
+    grantsAuthorization:false as const,
+  };
+  if(!/^[0-9a-f]{64}$/.test(base.connectionIdentityFingerprint)||stableHash({purpose:"ugp_credential_lease",...base})!==lease.leaseFingerprint)throw new Error("ugp_broker_lease_integrity_failed");
+}
+function assertHealth(health:ConnectionHealth):void{
+  if(health.version!==UGP_CONNECTION_BROKER_VERSION||health.grantsAuthorization!==false||!(CONNECTION_HEALTH as readonly string[]).includes(health.status))throw new Error("ugp_broker_health_integrity_failed");
+  const base={
+    version:health.version,
+    connectionIdentityFingerprint:health.connectionIdentityFingerprint,
+    credentialProfileId:health.credentialProfileId,
+    status:health.status,
+    checkedAt:health.checkedAt,
+    reason:health.reason,
+    grantsAuthorization:false as const,
+  };
+  if(stableHash({purpose:"ugp_connection_health",...base})!==health.healthFingerprint)throw new Error("ugp_broker_health_integrity_failed");
 }
 function positiveInt(value:unknown,field:string,max:number):number{
   if(typeof value!=="number"||!Number.isSafeInteger(value)||value<0||value>max)throw new Error("ugp_broker_invalid_"+field);
@@ -293,8 +345,7 @@ export function materializeConnectionHandle(input:{
 export function buildCredentialLease(input:{
   handle:ConnectionHandle;leaseId:string;issuedAt:string;expiresAt:string;renewable:boolean;
 }):CredentialLease{
-  assertConnection(input.handle.connection);
-  if(input.handle.state==="revoked")throw new Error("ugp_broker_revoked_connection_rejects_lease");
+  assertHandle(input.handle);
   const issuedAt=exactTime(input.issuedAt,"lease_issued_at");
   const expiresAt=exactTime(input.expiresAt,"lease_expires_at");
   if(Date.parse(expiresAt)<=Date.parse(issuedAt))throw new Error("ugp_broker_lease_expiry_invalid");
@@ -316,6 +367,7 @@ export function buildCredentialLease(input:{
 export function refreshIfRequired(input:{
   lease:CredentialLease;now:string;refreshBeforeSeconds:number;
 }):Readonly<{required:boolean;reason:"not_required"|"expiry_window"|"expired"}>{
+  assertLease(input.lease);
   const now=exactTime(input.now,"refresh_now");
   const window=positiveInt(input.refreshBeforeSeconds,"refresh_before_seconds",31_536_000);
   const delta=Date.parse(input.lease.expiresAt)-Date.parse(now);
@@ -327,7 +379,7 @@ export function refreshIfRequired(input:{
 export function buildConnectionHealth(input:{
   handle:ConnectionHandle;status:ConnectionHealthStatus;checkedAt:string;reason?:string|null;
 }):ConnectionHealth{
-  assertConnection(input.handle.connection);
+  assertHandle(input.handle);
   if(!(CONNECTION_HEALTH as readonly string[]).includes(input.status))throw new Error("ugp_broker_invalid_health_status");
   const reason=exactPrintable(input.reason??null,"health_reason",true);
   if((input.status==="healthy"||input.status==="revoked")&&reason!==null)throw new Error("ugp_broker_health_reason_not_allowed");
@@ -345,7 +397,7 @@ export function buildConnectionHealth(input:{
 }
 
 export function revokeConnection(input:{handle:ConnectionHandle;revokedAt:string;}):ConnectionRevocation{
-  assertConnection(input.handle.connection);
+  assertHandle(input.handle);
   const revokedAt=exactTime(input.revokedAt,"revoked_at");
   if(Date.parse(revokedAt)<Date.parse(input.handle.connectedAt))throw new Error("ugp_broker_revocation_before_connection");
   const base={
@@ -360,6 +412,7 @@ export function revokeConnection(input:{handle:ConnectionHandle;revokedAt:string
 }
 
 export function planReconnect(input:{health:ConnectionHealth;}):ReconnectPlan{
+  assertHealth(input.health);
   const required=input.health.status==="degraded"||input.health.status==="unavailable"||input.health.status==="revoked";
   const reason=required
     ? input.health.status==="revoked"?"connection_revoked":"connection_"+input.health.status
