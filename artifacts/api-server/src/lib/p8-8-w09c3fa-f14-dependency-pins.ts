@@ -237,6 +237,7 @@ export const F14_CERTIFIED_EVIDENCE: F14DependencyPinEvidence = {
   schema: F14_DEPENDENCY_PIN_SCHEMA,
   repository: "intssere/SEO_ENGINE",
   parentCanonicalCommitSha: F14_PARENT_CANONICAL_COMMIT,
+  parentCanonicalTreeSha: F14_PARENT_CANONICAL_TREE,
   dockerfilePath: "Dockerfile",
   pinnedDockerfileSha256: F14_PINNED_DOCKERFILE_SHA256,
   workflowSourcePath: "docs/p8-8-w09c3fa-f14-oci-release.inert.yml",
