@@ -4,6 +4,17 @@ ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 WORKDIR /app
 
+# Docker/remote builders commonly receive a source archive without .git.
+# Keep provenance fail-closed by requiring the deployment platform to inject
+# the complete canonical identity as non-secret build arguments. If these are
+# absent, the existing resolver may still use an attached clean Git worktree.
+ARG EXPECTED_CANONICAL_COMMIT
+ARG EXPECTED_CANONICAL_TREE
+ARG EXPECTED_SOURCE_BRANCH
+ENV EXPECTED_CANONICAL_COMMIT=$EXPECTED_CANONICAL_COMMIT
+ENV EXPECTED_CANONICAL_TREE=$EXPECTED_CANONICAL_TREE
+ENV EXPECTED_SOURCE_BRANCH=$EXPECTED_SOURCE_BRANCH
+
 RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
 
 COPY . .
