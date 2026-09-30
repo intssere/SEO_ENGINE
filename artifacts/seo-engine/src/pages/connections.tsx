@@ -149,10 +149,10 @@ export default function ConnectionsPage() {
       </header>
 
       <div className="content flex min-w-0 flex-col gap-5">
-        <section className="flex items-start justify-between gap-6 max-[820px]:flex-col">
+        <section className="flex items-start justify-between gap-6 md:flex-row">
           <div className="max-w-[760px]">
             <p className="eyebrow">CONNECTIONS</p>
-            <h1 className="m-0 text-3xl font-bold leading-tight tracking-tight text-[#172033] max-[640px]:text-2xl">
+            <h1 className="m-0 text-3xl font-bold leading-tight tracking-tight text-[#172033] text-2xl sm:text-3xl">
               Connect the data sources that explain your site
             </h1>
             <p className="muted mt-2 text-[13px] leading-6">
@@ -160,7 +160,7 @@ export default function ConnectionsPage() {
               it does not authorize SEO ENGINE to publish or modify your site.
             </p>
           </div>
-          <Link className={actionClass() + " shrink-0 max-[820px]:w-full"} href="/settings/add-website">
+          <Link className={actionClass() + " shrink-0 w-full md:w-auto"} href="/settings/add-website">
             Add or review website
           </Link>
         </section>
@@ -176,7 +176,7 @@ export default function ConnectionsPage() {
           </div>
         )}
 
-        <section aria-label="Active website scope" className="grid grid-cols-[38px_minmax(0,1fr)_auto] items-start gap-3 rounded-xl border border-[#dce5f3] bg-[#f8fbff] p-4 max-[820px]:grid-cols-[38px_minmax(0,1fr)]">
+        <section aria-label="Active website scope" className="grid grid-cols-[38px_minmax(0,1fr)_auto] items-start gap-3 rounded-xl border border-[#dce5f3] bg-[#f8fbff] p-4 md:grid-cols-[38px_minmax(0,1fr)_auto]">
           <span aria-hidden="true" className="grid h-[38px] w-[38px] place-items-center rounded-lg bg-[#e8f1ff] text-xs font-extrabold text-[#245ea8]">SITE</span>
           <div>
             <span className="block text-[10px] font-extrabold uppercase tracking-wide text-[#647087]">Active website scope</span>
@@ -185,7 +185,7 @@ export default function ConnectionsPage() {
               Search, analytics, CMS, and future authority data must resolve to this same site scope before they are treated as connected.
             </p>
           </div>
-          <StatusBadge className="max-[820px]:col-start-2 max-[820px]:justify-self-start" tone={model?.activeSiteScope ? "success" : "warning"}>
+          <StatusBadge className="justify-self-start md:col-start-auto" tone={model?.activeSiteScope ? "success" : "warning"}>
             {model?.activeSiteScope ? "Scope confirmed" : "Scope required"}
           </StatusBadge>
         </section>
@@ -199,7 +199,7 @@ export default function ConnectionsPage() {
           </div>
 
           {model ? (
-            <div className="grid grid-cols-3 gap-3 max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
               {model.cards.map((card) => <ConnectionCard key={card.domain} card={card} loading={loading} />)}
             </div>
           ) : (
@@ -219,7 +219,7 @@ export default function ConnectionsPage() {
               </div>
               <StatusBadge tone="warning">Needs confirmation</StatusBadge>
             </div>
-            <form action="/api/connections/google/select" method="POST" className="grid grid-cols-[1fr_1fr_auto] items-end gap-3 max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1">
+            <form action="/api/connections/google/select" method="POST" className="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[1fr_1fr_auto]">
               <label className="text-[10px] font-bold text-[#52627a]">
                 Search Console property
                 <select name="gscSiteUrl" required className="mt-1 min-h-11 w-full rounded-lg border border-[#dce2eb] bg-white px-2.5 text-xs">
@@ -236,7 +236,7 @@ export default function ConnectionsPage() {
                   ) : null)}
                 </select>
               </label>
-              <button type="submit" disabled={oauthDisabled} className={actionClass() + " disabled:cursor-not-allowed disabled:opacity-50 max-[1100px]:col-span-2 max-[1100px]:w-fit max-[640px]:col-span-1 max-[640px]:w-full"}>
+              <button type="submit" disabled={oauthDisabled} className={actionClass() + " disabled:cursor-not-allowed disabled:opacity-50 w-full md:col-span-2 md:w-fit xl:col-span-1"}>
                 Confirm matching properties
               </button>
             </form>
@@ -249,7 +249,7 @@ export default function ConnectionsPage() {
               <div><p className="eyebrow">CONNECTION HEALTH</p><h2 id="google-health-title">Google authorization needs attention</h2></div>
               <StatusBadge tone="warning">Recoverable</StatusBadge>
             </div>
-            <dl className="grid grid-cols-3 gap-2 max-[640px]:grid-cols-1">
+            <dl className="grid grid-cols-1 gap-2 md:grid-cols-3">
               {[
                 ["Refresh access", status.google.hasRefreshToken ? "Ready" : "Reauthorization required"],
                 ["Search Console discovery", discoveryLabel(status.google.searchConsoleDiscovery)],
@@ -267,14 +267,14 @@ export default function ConnectionsPage() {
 
         <details className="card overflow-hidden p-0">
           <summary className="flex min-h-12 cursor-pointer items-center px-4 text-xs font-bold text-[#455168]">Advanced provider setup</summary>
-          <div className="grid grid-cols-2 gap-4 border-t border-[#edf0f5] p-4 max-[820px]:grid-cols-1">
+          <div className="grid grid-cols-1 gap-4 border-t border-[#edf0f5] p-4 md:grid-cols-2">
             <section>
               <h3 className="m-0 text-[13px] font-bold text-[#263249]">Direct Shopify authorization</h3>
               <p className="muted my-2 text-[10px] leading-4">Existing Shopify authorization remains available for compatibility. New customers should normally use the website setup flow.</p>
               {!status?.shopify.connected ? (
                 <form action="/api/connections/shopify/start" method="GET">
                   <label htmlFor="shopify-domain" className="mb-1 block text-[10px] font-bold text-[#52627a]">Shopify store domain</label>
-                  <div className="flex gap-2 max-[640px]:flex-col">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <input
                       id="shopify-domain"
                       type="text"
