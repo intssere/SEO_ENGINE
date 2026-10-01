@@ -9,14 +9,14 @@ import {
   validateF18ExecutionReceipt,
 } from "./p8-8-w09c3fa-f18-execution-receipt.js";
 
-test("F18 execution receipt certifies pull and healthcheck but blocks completion on teardown", () => {
+test("F18 execution receipt certifies pull, healthcheck, and completed teardown", () => {
   const result = validateF18ExecutionReceipt(F18_CERTIFIED_EXECUTION_RECEIPT);
-  assert.equal(result.result, "partial_pass_teardown_blocked");
-  if (result.result === "partial_pass_teardown_blocked") {
+  assert.equal(result.result, "pass");
+  if (result.result === "pass") {
     assert.match(result.receiptId, /^f18-execution-[0-9a-f]{64}$/);
     assert.equal(result.pullability, "proven");
     assert.equal(result.healthcheck, "proven");
-    assert.equal(result.teardown, "awaiting_user_2fa");
+    assert.equal(result.teardown, "completed");
   }
 });
 
@@ -34,13 +34,13 @@ test("successful deployment is the pullability and healthcheck proof", () => {
   assert.equal(F18_CERTIFIED_EXECUTION_RECEIPT.http200HealthcheckProven, true);
 });
 
-test("teardown is exactly service scoped and pending 2FA", () => {
+test("teardown is exactly service scoped and completed after 2FA", () => {
   assert.equal(F18_CERTIFIED_EXECUTION_RECEIPT.teardownPatchId, F18_TEARDOWN_PATCH_ID);
   assert.equal(F18_CERTIFIED_EXECUTION_RECEIPT.teardownPatchChangeCount, 1);
   assert.equal(F18_CERTIFIED_EXECUTION_RECEIPT.teardownScope, "service_id_only");
   assert.equal(F18_CERTIFIED_EXECUTION_RECEIPT.teardownCommitBlockedBy2FA, true);
-  assert.equal(F18_CERTIFIED_EXECUTION_RECEIPT.teardownCommitted, false);
-  assert.equal(F18_CERTIFIED_EXECUTION_RECEIPT.fixtureComplete, false);
+  assert.equal(F18_CERTIFIED_EXECUTION_RECEIPT.teardownCommitted, true);
+  assert.equal(F18_CERTIFIED_EXECUTION_RECEIPT.fixtureComplete, true);
 });
 
 test("a second deployment attempt fails closed", () => {
@@ -52,11 +52,12 @@ test("a second deployment attempt fails closed", () => {
   });
 });
 
-test("claiming teardown completion before 2FA fails closed", () => {
+test("regressing teardown completion fails closed", () => {
   const v: any = structuredClone(F18_CERTIFIED_EXECUTION_RECEIPT);
-  v.teardownCommitted = true;
-  v.serviceStillPresentPending2FA = false;
-  v.fixtureComplete = true;
+  v.teardownCommitted = false;
+  v.serviceStillPresentPending2FA = true;
+  v.fixtureComplete = false;
+  v.completionBlocker = "railway_2fa_required_for_service_removal_commit";
   assert.deepEqual(validateF18ExecutionReceipt(v), {
     result: "fail_closed",
     code: "teardown_state_mismatch",
