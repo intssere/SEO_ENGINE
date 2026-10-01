@@ -71,7 +71,7 @@ function providerResponse(dataset: string, cost = 0.01) {
   };
 }
 
-function authorization() {
+function fixtureAuthorization() {
   const plan = buildDataForSeoOneShotCertificationPlan();
   const authorization = buildDataForSeoLiveExecutionAuthorization({
     authorizationId: "fixture-only-authorization",
@@ -89,7 +89,7 @@ function authorization() {
 }
 
 test("UGP-6.1E binds certification to the exact merged 6.1D basis commit", () => {
-  const { plan, authorization } = authorization();
+  const { plan, authorization } = fixtureAuthorization();
   assert.equal(plan.sourceCommitSha, UGP_DATAFORSEO_CERTIFICATION_BASIS_COMMIT);
   assert.equal(
     UGP_DATAFORSEO_CERTIFICATION_BASIS_COMMIT,
@@ -100,7 +100,7 @@ test("UGP-6.1E binds certification to the exact merged 6.1D basis commit", () =>
 });
 
 test("UGP-6.1E performs exactly three sequential injected calls and emits sanitized certification receipt", async () => {
-  const { plan, authorization } = authorization();
+  const { plan, authorization } = fixtureAuthorization();
   const calls: string[] = [];
 
   const executor: DataForSeoAuthorizedCallExecutor = async (input) => {
@@ -144,7 +144,7 @@ test("UGP-6.1E performs exactly three sequential injected calls and emits saniti
 });
 
 test("UGP-6.1E rejects authorization tampering before any injected provider call", async () => {
-  const { plan, authorization } = authorization();
+  const { plan, authorization } = fixtureAuthorization();
   let calls = 0;
 
   await assert.rejects(
@@ -165,7 +165,7 @@ test("UGP-6.1E rejects authorization tampering before any injected provider call
 });
 
 test("UGP-6.1E performs no retry after a provider-call failure", async () => {
-  const { plan, authorization } = authorization();
+  const { plan, authorization } = fixtureAuthorization();
   let calls = 0;
 
   await assert.rejects(
@@ -183,7 +183,7 @@ test("UGP-6.1E performs no retry after a provider-call failure", async () => {
 });
 
 test("UGP-6.1E fails closed when captured provider cost exceeds the certification ceiling", async () => {
-  const { plan, authorization } = authorization();
+  const { plan, authorization } = fixtureAuthorization();
 
   const receipt = await runAuthorizedDataForSeoOneShotCertification({
     plan,
