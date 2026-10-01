@@ -14,7 +14,7 @@ Railway documentation states that disabling GitHub autodeploy stops deployments 
 - service name: `seo-engine-shadow`
 - GitHub repo: `intssere/SEO_ENGINE`
 - branch: `main`
-- autodeploy: enabled
+- autodeploy: disabled
 - staged patch: `5d9ed802-32c2-4d0a-ac8a-b45a010ca535`
 - staged variable includes `AUTH_PUBLIC_ORIGIN`
 
@@ -44,4 +44,16 @@ F19 does not authorize:
 - Production cutover;
 - F18 merge.
 
-After this exact toggle is separately authorized and executed, F19 must re-read the live service and prove autodeploy is disabled while all protected state remains unchanged. Only then may PR #710 be reconsidered for a separate merge authorization.
+The operator disabled GitHub autodeploy manually in Railway, and a subsequent read-only verification proved:
+- autodeploy `enabled=false`;
+- GitHub repo remains `intssere/SEO_ENGINE`;
+- branch remains `main`;
+- service configuration remains unchanged;
+- Railway domain remains `seo-engine-shadow-production.up.railway.app`;
+- managed Postgres and its volume remain unchanged;
+- staged patch `5d9ed802-32c2-4d0a-ac8a-b45a010ca535` remains staged;
+- staged `AUTH_PUBLIC_ORIGIN` remains untouched;
+- latest Production deployment remains `c4ed6319-8c02-416a-b8bf-4dbb1dd18454` / `FAILED`;
+- no deploy or redeploy was triggered by disabling autodeploy.
+
+F19 live safeguard is therefore complete. PR #710 may now be considered for a separate merge authorization because merging `main` should no longer auto-trigger Railway Production deployment attempts. PR #712 itself also requires its own separate merge authorization.
