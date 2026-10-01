@@ -3585,3 +3585,6 @@ td:first-child {
 .contextualGuideFoot>div{display:flex;gap:8px}
 .contextualGuideFoot button{min-height:44px;border:1px solid #c9dcfa;border-radius:8px;background:#f3f7ff;color:#245ea8;padding:7px 11px;font-size:12px;font-weight:700}
 @media(width<=640px){.contextualGuide{right:12px;bottom:12px}.onboardingGuideButton{min-height:44px}}
+
+
+

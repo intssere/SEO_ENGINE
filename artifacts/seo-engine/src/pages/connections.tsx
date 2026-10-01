@@ -1,24 +1,12 @@
-import { useEffect, useState } from "react";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearch } from "wouter";
 import { StatusBadge } from "../components/status-badge";
-import { connectionTone } from "@/lib/status-grammar";
-import { useSearch } from "wouter";
-
-type ConnectionsStatus = {
-  readOnly?: boolean;
-  shopify: { connected: boolean; domain?: string };
-  google: {
-    connected: boolean;
-    authorized?: boolean;
-    needsConfirmation?: boolean;
-    needsAttention?: boolean;
-    hasRefreshToken?: boolean;
-    searchConsoleDiscovery?: DiscoveryStatus | null;
-    ga4Discovery?: DiscoveryStatus | null;
-    searchConsoleProperties?: Array<{ siteUrl?: string; permissionLevel?: string | null }>;
-    ga4Properties?: Array<{ propertyId?: string; displayName?: string | null }>;
-  };
-};
+import {
+  buildConnectionsUiModel,
+  type ConnectionCardModel,
+  type ConnectionsStatus,
+  type DiscoveryStatus,
+} from "../lib/connections-ui-model";
 
 type Task53Capability = {
   connected: boolean;
@@ -26,47 +14,54 @@ type Task53Capability = {
   credentialAvailable: boolean;
 };
 
-type DiscoveryStatus = {
-  ok: boolean;
-  httpStatus: number | null;
-  category: "ok" | "provider_error" | "network_error" | "invalid_response";
-};
-
 const successMessages: Record<string, string> = {
-  shopify: "Shopify connected successfully.",
-  task53_shopify_write: "Task #53 isolated Shopify write_products credential connected successfully.",
-  google: "Google Search Console and GA4 connected successfully.",
-  google_pending: "Google authorization succeeded. Confirm the matching Search Console and GA4 properties below.",
-  google_attention: "Google authorization was stored securely, but additional setup is required.",
-};
-
-const errorMessages: Record<string, string> = {
-  shopify_start: "Unable to start Shopify authorization.",
-  shopify_callback: "Shopify authorization could not be completed.",
-  google_start: "Unable to start Google authorization.",
-  google_state: "Google authorization expired or could not be verified. Please start again.",
-  google_token_provider: "Google rejected the token exchange. Check the authorized redirect URI and try again.",
-  google_token_network: "Google's token service could not be reached. Please try again.",
-  google_persistence: "Google authorization succeeded, but the encrypted connection could not be saved.",
-  google_write_gate: "Google authorization is unavailable while public-site writes are enabled.",
-  google_configuration: "Google authorization configuration is incomplete.",
-  google_selection: "The selected Google properties could not be saved. Please authorize again.",
+  shopify: "Connected.",
+  task53_shopify_write: "Task #53 connected.",
+  google: "Connected.",
+  google_pending: "Confirm below.",
+  google_attention: "Google setup.",
 };
 
 function discoveryLabel(status?: DiscoveryStatus | null) {
   if (!status) return "Not checked";
   if (status.ok) return "Available";
-  if (status.category === "provider_error") return `Provider rejected request${status.httpStatus ? ` (${status.httpStatus})` : ""}`;
+  if (status.category === "provider_error") {
+    return `Provider rejected request${status.httpStatus ? ` (${status.httpStatus})` : ""}`;
+  }
   if (status.category === "network_error") return "Provider unavailable";
   return "Invalid provider response";
 }
 
-export default function ConnectionsPage() {
-  const searchString = useSearch();
-  const searchParams = new URLSearchParams(searchString);
+function ConnectionCard({ card, loading }: { card: ConnectionCardModel; loading: boolean }) {
+  return (
+    <article className="card">
+      <div className="sectionHead">
+        <div>
+          <p className="eyebrow">{card.domain.replaceAll("_", " ")}</p>
+          <h2>{card.title}</h2>
+        </div>
+        <StatusBadge tone={card.tone}>{card.statusLabel}</StatusBadge>
+      </div>
+      <p><strong>Site scope:</strong> {card.scopeLabel}</p>
+      {card.recoveryHref && card.recoveryLabel ? (
+        <a className="linkButton ask" href={card.recoveryHref}>{card.recoveryLabel}</a>
+      ) : card.connectHref && card.connectLabel ? (
+        card.connectHref.startsWith("/api/") ? (
+          <a className="linkButton ask" href={card.connectHref}>{card.connectLabel}</a>
+        ) : (
+          <Link className="linkButton ask" href={card.connectHref}>{card.connectLabel}</Link>
+        )
+      ) : (
+        <span className="muted">{card.disabled ? "Not available yet" : "Done"}</span>
+      )}
+    </article>
+  );
+}
+
+export default function ConnectPage() {
+  const searchParams = new URLSearchParams(useSearch());
   const successParam = searchParams.get("success");
   const errorParam = searchParams.get("error");
-
   const [status, setStatus] = useState<ConnectionsStatus | null>(null);
   const [task53Capability, setTask53Capability] = useState<Task53Capability | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,178 +69,103 @@ export default function ConnectionsPage() {
 
   useEffect(() => {
     fetch("/api/connections/status")
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Failed to load connection status");
         return res.json();
       })
-      .then(data => {
-        setStatus(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+      .then(setStatus)
+      .catch(() => setStatus(null))
+      .finally(() => setLoading(false));
 
     fetch("/api/execution")
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
         const capability = data?.task53?.capability;
         if (capability) setTask53Capability(capability);
       })
       .catch(() => undefined);
   }, []);
 
-  const oauthDisabled = status?.readOnly === false;
+  const model = useMemo(() => status ? buildConnectionsUiModel(status) : null, [status]);
   const task53WriteConnected = task53Capability?.connected === true
     && task53Capability.writeProductsScopePresent === true
     && task53Capability.credentialAvailable === true;
   const task53EligibleShop = status?.shopify.domain === "vcuxm7-76.myshopify.com";
+  const oauthDisabled = status?.readOnly === false;
   const successMessage = successParam ? successMessages[successParam] : null;
-  const errorMessage = errorParam ? errorMessages[errorParam] ?? "The connection could not be completed safely." : null;
+  const errorMessage = errorParam ? "Connection failed." : null;
 
   return (
     <>
       <header className="topbar">
-        <div>
-          <strong>System Setup</strong>
-          <span className="muted"> Connections</span>
-        </div>
+        <div><strong>Setup</strong><span className="muted"> Connect</span></div>
       </header>
 
       <div className="content">
-        <div className="titleRow">
+        <section className="titleRow">
           <div>
-            <p className="eyebrow">INTEGRATIONS</p>
-            <h1>External Connections</h1>
-            <p className="muted">Authorize secure read-only access to necessary platforms.</p>
+            <p className="eyebrow">CONNECTIONS</p>
+            <h1>Connect site data</h1>
           </div>
-        </div>
+          <Link className="linkButton ask" href="/settings/add-website">Website setup</Link>
+        </section>
 
-        {successMessage && (
-          <div role="status" aria-live="polite" className="mb-6 p-4 bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-[var(--status-success-fg)] rounded-md text-sm font-medium flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-            {successMessage}
-          </div>
-        )}
+        {successMessage && <div className="card" role="status" aria-live="polite">{successMessage}</div>}
+        {errorMessage && <div className="card" role="alert">{errorMessage}</div>}
 
-        {errorMessage && (
-          <div role="alert" className="mb-6 p-4 bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-[var(--status-danger-fg)] rounded-md text-sm font-medium flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" aria-hidden="true" />
-            {errorMessage}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <section className="card">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#95bf47] rounded-md flex items-center justify-center text-white font-bold text-xl">S</div>
-                <div>
-                  <h3 className="font-bold text-[#172033]">Shopify</h3>
-                  <p className="text-xs text-[#647087]">Storefront & Products</p>
-                </div>
-              </div>
-              <StatusBadge tone={connectionTone(status?.shopify.connected === true)}>
-                {status?.shopify.connected ? "CONNECTED" : "DISCONNECTED"}
-              </StatusBadge>
+        <section className="card" aria-label="Active website scope">
+          <div className="sectionHead">
+            <div>
+              <p className="eyebrow">SITE</p>
+              <h2>{model?.siteScopeLabel ?? "Checking website scope…"}</h2>
             </div>
+            <StatusBadge tone={model?.activeSiteScope ? "success" : "warning"}>
+              {model?.activeSiteScope ? "Confirmed" : "Required"}
+            </StatusBadge>
+          </div>
+        </section>
 
-            {loading ? (
-              <div className="flex justify-center p-6 text-[#647087]" role="status" aria-live="polite">
-                <Loader2 className="w-5 h-5 animate-spin text-[#3c82f6]" aria-hidden="true" />
-                <span className="sr-only">Loading Shopify connection status</span>
-              </div>
-            ) : status?.shopify.connected ? (
-              <div className="bg-[#f8fafc] p-4 rounded-md border border-[#e5e9f0]">
-                <p className="text-sm text-[#455168] mb-1">Authenticated store:</p>
-                <p className="font-bold text-[#172033]">{status.shopify.domain}</p>
-                <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
-                  <p className="text-xs text-[#647087]">Read-only access granted. Engine cannot modify your live theme without explicit deployment.</p>
-                </div>
-                <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
-                  <p className="text-xs font-semibold text-[#455168] mb-2">Task #53 isolated write credential</p>
-                  {task53WriteConnected ? (
-                    <div className="text-xs text-[var(--status-success-fg)] flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
-                      <span>write_products is connected for the bounded production pilot. This credential does not enable public-site writes by itself.</span>
-                    </div>
-                  ) : task53EligibleShop && !oauthDisabled ? (
-                    <form action="/api/connections/shopify/task53-write/start" method="POST" className="space-y-3">
-                      <input type="hidden" name="shop" value="vcuxm7-76.myshopify.com" />
-                      <input type="hidden" name="confirmation" value="AUTHORIZE_SHOPIFY_WRITE_SCOPE:write_products" />
-                      <p className="text-xs text-[#647087]">
-                        This requests only the isolated <b>write_products</b> credential. It does not authorize Task #53 execute, a Shopify mutation, or a public-site write.
-                      </p>
-                      <button type="submit" className="w-full bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]">
-                        Authorize Task #53 write_products
-                      </button>
-                    </form>
-                  ) : (
-                    <p className="text-xs text-[var(--status-warning-fg)]">
-                      Task #53 write-scope authorization is unavailable unless the approved Diamond Shelf store is connected in read-only mode.
-                    </p>
-                  )}
-                </div>
-              </div>
-            ) : (
+        <section aria-labelledby="connection-sources-title">
+          <div className="sectionHead">
+            <div>
+              <h2 id="connection-sources-title">Connect</h2>
+            </div>
+          </div>
+          {model ? model.cards.map((card) => (
+            <ConnectionCard key={card.domain} card={card} loading={loading} />
+          )) : (
+            <div className="card" role="status" aria-live="polite">
+              {loading ? "Loading…" : "Unavailable."}
+            </div>
+          )}
+        </section>
+
+        {status?.google.needsConfirmation && (
+          <section className="card" aria-labelledby="google-setup-title">
+            <div className="sectionHead">
               <div>
-                <p className="text-sm text-[#455168] mb-4">Enter your `.myshopify.com` domain to begin authorization.</p>
-                <form action="/api/connections/shopify/start" method="GET" className="flex gap-2">
-                  <label htmlFor="shopify-domain" className="sr-only">Shopify store domain</label>
-                  <input
-                    id="shopify-domain"
-                    type="text"
-                    name="shop"
-                    placeholder="e.g. my-store.myshopify.com"
-                    value={shopDomain}
-                    onChange={(e) => setShopDomain(e.target.value)}
-                    className="flex-1 min-h-11 border border-[#dce2eb] rounded-md px-3 py-2 text-sm focus:border-[#3c82f6] outline-none disabled:opacity-50"
-                    required
-                    disabled={oauthDisabled}
-                  />
-                  <button type="submit" disabled={oauthDisabled} className="bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730] disabled:opacity-50">
-                    Connect
-                  </button>
-                </form>
-                {oauthDisabled && <p className="text-xs text-[var(--status-warning-fg)] mt-2">Connecting disabled in current autonomy mode.</p>}
+                <p className="eyebrow">ACTION REQUIRED</p>
+                <h2 id="google-setup-title">Confirm</h2>
+                <p className="muted">Choose properties for this website.</p>
               </div>
-            )}
-          </section>
-
-          <section className="card">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#ea4335] rounded-md flex items-center justify-center text-white font-bold text-xl">G</div>
-                <div>
-                  <h3 className="font-bold text-[#172033]">Google Search Console</h3>
-                  <p className="text-xs text-[#647087]">Search Performance Data</p>
-                </div>
-              </div>
-              <StatusBadge tone={connectionTone(status?.google.connected === true, status?.google.authorized === true)}>
-                {status?.google.connected ? "CONNECTED" : status?.google.authorized ? "AUTHORIZED" : "DISCONNECTED"}
-              </StatusBadge>
+              <StatusBadge tone="warning">Needs confirmation</StatusBadge>
             </div>
-
-            {loading ? (
-              <div className="flex justify-center p-6 text-[#647087]" role="status" aria-live="polite">
-                <Loader2 className="w-5 h-5 animate-spin text-[#3c82f6]" aria-hidden="true" />
-                <span className="sr-only">Loading Google connection status</span>
-              </div>
-            ) : status?.google.needsConfirmation ? (
-              <form action="/api/connections/google/select" method="POST" className="space-y-4">
-                <p className="text-sm text-[#455168]">Confirm the Diamond Shelf properties discovered with read-only access.</p>
-                <label className="block text-xs font-semibold text-[#455168]">
-                  Search Console property
-                  <select name="gscSiteUrl" required className="mt-1 w-full border border-[#dce2eb] rounded-md px-3 py-2 text-sm bg-white">
+            <form action="/api/connections/google/select" method="POST">
+              <p>
+                <label>
+                  Search property<br />
+                  <select name="gscSiteUrl" required>
                     <option value="">Select a property</option>
-                    {status.google.searchConsoleProperties?.map((item) => item.siteUrl ? (
-                      <option key={item.siteUrl} value={item.siteUrl}>{item.siteUrl}</option>
-                    ) : null)}
+                    {status.google.searchConsoleProperties?.map((item) => item.siteUrl
+                      ? <option key={item.siteUrl} value={item.siteUrl}>{item.siteUrl}</option>
+                      : null)}
                   </select>
                 </label>
-                <label className="block text-xs font-semibold text-[#455168]">
-                  GA4 property
-                  <select name="ga4PropertyId" required className="mt-1 w-full border border-[#dce2eb] rounded-md px-3 py-2 text-sm bg-white">
+              </p>
+              <p>
+                <label>
+                  Analytics property<br />
+                  <select name="ga4PropertyId" required>
                     <option value="">Select a property</option>
                     {status.google.ga4Properties?.map((item) => item.propertyId ? (
                       <option key={item.propertyId} value={item.propertyId}>
@@ -254,65 +174,83 @@ export default function ConnectionsPage() {
                     ) : null)}
                   </select>
                 </label>
-                <button type="submit" disabled={oauthDisabled} className="w-full bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm disabled:opacity-50">
-                  Confirm properties
-                </button>
-              </form>
-            ) : status?.google.connected ? (
-              <div className="bg-[#f8fafc] p-4 rounded-md border border-[#e5e9f0]">
-                <p className="font-bold text-[#172033]">Google authorization stored securely</p>
-                <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
-                  <p className="text-xs text-[#647087]">Read-only access granted. Engine relies on this for impact verification.</p>
-                </div>
-              </div>
-            ) : status?.google.authorized ? (
-              <div className="space-y-4">
-                <div className="bg-[var(--status-warning-bg)] p-4 rounded-md border border-[var(--status-warning-border)]">
-                  <p className="font-bold text-[var(--status-warning-fg)]">Authorization needs attention</p>
-                  <dl className="mt-3 space-y-2 text-xs text-[#455168]">
-                    <div className="flex justify-between gap-4">
-                      <dt>Refresh access</dt>
-                      <dd className="font-semibold">{status.google.hasRefreshToken ? "Ready" : "Reauthorization required"}</dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt>Search Console discovery</dt>
-                      <dd className="font-semibold text-right">{discoveryLabel(status.google.searchConsoleDiscovery)}</dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt>GA4 discovery</dt>
-                      <dd className="font-semibold text-right">{discoveryLabel(status.google.ga4Discovery)}</dd>
-                    </div>
-                  </dl>
-                </div>
-                {!oauthDisabled && (
-                  <a
-                    href="/api/connections/google/start"
-                    className="inline-block w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]"
-                  >
-                    Reauthorize Google
-                  </a>
-                )}
-              </div>
-            ) : (
+              </p>
+              <button type="submit" disabled={oauthDisabled} className="linkButton ask">
+                Confirm
+              </button>
+            </form>
+          </section>
+        )}
+
+        {status?.google.authorized && !status.google.connected && !status.google.needsConfirmation && (
+          <section className="card" aria-labelledby="google-health-title">
+            <div className="sectionHead">
               <div>
-                <p className="text-sm text-[#455168] mb-4">Connect your Google account to import Search Console metrics and track verified impact.</p>
-                {oauthDisabled ? (
-                  <button disabled className="w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm opacity-50 cursor-not-allowed">
-                    Authorize Google
-                  </button>
-                ) : (
-                  <a
-                    href="/api/connections/google/start"
-                    className="inline-block w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]"
-                  >
-                    Authorize Google
-                  </a>
-                )}
-                {oauthDisabled && <p className="text-xs text-[var(--status-warning-fg)] mt-2 text-center">Connecting disabled in current autonomy mode.</p>}
+                <p className="eyebrow">CONNECTION HEALTH</p>
+                <h2 id="google-health-title">Google attention</h2>
               </div>
+              <StatusBadge tone="warning">Recoverable</StatusBadge>
+            </div>
+            <dl>
+              <dt>Refresh access</dt>
+              <dd>{status.google.hasRefreshToken ? "Ready" : "Reauthorization required"}</dd>
+              <dt>Search Console discovery</dt>
+              <dd>{discoveryLabel(status.google.searchConsoleDiscovery)}</dd>
+              <dt>GA4 discovery</dt>
+              <dd>{discoveryLabel(status.google.ga4Discovery)}</dd>
+            </dl>
+            {!oauthDisabled && <a className="linkButton ask" href="/api/connections/google/start">Retry</a>}
+          </section>
+        )}
+
+        <details className="card">
+          <summary>Advanced provider setup</summary>
+          <section>
+            <h3>Direct Shopify authorization</h3>
+            {!status?.shopify.connected ? (
+              <form action="/api/connections/shopify/start" method="GET">
+                <label htmlFor="shopify-domain">Shopify store domain</label><br />
+                <input
+                  id="shopify-domain"
+                  type="text"
+                  name="shop"
+                  placeholder="my-store.myshopify.com"
+                  value={shopDomain}
+                  onChange={(event) => setShopDomain(event.target.value)}
+                  required
+                  disabled={oauthDisabled}
+                />
+                <button type="submit" disabled={oauthDisabled} className="linkButton ask">Connect Shopify</button>
+              </form>
+            ) : (
+              <p>Connected store: <strong>{status.shopify.domain}</strong></p>
             )}
           </section>
-        </div>
+
+          {status?.shopify.connected && (
+            <section>
+              <h3>Task #53</h3>
+              {task53WriteConnected ? (
+                <p>
+                  <strong>write_products is connected.</strong> No public write authority.
+                </p>
+              ) : task53EligibleShop && !oauthDisabled ? (
+                <form action="/api/connections/shopify/task53-write/start" method="POST">
+                  <input type="hidden" name="shop" value="vcuxm7-76.myshopify.com" />
+                  <input type="hidden" name="confirmation" value="AUTHORIZE_SHOPIFY_WRITE_SCOPE:write_products" />
+                  <p className="muted">
+                    Requests isolated <strong>write_products</strong> scope. Execution authorization remains separate.
+                  </p>
+                  <button type="submit" className="linkButton ask">Authorize Task #53 write_products</button>
+                </form>
+              ) : (
+                <p className="muted">
+                  Approved store required.
+                </p>
+              )}
+            </section>
+          )}
+        </details>
       </div>
     </>
   );

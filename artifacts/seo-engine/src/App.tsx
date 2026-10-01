@@ -25,7 +25,6 @@ import ApprovalsPage from './pages/approvals';
 import PerformancePage from './pages/performance';
 import DeploymentsPage from './pages/deployments';
 import TechnicalSeoPage from './pages/technical-seo';
-import ConnectionsPage from './pages/connections';
 import SettingsPage from './pages/settings';
 
 // Advanced and compatibility surfaces remain mounted behind customer domains.
@@ -39,6 +38,7 @@ import ImpactPage from './pages/impact';
 import ReportsPage from './pages/reports';
 
 const WebsiteConnectionWizardPage = lazy(() => import('./pages/website-connection-wizard'));
+const ConnectionsPage = lazy(() => import('./pages/connections'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,7 +85,7 @@ function Router() {
           <Route path="/performance/experiments" component={ExperimentsPage} />
           <Route path="/performance/learning" component={LearningPage} />
 
-          <Route path="/settings/connections" component={ConnectionsPage} />
+          <Route path="/settings/connections"><Suspense fallback={<div className="content"><div className="card" role="status">Loading connections…</div></div>}><ConnectionsPage /></Suspense></Route>
           <Route path="/settings/add-website">
             <Suspense fallback={<div className="content"><div className="card" role="status">Loading website setup…</div></div>}>
               <WebsiteConnectionWizardPage />
@@ -106,7 +106,7 @@ function Router() {
           <Route path="/learning" component={LearningPage} />
           <Route path="/impact" component={ImpactPage} />
           <Route path="/reports" component={ReportsPage} />
-          <Route path="/connections" component={ConnectionsPage} />
+          <Route path="/connections"><Suspense fallback={<div className="content"><div className="card" role="status">Loading connections…</div></div>}><ConnectionsPage /></Suspense></Route>
 
           <Route component={NotFound} />
         </Switch>
