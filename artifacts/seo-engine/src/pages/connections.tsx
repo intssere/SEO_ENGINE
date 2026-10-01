@@ -108,9 +108,6 @@ export default function ConnectPage() {
           <div>
             <p className="eyebrow">CONNECTIONS</p>
             <h1>Connect site data</h1>
-            <p className="muted">
-              Connect are site-scoped.
-            </p>
           </div>
           <Link className="linkButton ask" href="/settings/add-website">Website setup</Link>
         </section>
@@ -123,9 +120,6 @@ export default function ConnectPage() {
             <div>
               <p className="eyebrow">SITE</p>
               <h2>{model?.siteScopeLabel ?? "Checking website scope…"}</h2>
-              <p className="muted">
-                Data must match this website.
-              </p>
             </div>
             <StatusBadge tone={model?.activeSiteScope ? "success" : "warning"}>
               {model?.activeSiteScope ? "Confirmed" : "Required"}
@@ -137,7 +131,6 @@ export default function ConnectPage() {
           <div className="sectionHead">
             <div>
               <h2 id="connection-sources-title">Connect</h2>
-              <p className="muted">Status and recovery.</p>
             </div>
           </div>
           {model ? model.cards.map((card) => (
@@ -216,9 +209,6 @@ export default function ConnectPage() {
           <summary>Advanced provider setup</summary>
           <section>
             <h3>Direct Shopify authorization</h3>
-            <p className="muted">
-              Shopify.
-            </p>
             {!status?.shopify.connected ? (
               <form action="/api/connections/shopify/start" method="GET">
                 <label htmlFor="shopify-domain">Shopify store domain</label><br />
