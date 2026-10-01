@@ -178,9 +178,12 @@ test("UGP-6.1A retains bounded provider provenance and excludes credential mater
   }
 
   const serialized = JSON.stringify(bundle);
-  assert.doesNotMatch(serialized, /authorization/i);
+  assert.doesNotMatch(serialized, /authorization[_-]?header/i);
+  assert.doesNotMatch(serialized, /bearer\s+[A-Za-z0-9._~-]+/i);
   assert.doesNotMatch(serialized, /api[_-]?key/i);
+  assert.doesNotMatch(serialized, /client[_-]?secret/i);
   assert.doesNotMatch(serialized, /password/i);
+  assert.equal(bundle.semantics.grantsAuthorization, false);
 });
 
 test("UGP-6.1A fails closed on DataForSEO task-level failure even with a fixture envelope", () => {
