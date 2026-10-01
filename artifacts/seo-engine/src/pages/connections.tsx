@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearch } from "wouter";
 import { StatusBadge } from "../components/status-badge";
 import {
-  buildConnectUiModel,
+  buildConnectionsUiModel,
   type ConnectionCardModel,
   type ConnectStatus,
   type DiscoveryStatus,
@@ -88,7 +88,7 @@ export default function ConnectPage() {
       .catch(() => undefined);
   }, []);
 
-  const model = useMemo(() => status ? buildConnectUiModel(status) : null, [status]);
+  const model = useMemo(() => status ? buildConnectionsUiModel(status) : null, [status]);
   const task53WriteConnected = task53Capability?.connected === true
     && task53Capability.writeProductsScopePresent === true
     && task53Capability.credentialAvailable === true;
