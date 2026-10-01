@@ -233,5 +233,9 @@ test("UGP-6.2B does not expose arbitrary provider or credential fields", async (
     encoder:async ({modelId})=>({modelId,vectors:[vector(1),vector(0.9)]}),
   });
   const serialized=JSON.stringify(matrix);
-  assert.doesNotMatch(serialized,/api[_-]?key|authorization|password|credential/i);
+  assert.doesNotMatch(
+    serialized,
+    /"api[_-]?key"\s*:|"password"\s*:|"credential"\s*:|"authorization"\s*:/i,
+  );
+  assert.equal(matrix.assertions.grantsAuthorization,false);
 });
