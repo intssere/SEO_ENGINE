@@ -1,6 +1,28 @@
 # SEO ENGINE — Current State Checkpoint
 
-## Active engineering checkpoint — P8.8 W09-C1 Production schema-readiness review
+## Active engineering checkpoint — F24 Production immutable-image transition closed; P12 certification remains
+
+Canonical GitHub `main` after F24 closeout: `17a63b9ab8b71ee571ae344f592fb5f888a77758`.
+
+Railway Production is now intentionally decoupled from ordinary GitHub-main merges and runs the certified immutable image:
+- project: `52265e29-921b-4652-ac0d-9da4e5e69936`;
+- environment: `7f8d920f-f6c6-44f0-b9fe-252cb4f32298`;
+- service: `1e8c1e7d-16f7-4c63-8193-1021bcbe6d90` / `seo-engine-shadow`;
+- source image: `ghcr.io/intssere/seo-engine@sha256:7399b06c99f251f13429f821a041bf7e460007941292470c93060f3f0d5d9e22`;
+- active deployment: `18486079-d88f-4376-bc5c-abc14e190b7c` — `SUCCESS`, 1/1 replica running;
+- domain: `seo-engine-shadow-production.up.railway.app:8080`;
+- healthcheck: `/api/healthz` with 120-second timeout;
+- `AUTH_PUBLIC_ORIGIN` remains present;
+- `DATABASE_URL` still references Railway Postgres service `b69e0633-7ab9-40ab-85f3-c9edd6acb031`;
+- no effective staged Production changes remain; Railway may expose an internal empty `changes: []` patch artifact only.
+
+F23 switched only the service source from GitHub to the exact digest-pinned image and produced exactly one successful deployment with no retry. F24 persisted the durable receipt. The earlier Railway GitHub-source `git_identity_unavailable` failure remains a valid fail-closed provenance result; the gate was not weakened or bypassed. Production no longer uses that source-build path.
+
+**Current release rule:** merging to GitHub `main` does not deploy Production. Any future Production release requires a newly built/attested immutable image, exact digest certification, non-Production Railway fixture proof, a fresh single-purpose Production transition packet, and separate explicit live authorization.
+
+**Current program boundary:** P12.2–P12.10 remain the unfinished production-certification program. Generic `continue` may advance repository-only/read-only planning, certification, reconciliation, and other explicitly safe work, but does not authorize live crawl/provider/OAuth activity, Production DB mutation, scheduler/worker activation, provider/public-site writes, credential changes, or a new Production image transition.
+
+## Historical engineering checkpoint — P8.8 W09-C1 Production schema-readiness review
 
 W09-C authorization review issue #509 / PR #510 is merged as canonical main `267a682ed58f898b6a550a1307a6f461ac178af7`.
 

@@ -26,29 +26,21 @@ If any mutable SHA, deployment state, gate state or task status differs between 
 
 ## 1. Current program checkpoint
 
-Current engineering checkpoint at the P2.6 implementation merge:
+Current canonical checkpoint after the F24 Production immutable-image closeout:
 
 - repository: `intssere/SEO_ENGINE`
-- GitHub `main` implementation merge: `cdc272ea33b5e937662f85543fde9928175777bf`
-- tree: `227da28f22bc0047a71227f4fd01925a2011f717`
-- Replit app: `SEO_ENGINE`
-- Replit replId: `4f36f99c-0492-43c4-80e7-a7f7660fc3f7`
-- production URL: `https://dsseoengine.replit.app`
+- GitHub `main`: `17a63b9ab8b71ee571ae344f592fb5f888a77758`
+- Railway project/environment/service: `52265e29-921b-4652-ac0d-9da4e5e69936` / `7f8d920f-f6c6-44f0-b9fe-252cb4f32298` / `1e8c1e7d-16f7-4c63-8193-1021bcbe6d90`
+- Railway Production source: `ghcr.io/intssere/seo-engine@sha256:7399b06c99f251f13429f821a041bf7e460007941292470c93060f3f0d5d9e22`
+- active Railway deployment: `18486079-d88f-4376-bc5c-abc14e190b7c` — `SUCCESS`
+- Production URL: `https://seo-engine-shadow-production.up.railway.app`
+- normal GitHub-main merges are intentionally decoupled from Production deployment.
 
-`CURRENT_STATE.md` owns the exact mutable `main` checkpoint after later docs-only merges; always independently resolve it before acting.
+The historical Replit production lineage remains useful evidence but is no longer the current release-source authority. `CURRENT_STATE.md` owns the exact mutable checkpoint and must be verified before any live action.
 
-Current published production application source remains:
+P1–P11 engineering foundations and P12.1 are complete. P12.2 engineering is certified but still requires separately authorized live Production crawl/persistence proof. P12.3–P12.10 remain incomplete according to their individual live-evidence and acceptance requirements.
 
-- Task #73 source SHA: `2498e5b34bbd130c97aa60865cc81875d76eb895`
-- tree: `62016e4a5952628dfbd0eff4f9cf32d797aa6b51`
-- deployment ID: `fbef9788-c08d-475d-a85d-88ede16e92c7`
-- deployment status: success
-
-Task #74 is architecture/planning only. Task #75 and P2.1–P2.6 are engineering-complete but have not been published as application releases.
-
-Completed high-level foundations include authentication/RBAC, guarded proposal/execution primitives, bounded competitor acquisition, market/category intelligence architecture, source registry/normalization/job authorization, controlled signal execution, GSC read-runner foundation, GSC OAuth/property readiness, first-live-read readiness, OAuth client/config binding architecture, GSC profile-isolated runtime binding, first-party `baseline` vs `full_site` crawl-controller planning, network-free sitemap inventory/canonical dedupe, bounded crawl execution controls/checkpoint-resume, deterministic completion-ledger/whole-site completeness certification, deterministic crawl-history/change comparison, and bounded incremental recrawl planning.
-
-**Next safe engineering milestone:** P2.7 — URL Explorer API/query model.
+**Next safe program boundary:** continue P12 production-certification work only through explicit repository-only/read-only review or separately authorized bounded live proofs. Generic continuation grants no live provider/crawl/OAuth, Production DB mutation, scheduler/worker activation, provider/public-site write, credential mutation, or Production image transition.
 
 ---
 
@@ -455,7 +447,7 @@ Existing Tasks #51–#54 remain the safety foundation.
 | P8.5 | Add deterministic rollback/manual-intervention workflows | DONE — issue #395 / PR #396 / merge `6ef508a0a14c68aa4462b5af3b8aa1f3276cfc4a`; pure/default-off deterministic workflow over P8.4 evidence with exact dispositions `no_rollback_needed`, `rollback_ready`, `rollback_verification_pending`, `rollback_verified_closed`, `manual_intervention_required`; strict result/restore/lineage integrity, single-attempt closure, independent provider+storefront restore verification, deterministic manual-intervention artifacts; exact-head CI #694 (attempt 2) + post-merge CI #695; no provider/rollback write, DB mutation, automatic transition, live execution, scheduler/worker, scope expansion, deployment or publication |
 | P8.6 | Action history and audit ledger | DONE — issue #399 / PR #400 / merge `57f5da59200b54ed12426f79b8977618bf212b08`; deterministic read-only action-specific ledger over P10.1 + P8.4 + P8.5, exact action/target binding, replay-conflict fail-closed semantics, cross-source deterministic ordering, append-only entry hash chain and independent integrity verification; preserves unavailable/manual-intervention/rollback-closure evidence descriptively; exact-head CI #698 + post-merge CI #699; no DB read/write/persistence, provider/network/mutation, execution/rollback execution, scheduler/worker, deployment or publication |
 | P8.7 | First persistent live low-risk action pilot | DONE — issue #404; one explicitly human-authorized Shopify collection SEO `meta_description` mutation completed through the existing Task #51/#53/#54 path; exact before/after state matched, provider + storefront verification passed, exactly one deployment/verification persisted, no rollback/manual intervention was required, and the public-write gate was returned to `false` after success |
-| P8.8 | Progressive policy-authorized low-risk execution | W09-C REAL STAGE 0 AUTHORIZATION REVIEW IN PROGRESS — W09-BE1–BE5 implementation issue #503 / PR #504 merged as `261b9155ce9aa93fb468040c17cf55cb6172a46c` with CI #1077 success; W09-C issue #509 freezes exact query-set fingerprint `fd117eb142807ac982808bf3cd30f96009884b3c66366489875693e44103cabd`, canonical site binding, one-shot DB-read-only/provider-free/non-persistent run semantics and identifies current blockers: Production recorded at 34 tables vs required W04/W05/W07 schema, unresolved Production DB/read-only-role/evidence-destination/shadow-grant bindings. Next safe step is W09-C1 schema-readiness review; Production SELECT/DDL/provider access and W10 remain separately gated |
+| P8.8 | Progressive policy-authorized low-risk execution | PRODUCTION RELEASE INFRASTRUCTURE CERTIFIED / POLICY EXECUTION STILL INCOMPLETE — W09 engineering and F-series release hardening culminated in F23/F24: Railway Production now runs the exact digest-pinned certified image `ghcr.io/intssere/seo-engine@sha256:7399b06c99f251f13429f821a041bf7e460007941292470c93060f3f0d5d9e22` on deployment `18486079-d88f-4376-bc5c-abc14e190b7c` (SUCCESS), with ordinary GitHub merges decoupled from Production. This closes the release-transport/provenance blocker without weakening the provenance gate. Progressive policy-authorized runtime execution, broader live rollback proof, Stage 0/Stage 1 evidence and final P12.6 certification remain separately gated. |
 
 ### Phase P9 — Scheduler, workers and safe autonomy
 
