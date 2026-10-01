@@ -109,7 +109,7 @@ export default function ConnectionsPage() {
             <p className="eyebrow">CONNECTIONS</p>
             <h1>Connect site data</h1>
             <p className="muted">
-              Connections are site-scoped; publishing stays separate.
+              Connections are site-scoped.
             </p>
           </div>
           <Link className="linkButton ask" href="/settings/add-website">Add or review website</Link>
@@ -137,7 +137,7 @@ export default function ConnectionsPage() {
           <div className="sectionHead">
             <div>
               <h2 id="connection-sources-title">Data sources</h2>
-              <p className="muted">Status and recovery without credentials.</p>
+              <p className="muted">Status and recovery.</p>
             </div>
           </div>
           {model ? model.cards.map((card) => (
@@ -162,7 +162,7 @@ export default function ConnectionsPage() {
             <form action="/api/connections/google/select" method="POST">
               <p>
                 <label>
-                  Search Console property<br />
+                  Search property<br />
                   <select name="gscSiteUrl" required>
                     <option value="">Select a property</option>
                     {status.google.searchConsoleProperties?.map((item) => item.siteUrl
@@ -173,7 +173,7 @@ export default function ConnectionsPage() {
               </p>
               <p>
                 <label>
-                  GA4 property<br />
+                  Analytics property<br />
                   <select name="ga4PropertyId" required>
                     <option value="">Select a property</option>
                     {status.google.ga4Properties?.map((item) => item.propertyId ? (
@@ -185,7 +185,7 @@ export default function ConnectionsPage() {
                 </label>
               </p>
               <button type="submit" disabled={oauthDisabled} className="linkButton ask">
-                Confirm matching properties
+                Confirm properties
               </button>
             </form>
           </section>
@@ -208,7 +208,7 @@ export default function ConnectionsPage() {
               <dt>GA4 discovery</dt>
               <dd>{discoveryLabel(status.google.ga4Discovery)}</dd>
             </dl>
-            {!oauthDisabled && <a className="linkButton ask" href="/api/connections/google/start">Reconnect Google</a>}
+            {!oauthDisabled && <a className="linkButton ask" href="/api/connections/google/start">Reconnect</a>}
           </section>
         )}
 
@@ -217,7 +217,7 @@ export default function ConnectionsPage() {
           <section>
             <h3>Direct Shopify authorization</h3>
             <p className="muted">
-              Direct Shopify setup.
+              Shopify setup.
             </p>
             {!status?.shopify.connected ? (
               <form action="/api/connections/shopify/start" method="GET">
@@ -244,7 +244,7 @@ export default function ConnectionsPage() {
               <h3>Task #53 credential</h3>
               {task53WriteConnected ? (
                 <p>
-                  <strong>write_products is connected.</strong> Credential alone cannot write publicly.
+                  <strong>write_products is connected.</strong> Credential cannot write publicly.
                 </p>
               ) : task53EligibleShop && !oauthDisabled ? (
                 <form action="/api/connections/shopify/task53-write/start" method="POST">
@@ -257,7 +257,7 @@ export default function ConnectionsPage() {
                 </form>
               ) : (
                 <p className="muted">
-                  Requires approved read-only store.
+                  Requires approved store.
                 </p>
               )}
             </section>
