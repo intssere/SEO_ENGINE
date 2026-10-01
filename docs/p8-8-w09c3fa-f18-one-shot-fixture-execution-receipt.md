@@ -8,9 +8,9 @@
 
 **`/api/healthz` HTTP-200 READINESS: PROVEN BY RAILWAY SUCCESS STATE.**
 
-**MANDATORY SERVICE TEARDOWN: REQUESTED AND STAGED, BUT FINAL COMMIT BLOCKED BY RAILWAY 2FA.**
+**MANDATORY SERVICE TEARDOWN: COMPLETED AND REVALIDATED.**
 
-**F18 OVERALL: NOT YET COMPLETE.**
+**F18 OVERALL: COMPLETE.**
 
 ## Authorized target
 
@@ -121,39 +121,31 @@ A second path through Railway's own agent was attempted exactly once for the sam
 
 No fallback mutation was attempted.
 
-## Current live fixture state
+## Final teardown verification
 
-At the final F18 read-back:
+The operator applied the staged service-removal patch in the Railway dashboard using the required account 2FA challenge.
 
-- deployment remains `SUCCESS`;
-- service still exists pending 2FA-confirmed removal;
-- teardown patch is staged;
-- patch change count is `1`;
-- teardown is **not committed**;
-- fixture project is therefore **not yet returned to zero services**.
+Final read-only verification then confirmed:
 
-## Required human completion
+- fixture project service count: `0`;
+- staged changes: none;
+- pending work: none;
+- buckets: none;
+- the disposable fixture service is absent;
+- the live SEO ENGINE Production project remains unchanged;
+- Production patch `5d9ed802-32c2-4d0a-ac8a-b45a010ca535` remains staged;
+- `AUTH_PUBLIC_ORIGIN` remains untouched.
 
-To complete F18, the operator must open the disposable Railway project in the Railway dashboard and apply the staged deletion patch with the account's 2FA challenge.
+The Railway deployment listing no longer returns the deleted service's deployment after service removal, so the historical one-shot deployment identity remains certified from the pre-teardown receipt:
 
-The only staged disposable-project change that should be applied is patch:
+- deployment `3941a426-ee94-46ce-a98e-d61a080c857e`;
+- exactly one attempt;
+- zero retries;
+- terminal state `SUCCESS`;
+- exact digest-pinned image;
+- snapshot `2b48aa95-5774-407d-a383-ca1e7b5d19fc`.
 
-`6302e817-5b83-48d1-8036-3979b5944a59`
-
-for service:
-
-`2689d14a-e183-4c63-ab6e-a853704303f4`
-
-Do not alter the live SEO ENGINE Production project or its staged `AUTH_PUBLIC_ORIGIN` patch.
-
-After the user completes the dashboard 2FA commit, F18 must perform a read-only revalidation confirming:
-
-- fixture service count `0`;
-- no pending effective resource changes;
-- exactly one historical fixture deployment;
-- Production unchanged.
-
-Only then may F18 be marked fully complete.
+F18 teardown is therefore complete.
 
 ## Repository merge boundary
 
