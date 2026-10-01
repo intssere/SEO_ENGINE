@@ -4,7 +4,7 @@ import { StatusBadge } from "../components/status-badge";
 import {
   buildConnectionsUiModel,
   type ConnectionCardModel,
-  type ConnectStatus,
+  type ConnectionsStatus,
   type DiscoveryStatus,
 } from "../lib/connections-ui-model";
 
@@ -64,7 +64,7 @@ export default function ConnectPage() {
   const searchParams = new URLSearchParams(useSearch());
   const successParam = searchParams.get("success");
   const errorParam = searchParams.get("error");
-  const [status, setStatus] = useState<ConnectStatus | null>(null);
+  const [status, setStatus] = useState<ConnectionsStatus | null>(null);
   const [task53Capability, setTask53Capability] = useState<Task53Capability | null>(null);
   const [loading, setLoading] = useState(true);
   const [shopDomain, setShopDomain] = useState("");
