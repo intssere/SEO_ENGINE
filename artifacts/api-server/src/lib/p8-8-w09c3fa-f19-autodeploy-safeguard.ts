@@ -16,7 +16,7 @@ export interface F19Evidence {
   serviceName: typeof F19_SERVICE_NAME;
   repo: "intssere/SEO_ENGINE";
   branch: "main";
-  autodeployEnabled: true;
+  autodeployEnabled: false;
   disableControlAvailable: true;
   disableControlName: "serviceAutoDeployTool";
   stagedPatchId: typeof F19_STAGED_PATCH_ID;
@@ -46,7 +46,7 @@ export function validateF19Evidence(value: unknown): F19Result {
   if (v.repo !== "intssere/SEO_ENGINE" || v.branch !== "main") {
     return { result: "fail_closed", code: "source_mismatch" };
   }
-  if (v.autodeployEnabled !== true || v.disableControlAvailable !== true ||
+  if (v.autodeployEnabled !== false || v.disableControlAvailable !== true ||
       v.disableControlName !== "serviceAutoDeployTool") {
     return { result: "fail_closed", code: "autodeploy_state_mismatch" };
   }
@@ -74,7 +74,7 @@ export const F19_CERTIFIED_EVIDENCE: F19Evidence = {
   serviceName: F19_SERVICE_NAME,
   repo: "intssere/SEO_ENGINE",
   branch: "main",
-  autodeployEnabled: true,
+  autodeployEnabled: false,
   disableControlAvailable: true,
   disableControlName: "serviceAutoDeployTool",
   stagedPatchId: F19_STAGED_PATCH_ID,
