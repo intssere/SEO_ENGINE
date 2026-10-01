@@ -119,14 +119,14 @@ export function buildConnectionsUiModel(
     {
       domain: "website",
       title: "Website",
-      description: "The site SEO ENGINE analyzes and scopes all connected data to.",
+      description: "The website scoped to connected data.",
       state: activeSiteScope ? "connected" : "scope_required",
       tone: toneForState(activeSiteScope ? "connected" : "scope_required"),
       statusLabel: labelForState(activeSiteScope ? "connected" : "scope_required"),
-      scopeLabel: activeSiteScope ?? "No website scope confirmed",
+      scopeLabel: activeSiteScope ?? "Website scope not confirmed",
       detail: activeSiteScope
-        ? "This website is the current customer scope shown by the connected CMS."
-        : "Add or review a website before connecting provider data so site scope is explicit.",
+        ? "Current website scope from the connected CMS."
+        : "Confirm a website before connecting provider data.",
       recoveryLabel: null,
       recoveryHref: null,
       connectLabel: activeSiteScope ? "Review website setup" : "Add website",
@@ -136,16 +136,16 @@ export function buildConnectionsUiModel(
     {
       domain: "search_console",
       title: "Google Search Console",
-      description: "Queries, pages, clicks, impressions, position, and indexing context.",
+      description: "Search performance and indexing data.",
       state: google,
       tone: toneForState(google),
       statusLabel: labelForState(google),
-      scopeLabel: activeSiteScope ?? "Website scope must be confirmed",
+      scopeLabel: activeSiteScope ?? "Confirm website scope",
       detail: google === "connected"
-        ? "Read-only search performance access is available for impact measurement."
+        ? "Read-only search data is available."
         : google === "needs_attention"
-          ? "Google authorization exists, but property selection or authorization recovery is required."
-          : "Connect Google to import Search Console data after the website scope is confirmed.",
+          ? "Google needs property confirmation or reconnection."
+          : "Connect Google for Search Console data.",
       recoveryLabel: googleRecovery ? "Reconnect Google" : null,
       recoveryHref: googleRecovery,
       connectLabel: googleConnect ? "Connect Search Console" : null,
@@ -155,16 +155,16 @@ export function buildConnectionsUiModel(
     {
       domain: "analytics",
       title: "Google Analytics",
-      description: "Traffic and engagement signals used to validate SEO outcomes.",
+      description: "Traffic and engagement data.",
       state: google,
       tone: toneForState(google),
       statusLabel: labelForState(google),
-      scopeLabel: activeSiteScope ?? "Website scope must be confirmed",
+      scopeLabel: activeSiteScope ?? "Confirm website scope",
       detail: google === "connected"
-        ? "GA4 read access is available through the existing Google connection."
+        ? "GA4 read access is available."
         : google === "needs_attention"
-          ? "Google authorization exists, but GA4 property confirmation or reconnection is required."
-          : "Connect Google to import GA4 data after the website scope is confirmed.",
+          ? "Google needs GA4 confirmation or reconnection."
+          : "Connect Google for GA4 data.",
       recoveryLabel: googleRecovery ? "Reconnect Google" : null,
       recoveryHref: googleRecovery,
       connectLabel: googleConnect ? "Connect Analytics" : null,
@@ -174,14 +174,14 @@ export function buildConnectionsUiModel(
     {
       domain: "cms",
       title: "CMS",
-      description: "The content platform used for site-specific reads and governed change workflows.",
+      description: "Content platform for reads and governed changes.",
       state: status.shopify.connected ? "connected" : "not_connected",
       tone: toneForState(status.shopify.connected ? "connected" : "not_connected"),
       statusLabel: labelForState(status.shopify.connected ? "connected" : "not_connected"),
       scopeLabel: status.shopify.domain ?? "No CMS connected",
       detail: status.shopify.connected
-        ? "Shopify is connected. Existing execution and write gates remain separate from connection state."
-        : "Connect a CMS through the website setup flow. Provider-specific authorization remains isolated.",
+        ? "Shopify connected; execution and write gates remain separate."
+        : "Connect a CMS through website setup.",
       recoveryLabel: null,
       recoveryHref: null,
       connectLabel: status.shopify.connected ? "Review website setup" : "Connect CMS",
@@ -191,12 +191,12 @@ export function buildConnectionsUiModel(
     {
       domain: "backlink_serp",
       title: "Backlink / SERP provider",
-      description: "External authority and SERP data for competitive and opportunity intelligence.",
+      description: "Authority and SERP data.",
       state: "planned",
       tone: toneForState("planned"),
       statusLabel: labelForState("planned"),
-      scopeLabel: activeSiteScope ?? "No website scope confirmed",
-      detail: "Provider selection and live credentials are intentionally deferred to the later data-provider milestone.",
+      scopeLabel: activeSiteScope ?? "Website scope not confirmed",
+      detail: "Live provider setup is deferred to a later milestone.",
       recoveryLabel: null,
       recoveryHref: null,
       connectLabel: null,
@@ -207,7 +207,7 @@ export function buildConnectionsUiModel(
 
   return Object.freeze({
     activeSiteScope,
-    siteScopeLabel: activeSiteScope ?? "Website not yet confirmed",
+    siteScopeLabel: activeSiteScope ?? "Website not confirmed",
     oauthDisabled,
     cards: Object.freeze(cards.map((card) => Object.freeze(card))),
   });
