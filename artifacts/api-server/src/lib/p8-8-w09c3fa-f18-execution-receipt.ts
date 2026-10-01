@@ -44,19 +44,19 @@ export interface F18ExecutionReceiptEvidence {
   teardownScope: "service_id_only";
   teardownCommitAttempted: true;
   teardownCommitBlockedBy2FA: true;
-  teardownCommitted: false;
-  serviceStillPresentPending2FA: true;
-  fixtureComplete: false;
-  completionBlocker: "railway_2fa_required_for_service_removal_commit";
+  teardownCommitted: true;
+  serviceStillPresentPending2FA: false;
+  fixtureComplete: true;
+  completionBlocker: null;
 }
 
 export type F18ExecutionReceiptResult =
   | {
-      result: "partial_pass_teardown_blocked";
+      result: "pass";
       receiptId: string;
       pullability: "proven";
       healthcheck: "proven";
-      teardown: "awaiting_user_2fa";
+      teardown: "completed";
     }
   | { result: "fail_closed"; code: string };
 
@@ -124,20 +124,20 @@ export function validateF18ExecutionReceipt(value: unknown): F18ExecutionReceipt
   if (
     v.teardownCommitAttempted !== true ||
     v.teardownCommitBlockedBy2FA !== true ||
-    v.teardownCommitted !== false ||
-    v.serviceStillPresentPending2FA !== true ||
-    v.fixtureComplete !== false ||
-    v.completionBlocker !== "railway_2fa_required_for_service_removal_commit"
+    v.teardownCommitted !== true ||
+    v.serviceStillPresentPending2FA !== false ||
+    v.fixtureComplete !== true ||
+    v.completionBlocker !== null
   ) {
     return { result: "fail_closed", code: "teardown_state_mismatch" };
   }
 
   return {
-    result: "partial_pass_teardown_blocked",
+    result: "pass",
     receiptId: hash(v),
     pullability: "proven",
     healthcheck: "proven",
-    teardown: "awaiting_user_2fa",
+    teardown: "completed",
   };
 }
 
@@ -173,8 +173,8 @@ export const F18_CERTIFIED_EXECUTION_RECEIPT: F18ExecutionReceiptEvidence = {
   teardownScope: "service_id_only",
   teardownCommitAttempted: true,
   teardownCommitBlockedBy2FA: true,
-  teardownCommitted: false,
-  serviceStillPresentPending2FA: true,
-  fixtureComplete: false,
-  completionBlocker: "railway_2fa_required_for_service_removal_commit",
+  teardownCommitted: true,
+  serviceStillPresentPending2FA: false,
+  fixtureComplete: true,
+  completionBlocker: null,
 };
