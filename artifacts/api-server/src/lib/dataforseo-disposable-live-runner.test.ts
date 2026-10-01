@@ -178,7 +178,7 @@ test("UGP-6.1G stops before a subsequent call if cumulative reported cost exceed
         };
       },
     }),
-    /cost_ceiling_exceeded/,
+    /transport_failed_related_keywords/,
   );
   assert.equal(calls,2);
 });
