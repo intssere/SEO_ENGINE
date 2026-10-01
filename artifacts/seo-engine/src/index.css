@@ -3587,3 +3587,58 @@ td:first-child {
 @media(width<=640px){.contextualGuide{right:12px;bottom:12px}.onboardingGuideButton{min-height:44px}}
 
 
+
+/* UGP-5.3 compact connections surface */
+.connectionsPage{display:flex;flex-direction:column;gap:20px}
+.connectionsHero{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.connectionsHeroCopy{max-width:760px}
+.connectionsHeading{margin:0;color:#172033;font-size:30px;line-height:1.1;letter-spacing:-.03em}
+.connectionsLead{margin-top:8px;font-size:13px;line-height:1.6}
+.connectionAction{min-height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #c9dcfa;border-radius:8px;background:#f3f7ff;color:#245ea8;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none}
+.connectionAction:hover{background:#e8f1ff}
+.connectionAction:disabled{cursor:not-allowed;opacity:.5}
+.connectionHeroAction{flex:none}
+.connectionAlert{display:flex;align-items:flex-start;gap:8px;border-radius:8px;padding:12px;font-size:12px;font-weight:650}
+.connectionAlertSuccess{border:1px solid var(--status-success-border);background:var(--status-success-bg);color:var(--status-success-fg)}
+.connectionAlertDanger{border:1px solid var(--status-danger-border);background:var(--status-danger-bg);color:var(--status-danger-fg)}
+.connectionScopeBanner{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:start;gap:12px;border:1px solid #dce5f3;border-radius:10px;background:#f8fbff;padding:14px}
+.connectionScopeMark,.connectionMark{display:grid;place-items:center;border-radius:8px;background:#f1f5fa;color:#455168;font-size:10px;font-weight:800}
+.connectionScopeMark{width:38px;height:38px;background:#e8f1ff;color:#245ea8;font-size:11px}
+.connectionScopeEyebrow,.connectionLabel{display:block;color:#5f6d83;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.connectionScopeValue,.connectionValue{display:block;margin-top:3px;color:#34445d;overflow-wrap:anywhere}
+.connectionScopeValue{color:#172033;font-size:14px}
+.connectionScopeHelp,.connectionDetail,.connectionUnavailable,.connectionFinePrint{color:#647087;font-size:10px;line-height:1.5}
+.connectionScopeHelp{margin:4px 0 0}
+.connectionScopeStatus{justify-self:start}
+.connectionSectionHead{margin-bottom:12px}
+.connectionsGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.connectionCard{min-width:0;display:flex;flex-direction:column;border:1px solid #e2e7ef;border-radius:10px;background:#fff;padding:14px}
+.connectionCardHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.connectionMark{min-width:40px;min-height:40px;padding:0 8px}
+.connectionTitle{margin:12px 0 0;color:#172033;font-size:16px}
+.connectionSummary{min-height:40px;margin:4px 0 0;color:#647087;font-size:11px;line-height:1.5}
+.connectionScopeBox,.connectionHealthItem,.connectionFact{border:1px solid #edf0f5;border-radius:8px;background:#fbfcfe;padding:9px 10px}
+.connectionScopeBox{margin-top:12px}
+.connectionValue{font-size:10px}
+.connectionDetail{flex:1;margin:10px 0 12px}
+.connectionUnavailable{display:inline-flex;min-height:36px;align-items:center;color:#5f6d83}
+.connectionsLoading{min-height:120px;display:flex;align-items:center;justify-content:center;color:#647087;font-size:12px}
+.connectionPanel{display:flex;flex-direction:column;gap:14px}
+.connectionPropertyGrid{display:grid;grid-template-columns:1fr 1fr auto;align-items:end;gap:12px}
+.connectionField{display:block;color:#52627a;font-size:10px;font-weight:700}
+.connectionInput{min-height:44px;width:100%;margin-top:4px;border:1px solid #dce2eb;border-radius:8px;background:#fff;padding:8px 10px;font-size:12px}
+.connectionGrow{min-width:0;flex:1;margin-top:0}
+.connectionHealthGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}
+.connectionHealthValue{margin:4px 0 0;color:#34445d;font-size:11px;font-weight:700}
+.connectionFitAction{width:fit-content}
+.connectionAdvanced{padding:0;overflow:hidden}
+.connectionAdvancedSummary{min-height:48px;display:flex;align-items:center;padding:0 16px;color:#455168;font-size:12px;font-weight:700;cursor:pointer}
+.connectionAdvancedBody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;border-top:1px solid #edf0f5;padding:16px}
+.connectionSubheading{margin:0;color:#263249;font-size:13px}
+.connectionFinePrint{margin:7px 0 10px}
+.connectionInline{display:flex;gap:8px}
+.connectionFact{color:#52627a;font-size:10px}
+.connectionFactSuccess{border-color:var(--status-success-border);background:var(--status-success-bg);color:var(--status-success-fg)}
+@media(max-width:1100px){.connectionsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.connectionPropertyGrid{grid-template-columns:1fr 1fr}.connectionConfirmAction{grid-column:1/-1;width:fit-content}}
+@media screen and (max-width:820px){.connectionsHero{flex-direction:column}.connectionHeroAction{width:100%}.connectionScopeBanner{grid-template-columns:38px minmax(0,1fr)}.connectionScopeStatus{grid-column:2}.connectionAdvancedBody{grid-template-columns:1fr}}
+@media screen and (max-width:640px){.connectionsHeading{font-size:24px}.connectionsGrid,.connectionPropertyGrid,.connectionHealthGrid{grid-template-columns:1fr}.connectionConfirmAction{grid-column:auto;width:100%}.connectionInline{flex-direction:column}.connectionAction{width:100%}}
