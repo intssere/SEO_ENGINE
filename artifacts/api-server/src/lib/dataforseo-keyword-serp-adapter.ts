@@ -104,6 +104,18 @@ function keywordData(result: Record<string, unknown>): Record<string, unknown> {
     : {};
 }
 
+function keywordOverviewRow(
+  result: Record<string, unknown>,
+  keyword: string,
+): Record<string, unknown> {
+  if (!Array.isArray(result.items)) return result;
+  const rows = result.items.filter(
+    (entry): entry is Record<string, unknown> =>
+      Boolean(entry) && typeof entry === "object" && !Array.isArray(entry),
+  );
+  return rows.find((row) => row.keyword === keyword) ?? rows[0] ?? {};
+}
+
 function monthlySearches(info: Record<string, unknown>) {
   if (!Array.isArray(info.monthly_searches)) return [];
   return info.monthly_searches.flatMap((entry) => {
@@ -192,9 +204,10 @@ export function normalizeDataForSeoKeywordSerpFixtures(input: {
   const relatedTask = exactTask(input.relatedKeywords, "related_keywords");
   const serpTask = exactTask(input.serpAdvanced, "serp_advanced");
 
-  const overview = firstResult(overviewTask, "keyword_overview");
+  const overviewResult = firstResult(overviewTask, "keyword_overview");
   const related = firstResult(relatedTask, "related_keywords");
   const serp = firstResult(serpTask, "serp_advanced");
+  const overview = keywordOverviewRow(overviewResult, input.request.keyword);
 
   const info = keywordData(overview);
   const keywordDifficulty = nullableNumber(
