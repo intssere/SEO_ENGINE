@@ -22,9 +22,9 @@ test("exact production identities are pinned", () => {
   assert.equal(F19_CERTIFIED_EVIDENCE.serviceId, F19_SERVICE_ID);
 });
 
-test("current autodeploy state must be enabled before bounded disable", () => {
+test("certified live state requires autodeploy disabled", () => {
   const v: any = structuredClone(F19_CERTIFIED_EVIDENCE);
-  v.autodeployEnabled = false;
+  v.autodeployEnabled = true;
   assert.deepEqual(validateF19Evidence(v), {
     result: "fail_closed",
     code: "autodeploy_state_mismatch",
