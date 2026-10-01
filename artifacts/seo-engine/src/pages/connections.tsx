@@ -16,23 +16,23 @@ type Task53Capability = {
 
 const successMessages: Record<string, string> = {
   shopify: "Shopify connected successfully.",
-  task53_shopify_write: "Task #53 isolated Shopify write_products credential connected successfully.",
-  google: "Google Search Console and GA4 connected successfully.",
-  google_pending: "Google authorization succeeded. Confirm the matching Search Console and GA4 properties below.",
-  google_attention: "Google authorization was stored securely, but additional setup is required.",
+  task53_shopify_write: "Task #53 write credential connected.",
+  google: "Google connected.",
+  google_pending: "Confirm the matching Google properties below.",
+  google_attention: "Google needs additional setup.",
 };
 
 const errorMessages: Record<string, string> = {
-  shopify_start: "Unable to start Shopify authorization.",
-  shopify_callback: "Shopify authorization could not be completed.",
-  google_start: "Unable to start Google authorization.",
-  google_state: "Google authorization expired or could not be verified. Please start again.",
-  google_token_provider: "Google rejected the token exchange. Check the authorized redirect URI and try again.",
-  google_token_network: "Google's token service could not be reached. Please try again.",
-  google_persistence: "Google authorization succeeded, but the encrypted connection could not be saved.",
-  google_write_gate: "Google authorization is unavailable while public-site writes are enabled.",
-  google_configuration: "Google authorization configuration is incomplete.",
-  google_selection: "The selected Google properties could not be saved. Please authorize again.",
+  shopify_start: "Could not start Shopify authorization.",
+  shopify_callback: "Could not complete Shopify authorization.",
+  google_start: "Could not start Google authorization.",
+  google_state: "Google authorization expired. Start again.",
+  google_token_provider: "Google rejected the token exchange.",
+  google_token_network: "Google token service is unavailable.",
+  google_persistence: "Google connection could not be saved.",
+  google_write_gate: "Google authorization is unavailable in write mode.",
+  google_configuration: "Google configuration is incomplete.",
+  google_selection: "Google properties could not be saved.",
 };
 
 function discoveryLabel(status?: DiscoveryStatus | null) {
@@ -109,7 +109,7 @@ export default function ConnectionsPage() {
   const oauthDisabled = status?.readOnly === false;
   const successMessage = successParam ? successMessages[successParam] : null;
   const errorMessage = errorParam
-    ? errorMessages[errorParam] ?? "The connection could not be completed safely."
+    ? errorMessages[errorParam] ?? "Connection could not be completed."
     : null;
 
   return (
@@ -124,8 +124,7 @@ export default function ConnectionsPage() {
             <p className="eyebrow">CONNECTIONS</p>
             <h1>Connect the data sources that explain your site</h1>
             <p className="muted">
-              Each source is scoped to one website. Connecting a provider makes data available;
-              it does not authorize SEO ENGINE to publish or modify your site.
+              Each source is scoped to one website. A connection does not authorize publishing or site changes.
             </p>
           </div>
           <Link className="linkButton ask" href="/settings/add-website">Add or review website</Link>
@@ -140,7 +139,7 @@ export default function ConnectionsPage() {
               <p className="eyebrow">ACTIVE WEBSITE SCOPE</p>
               <h2>{model?.siteScopeLabel ?? "Checking website scope…"}</h2>
               <p className="muted">
-                Search, analytics, CMS, and future authority data must resolve to this same site scope.
+                Connected data must resolve to this same website scope.
               </p>
             </div>
             <StatusBadge tone={model?.activeSiteScope ? "success" : "warning"}>
@@ -153,7 +152,7 @@ export default function ConnectionsPage() {
           <div className="sectionHead">
             <div>
               <h2 id="connection-sources-title">Data sources</h2>
-              <p className="muted">Connection health and recovery are visible without exposing credentials.</p>
+              <p className="muted">Status and recovery are shown without exposing credentials.</p>
             </div>
           </div>
           {model ? model.cards.map((card) => (
@@ -171,7 +170,7 @@ export default function ConnectionsPage() {
               <div>
                 <p className="eyebrow">ACTION REQUIRED</p>
                 <h2 id="google-setup-title">Finish Google property setup</h2>
-                <p className="muted">Choose the Search Console and GA4 properties that match the active website.</p>
+                <p className="muted">Choose properties that match the active website.</p>
               </div>
               <StatusBadge tone="warning">Needs confirmation</StatusBadge>
             </div>
@@ -233,7 +232,7 @@ export default function ConnectionsPage() {
           <section>
             <h3>Direct Shopify authorization</h3>
             <p className="muted">
-              Existing Shopify authorization remains available for compatibility. New customers should normally use the website setup flow.
+              Direct Shopify authorization remains available for compatibility.
             </p>
             {!status?.shopify.connected ? (
               <form action="/api/connections/shopify/start" method="GET">
@@ -267,13 +266,13 @@ export default function ConnectionsPage() {
                   <input type="hidden" name="shop" value="vcuxm7-76.myshopify.com" />
                   <input type="hidden" name="confirmation" value="AUTHORIZE_SHOPIFY_WRITE_SCOPE:write_products" />
                   <p className="muted">
-                    Requests only the isolated <strong>write_products</strong> credential. Execution authorization remains separate.
+                    Requests isolated <strong>write_products</strong> scope. Execution authorization remains separate.
                   </p>
                   <button type="submit" className="linkButton ask">Authorize Task #53 write_products</button>
                 </form>
               ) : (
                 <p className="muted">
-                  The isolated write-scope flow is unavailable unless the approved Diamond Shelf store is connected in read-only mode.
+                  Write-scope setup requires the approved store in read-only mode.
                 </p>
               )}
             </section>
