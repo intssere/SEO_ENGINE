@@ -15,24 +15,11 @@ type Task53Capability = {
 };
 
 const successMessages: Record<string, string> = {
-  shopify: "Shopify connected successfully.",
-  task53_shopify_write: "Task #53 write credential connected.",
+  shopify: "Shopify connected.",
+  task53_shopify_write: "Task #53 credential connected.",
   google: "Google connected.",
-  google_pending: "Confirm the matching Google properties below.",
-  google_attention: "Google needs additional setup.",
-};
-
-const errorMessages: Record<string, string> = {
-  shopify_start: "Could not start Shopify authorization.",
-  shopify_callback: "Could not complete Shopify authorization.",
-  google_start: "Could not start Google authorization.",
-  google_state: "Google authorization expired. Start again.",
-  google_token_provider: "Google rejected the token exchange.",
-  google_token_network: "Google token service is unavailable.",
-  google_persistence: "Google connection could not be saved.",
-  google_write_gate: "Google authorization is unavailable in write mode.",
-  google_configuration: "Google configuration is incomplete.",
-  google_selection: "Google properties could not be saved.",
+  google_pending: "Confirm Google properties below.",
+  google_attention: "Google needs setup.",
 };
 
 function discoveryLabel(status?: DiscoveryStatus | null) {
@@ -108,9 +95,7 @@ export default function ConnectionsPage() {
   const task53EligibleShop = status?.shopify.domain === "vcuxm7-76.myshopify.com";
   const oauthDisabled = status?.readOnly === false;
   const successMessage = successParam ? successMessages[successParam] : null;
-  const errorMessage = errorParam
-    ? errorMessages[errorParam] ?? "Connection could not be completed."
-    : null;
+  const errorMessage = errorParam ? "Connection could not be completed safely." : null;
 
   return (
     <>
@@ -122,9 +107,9 @@ export default function ConnectionsPage() {
         <section className="titleRow">
           <div>
             <p className="eyebrow">CONNECTIONS</p>
-            <h1>Connect the data sources that explain your site</h1>
+            <h1>Connect your site data</h1>
             <p className="muted">
-              Each source is scoped to one website. A connection does not authorize publishing or site changes.
+              Connections are site-scoped and do not authorize publishing.
             </p>
           </div>
           <Link className="linkButton ask" href="/settings/add-website">Add or review website</Link>
@@ -139,7 +124,7 @@ export default function ConnectionsPage() {
               <p className="eyebrow">ACTIVE WEBSITE SCOPE</p>
               <h2>{model?.siteScopeLabel ?? "Checking website scope…"}</h2>
               <p className="muted">
-                Connected data must resolve to this same website scope.
+                Connected data must match this website.
               </p>
             </div>
             <StatusBadge tone={model?.activeSiteScope ? "success" : "warning"}>
@@ -152,7 +137,7 @@ export default function ConnectionsPage() {
           <div className="sectionHead">
             <div>
               <h2 id="connection-sources-title">Data sources</h2>
-              <p className="muted">Status and recovery are shown without exposing credentials.</p>
+              <p className="muted">Status and recovery without exposed credentials.</p>
             </div>
           </div>
           {model ? model.cards.map((card) => (
@@ -169,8 +154,8 @@ export default function ConnectionsPage() {
             <div className="sectionHead">
               <div>
                 <p className="eyebrow">ACTION REQUIRED</p>
-                <h2 id="google-setup-title">Finish Google property setup</h2>
-                <p className="muted">Choose properties that match the active website.</p>
+                <h2 id="google-setup-title">Confirm Google properties</h2>
+                <p className="muted">Choose properties for this website.</p>
               </div>
               <StatusBadge tone="warning">Needs confirmation</StatusBadge>
             </div>
@@ -211,7 +196,7 @@ export default function ConnectionsPage() {
             <div className="sectionHead">
               <div>
                 <p className="eyebrow">CONNECTION HEALTH</p>
-                <h2 id="google-health-title">Google authorization needs attention</h2>
+                <h2 id="google-health-title">Google needs attention</h2>
               </div>
               <StatusBadge tone="warning">Recoverable</StatusBadge>
             </div>
@@ -232,7 +217,7 @@ export default function ConnectionsPage() {
           <section>
             <h3>Direct Shopify authorization</h3>
             <p className="muted">
-              Direct Shopify authorization remains available for compatibility.
+              Direct Shopify setup remains available.
             </p>
             {!status?.shopify.connected ? (
               <form action="/api/connections/shopify/start" method="GET">
@@ -256,10 +241,10 @@ export default function ConnectionsPage() {
 
           {status?.shopify.connected && (
             <section>
-              <h3>Task #53 isolated write credential</h3>
+              <h3>Task #53 write credential</h3>
               {task53WriteConnected ? (
                 <p>
-                  <strong>write_products is connected.</strong> This credential does not enable a public-site write by itself.
+                  <strong>write_products is connected.</strong> This credential alone cannot write to the public site.
                 </p>
               ) : task53EligibleShop && !oauthDisabled ? (
                 <form action="/api/connections/shopify/task53-write/start" method="POST">
@@ -272,7 +257,7 @@ export default function ConnectionsPage() {
                 </form>
               ) : (
                 <p className="muted">
-                  Write-scope setup requires the approved store in read-only mode.
+                  Requires the approved read-only store.
                 </p>
               )}
             </section>
