@@ -18,7 +18,7 @@ const successMessages: Record<string, string> = {
   shopify: "Shopify connected.",
   task53_shopify_write: "Task #53 credential connected.",
   google: "Google connected.",
-  google_pending: "Confirm Google properties below.",
+  google_pending: "Confirm properties below.",
   google_attention: "Google needs setup.",
 };
 
@@ -44,7 +44,7 @@ function ConnectionCard({ card, loading }: { card: ConnectionCardModel; loading:
       </div>
       <p className="muted">{card.description}</p>
       <p><strong>Site scope:</strong> {card.scopeLabel}</p>
-      <p className="muted">{loading ? "Checking connection state…" : card.detail}</p>
+      <p className="muted">{loading ? "Checking…" : card.detail}</p>
       {card.recoveryHref && card.recoveryLabel ? (
         <a className="linkButton ask" href={card.recoveryHref}>{card.recoveryLabel}</a>
       ) : card.connectHref && card.connectLabel ? (
@@ -54,7 +54,7 @@ function ConnectionCard({ card, loading }: { card: ConnectionCardModel; loading:
           <Link className="linkButton ask" href={card.connectHref}>{card.connectLabel}</Link>
         )
       ) : (
-        <span className="muted">{card.disabled ? "No live connection available in this milestone" : "No action required"}</span>
+        <span className="muted">{card.disabled ? "Not available yet" : "No action"}</span>
       )}
     </article>
   );
@@ -95,7 +95,7 @@ export default function ConnectionsPage() {
   const task53EligibleShop = status?.shopify.domain === "vcuxm7-76.myshopify.com";
   const oauthDisabled = status?.readOnly === false;
   const successMessage = successParam ? successMessages[successParam] : null;
-  const errorMessage = errorParam ? "Connection could not be completed safely." : null;
+  const errorMessage = errorParam ? "Connection failed." : null;
 
   return (
     <>
@@ -107,9 +107,9 @@ export default function ConnectionsPage() {
         <section className="titleRow">
           <div>
             <p className="eyebrow">CONNECTIONS</p>
-            <h1>Connect your site data</h1>
+            <h1>Connect site data</h1>
             <p className="muted">
-              Connections are site-scoped and do not authorize publishing.
+              Connections are site-scoped; publishing stays separate.
             </p>
           </div>
           <Link className="linkButton ask" href="/settings/add-website">Add or review website</Link>
@@ -124,7 +124,7 @@ export default function ConnectionsPage() {
               <p className="eyebrow">ACTIVE WEBSITE SCOPE</p>
               <h2>{model?.siteScopeLabel ?? "Checking website scope…"}</h2>
               <p className="muted">
-                Connected data must match this website.
+                Data must match this website.
               </p>
             </div>
             <StatusBadge tone={model?.activeSiteScope ? "success" : "warning"}>
@@ -137,14 +137,14 @@ export default function ConnectionsPage() {
           <div className="sectionHead">
             <div>
               <h2 id="connection-sources-title">Data sources</h2>
-              <p className="muted">Status and recovery without exposed credentials.</p>
+              <p className="muted">Status and recovery without credentials.</p>
             </div>
           </div>
           {model ? model.cards.map((card) => (
             <ConnectionCard key={card.domain} card={card} loading={loading} />
           )) : (
             <div className="card" role="status" aria-live="polite">
-              {loading ? "Loading connection status…" : "Connection status is temporarily unavailable."}
+              {loading ? "Loading…" : "Status unavailable."}
             </div>
           )}
         </section>
@@ -154,7 +154,7 @@ export default function ConnectionsPage() {
             <div className="sectionHead">
               <div>
                 <p className="eyebrow">ACTION REQUIRED</p>
-                <h2 id="google-setup-title">Confirm Google properties</h2>
+                <h2 id="google-setup-title">Confirm properties</h2>
                 <p className="muted">Choose properties for this website.</p>
               </div>
               <StatusBadge tone="warning">Needs confirmation</StatusBadge>
@@ -196,7 +196,7 @@ export default function ConnectionsPage() {
             <div className="sectionHead">
               <div>
                 <p className="eyebrow">CONNECTION HEALTH</p>
-                <h2 id="google-health-title">Google needs attention</h2>
+                <h2 id="google-health-title">Google attention</h2>
               </div>
               <StatusBadge tone="warning">Recoverable</StatusBadge>
             </div>
@@ -217,7 +217,7 @@ export default function ConnectionsPage() {
           <section>
             <h3>Direct Shopify authorization</h3>
             <p className="muted">
-              Direct Shopify setup remains available.
+              Direct Shopify setup.
             </p>
             {!status?.shopify.connected ? (
               <form action="/api/connections/shopify/start" method="GET">
@@ -241,10 +241,10 @@ export default function ConnectionsPage() {
 
           {status?.shopify.connected && (
             <section>
-              <h3>Task #53 write credential</h3>
+              <h3>Task #53 credential</h3>
               {task53WriteConnected ? (
                 <p>
-                  <strong>write_products is connected.</strong> This credential alone cannot write to the public site.
+                  <strong>write_products is connected.</strong> Credential alone cannot write publicly.
                 </p>
               ) : task53EligibleShop && !oauthDisabled ? (
                 <form action="/api/connections/shopify/task53-write/start" method="POST">
@@ -257,7 +257,7 @@ export default function ConnectionsPage() {
                 </form>
               ) : (
                 <p className="muted">
-                  Requires the approved read-only store.
+                  Requires approved read-only store.
                 </p>
               )}
             </section>
