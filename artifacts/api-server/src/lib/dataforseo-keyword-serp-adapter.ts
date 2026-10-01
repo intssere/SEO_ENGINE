@@ -87,7 +87,11 @@ function provenance(
     providerStatusMessage: typeof task.status_message === "string"
       ? task.status_message
       : null,
-    providerPath: typeof task.path === "string" ? task.path : "",
+    providerPath: typeof task.path === "string"
+    ? task.path.replace(/^\/+/, "")
+    : Array.isArray(task.path) && task.path.every((part) => typeof part === "string")
+      ? (task.path as string[]).join("/")
+      : "",
     costUsd: nullableNumber(task.cost),
     responseFingerprint: stableEvidenceHash(raw),
   });
@@ -121,20 +125,26 @@ function relatedRows(result: Record<string, unknown>): RelatedTopicEvidence[] {
   return result.items.flatMap((entry) => {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
     const row = entry as Record<string, unknown>;
-    const keyword = typeof row.keyword === "string" ? row.keyword : null;
+    const nested = row.keyword_data;
+    const data = nested && typeof nested === "object" && !Array.isArray(nested)
+      ? nested as Record<string, unknown>
+      : row;
+    const keyword = typeof data.keyword === "string" ? data.keyword : null;
     if (!keyword) return [];
-    const info = keywordData(row);
+    const info = keywordData(data);
     return [Object.freeze({
       keyword,
       searchVolume: nullableNumber(info.search_volume),
-      keywordDifficulty: nullableNumber(row.keyword_properties && typeof row.keyword_properties === "object"
-        ? (row.keyword_properties as Record<string, unknown>).keyword_difficulty
-        : null),
+      keywordDifficulty: nullableNumber(
+        data.keyword_properties && typeof data.keyword_properties === "object"
+          ? (data.keyword_properties as Record<string, unknown>).keyword_difficulty
+          : null,
+      ),
       cpcUsd: nullableNumber(info.cpc),
       paidCompetition: nullableNumber(info.competition),
       intent: normalizeIntent(
-        row.search_intent_info && typeof row.search_intent_info === "object"
-          ? (row.search_intent_info as Record<string, unknown>).main_intent
+        data.search_intent_info && typeof data.search_intent_info === "object"
+          ? (data.search_intent_info as Record<string, unknown>).main_intent
           : null,
       ),
     })];
