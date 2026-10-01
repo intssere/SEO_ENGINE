@@ -67,11 +67,11 @@ The F17 merge created deployment:
 
 `c4ed6319-8c02-416a-b8bf-4dbb1dd18454`
 
-Observed status during F18 read-back:
+Initial F18 read-back observed `WAITING`. A final read after CI observed the same deployment in terminal state:
 
-`WAITING`
+`FAILED`
 
-Recent prior main-triggered deployments are recorded as `FAILED`.
+Recent prior main-triggered deployments are also recorded as `FAILED`.
 
 Therefore a repository merge is not operationally neutral while this source binding remains active.
 
