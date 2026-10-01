@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   acquireDataForSeoKeywordSerpEvidence,
@@ -248,4 +249,19 @@ test("UGP-6.1B rejects HTTP errors, non-JSON, malformed JSON, and oversized resp
       item.pattern,
     );
   }
+});
+
+
+test("UGP-6.1B transport is not runtime-wired and has no environment/global-fetch credential path", () => {
+  const source = readFileSync(new URL("./dataforseo-controlled-transport.ts", import.meta.url), "utf8");
+  const apiIndex = readFileSync(new URL("../index.ts", import.meta.url), "utf8");
+
+  assert.doesNotMatch(source, /process\.env/);
+  assert.doesNotMatch(source, /\bfetch\s*\(/);
+  assert.doesNotMatch(apiIndex, /dataforseo-controlled-transport/);
+  assert.doesNotMatch(apiIndex, /acquireDataForSeoKeywordSerpEvidence/);
+  assert.equal(DATAFORSEO_TRANSPORT_POLICY.grantsAuthorization, false);
+  assert.equal(DATAFORSEO_TRANSPORT_POLICY.grantsProviderWrite, false);
+  assert.equal(DATAFORSEO_TRANSPORT_POLICY.grantsPublicSiteWrite, false);
+  assert.equal(DATAFORSEO_TRANSPORT_POLICY.returnsCredentialMaterial, false);
 });
