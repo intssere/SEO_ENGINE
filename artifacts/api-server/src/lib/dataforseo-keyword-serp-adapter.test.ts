@@ -34,19 +34,21 @@ function envelope(dataset: string, result: unknown, overrides: Record<string, un
 }
 
 const overview = envelope("keyword_overview", {
-  keyword: "stress relief journal",
-  keyword_info: {
-    search_volume: 1900,
-    cpc: 1.24,
-    competition: 0.41,
-    competition_level: "MEDIUM",
-    monthly_searches: [
-      { year: 2026, month: 8, search_volume: 1800 },
-      { year: 2026, month: 7, search_volume: 1700 },
-    ],
-  },
-  keyword_properties: { keyword_difficulty: 38 },
-  search_intent_info: { main_intent: "commercial" },
+  items: [{
+    keyword: "stress relief journal",
+    keyword_info: {
+      search_volume: 1900,
+      cpc: 1.24,
+      competition: 0.41,
+      competition_level: "MEDIUM",
+      monthly_searches: [
+        { year: 2026, month: 8, search_volume: 1800 },
+        { year: 2026, month: 7, search_volume: 1700 },
+      ],
+    },
+    keyword_properties: { keyword_difficulty: 38 },
+    search_intent_info: { main_intent: "commercial" },
+  }],
 });
 
 const related = envelope("related_keywords", {
