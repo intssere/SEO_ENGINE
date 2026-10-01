@@ -16,9 +16,9 @@ type Task53Capability = {
 
 const successMessages: Record<string, string> = {
   shopify: "Shopify connected.",
-  task53_shopify_write: "Task #53 credential connected.",
+  task53_shopify_write: "Task #53 connected.",
   google: "Google connected.",
-  google_pending: "Confirm properties below.",
+  google_pending: "Confirm below.",
   google_attention: "Google needs setup.",
 };
 
@@ -112,7 +112,7 @@ export default function ConnectionsPage() {
               Connections are site-scoped.
             </p>
           </div>
-          <Link className="linkButton ask" href="/settings/add-website">Add or review website</Link>
+          <Link className="linkButton ask" href="/settings/add-website">Website setup</Link>
         </section>
 
         {successMessage && <div className="card" role="status" aria-live="polite">{successMessage}</div>}
@@ -121,7 +121,7 @@ export default function ConnectionsPage() {
         <section className="card" aria-label="Active website scope">
           <div className="sectionHead">
             <div>
-              <p className="eyebrow">ACTIVE WEBSITE SCOPE</p>
+              <p className="eyebrow">SITE SCOPE</p>
               <h2>{model?.siteScopeLabel ?? "Checking website scope…"}</h2>
               <p className="muted">
                 Data must match this website.
@@ -136,7 +136,7 @@ export default function ConnectionsPage() {
         <section aria-labelledby="connection-sources-title">
           <div className="sectionHead">
             <div>
-              <h2 id="connection-sources-title">Data sources</h2>
+              <h2 id="connection-sources-title">Connections</h2>
               <p className="muted">Status and recovery.</p>
             </div>
           </div>
@@ -154,7 +154,7 @@ export default function ConnectionsPage() {
             <div className="sectionHead">
               <div>
                 <p className="eyebrow">ACTION REQUIRED</p>
-                <h2 id="google-setup-title">Confirm properties</h2>
+                <h2 id="google-setup-title">Confirm</h2>
                 <p className="muted">Choose properties for this website.</p>
               </div>
               <StatusBadge tone="warning">Needs confirmation</StatusBadge>
@@ -185,7 +185,7 @@ export default function ConnectionsPage() {
                 </label>
               </p>
               <button type="submit" disabled={oauthDisabled} className="linkButton ask">
-                Confirm properties
+                Confirm
               </button>
             </form>
           </section>
@@ -208,7 +208,7 @@ export default function ConnectionsPage() {
               <dt>GA4 discovery</dt>
               <dd>{discoveryLabel(status.google.ga4Discovery)}</dd>
             </dl>
-            {!oauthDisabled && <a className="linkButton ask" href="/api/connections/google/start">Reconnect</a>}
+            {!oauthDisabled && <a className="linkButton ask" href="/api/connections/google/start">Retry</a>}
           </section>
         )}
 
@@ -217,7 +217,7 @@ export default function ConnectionsPage() {
           <section>
             <h3>Direct Shopify authorization</h3>
             <p className="muted">
-              Shopify setup.
+              Shopify.
             </p>
             {!status?.shopify.connected ? (
               <form action="/api/connections/shopify/start" method="GET">
@@ -241,10 +241,10 @@ export default function ConnectionsPage() {
 
           {status?.shopify.connected && (
             <section>
-              <h3>Task #53 credential</h3>
+              <h3>Task #53</h3>
               {task53WriteConnected ? (
                 <p>
-                  <strong>write_products is connected.</strong> Credential cannot write publicly.
+                  <strong>write_products is connected.</strong> No public write authority.
                 </p>
               ) : task53EligibleShop && !oauthDisabled ? (
                 <form action="/api/connections/shopify/task53-write/start" method="POST">
@@ -257,7 +257,7 @@ export default function ConnectionsPage() {
                 </form>
               ) : (
                 <p className="muted">
-                  Requires approved store.
+                  Approved store required.
                 </p>
               )}
             </section>
