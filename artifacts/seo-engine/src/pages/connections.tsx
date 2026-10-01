@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearch } from "wouter";
 import { StatusBadge } from "../components/status-badge";
 import {
-  buildConnectionsUiModel,
+  buildConnectUiModel,
   type ConnectionCardModel,
-  type ConnectionsStatus,
+  type ConnectStatus,
   type DiscoveryStatus,
 } from "../lib/connections-ui-model";
 
@@ -15,11 +15,11 @@ type Task53Capability = {
 };
 
 const successMessages: Record<string, string> = {
-  shopify: "Shopify connected.",
+  shopify: "Connected.",
   task53_shopify_write: "Task #53 connected.",
-  google: "Google connected.",
+  google: "Connected.",
   google_pending: "Confirm below.",
-  google_attention: "Google needs setup.",
+  google_attention: "Google setup.",
 };
 
 function discoveryLabel(status?: DiscoveryStatus | null) {
@@ -54,17 +54,17 @@ function ConnectionCard({ card, loading }: { card: ConnectionCardModel; loading:
           <Link className="linkButton ask" href={card.connectHref}>{card.connectLabel}</Link>
         )
       ) : (
-        <span className="muted">{card.disabled ? "Not available yet" : "No action"}</span>
+        <span className="muted">{card.disabled ? "Not available yet" : "Done"}</span>
       )}
     </article>
   );
 }
 
-export default function ConnectionsPage() {
+export default function ConnectPage() {
   const searchParams = new URLSearchParams(useSearch());
   const successParam = searchParams.get("success");
   const errorParam = searchParams.get("error");
-  const [status, setStatus] = useState<ConnectionsStatus | null>(null);
+  const [status, setStatus] = useState<ConnectStatus | null>(null);
   const [task53Capability, setTask53Capability] = useState<Task53Capability | null>(null);
   const [loading, setLoading] = useState(true);
   const [shopDomain, setShopDomain] = useState("");
@@ -88,7 +88,7 @@ export default function ConnectionsPage() {
       .catch(() => undefined);
   }, []);
 
-  const model = useMemo(() => status ? buildConnectionsUiModel(status) : null, [status]);
+  const model = useMemo(() => status ? buildConnectUiModel(status) : null, [status]);
   const task53WriteConnected = task53Capability?.connected === true
     && task53Capability.writeProductsScopePresent === true
     && task53Capability.credentialAvailable === true;
@@ -100,7 +100,7 @@ export default function ConnectionsPage() {
   return (
     <>
       <header className="topbar">
-        <div><strong>Settings</strong><span className="muted"> Connections</span></div>
+        <div><strong>Setup</strong><span className="muted"> Connect</span></div>
       </header>
 
       <div className="content">
@@ -109,7 +109,7 @@ export default function ConnectionsPage() {
             <p className="eyebrow">CONNECTIONS</p>
             <h1>Connect site data</h1>
             <p className="muted">
-              Connections are site-scoped.
+              Connect are site-scoped.
             </p>
           </div>
           <Link className="linkButton ask" href="/settings/add-website">Website setup</Link>
@@ -121,14 +121,14 @@ export default function ConnectionsPage() {
         <section className="card" aria-label="Active website scope">
           <div className="sectionHead">
             <div>
-              <p className="eyebrow">SITE SCOPE</p>
+              <p className="eyebrow">SITE</p>
               <h2>{model?.siteScopeLabel ?? "Checking website scope…"}</h2>
               <p className="muted">
                 Data must match this website.
               </p>
             </div>
             <StatusBadge tone={model?.activeSiteScope ? "success" : "warning"}>
-              {model?.activeSiteScope ? "Scope confirmed" : "Scope required"}
+              {model?.activeSiteScope ? "Confirmed" : "Required"}
             </StatusBadge>
           </div>
         </section>
@@ -136,7 +136,7 @@ export default function ConnectionsPage() {
         <section aria-labelledby="connection-sources-title">
           <div className="sectionHead">
             <div>
-              <h2 id="connection-sources-title">Connections</h2>
+              <h2 id="connection-sources-title">Connect</h2>
               <p className="muted">Status and recovery.</p>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function ConnectionsPage() {
             <ConnectionCard key={card.domain} card={card} loading={loading} />
           )) : (
             <div className="card" role="status" aria-live="polite">
-              {loading ? "Loading…" : "Status unavailable."}
+              {loading ? "Loading…" : "Unavailable."}
             </div>
           )}
         </section>
