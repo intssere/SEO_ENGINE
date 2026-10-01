@@ -24,8 +24,8 @@ function envelope(dataset: string, result: unknown, overrides: Record<string, un
       status_code: 20000,
       status_message: "Ok.",
       path: ["keyword_overview", "related_keywords"].includes(dataset)
-        ? "v3/dataforseo_labs/google/" + dataset + "/live"
-        : "v3/serp/google/organic/live/advanced",
+        ? ["v3", "dataforseo_labs", "google", dataset, "live"]
+        : ["v3", "serp", "google", "organic", "advanced", "live"],
       cost: 0.01,
       result: [result],
       ...overrides,
@@ -34,34 +34,40 @@ function envelope(dataset: string, result: unknown, overrides: Record<string, un
 }
 
 const overview = envelope("keyword_overview", {
-  keyword: "stress relief journal",
-  keyword_info: {
-    search_volume: 1900,
-    cpc: 1.24,
-    competition: 0.41,
-    competition_level: "MEDIUM",
-    monthly_searches: [
-      { year: 2026, month: 8, search_volume: 1800 },
-      { year: 2026, month: 7, search_volume: 1700 },
-    ],
-  },
-  keyword_properties: { keyword_difficulty: 38 },
-  search_intent_info: { main_intent: "commercial" },
+  items: [{
+    keyword: "stress relief journal",
+    keyword_info: {
+      search_volume: 1900,
+      cpc: 1.24,
+      competition: 0.41,
+      competition_level: "MEDIUM",
+      monthly_searches: [
+        { year: 2026, month: 8, search_volume: 1800 },
+        { year: 2026, month: 7, search_volume: 1700 },
+      ],
+    },
+    keyword_properties: { keyword_difficulty: 38 },
+    search_intent_info: { main_intent: "commercial" },
+  }],
 });
 
 const related = envelope("related_keywords", {
   items: [
     {
-      keyword: "5 minute stress journal",
-      keyword_info: { search_volume: 720, cpc: 0.88, competition: 0.27 },
-      keyword_properties: { keyword_difficulty: 29 },
-      search_intent_info: { main_intent: "informational" },
+      keyword_data: {
+        keyword: "5 minute stress journal",
+        keyword_info: { search_volume: 720, cpc: 0.88, competition: 0.27 },
+        keyword_properties: { keyword_difficulty: 29 },
+        search_intent_info: { main_intent: "informational" },
+      },
     },
     {
-      keyword: "calm journal prompts",
-      keyword_info: { search_volume: null, cpc: null, competition: null },
-      keyword_properties: { keyword_difficulty: null },
-      search_intent_info: { main_intent: "new_provider_intent" },
+      keyword_data: {
+        keyword: "calm journal prompts",
+        keyword_info: { search_volume: null, cpc: null, competition: null },
+        keyword_properties: { keyword_difficulty: null },
+        search_intent_info: { main_intent: "new_provider_intent" },
+      },
     },
   ],
 });
@@ -170,6 +176,14 @@ test("UGP-6.1A retains bounded provider provenance and excludes credential mater
     serpAdvanced: serp,
   });
   assert.equal(bundle.provenance.length, 3);
+  assert.deepEqual(
+    bundle.provenance.map((source) => source.providerPath),
+    [
+      "v3/dataforseo_labs/google/keyword_overview/live",
+      "v3/dataforseo_labs/google/related_keywords/live",
+      "v3/serp/google/organic/advanced/live",
+    ],
+  );
   for (const source of bundle.provenance) {
     assert.equal(source.provider, "dataforseo");
     assert.equal(source.providerStatusCode, 20000);

@@ -87,7 +87,11 @@ function provenance(
     providerStatusMessage: typeof task.status_message === "string"
       ? task.status_message
       : null,
-    providerPath: typeof task.path === "string" ? task.path : "",
+    providerPath: typeof task.path === "string"
+    ? task.path.replace(/^\/+/, "")
+    : Array.isArray(task.path) && task.path.every((part) => typeof part === "string")
+      ? (task.path as string[]).join("/")
+      : "",
     costUsd: nullableNumber(task.cost),
     responseFingerprint: stableEvidenceHash(raw),
   });
@@ -98,6 +102,18 @@ function keywordData(result: Record<string, unknown>): Record<string, unknown> {
   return keywordInfo && typeof keywordInfo === "object" && !Array.isArray(keywordInfo)
     ? keywordInfo as Record<string, unknown>
     : {};
+}
+
+function keywordOverviewRow(
+  result: Record<string, unknown>,
+  keyword: string,
+): Record<string, unknown> {
+  if (!Array.isArray(result.items)) return result;
+  const rows = result.items.filter(
+    (entry): entry is Record<string, unknown> =>
+      Boolean(entry) && typeof entry === "object" && !Array.isArray(entry),
+  );
+  return rows.find((row) => row.keyword === keyword) ?? rows[0] ?? {};
 }
 
 function monthlySearches(info: Record<string, unknown>) {
@@ -121,20 +137,26 @@ function relatedRows(result: Record<string, unknown>): RelatedTopicEvidence[] {
   return result.items.flatMap((entry) => {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
     const row = entry as Record<string, unknown>;
-    const keyword = typeof row.keyword === "string" ? row.keyword : null;
+    const nested = row.keyword_data;
+    const data = nested && typeof nested === "object" && !Array.isArray(nested)
+      ? nested as Record<string, unknown>
+      : row;
+    const keyword = typeof data.keyword === "string" ? data.keyword : null;
     if (!keyword) return [];
-    const info = keywordData(row);
+    const info = keywordData(data);
     return [Object.freeze({
       keyword,
       searchVolume: nullableNumber(info.search_volume),
-      keywordDifficulty: nullableNumber(row.keyword_properties && typeof row.keyword_properties === "object"
-        ? (row.keyword_properties as Record<string, unknown>).keyword_difficulty
-        : null),
+      keywordDifficulty: nullableNumber(
+        data.keyword_properties && typeof data.keyword_properties === "object"
+          ? (data.keyword_properties as Record<string, unknown>).keyword_difficulty
+          : null,
+      ),
       cpcUsd: nullableNumber(info.cpc),
       paidCompetition: nullableNumber(info.competition),
       intent: normalizeIntent(
-        row.search_intent_info && typeof row.search_intent_info === "object"
-          ? (row.search_intent_info as Record<string, unknown>).main_intent
+        data.search_intent_info && typeof data.search_intent_info === "object"
+          ? (data.search_intent_info as Record<string, unknown>).main_intent
           : null,
       ),
     })];
@@ -182,9 +204,10 @@ export function normalizeDataForSeoKeywordSerpFixtures(input: {
   const relatedTask = exactTask(input.relatedKeywords, "related_keywords");
   const serpTask = exactTask(input.serpAdvanced, "serp_advanced");
 
-  const overview = firstResult(overviewTask, "keyword_overview");
+  const overviewResult = firstResult(overviewTask, "keyword_overview");
   const related = firstResult(relatedTask, "related_keywords");
   const serp = firstResult(serpTask, "serp_advanced");
+  const overview = keywordOverviewRow(overviewResult, input.request.keyword);
 
   const info = keywordData(overview);
   const keywordDifficulty = nullableNumber(
