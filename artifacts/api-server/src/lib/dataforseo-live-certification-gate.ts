@@ -107,11 +107,10 @@ export function buildDataForSeoLiveCertificationPlan(input: {
       request: input.request,
     });
     endpointFingerprints[dataset] = stableEvidenceHash({
-      purpose: "ugp_dataforseo_live_plan_endpoint",
+      purpose: "ugp_dataforseo_cert_endpoint",
       dataset,
       url: controlled.url,
-      body: controlled.body,
-      requestFingerprint: controlled.requestFingerprint,
+      requestFingerprint: input.request.requestFingerprint,
     });
   }
 
