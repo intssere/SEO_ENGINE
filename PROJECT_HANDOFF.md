@@ -5,7 +5,8 @@
 **Repository:** `intssere/SEO_ENGINE`  
 **Replit app:** `SEO_ENGINE`  
 **Repl ID:** `4f36f99c-0492-43c4-80e7-a7f7660fc3f7`  
-**Production:** `https://dsseoengine.replit.app`
+**Historical Replit production:** `https://dsseoengine.replit.app`  
+**Current Railway Production:** `https://seo-engine-shadow-production.up.railway.app`
 
 Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-engine-project/SKILL.md`, and `.agents/memory/MEMORY.md` before acting. `CURRENT_STATE.md` is the authoritative mutable release checkpoint and overrides older hard-coded mutable SHA wording in this handoff.
 
@@ -13,7 +14,26 @@ Read `CURRENT_STATE.md`, `AGENTS.md`, `ARCHITECTURE.md`, `.agents/skills/seo-eng
 
 ## 1. Exact continuation checkpoint — START HERE
 
-### P8.8 W09-C1 Production schema-readiness review — issue #511
+### CURRENT AUTHORITATIVE CHECKPOINT — F24 immutable Railway Production release closed
+
+Canonical GitHub `main`: `17a63b9ab8b71ee571ae344f592fb5f888a77758`.
+
+Current Railway Production:
+- project `52265e29-921b-4652-ac0d-9da4e5e69936`;
+- environment `7f8d920f-f6c6-44f0-b9fe-252cb4f32298`;
+- service `1e8c1e7d-16f7-4c63-8193-1021bcbe6d90` / `seo-engine-shadow`;
+- exact immutable source `ghcr.io/intssere/seo-engine@sha256:7399b06c99f251f13429f821a041bf7e460007941292470c93060f3f0d5d9e22`;
+- active deployment `18486079-d88f-4376-bc5c-abc14e190b7c` — `SUCCESS`, 1/1 running;
+- `AUTH_PUBLIC_ORIGIN`, public domain/port, healthcheck and Postgres reference preserved;
+- ordinary GitHub-main merges do not deploy Railway Production.
+
+F23 completed the one-shot GitHub-source → immutable-image transition. F24 merged the durable transition receipt. Do not resume from the older W09-C1 checkpoint below; it is retained only as historical engineering context.
+
+Future Production releases require a newly certified immutable image plus disposable/non-Production Railway proof and a fresh explicit Production transition authorization. Generic `continue` grants no live provider/crawl/OAuth, Production DB, scheduler/worker, public-write, credential/config, or Production release authority.
+
+The remaining program is P12 production certification: P12.2 live crawl/persistence proof, P12.3 first-party integrations, P12.4 external intelligence, P12.5 real-evidence opportunities, P12.6 broader governed execution/rollback, P12.7 read automation, P12.8 real outcome/impact loop, P12.9 release-candidate acceptance, and P12.10 final program closeout.
+
+### Historical — P8.8 W09-C1 Production schema-readiness review — issue #511
 
 Canonical baseline after W09-C review merge: `267a682ed58f898b6a550a1307a6f461ac178af7`.
 
