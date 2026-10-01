@@ -97,15 +97,18 @@ test("UGP-6.1B controlled acquisition keeps credentials internal and returns nor
     envelope(
       ["v3", "dataforseo_labs", "google", "keyword_overview", "live"],
       {
-        keyword_info: {
-          search_volume: 1900,
-          cpc: 1.24,
-          competition: 0.41,
-          competition_level: "MEDIUM",
-          monthly_searches: [{ year: 2026, month: 8, search_volume: 1800 }],
-        },
-        keyword_properties: { keyword_difficulty: 38 },
-        search_intent_info: { main_intent: "commercial" },
+        items: [{
+          keyword: "stress relief journal",
+          keyword_info: {
+            search_volume: 1900,
+            cpc: 1.24,
+            competition: 0.41,
+            competition_level: "MEDIUM",
+            monthly_searches: [{ year: 2026, month: 8, search_volume: 1800 }],
+          },
+          keyword_properties: { keyword_difficulty: 38 },
+          search_intent_info: { main_intent: "commercial" },
+        }],
       },
     ),
     envelope(
