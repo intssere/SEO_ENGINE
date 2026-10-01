@@ -229,7 +229,7 @@ test("UGP-6.1B rejects HTTP errors, non-JSON, malformed JSON, and oversized resp
   const cases = [
     { response: { status: 429, contentType: "application/json", bodyText: "{}" }, pattern: /http_failed/ },
     { response: { status: 200, contentType: "text/html", bodyText: "{}" }, pattern: /non_json/ },
-    { response: { status: 200, contentType: "application/json", bodyText: "{" }, pattern: /invalid_json/ },
+    { response: { status: 200, contentType: "application/json", bodyText: "{not-json" }, pattern: /invalid_json/ },
     {
       response: {
         status: 200,
