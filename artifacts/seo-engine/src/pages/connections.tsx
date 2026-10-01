@@ -42,9 +42,7 @@ function ConnectionCard({ card, loading }: { card: ConnectionCardModel; loading:
         </div>
         <StatusBadge tone={card.tone}>{card.statusLabel}</StatusBadge>
       </div>
-      <p className="muted">{card.description}</p>
       <p><strong>Site scope:</strong> {card.scopeLabel}</p>
-      <p className="muted">{loading ? "Checking…" : card.detail}</p>
       {card.recoveryHref && card.recoveryLabel ? (
         <a className="linkButton ask" href={card.recoveryHref}>{card.recoveryLabel}</a>
       ) : card.connectHref && card.connectLabel ? (
