@@ -49,7 +49,7 @@ export interface F18LiveSnapshot {
   checkSuitesEnabled: true;
   mainMergeAutoDeployObserved: true;
   latestObservedMainDeploymentId: typeof F18_LATEST_OBSERVED_MAIN_DEPLOYMENT_ID;
-  latestObservedMainDeploymentStatus: "WAITING";
+  latestObservedMainDeploymentStatus: "FAILED";
   healthcheckPath: typeof F18_HEALTHCHECK_PATH;
   immutableImage: typeof F18_IMMUTABLE_IMAGE;
   registryPullabilityVerified: false;
@@ -137,7 +137,7 @@ export function validateF18LivePreflight(value: unknown): F18PreflightResult {
       v.checkSuitesEnabled !== true ||
       v.mainMergeAutoDeployObserved !== true ||
       v.latestObservedMainDeploymentId !== F18_LATEST_OBSERVED_MAIN_DEPLOYMENT_ID ||
-      v.latestObservedMainDeploymentStatus !== "WAITING") {
+      v.latestObservedMainDeploymentStatus !== "FAILED") {
     return { result: "fail_closed", code: "auto_deploy_hazard_mismatch" };
   }
   if (v.healthcheckPath !== F18_HEALTHCHECK_PATH || v.immutableImage !== F18_IMMUTABLE_IMAGE) {
@@ -225,7 +225,7 @@ export const F18_CERTIFIED_LIVE_SNAPSHOT: F18LiveSnapshot = {
   checkSuitesEnabled: true,
   mainMergeAutoDeployObserved: true,
   latestObservedMainDeploymentId: F18_LATEST_OBSERVED_MAIN_DEPLOYMENT_ID,
-  latestObservedMainDeploymentStatus: "WAITING",
+  latestObservedMainDeploymentStatus: "FAILED",
   healthcheckPath: F18_HEALTHCHECK_PATH,
   immutableImage: F18_IMMUTABLE_IMAGE,
   registryPullabilityVerified: false,
