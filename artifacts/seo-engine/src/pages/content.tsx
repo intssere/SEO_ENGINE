@@ -37,7 +37,7 @@ export default function ContentPage() {
         },
         {
           title: "Rank tracking",
-          description: "Requires live ranking data.",
+          description: "No ranking metrics are invented.",
           href: "/content/rankings",
           status: "unavailable",
         },
