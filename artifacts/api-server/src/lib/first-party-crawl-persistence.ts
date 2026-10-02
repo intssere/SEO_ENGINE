@@ -20,8 +20,13 @@ export const P12_2_CRAWL_PERSISTENCE_VERSION = "p12-2-crawl-persistence-v1" as c
 export const P12_2_TABLE_COUNT = 37;
 export const P12_2_L2_DURABLE_TABLE_COUNT = 38;
 export const P12_2_RECOGNIZED_TABLE_COUNTS = Object.freeze([
-  P12_2_TABLE_COUNT,
-  P12_2_L2_DURABLE_TABLE_COUNT,
+  37, // P12.2 execution-state baseline
+  38, // + durable L2 receipts OR P8.8 W04
+  39, // P8.8 W04 + durable L2 receipts
+  41, // P8.8 W05
+  42, // P8.8 W05 + durable L2 receipts
+  43, // P8.8 W07
+  44, // P8.8 W07 + durable L2 receipts
 ] as const);
 
 type Sql = ReturnType<typeof postgres>;
@@ -253,7 +258,7 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
       WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
     `;
     const tableCount = Number(counts[0]?.count ?? 0);
-    if (!P12_2_RECOGNIZED_TABLE_COUNTS.includes(tableCount as 37 | 38)) {
+    if (!P12_2_RECOGNIZED_TABLE_COUNTS.includes(tableCount as (typeof P12_2_RECOGNIZED_TABLE_COUNTS)[number])) {
       throw new Error("p12_2_persistence_schema_table_count_mismatch");
     }
 
