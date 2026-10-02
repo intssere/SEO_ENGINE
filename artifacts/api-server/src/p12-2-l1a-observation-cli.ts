@@ -11,6 +11,7 @@ import type {
 import {
   assertP122L1AE9NoCredentialArgv,
   buildP122L1AE9PsqlConnectionEnv,
+  p122L1AE9ProcessExitCode,
 } from "./lib/p12-2-l1a-e9-runtime-transport.js";
 
 const MAX_OUTPUT_BYTES = 262_144;
@@ -100,7 +101,7 @@ async function main(): Promise<void> {
     // Once E5 returns, the live SQL attempt has crossed the executor boundary.
     // Exit successfully even for a bounded SQL failure so Railway does not
     // replay an already-consumed one-shot attempt because of process status.
-    process.exitCode = 0;
+    process.exitCode = p122L1AE9ProcessExitCode(true);
   } catch (error) {
     const message = error instanceof Error ? error.message : "p12_2_l1a_e6_unknown_error";
     process.stderr.write(`${JSON.stringify({
