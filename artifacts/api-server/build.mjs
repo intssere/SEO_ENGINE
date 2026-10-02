@@ -18,7 +18,8 @@ async function buildAll() {
     entryPoints: {
       index: path.resolve(artifactDir, "src/index.ts"),
       "pilot-runner": path.resolve(artifactDir, "src/pilot-cli.ts"),
-      "p12-2-crawl": path.resolve(artifactDir, "src/first-party-crawl-cli.ts"),\n      "p12-2-l1a-observation": path.resolve(artifactDir, "src/p12-2-l1a-observation-cli.ts"),
+      "p12-2-crawl": path.resolve(artifactDir, "src/first-party-crawl-cli.ts"),
+      "p12-2-l1a-observation": path.resolve(artifactDir, "src/p12-2-l1a-observation-cli.ts"),
     },
     platform: "node",
     bundle: true,
