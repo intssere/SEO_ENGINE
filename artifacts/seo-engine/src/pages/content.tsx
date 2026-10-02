@@ -1,6 +1,6 @@
-import { CustomerDomainHub } from "../components/customer-domain-hub";
+import { CustomerDomainHub, type CustomerDomainCard } from "../components/customer-domain-hub";
 
-const articleCards = [
+const articleCards: CustomerDomainCard[] = [
   "Research progress",
   "Sources",
   "Outline",
@@ -8,7 +8,7 @@ const articleCards = [
   "Claims & citations",
   "SEO checks",
   "Internal links",
-].map((title) => ({ title, description: "Unavailable.", status: "unavailable" as const }));
+].map((title) => ({ title, description: "Unavailable.", status: "unavailable" }));
 
 articleCards.push({
   title: "Publication state",
