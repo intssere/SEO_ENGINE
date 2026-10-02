@@ -18,6 +18,11 @@ import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
 
 export const P12_2_CRAWL_PERSISTENCE_VERSION = "p12-2-crawl-persistence-v1" as const;
 export const P12_2_TABLE_COUNT = 37;
+export const P12_2_L2_DURABLE_TABLE_COUNT = 38;
+export const P12_2_RECOGNIZED_TABLE_COUNTS = Object.freeze([
+  P12_2_TABLE_COUNT,
+  P12_2_L2_DURABLE_TABLE_COUNT,
+] as const);
 
 type Sql = ReturnType<typeof postgres>;
 
@@ -247,7 +252,8 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
       FROM information_schema.tables
       WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
     `;
-    if (Number(counts[0]?.count ?? 0) !== P12_2_TABLE_COUNT) {
+    const tableCount = Number(counts[0]?.count ?? 0);
+    if (!P12_2_RECOGNIZED_TABLE_COUNTS.includes(tableCount as 37 | 38)) {
       throw new Error("p12_2_persistence_schema_table_count_mismatch");
     }
 
@@ -519,6 +525,7 @@ export function firstPartyCrawlPersistenceCapability() {
     siteId: DIAMOND_SHELF_SITE_ID,
     canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     expectedPublicTableCount: P12_2_TABLE_COUNT,
+    recognizedPublicTableCounts: P12_2_RECOGNIZED_TABLE_COUNTS,
     lazyDatabaseConnection: true,
     checkpointRevisioned: true,
     completedRunCertifiedOnly: true,
