@@ -17,7 +17,7 @@ export default function ContentPage() {
       <CustomerDomainHub
         eyebrow="ARTICLE WORKFLOW"
         title="Article workspace"
-        description="Certified state only. NOT PUBLISHED. Model confidence is not the quality gate."
+        description="NOT PUBLISHED. Confidence is not the quality gate."
         cards={articleCards}
       />
     );
@@ -51,12 +51,6 @@ export default function ContentPage() {
             "Inspect AI-answer visibility and citation observations.",
           href: "/content/ai-visibility",
           actionLabel: "Open AI visibility",
-          status: "preview",
-        },
-        {
-          title: "Article workspace",
-          description: "",
-          href: "/content/articles",
           status: "preview",
         },
       ]}
