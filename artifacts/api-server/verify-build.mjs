@@ -11,6 +11,8 @@ const bundle = await readFile(path.join(distDir, "index.mjs"), "utf8");
 const sourceMap = await readFile(path.join(distDir, "index.mjs.map"), "utf8");
 const p122Bundle = await readFile(path.join(distDir, "p12-2-crawl.mjs"), "utf8");
 const p122SourceMap = await readFile(path.join(distDir, "p12-2-crawl.mjs.map"), "utf8");
+const p122L2Bundle = await readFile(path.join(distDir, "p12-2-l2-one-shot.mjs"), "utf8");
+const p122L2SourceMap = await readFile(path.join(distDir, "p12-2-l2-one-shot.mjs.map"), "utf8");
 const provenanceRaw = await readFile(path.join(distDir, "build-provenance.json"), "utf8");
 const provenance = JSON.parse(provenanceRaw);
 function git(args) {
@@ -146,6 +148,22 @@ const requiredP122SourceMarkers = [
   "lib/first-party-crawl-persistence.ts",
 ];
 
+const requiredP122L2BundleMarkers = [
+  "p12-2-l2-one-shot-operator-v1",
+  "AUTHORIZE:P12_2_L2_ONE_SHOT:",
+  "p12_2_l2_operator_authorization_required",
+  "p12_2_l2_packet_already_consumed",
+  "automaticWholeRunRetry",
+  "maxInvocationAttempts",
+];
+
+const requiredP122L2SourceMarkers = [
+  "lib/p12-2-l2-one-shot-operator-caller.ts",
+  "lib/first-party-crawl-manual.ts",
+  "lib/first-party-crawl-runtime-bridge.ts",
+  "lib/first-party-live-adapters.ts",
+];
+
 const requiredSourceMarkers = [
   "routes/execution.ts",
   "routes/connections.ts",
@@ -171,21 +189,27 @@ const missingBundleMarkers = requiredBundleMarkers.filter((marker) => !bundle.in
 const missingSourceMarkers = requiredSourceMarkers.filter((marker) => !sourceMap.includes(marker));
 const missingP122BundleMarkers = requiredP122BundleMarkers.filter((marker) => !p122Bundle.includes(marker));
 const missingP122SourceMarkers = requiredP122SourceMarkers.filter((marker) => !p122SourceMap.includes(marker));
+const missingP122L2BundleMarkers = requiredP122L2BundleMarkers.filter((marker) => !p122L2Bundle.includes(marker));
+const missingP122L2SourceMarkers = requiredP122L2SourceMarkers.filter((marker) => !p122L2SourceMap.includes(marker));
 
 if (
   missingBundleMarkers.length > 0 ||
   missingSourceMarkers.length > 0 ||
   missingP122BundleMarkers.length > 0 ||
-  missingP122SourceMarkers.length > 0
+  missingP122SourceMarkers.length > 0 ||
+  missingP122L2BundleMarkers.length > 0 ||
+  missingP122L2SourceMarkers.length > 0
 ) {
   const details = [
     missingBundleMarkers.length > 0 ? `bundle markers: ${missingBundleMarkers.join(", ")}` : null,
     missingSourceMarkers.length > 0 ? `source-map markers: ${missingSourceMarkers.join(", ")}` : null,
     missingP122BundleMarkers.length > 0 ? `P12.2 bundle markers: ${missingP122BundleMarkers.join(", ")}` : null,
     missingP122SourceMarkers.length > 0 ? `P12.2 source-map markers: ${missingP122SourceMarkers.join(", ")}` : null,
+    missingP122L2BundleMarkers.length > 0 ? `P12.2 L2 bundle markers: ${missingP122L2BundleMarkers.join(", ")}` : null,
+    missingP122L2SourceMarkers.length > 0 ? `P12.2 L2 source-map markers: ${missingP122L2SourceMarkers.join(", ")}` : null,
   ].filter(Boolean).join("; ");
 
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, and the default-off P12.2 manual crawl engineering entrypoint are present.");
+console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, the default-off P12.2 manual crawl entrypoint, and the bounded P12.2 L2 one-shot operator artifact are present.");
