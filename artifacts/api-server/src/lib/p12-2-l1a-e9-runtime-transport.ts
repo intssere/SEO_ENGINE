@@ -80,3 +80,9 @@ export function assertP122L1AE9NoCredentialArgv(
     }
   }
 }
+
+export function p122L1AE9ProcessExitCode(
+  boundedReceiptProduced: boolean,
+): 0 | 1 {
+  return boundedReceiptProduced ? 0 : 1;
+}
