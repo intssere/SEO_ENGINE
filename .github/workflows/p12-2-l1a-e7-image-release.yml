@@ -61,7 +61,7 @@ jobs:
           set -euo pipefail
           docker buildx create --name p12-2-l1a-e7 --driver docker-container --use
           docker buildx inspect --bootstrap
-          test "$(docker buildx inspect --format '{{.Driver}}')" = "docker-container"
+          docker buildx inspect | grep -Eq '^Driver:[[:space:]]+docker-container$'
 
       - name: Build and push immutable runner image
         id: build
