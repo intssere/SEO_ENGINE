@@ -172,5 +172,5 @@ test("UGP-2.1 keeps unavailable and future capability states explicit", () => {
   assert.match(source, /COMING NEXT/);
   assert.match(source, /UNAVAILABLE/);
   assert.match(source, /PREVIEW/);
-  assert.match(source, /No ranking metrics are invented/);
+  assert.match(source, /Requires live ranking data/);
 });
