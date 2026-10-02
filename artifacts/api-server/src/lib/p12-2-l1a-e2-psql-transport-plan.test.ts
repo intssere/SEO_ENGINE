@@ -3,6 +3,8 @@ import test from "node:test";
 import {
   assertP122L1AE2Plan,
   buildP122L1AE2Plan,
+  P12_2_L1A_E11_AUTHORIZATION_GENERATION,
+  p122L1AE2LiveAuthorizationFingerprint,
   p122L1AE2LiveAuthorizationLiteral,
 } from "./p12-2-l1a-e2-psql-transport-plan.js";
 import {
@@ -58,8 +60,20 @@ test("contains no connection value or credential material", () => {
   assert.equal(serialized.includes("password"), false);
 });
 
-test("live authorization literal binds the certified E1 fingerprint", () => {
+test("live authorization literal binds the certified E1 fingerprint and fresh E11 generation", () => {
   assert.equal(
+    P12_2_L1A_E11_AUTHORIZATION_GENERATION,
+    "attempt-2-after-e9-transport-repair",
+  );
+  assert.equal(
+    p122L1AE2LiveAuthorizationFingerprint(),
+    "744498635c3a55b0accf4eaefe25d81a43e14b501b6e4eb0045abf6f69a3509f",
+  );
+  assert.equal(
+    p122L1AE2LiveAuthorizationLiteral(),
+    "AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT_V2:744498635c3a55b0accf4eaefe25d81a43e14b501b6e4eb0045abf6f69a3509f",
+  );
+  assert.notEqual(
     p122L1AE2LiveAuthorizationLiteral(),
     `AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT:${p122L1AE1QuerySetFingerprint()}`,
   );
