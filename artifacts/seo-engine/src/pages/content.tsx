@@ -11,7 +11,7 @@ export default function ContentPage() {
       <CustomerDomainHub
         eyebrow="CONTENT"
         title="Article workspace"
-        description="NOT PUBLISHED. Confidence ≠ gate."
+        description="NOT PUBLISHED. Confidence≠gate."
         cards={articleCards}
       />
     );
@@ -21,11 +21,11 @@ export default function ContentPage() {
     <CustomerDomainHub
       eyebrow="CONTENT GROWTH"
       title="Content"
-      description="Research and content."
+      description="Content."
       cards={[
         {
           title: "Search research",
-          description: "Topics and evidence.",
+          description: "",
           href: "/content/research",
           status: "preview",
         },
@@ -37,7 +37,7 @@ export default function ContentPage() {
         },
         {
           title: "AI visibility",
-          description: "AI visibility.",
+          description: "",
           href: "/content/ai-visibility",
           status: "preview",
         },
