@@ -16,7 +16,7 @@ const aiVisibility = read("pages/ai-visibility.tsx");
 const impact = read("pages/impact.tsx");
 const reports = read("pages/reports.tsx");
 const learning = read("pages/learning.tsx");
-const articleWorkspace = read("pages/article-workspace.tsx");
+const articleWorkspace = read("pages/content.tsx");
 const articleWorkspaceModel = read("lib/article-workspace-model.ts");
 
 const primaryPaths = navigation.map((item) => item.path);
