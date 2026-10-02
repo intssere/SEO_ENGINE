@@ -25,41 +25,42 @@ test("article workspace exposes every required customer-facing area", () => {
   ]) {
     assert.ok(page.includes(label), label);
   }
-  assert.ok(page.includes("Quality gate"));
-  assert.ok(page.includes("Provenance"));
 });
 
-test("article workspace is mounted under the customer Content domain", () => {
-  assert.ok(app.includes('import ArticleWorkspacePage from \'./pages/article-workspace\';'));
+test("article workspace is mounted under the customer Content domain and lazy-loaded", () => {
+  assert.ok(app.includes("lazy(() => import('./pages/article-workspace'))"));
   assert.ok(app.includes('<Route path="/content/articles">'));
-  assert.ok(app.includes('<ArticleWorkspacePage />'));
+  assert.ok(app.includes("<ArticleWorkspacePage />"));
   assert.ok(content.includes('href: "/content/articles"'));
   assert.ok(content.includes('title: "Article workspace"'));
   assert.ok(content.includes('status: "preview"'));
 });
 
-test("unbound article workspace does not synthesize product data", () => {
-  assert.ok(page.includes("buildArticleWorkspaceModel(null)"));
+test("unbound runtime workspace does not synthesize article evidence", () => {
+  for (const value of [
+    "Certified research progress is not bound yet.",
+    "Source provenance appears only from certified evidence.",
+    "No certified outline is bound.",
+    "No certified draft is bound. Editing and persistence stay disabled.",
+    "Claim verification and citation provenance are not synthesized.",
+    "SEO and answer-engine checks require a certified draft.",
+    "Evidence-backed internal-link targets are not bound.",
+  ]) {
+    assert.ok(page.includes(value), value);
+  }
   assert.match(
     model,
     /No research progress, sources, draft text, citations, SEO results, internal links, or publication state are synthesized/,
   );
-  assert.match(page, /No certified draft is bound/);
-  assert.match(page, /No source ledger bound/);
-  assert.match(page, /No claim provenance bound/);
-  assert.match(page, /No SEO quality result bound/);
-  assert.match(page, /No internal-link targets bound/);
 });
 
-test("draft editor is inspectable but read-only and non-publishing", () => {
-  assert.ok(page.includes('aria-label="Article draft editor"'));
-  assert.ok(page.includes("readOnly"));
-  assert.match(page, /Read-only · no persistence · no publish action/);
+test("publication remains explicit and separate from generation completion", () => {
   assert.match(page, /NOT PUBLISHED/);
   assert.match(
     page,
-    /A completed draft or passing quality gate cannot publish content on its own/,
+    /A completed draft or quality check never publishes content on its own/,
   );
+  assert.ok(model.includes("publicationAuthorized: false"));
 });
 
 test("quality gate remains separate from model confidence", () => {
@@ -71,7 +72,7 @@ test("quality gate remains separate from model confidence", () => {
   );
 });
 
-test("frozen snapshot preserves deterministic reproduction and inspectable provenance", () => {
+test("frozen snapshot contract preserves deterministic reproduction and inspectable provenance", () => {
   for (const value of [
     "deterministicFromFrozenInputs",
     "researchPlanFingerprint",
@@ -82,7 +83,6 @@ test("frozen snapshot preserves deterministic reproduction and inspectable prove
   ]) {
     assert.ok(model.includes(value), value);
   }
-  assert.match(page, /Reproducible from the frozen artifact chain/);
 });
 
 test("article workspace capabilities remain fail-closed", () => {
@@ -97,6 +97,12 @@ test("article workspace capabilities remain fail-closed", () => {
   ]) {
     assert.ok(model.includes(value), value);
   }
+});
+
+test("runtime surface reuses shipped composition instead of adding a heavy workspace dependency graph", () => {
+  assert.match(page, /CustomerDomainHub/);
+  assert.doesNotMatch(page, /lucide-react|StatusBadge|article-workspace-model/);
+  assert.ok(app.includes("lazy(() => import('./pages/article-workspace'))"));
 });
 
 test("article workspace frontend contains no direct execution primitive", () => {
