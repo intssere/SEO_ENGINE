@@ -12,6 +12,7 @@ import {
 import {
   assertSiteOwnershipEvidenceIntegrity,
   buildSiteOwnershipEvidence,
+  type SiteOwnershipPageInventory,
   type SiteOwnershipQueryPageObservation,
 } from "./site-ownership-evidence-contract.js";
 
@@ -104,6 +105,33 @@ function fixtureAnalysis(options: {
   });
 }
 
+function projectAnalysis(
+  analysis: ReturnType<typeof fixtureAnalysis>,
+): SiteOwnershipPageInventory {
+  return {
+    version: "ugp-6-3a-page-inventory-projection-v1",
+    canonicalOrigin: analysis.site.canonicalOrigin,
+    sourceAnalysisFingerprint: analysis.analysisFingerprint,
+    coverage: analysis.crawl.coverage.state,
+    wholeSiteCertified: analysis.crawl.coverage.wholeSiteCertified,
+    pages: analysis.pages.map((page) => ({
+      url: page.url,
+      analysisPageId: page.pageId,
+      evidenceId: page.evidenceId,
+      pageFingerprint: page.pageFingerprint,
+      sourceFingerprint: page.sourceFingerprint,
+      outcome: page.outcome,
+      indexability: page.indexability.state,
+      canonicalUrl: page.canonical.value,
+      canonicalState: page.canonical.state,
+      title: page.metadata.title,
+      h1: page.metadata.h1,
+      headings: page.metadata.headings,
+      contentFingerprint: page.content.contentFingerprint,
+    })),
+  };
+}
+
 function page(
   url: string,
   sourceFingerprint: string,
@@ -158,7 +186,7 @@ function observation(
 test("UGP-6.3A builds deterministic site ownership evidence from canonical crawl analysis and query-page rows", () => {
   const analysis = fixtureAnalysis();
   const result = buildSiteOwnershipEvidence({
-    analysis,
+    pageInventory: projectAnalysis(analysis),
     market: MARKET,
     queryPageObservations: [
       observation("stress relief journal prompts", "https://example.com/prompts"),
@@ -191,12 +219,12 @@ test("UGP-6.3A is invariant to input row order", () => {
     observation("stress relief journal prompts", "https://example.com/prompts"),
   ];
   const forward = buildSiteOwnershipEvidence({
-    analysis,
+    pageInventory: projectAnalysis(analysis),
     market: MARKET,
     queryPageObservations: rows,
   });
   const reverse = buildSiteOwnershipEvidence({
-    analysis,
+    pageInventory: projectAnalysis(analysis),
     market: MARKET,
     queryPageObservations: [...rows].reverse(),
   });
@@ -206,7 +234,7 @@ test("UGP-6.3A is invariant to input row order", () => {
 
 test("UGP-6.3A keeps explicit missing-evidence state when query-page performance is not supplied", () => {
   const result = buildSiteOwnershipEvidence({
-    analysis: fixtureAnalysis({ partial: true }),
+    pageInventory: projectAnalysis(fixtureAnalysis({ partial: true })),
     market: MARKET,
   });
   assert.equal(result.queryPageEvidence.length, 0);
@@ -220,7 +248,7 @@ test("UGP-6.3A keeps explicit missing-evidence state when query-page performance
 
 test("UGP-6.3A retains same-origin ranking pages not observed by the crawl without inventing technical facts", () => {
   const result = buildSiteOwnershipEvidence({
-    analysis: fixtureAnalysis(),
+    pageInventory: projectAnalysis(fixtureAnalysis()),
     market: MARKET,
     queryPageObservations: [
       observation("stress relief workbook", "https://example.com/workbook"),
@@ -238,7 +266,7 @@ test("UGP-6.3A retains same-origin ranking pages not observed by the crawl witho
 test("UGP-6.3A rejects mixed markets", () => {
   assert.throws(
     () => buildSiteOwnershipEvidence({
-      analysis: fixtureAnalysis(),
+      pageInventory: projectAnalysis(fixtureAnalysis()),
       market: MARKET,
       queryPageObservations: [
         observation("stress relief journal", "https://example.com/", {
@@ -258,7 +286,7 @@ test("UGP-6.3A rejects cross-origin, query-string and fragment page identities",
   ]) {
     assert.throws(
       () => buildSiteOwnershipEvidence({
-        analysis: fixtureAnalysis(),
+        pageInventory: projectAnalysis(fixtureAnalysis()),
         market: MARKET,
         queryPageObservations: [
           observation("stress relief journal", pageUrl),
@@ -276,7 +304,7 @@ test("UGP-6.3A rejects duplicate query-page evidence", () => {
   );
   assert.throws(
     () => buildSiteOwnershipEvidence({
-      analysis: fixtureAnalysis(),
+      pageInventory: projectAnalysis(fixtureAnalysis()),
       market: MARKET,
       queryPageObservations: [row, { ...row }],
     }),
@@ -287,7 +315,7 @@ test("UGP-6.3A rejects duplicate query-page evidence", () => {
 test("UGP-6.3A validates bounded metrics and source provenance", () => {
   assert.throws(
     () => buildSiteOwnershipEvidence({
-      analysis: fixtureAnalysis(),
+      pageInventory: projectAnalysis(fixtureAnalysis()),
       market: MARKET,
       queryPageObservations: [
         observation("stress relief journal", "https://example.com/", {
@@ -300,7 +328,7 @@ test("UGP-6.3A validates bounded metrics and source provenance", () => {
   );
   assert.throws(
     () => buildSiteOwnershipEvidence({
-      analysis: fixtureAnalysis(),
+      pageInventory: projectAnalysis(fixtureAnalysis()),
       market: MARKET,
       queryPageObservations: [
         observation("stress relief journal", "https://example.com/", {
@@ -314,7 +342,7 @@ test("UGP-6.3A validates bounded metrics and source provenance", () => {
 
 test("UGP-6.3A normalizes query text deterministically", () => {
   const result = buildSiteOwnershipEvidence({
-    analysis: fixtureAnalysis(),
+    pageInventory: projectAnalysis(fixtureAnalysis()),
     market: MARKET,
     queryPageObservations: [
       observation("  Stress Relief Journal  ", "https://example.com/"),
@@ -325,7 +353,7 @@ test("UGP-6.3A normalizes query text deterministically", () => {
 
 test("UGP-6.3A emits closed read-only non-authorizing semantics", () => {
   const result = buildSiteOwnershipEvidence({
-    analysis: fixtureAnalysis(),
+    pageInventory: projectAnalysis(fixtureAnalysis()),
     market: MARKET,
   });
   assert.deepEqual(result.semantics, {
@@ -341,7 +369,7 @@ test("UGP-6.3A emits closed read-only non-authorizing semantics", () => {
 
 test("UGP-6.3A integrity guard rejects fingerprint mutation", () => {
   const result = buildSiteOwnershipEvidence({
-    analysis: fixtureAnalysis(),
+    pageInventory: projectAnalysis(fixtureAnalysis()),
     market: MARKET,
   });
   assert.throws(
