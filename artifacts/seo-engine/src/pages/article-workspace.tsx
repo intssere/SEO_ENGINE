@@ -16,8 +16,8 @@ import {
 
 const model = buildArticleWorkspaceModel(null);
 
-function tone(status: ArticleWorkspaceStatus) {
-  if (status === "pass" || status === "available") return "success" as const;
+function tone(status: ArticleWorkspaceStatus | "published") {
+  if (status === "pass" || status === "available" || status === "published") return "success" as const;
   if (status === "warning") return "warning" as const;
   if (status === "blocked") return "danger" as const;
   if (status === "not_published") return "info" as const;
