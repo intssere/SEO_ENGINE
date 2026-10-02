@@ -47,6 +47,21 @@ The digest must be independently read back before any Railway runner creation.
 
 Image publication is not authorized by merging this specification.
 
+## E7 release receipt — completed
+
+Manual workflow run `37015351377` completed successfully from canonical workflow commit:
+
+- workflow commit: `f3a8f71ec6ec7fb6fcd8db94c5ef9419d4a2b85f`
+- source commit: `bebcf8aba3c3f1a1790ce0937c3e954006229d61`
+- source tree: `439c01e603f5558b2d96ee4e31b74ff11a45d934`
+- Dockerfile: `Dockerfile.p12-2-l1a-observation`
+- immutable image: `ghcr.io/intssere/seo-engine-p12-2-l1a-observation@sha256:864895fe47e4961d3cc4d8709cf21b0ca20bc69804779a21e4f1b8b598c18b0e`
+- release authorization: `AUTHORIZE:P12_2_L1A_E7_IMAGE_RELEASE:bebcf8aba3c3f1a1790ce0937c3e954006229d61`
+
+The release workflow passed authorization verification, exact-source checkout, source identity verification, GHCR login, attestation-capable Buildx initialization, immutable image build/push, and release-receipt emission.
+
+Phase 1 is therefore complete. No Railway runner service was created and no Production SQL was executed by this release.
+
 ## Phase 2 — exact Railway mutation packet
 
 Only after an immutable digest is certified may the live runner be created.
@@ -153,6 +168,6 @@ The future Railway authorization must name the exact immutable image digest prod
 
 A suitable form after digest certification is:
 
-`AUTHORIZE P12.2-L1A-E7 LIVE RAILWAY ONE-SHOT — project 52265e29-921b-4652-ac0d-9da4e5e69936; environment 7f8d920f-f6c6-44f0-b9fe-252cb4f32298; create disposable service p12-2-l1a-observation-once from exact immutable image <IMAGE@SHA256>; restart NEVER; no domain/volume/cron/GitHub source/autodeploy; set only the exact Postgres reference variables and existing DB authorization literal with deploy suppression; verify config; execute exactly one deployment; collect secret-free receipt; zero retries/redeploys after first SELECT; no migration/crawl/provider/application/Postgres mutation.`
+`AUTHORIZE P12.2-L1A-E7 LIVE RAILWAY ONE-SHOT — project 52265e29-921b-4652-ac0d-9da4e5e69936; environment 7f8d920f-f6c6-44f0-b9fe-252cb4f32298; create disposable service p12-2-l1a-observation-once from exact immutable image ghcr.io/intssere/seo-engine-p12-2-l1a-observation@sha256:864895fe47e4961d3cc4d8709cf21b0ca20bc69804779a21e4f1b8b598c18b0e; restart NEVER; no domain/volume/cron/GitHub source/autodeploy; set only the exact Postgres reference variables and existing DB authorization literal with deploy suppression; verify config; execute exactly one deployment; collect secret-free receipt; zero retries/redeploys after first SELECT; no migration/crawl/provider/application/Postgres mutation.`
 
 Generic `continue` is not this authorization.
