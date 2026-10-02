@@ -1,23 +1,17 @@
 import { CustomerDomainHub, type CustomerDomainCard } from "../components/customer-domain-hub";
 
-const articleCards: CustomerDomainCard[] = [
-  "Research progress",
-  "Sources",
-  "Outline",
-  "Editor",
-  "Claims & citations",
-  "SEO checks",
-  "Internal links",
-  "Publication state",
-].map((title) => ({ title, description: "", status: "unavailable" }));
+const articleCards: CustomerDomainCard[] =
+  "Research|Sources|Outline|Editor|Claims & citations|SEO|Links|Publication"
+    .split("|")
+    .map((title) => ({ title, description: "", status: "unavailable" }));
 
 export default function ContentPage() {
   if (location.pathname.endsWith("/articles")) {
     return (
       <CustomerDomainHub
-        eyebrow="ARTICLE"
+        eyebrow="CONTENT"
         title="Article workspace"
-        description="NOT PUBLISHED. Confidence ≠ quality gate."
+        description="NOT PUBLISHED. Confidence ≠ gate."
         cards={articleCards}
       />
     );
@@ -27,11 +21,11 @@ export default function ContentPage() {
     <CustomerDomainHub
       eyebrow="CONTENT GROWTH"
       title="Content"
-      description="Research demand, gaps, and organic content."
+      description="Research and content."
       cards={[
         {
           title: "Search research",
-          description: "Topics, gaps, demand, and evidence.",
+          description: "Topics and evidence.",
           href: "/content/research",
           status: "preview",
         },
@@ -43,7 +37,7 @@ export default function ContentPage() {
         },
         {
           title: "AI visibility",
-          description: "AI-answer visibility and citations.",
+          description: "AI visibility.",
           href: "/content/ai-visibility",
           status: "preview",
         },
