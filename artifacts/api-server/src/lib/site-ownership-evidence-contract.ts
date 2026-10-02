@@ -399,12 +399,12 @@ function crawlEvidenceFor(
     sourceFingerprint: page.sourceFingerprint,
     outcome: page.outcome,
     indexability: page.indexability.state,
-    canonicalUrl: page.canonical.value,
-    canonicalState: page.canonical.state,
-    title: page.metadata.title,
-    h1: page.metadata.h1,
-    headings: Object.freeze([...page.metadata.headings]),
-    contentFingerprint: page.content.contentFingerprint,
+    canonicalUrl: page.canonicalUrl,
+    canonicalState: page.canonicalState,
+    title: page.title,
+    h1: page.h1,
+    headings: Object.freeze([...page.headings]),
+    contentFingerprint: page.contentFingerprint,
   });
 }
 
