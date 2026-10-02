@@ -61,39 +61,7 @@ jobs:
           set -euo pipefail
           docker buildx create --name p12-2-l1a-e7 --driver docker-container --use
           docker buildx inspect --bootstrap
-          docker buildx inspect | grep -Eq '^Driver:[[:space:]]+docker-container
-
-      - name: Build and push immutable runner image
-        id: build
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker buildx build \
-            --file Dockerfile.p12-2-l1a-observation \
-            --build-arg EXPECTED_CANONICAL_COMMIT="$SOURCE_SHA" \
-            --build-arg EXPECTED_CANONICAL_TREE="$SOURCE_TREE" \
-            --build-arg EXPECTED_SOURCE_BRANCH="main" \
-            --provenance=mode=max \
-            --sbom=true \
-            --tag "$IMAGE:$SOURCE_SHA" \
-            --push \
-            .
-          DIGEST="$(docker buildx imagetools inspect "$IMAGE:$SOURCE_SHA" --format '{{json .Manifest.Digest}}' | tr -d '"')"
-          test -n "$DIGEST"
-          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-          echo "image=$IMAGE@$DIGEST" >> "$GITHUB_OUTPUT"
-
-      - name: Emit release receipt
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s\n' \
-            "source_sha=$SOURCE_SHA" \
-            "source_tree=$SOURCE_TREE" \
-            "image=${{ steps.build.outputs.image }}" \
-            "dockerfile=Dockerfile.p12-2-l1a-observation" \
-            "authorization=$AUTH_LITERAL"
-
+          docker buildx inspect | grep -Eq '^Driver:[[:space:]]+docker-container$'
 
       - name: Build and push immutable runner image
         id: build
