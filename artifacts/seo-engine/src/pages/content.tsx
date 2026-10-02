@@ -1,6 +1,31 @@
 import { CustomerDomainHub } from "../components/customer-domain-hub";
 
+const articleCards = [
+  { title: "Research progress", description: "Certified research progress is not bound yet.", status: "unavailable" as const },
+  { title: "Sources", description: "Source provenance appears only from certified evidence.", status: "unavailable" as const },
+  { title: "Outline", description: "No certified outline is bound.", status: "unavailable" as const },
+  { title: "Editor", description: "No certified draft is bound. Editing and persistence stay disabled.", status: "unavailable" as const },
+  { title: "Claims & citations", description: "Claim verification and citation provenance are not synthesized.", status: "unavailable" as const },
+  { title: "SEO checks", description: "SEO and answer-engine checks require a certified draft.", status: "unavailable" as const },
+  { title: "Internal links", description: "Evidence-backed internal-link targets are not bound.", status: "unavailable" as const },
+  { title: "Publication state", description: "NOT PUBLISHED. Model confidence is not the quality gate.", status: "preview" as const },
+];
+
 export default function ContentPage() {
+  const articleWorkspace =
+    typeof window !== "undefined" && window.location.pathname.endsWith("/content/articles");
+
+  if (articleWorkspace) {
+    return (
+      <CustomerDomainHub
+        eyebrow="ARTICLE WORKFLOW"
+        title="Article workspace"
+        description="Inspect the article workflow without synthetic evidence. A completed draft or quality check never publishes content on its own."
+        cards={articleCards}
+      />
+    );
+  }
+
   return (
     <CustomerDomainHub
       eyebrow="CONTENT GROWTH"
