@@ -182,7 +182,7 @@ function normalizeExternalAssessments(
       status: assessment.status,
       summary: exactText(assessment.summary, "external_summary", 2048),
       evidenceRefs: uniqueSorted(
-        assessment.evidenceRefs.map((value) =>
+        assessment.evidenceRefs.map((value: string) =>
           exactText(value, "external_evidence_ref", 512),
         ),
       ),
@@ -390,7 +390,7 @@ export function buildArticleQualityGate(input: {
       .filter((check) => check.status === "blocked")
       .map((check) => check.checkId + ":" + check.summary),
   );
-  const status = blockingReasons.length === 0 ? "pass" : "blocked";
+  const status: ArticleQualityGateResult["status"] = blockingReasons.length === 0 ? "pass" : "blocked";
   const base = {
     version: UGP_ARTICLE_QUALITY_GATE_VERSION,
     draftId: input.draft.draftId,
