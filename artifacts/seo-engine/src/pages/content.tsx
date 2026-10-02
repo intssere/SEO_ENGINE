@@ -11,7 +11,7 @@ export default function ContentPage() {
       <CustomerDomainHub
         eyebrow="CONTENT"
         title="Article workspace"
-        description="NOT PUBLISHED. Confidence≠gate."
+        description="NOT PUBLISHED. Confidence≠gate"
         cards={articleCards}
       />
     );
