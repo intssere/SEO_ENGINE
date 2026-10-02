@@ -20,13 +20,13 @@ test("P12.2 persistence capability is lazy and default-off", () => {
   assert.equal(capability.canonicalOrigin, DIAMOND_SHELF_CANONICAL_ORIGIN);
   assert.equal(capability.expectedPublicTableCount, P12_2_TABLE_COUNT);
   assert.deepEqual(capability.recognizedPublicTableCounts, [
-    P12_2_TABLE_COUNT,
-    P12_2_L2_DURABLE_TABLE_COUNT,
+    37, 38, 39, 41, 42, 43, 44,
   ]);
   assert.deepEqual(P12_2_RECOGNIZED_TABLE_COUNTS, [
-    P12_2_TABLE_COUNT,
-    P12_2_L2_DURABLE_TABLE_COUNT,
+    37, 38, 39, 41, 42, 43, 44,
   ]);
+  assert.equal(P12_2_TABLE_COUNT, 37);
+  assert.equal(P12_2_L2_DURABLE_TABLE_COUNT, 38);
   assert.equal(capability.lazyDatabaseConnection, true);
   assert.equal(capability.persistenceReady, false);
   assert.equal(capability.persistenceAuthorized, false);
