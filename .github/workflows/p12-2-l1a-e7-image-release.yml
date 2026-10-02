@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "${{ inputs.authorization ${{" = "$AUTH_LITERAL"
+          test "${{ inputs.authorization }}" = "$AUTH_LITERAL"
 
       - name: Checkout exact E6 source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -50,17 +50,26 @@ jobs:
       - name: Login to GHCR
         shell: bash
         env:
-          GHCR_TOKEN: "${{ secrets.GITHUB_TOKEN ${{"
+          GHCR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
           set -euo pipefail
-          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor ${{" --password-stdin
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: Build and push immutable runner image
         id: build
         shell: bash
         run: |
           set -euo pipefail
-          docker buildx build             --file Dockerfile.p12-2-l1a-observation             --build-arg EXPECTED_CANONICAL_COMMIT="$SOURCE_SHA"             --build-arg EXPECTED_CANONICAL_TREE="$SOURCE_TREE"             --build-arg EXPECTED_SOURCE_BRANCH="main"             --provenance=mode=max             --sbom=true             --tag "$IMAGE:$SOURCE_SHA"             --push             .
+          docker buildx build \
+            --file Dockerfile.p12-2-l1a-observation \
+            --build-arg EXPECTED_CANONICAL_COMMIT="$SOURCE_SHA" \
+            --build-arg EXPECTED_CANONICAL_TREE="$SOURCE_TREE" \
+            --build-arg EXPECTED_SOURCE_BRANCH="main" \
+            --provenance=mode=max \
+            --sbom=true \
+            --tag "$IMAGE:$SOURCE_SHA" \
+            --push \
+            .
           DIGEST="$(docker buildx imagetools inspect "$IMAGE:$SOURCE_SHA" --format '{{json .Manifest.Digest}}' | tr -d '"')"
           test -n "$DIGEST"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
@@ -70,4 +79,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n'             "source_sha=$SOURCE_SHA"             "source_tree=$SOURCE_TREE"             "image=${{ steps.build.outputs.image ${{"             "dockerfile=Dockerfile.p12-2-l1a-observation"             "authorization=$AUTH_LITERAL"
+          printf '%s\n' \
+            "source_sha=$SOURCE_SHA" \
+            "source_tree=$SOURCE_TREE" \
+            "image=${{ steps.build.outputs.image }}" \
+            "dockerfile=Dockerfile.p12-2-l1a-observation" \
+            "authorization=$AUTH_LITERAL"
