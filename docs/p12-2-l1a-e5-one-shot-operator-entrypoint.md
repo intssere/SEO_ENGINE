@@ -2,28 +2,27 @@
 
 ## Result
 
-**CANONICAL OPERATOR ENTRYPOINT IMPLEMENTED / NO LIVE EXECUTION.**
+**CANONICAL OPERATOR ENTRYPOINT IMPLEMENTED WITH RUNTIME RAILWAY BINDING VERIFICATION / NO LIVE EXECUTION.**
 
 E5 packages the already-merged E3 runner and E4 execution-surface/audit contracts into one callable one-shot entrypoint.
 
-## Canonical parent
+## Runtime binding correction
 
-`d3610a9e9ce550cafa3ba4734bcd05f2cbea52b6`
+E5 now requires the caller to supply the **runtime-observed** Railway identifiers:
 
-## Purpose
+- project ID;
+- environment ID;
+- Postgres service ID.
 
-E5 removes the remaining repository-side composition gap between:
+Those actual values are passed to E4 preflight and must exactly match the certified Production binding. E5 no longer substitutes the expected E4 IDs itself.
 
-- E4 preflight certification;
-- E3 seven-query one-shot execution;
-- E4 outcome attestation.
-
-It does not create or discover a credential-bearing environment.
+This closes the fail-closed gap where a runner in the wrong Railway context could otherwise inherit expected constants and pass preflight.
 
 ## Runtime contract
 
 A future live caller must provide:
 
+- runtime-observed Railway project/environment/Postgres service IDs;
 - the exact existing authorization literal;
 - the Production `DATABASE_URL` as an in-memory runtime value;
 - confirmation that `psql` is available;
@@ -32,15 +31,7 @@ A future live caller must provide:
 - fallback transport configured = false;
 - one injected process executor.
 
-E5 itself does not:
-
-- read process environment variables;
-- fetch Railway variables;
-- spawn `psql` directly;
-- connect to PostgreSQL;
-- execute on import/startup;
-- create services/functions;
-- deploy anything.
+Any runtime binding mismatch fails before the first executor invocation and therefore leaves the one-shot authorization unconsumed.
 
 ## One-shot consumption semantics
 
@@ -48,14 +39,10 @@ The existing Production authorization is considered **consumed when the injected
 
 Therefore:
 
-- preflight failure => authorization remains unconsumed;
+- runtime-binding/preflight failure => authorization remains unconsumed;
 - failure before executor invocation => authorization remains unconsumed;
 - query 1 invocation, regardless of success/failure => authorization is consumed;
 - there are zero retries and no fallback transport.
-
-The E5 receipt exposes this explicitly as:
-
-`productionSqlAttemptConsumed`
 
 ## Receipt composition
 
@@ -74,7 +61,7 @@ The already-granted live authorization remains:
 
 `AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT:6104ada21e043706664ca76b139d08338f637db98becbf66ca34113ce4f64d79`
 
-E5 neither renews nor automatically consumes it. Consumption occurs only at the first live executor invocation.
+This correction neither renews nor consumes it.
 
 ## Hard exclusions
 
@@ -90,14 +77,3 @@ This repository task performs or authorizes none of:
 - persistence writes;
 - scheduler/worker activation;
 - deployment/publication.
-
-## Next boundary
-
-After CI certification and merge of E5, repository engineering for the L1A live observation path is complete.
-
-The only remaining L1A blocker will be an actual trusted runtime that simultaneously has:
-
-- a working `psql` binary; and
-- the exact Production Postgres `DATABASE_URL` injected without exposing it.
-
-Once such a runtime exists and satisfies E4, the already-authorized E5 one-shot can be executed exactly once.
