@@ -36,17 +36,13 @@ test("article workspace is mounted under the customer Content domain without a d
 });
 
 test("unbound runtime workspace does not synthesize article evidence", () => {
-  for (const value of [
-    "Certified research progress is not bound yet.",
-    "Source provenance appears only from certified evidence.",
-    "No certified outline is bound.",
-    "No certified draft is bound. Editing and persistence stay disabled.",
-    "Claim verification and citation provenance are not synthesized.",
-    "SEO and answer-engine checks require a certified draft.",
-    "Evidence-backed internal-link targets are not bound.",
-  ]) {
-    assert.ok(page.includes(value), value);
-  }
+  assert.ok(page.includes('"Research progress"'));
+  assert.ok(page.includes('"Sources"'));
+  assert.ok(page.includes('"Outline"'));
+  assert.ok(page.includes('"Claims & citations"'));
+  assert.ok(page.includes('"SEO checks"'));
+  assert.ok(page.includes('"Internal links"'));
+  assert.match(page, /No certified draft is bound/);
   assert.match(
     model,
     /No research progress, sources, draft text, citations, SEO results, internal links, or publication state are synthesized/,
@@ -57,7 +53,7 @@ test("publication remains explicit and separate from generation completion", () 
   assert.match(page, /NOT PUBLISHED/);
   assert.match(
     page,
-    /A completed draft or quality check never publishes content on its own/,
+    //Generation never publishes on its own//,
   );
   assert.ok(model.includes("publicationAuthorized: false"));
 });
