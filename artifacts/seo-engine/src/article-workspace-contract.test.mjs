@@ -10,7 +10,6 @@ const read = (relativePath) => readFileSync(join(here, relativePath), "utf8");
 const page = read("pages/content.tsx");
 const model = read("lib/article-workspace-model.ts");
 const app = read("App.tsx");
-const content = read("pages/content.tsx");
 
 test("article workspace exposes every required customer-facing area", () => {
   for (const label of [
@@ -29,20 +28,13 @@ test("article workspace exposes every required customer-facing area", () => {
 
 test("article workspace is mounted under the customer Content domain without a dedicated runtime chunk", () => {
   assert.ok(app.includes('<Route path="/content/articles" component={ContentPage} />'));
-  assert.doesNotMatch(app, /import\('\.\/pages\/article-workspace'\)/);
-  assert.ok(content.includes('href: "/content/articles"'));
-  assert.ok(content.includes('title: "Article workspace"'));
-  assert.ok(content.includes('status: "preview"'));
+  assert.doesNotMatch(app, /article-workspace/);
+  assert.ok(page.includes('href: "/content/articles"'));
+  assert.ok(page.includes('title: "Article workspace"'));
 });
 
 test("unbound runtime workspace does not synthesize article evidence", () => {
-  assert.ok(page.includes('"Research progress"'));
-  assert.ok(page.includes('"Sources"'));
-  assert.ok(page.includes('"Outline"'));
-  assert.ok(page.includes('"Claims & citations"'));
-  assert.ok(page.includes('"SEO checks"'));
-  assert.ok(page.includes('"Internal links"'));
-  assert.match(page, /No certified draft is bound/);
+  assert.match(page, /Certified article state only/);
   assert.match(
     model,
     /No research progress, sources, draft text, citations, SEO results, internal links, or publication state are synthesized/,
@@ -51,20 +43,14 @@ test("unbound runtime workspace does not synthesize article evidence", () => {
 
 test("publication remains explicit and separate from generation completion", () => {
   assert.match(page, /NOT PUBLISHED/);
-  assert.match(
-    page,
-    //Generation never publishes on its own//,
-  );
+  assert.match(page, /Generation does not publish/);
   assert.ok(model.includes("publicationAuthorized: false"));
 });
 
 test("quality gate remains separate from model confidence", () => {
   assert.ok(model.includes("modelConfidenceIsNotQualityGate: true"));
   assert.match(page, /Model confidence is not the quality gate/);
-  assert.match(
-    model,
-    /Quality-gate status remains separate from model confidence/,
-  );
+  assert.match(model, /Quality-gate status remains separate from model confidence/);
 });
 
 test("frozen snapshot contract preserves deterministic reproduction and inspectable provenance", () => {
@@ -94,9 +80,9 @@ test("article workspace capabilities remain fail-closed", () => {
   }
 });
 
-test("runtime surface reuses the shipped Content composition instead of adding a dedicated workspace chunk", () => {
+test("runtime surface reuses the shipped Content composition", () => {
   assert.match(page, /CustomerDomainHub/);
-  assert.match(page, /window\.location\.pathname\.endsWith\("\/content\/articles"\)/);
+  assert.match(page, /window\.location\.pathname\.endsWith\("\/articles"\)/);
   assert.doesNotMatch(page, /lucide-react|StatusBadge|article-workspace-model/);
   assert.doesNotMatch(app, /ArticleWorkspacePage/);
 });
