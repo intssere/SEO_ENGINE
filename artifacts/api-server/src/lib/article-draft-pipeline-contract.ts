@@ -403,7 +403,7 @@ function normalizeGeneratedSection(
         throw new Error("ugp_article_draft_claim_without_evidence");
       }
       const evidenceIds = uniqueSorted(
-        claim.evidenceIds.map((id) => exactFingerprint(id, "claim_evidence_id")),
+        claim.evidenceIds.map((id: string) => exactFingerprint(id, "claim_evidence_id")),
       );
       const allowedClaimEvidence = new Set(intent.supportingEvidenceIds);
       if (
