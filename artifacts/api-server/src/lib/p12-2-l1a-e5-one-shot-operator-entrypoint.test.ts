@@ -6,12 +6,21 @@ import {
 import {
   p122L1AE2LiveAuthorizationLiteral,
 } from "./p12-2-l1a-e2-psql-transport-plan.js";
+import {
+  P12_2_L1A_E4_BINDING,
+} from "./p12-2-l1a-e4-execution-surface-audit-contract.js";
 
 const DATABASE_URL = "postgresql://user:secret@example.invalid:5432/db";
+const RUNTIME_BINDING = {
+  projectId: P12_2_L1A_E4_BINDING.projectId,
+  environmentId: P12_2_L1A_E4_BINDING.environmentId,
+  postgresServiceId: P12_2_L1A_E4_BINDING.postgresServiceId,
+};
 
 test("packages preflight, execution and outcome into one bounded receipt", async () => {
   let calls = 0;
   const receipt = await runP122L1AE5OneShot({
+    ...RUNTIME_BINDING,
     authorizationLiteral: p122L1AE2LiveAuthorizationLiteral(),
     databaseUrl: DATABASE_URL,
     psqlAvailable: true,
@@ -36,6 +45,7 @@ test("fails preflight before any executor invocation", async () => {
   let calls = 0;
   await assert.rejects(
     runP122L1AE5OneShot({
+      ...RUNTIME_BINDING,
       authorizationLiteral: p122L1AE2LiveAuthorizationLiteral(),
       databaseUrl: DATABASE_URL,
       psqlAvailable: false,
@@ -52,9 +62,39 @@ test("fails preflight before any executor invocation", async () => {
   assert.equal(calls, 0);
 });
 
+test("fails closed on any runtime Railway binding mismatch before executor invocation", async () => {
+  const variants = [
+    { ...RUNTIME_BINDING, projectId: "wrong-project" },
+    { ...RUNTIME_BINDING, environmentId: "wrong-environment" },
+    { ...RUNTIME_BINDING, postgresServiceId: "wrong-service" },
+  ];
+
+  for (const binding of variants) {
+    let calls = 0;
+    await assert.rejects(
+      runP122L1AE5OneShot({
+        ...binding,
+        authorizationLiteral: p122L1AE2LiveAuthorizationLiteral(),
+        databaseUrl: DATABASE_URL,
+        psqlAvailable: true,
+        databaseUrlPrinted: false,
+        retriesConfigured: 0,
+        fallbackTransportConfigured: false,
+        executor: async () => {
+          calls += 1;
+          return { exitCode: 0, stdout: "", stderr: "" };
+        },
+      }),
+      /p12_2_l1a_e4_binding_mismatch/,
+    );
+    assert.equal(calls, 0);
+  }
+});
+
 test("marks one-shot consumed on first executor invocation even if query 1 fails", async () => {
   let calls = 0;
   const receipt = await runP122L1AE5OneShot({
+    ...RUNTIME_BINDING,
     authorizationLiteral: p122L1AE2LiveAuthorizationLiteral(),
     databaseUrl: DATABASE_URL,
     psqlAvailable: true,
@@ -76,6 +116,7 @@ test("marks one-shot consumed on first executor invocation even if query 1 fails
 
 test("does not serialize credential material in receipts", async () => {
   const receipt = await runP122L1AE5OneShot({
+    ...RUNTIME_BINDING,
     authorizationLiteral: p122L1AE2LiveAuthorizationLiteral(),
     databaseUrl: DATABASE_URL,
     psqlAvailable: true,
