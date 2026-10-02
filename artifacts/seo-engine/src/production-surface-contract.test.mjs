@@ -137,7 +137,7 @@ test("primary and customer-mapped surfaces remain a strict subset of mounted rou
 
 test("article workspace refuses synthetic article evidence and keeps execution closed", () => {
   assert.match(articleWorkspace, /NOT PUBLISHED/);
-  assert.match(articleWorkspace, /Confidence is not the quality gate/);
+  assert.match(articleWorkspace, /Confidence ≠ quality gate/);
   assert.match(articleWorkspaceModel, /No research progress, sources, draft text, citations, SEO results, internal links, or publication state are synthesized/);
   for (const value of [
     "networkExecutionEnabled: false",
