@@ -8,13 +8,8 @@ const articleCards: CustomerDomainCard[] = [
   "Claims & citations",
   "SEO checks",
   "Internal links",
-].map((title) => ({ title, description: "Unavailable.", status: "unavailable" }));
-
-articleCards.push({
-  title: "Publication state",
-  description: "NOT PUBLISHED. Model confidence is not the quality gate.",
-  status: "preview",
-});
+  "Publication state",
+].map((title) => ({ title, description: "", status: "unavailable" }));
 
 export default function ContentPage() {
   if (window.location.pathname.endsWith("/articles")) {
@@ -22,7 +17,7 @@ export default function ContentPage() {
       <CustomerDomainHub
         eyebrow="ARTICLE WORKFLOW"
         title="Article workspace"
-        description="Certified article state only. Generation does not publish."
+        description="Certified state only. NOT PUBLISHED. Model confidence is not the quality gate."
         cards={articleCards}
       />
     );
@@ -60,7 +55,7 @@ export default function ContentPage() {
         },
         {
           title: "Article workspace",
-          description: "Inspect the article evidence and publication state.",
+          description: "",
           href: "/content/articles",
           status: "preview",
         },
