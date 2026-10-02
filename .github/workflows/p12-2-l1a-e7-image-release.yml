@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       authorization:
-        description: Exact E10 image-release authorization literal
+        description: Exact E12 image-release authorization literal
         required: true
         type: string
 
@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      SOURCE_SHA: b8e9ed767af8f344e43b7369a64767caf503f896
-      SOURCE_TREE: 5e5a691937fefdc814741054498b531c47a39ae4
+      SOURCE_SHA: f1516e0e7d8faad17ad640bacf23d6d9484647b3
+      SOURCE_TREE: baca98465d90eb02245e36871ca6f4f781ef6bfd
       IMAGE: ghcr.io/intssere/seo-engine-p12-2-l1a-observation
-      AUTH_LITERAL: AUTHORIZE:P12_2_L1A_E10_IMAGE_RELEASE:b8e9ed767af8f344e43b7369a64767caf503f896
+      AUTH_LITERAL: AUTHORIZE:P12_2_L1A_E12_IMAGE_RELEASE:f1516e0e7d8faad17ad640bacf23d6d9484647b3
 
     steps:
       - name: Verify manual authorization
@@ -36,7 +36,7 @@ jobs:
       - name: Checkout exact E6 source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: b8e9ed767af8f344e43b7369a64767caf503f896
+          ref: f1516e0e7d8faad17ad640bacf23d6d9484647b3
           fetch-depth: 1
 
       - name: Verify source identity
