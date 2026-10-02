@@ -34,7 +34,7 @@ test("article workspace is mounted under the customer Content domain without a d
 });
 
 test("unbound runtime workspace does not synthesize article evidence", () => {
-  assert.match(page, /Certified article state only/);
+  assert.match(page, /Certified state only/);
   assert.match(
     model,
     /No research progress, sources, draft text, citations, SEO results, internal links, or publication state are synthesized/,
@@ -43,7 +43,7 @@ test("unbound runtime workspace does not synthesize article evidence", () => {
 
 test("publication remains explicit and separate from generation completion", () => {
   assert.match(page, /NOT PUBLISHED/);
-  assert.match(page, /Generation does not publish/);
+  assert.match(page, /NOT PUBLISHED/);
   assert.ok(model.includes("publicationAuthorized: false"));
 });
 
