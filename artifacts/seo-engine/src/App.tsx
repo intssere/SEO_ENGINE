@@ -68,6 +68,7 @@ function Router() {
           <Route path="/content/research" component={SearchIntelligencePage} />
           <Route path="/content/rankings" component={RankingsPage} />
           <Route path="/content/ai-visibility" component={AiVisibilityPage} />
+          <Route path="/content/articles" component={ContentPage} />
 
           <Route path="/site-audit/technical" component={TechnicalSeoPage} />
           <Route path="/site-audit/internal-links" component={InternalLinksPage} />

@@ -1,42 +1,45 @@
-import { CustomerDomainHub } from "../components/customer-domain-hub";
+import { CustomerDomainHub, type CustomerDomainCard } from "../components/customer-domain-hub";
+
+const articleCards: CustomerDomainCard[] =
+  "Research|Sources|Outline|Editor|Claims & citations|SEO|Links|Publication"
+    .split("|")
+    .map((title) => ({ title, description: "", status: "unavailable" }));
 
 export default function ContentPage() {
+  if (location.pathname.endsWith("/articles")) {
+    return (
+      <CustomerDomainHub
+        eyebrow="CONTENT"
+        title="Article workspace"
+        description="NOT PUBLISHED. Confidence≠gate"
+        cards={articleCards}
+      />
+    );
+  }
+
   return (
     <CustomerDomainHub
-      eyebrow="CONTENT GROWTH"
+      eyebrow="CONTENT"
       title="Content"
-      description="Research demand, find content gaps, and manage organic content."
+      description=""
       cards={[
         {
           title: "Search research",
-          description:
-            "Explore topics, gaps, demand signals, and supporting evidence.",
+          description: "",
           href: "/content/research",
-          actionLabel: "Open search research",
           status: "preview",
         },
         {
           title: "Rank tracking",
-          description:
-            "Check rank tracking availability. No ranking metrics are invented without a live source.",
+          description: "No ranking metrics are invented.",
           href: "/content/rankings",
-          actionLabel: "View rank tracking",
           status: "unavailable",
         },
         {
           title: "AI visibility",
-          description:
-            "Inspect AI-answer visibility and citation observations.",
+          description: "",
           href: "/content/ai-visibility",
-          actionLabel: "Open AI visibility",
           status: "preview",
-        },
-        {
-          title: "Article automation",
-          description:
-            "Plan, draft, optimize, and publish articles from one workflow.",
-          actionLabel: "Article automation is coming",
-          status: "coming_soon",
         },
       ]}
     />

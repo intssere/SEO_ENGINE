@@ -16,6 +16,8 @@ const aiVisibility = read("pages/ai-visibility.tsx");
 const impact = read("pages/impact.tsx");
 const reports = read("pages/reports.tsx");
 const learning = read("pages/learning.tsx");
+const articleWorkspace = read("pages/content.tsx");
+const articleWorkspaceModel = read("lib/article-workspace-model.ts");
 
 const primaryPaths = navigation.map((item) => item.path);
 
@@ -40,6 +42,7 @@ const customerMappedRoutes = [
   "/content/research",
   "/content/rankings",
   "/content/ai-visibility",
+  "/content/articles",
   "/site-audit/technical",
   "/site-audit/internal-links",
   "/authority/backlinks",
@@ -129,4 +132,25 @@ test("primary and customer-mapped surfaces remain a strict subset of mounted rou
     assert.ok(routedPaths.includes(path), path);
   }
   assert.ok(routedPaths.length > primaryPaths.length);
+});
+
+
+test("article workspace refuses synthetic article evidence and keeps execution closed", () => {
+  assert.match(articleWorkspace, /NOT PUBLISHED/);
+  assert.match(articleWorkspace, /Confidence≠gate/);
+  assert.match(articleWorkspaceModel, /No research progress, sources, draft text, citations, SEO results, internal links, or publication state are synthesized/);
+  for (const value of [
+    "networkExecutionEnabled: false",
+    "productionEvidenceReadsAuthorized: false",
+    "persistenceAuthorized: false",
+    "publicationAuthorized: false",
+    "schedulerEnabled: false",
+    "workerEnabled: false",
+    "publicSiteWrites: false",
+  ]) {
+    assert.ok(articleWorkspaceModel.includes(value), value);
+  }
+  const source = [articleWorkspace, articleWorkspaceModel].join("\n");
+  assert.doesNotMatch(source, /fetch\(|XMLHttpRequest|WebSocket|EventSource/);
+  assert.doesNotMatch(source, /postgres|drizzle|DATABASE_URL|process\.env/);
 });
