@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const read = (relativePath) => readFileSync(join(here, relativePath), "utf8");
 
-const page = read("pages/article-workspace.tsx");
+const page = read("pages/content.tsx");
 const model = read("lib/article-workspace-model.ts");
 const app = read("App.tsx");
 const content = read("pages/content.tsx");
@@ -27,10 +27,9 @@ test("article workspace exposes every required customer-facing area", () => {
   }
 });
 
-test("article workspace is mounted under the customer Content domain and lazy-loaded", () => {
-  assert.ok(app.includes("lazy(() => import('./pages/article-workspace'))"));
-  assert.ok(app.includes('<Route path="/content/articles">'));
-  assert.ok(app.includes("<ArticleWorkspacePage />"));
+test("article workspace is mounted under the customer Content domain without a dedicated runtime chunk", () => {
+  assert.ok(app.includes('<Route path="/content/articles" component={ContentPage} />'));
+  assert.doesNotMatch(app, /import\('\.\/pages\/article-workspace'\)/);
   assert.ok(content.includes('href: "/content/articles"'));
   assert.ok(content.includes('title: "Article workspace"'));
   assert.ok(content.includes('status: "preview"'));
@@ -99,10 +98,11 @@ test("article workspace capabilities remain fail-closed", () => {
   }
 });
 
-test("runtime surface reuses shipped composition instead of adding a heavy workspace dependency graph", () => {
+test("runtime surface reuses the shipped Content composition instead of adding a dedicated workspace chunk", () => {
   assert.match(page, /CustomerDomainHub/);
+  assert.match(page, /window\.location\.pathname\.endsWith\("\/content\/articles"\)/);
   assert.doesNotMatch(page, /lucide-react|StatusBadge|article-workspace-model/);
-  assert.ok(app.includes("lazy(() => import('./pages/article-workspace'))"));
+  assert.doesNotMatch(app, /ArticleWorkspacePage/);
 });
 
 test("article workspace frontend contains no direct execution primitive", () => {
