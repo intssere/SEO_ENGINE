@@ -19,9 +19,9 @@ export default function ContentPage() {
 
   return (
     <CustomerDomainHub
-      eyebrow="CONTENT GROWTH"
+      eyebrow="CONTENT"
       title="Content"
-      description="Content."
+      description=""
       cards={[
         {
           title: "Search research",
