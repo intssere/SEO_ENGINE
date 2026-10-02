@@ -398,7 +398,7 @@ function crawlEvidenceFor(
     pageFingerprint: page.pageFingerprint,
     sourceFingerprint: page.sourceFingerprint,
     outcome: page.outcome,
-    indexability: page.indexability.state,
+    indexability: page.indexability,
     canonicalUrl: page.canonicalUrl,
     canonicalState: page.canonicalState,
     title: page.title,
