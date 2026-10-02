@@ -1,25 +1,28 @@
 import { CustomerDomainHub } from "../components/customer-domain-hub";
 
 const articleCards = [
-  { title: "Research progress", description: "Not bound.", status: "unavailable" as const },
-  { title: "Sources", description: "Not bound.", status: "unavailable" as const },
-  { title: "Outline", description: "Not bound.", status: "unavailable" as const },
-  { title: "Editor", description: "No certified draft is bound.", status: "unavailable" as const },
-  { title: "Claims & citations", description: "Not bound.", status: "unavailable" as const },
-  { title: "SEO checks", description: "Not bound.", status: "unavailable" as const },
-  { title: "Internal links", description: "Not bound.", status: "unavailable" as const },
-  { title: "Publication state", description: "NOT PUBLISHED. Model confidence is not the quality gate.", status: "preview" as const },
-];
+  "Research progress",
+  "Sources",
+  "Outline",
+  "Editor",
+  "Claims & citations",
+  "SEO checks",
+  "Internal links",
+].map((title) => ({ title, description: "Unavailable.", status: "unavailable" as const }));
+
+articleCards.push({
+  title: "Publication state",
+  description: "NOT PUBLISHED. Model confidence is not the quality gate.",
+  status: "preview",
+});
 
 export default function ContentPage() {
-  const articleWorkspace = window.location.pathname.endsWith("/content/articles");
-
-  if (articleWorkspace) {
+  if (window.location.pathname.endsWith("/articles")) {
     return (
       <CustomerDomainHub
         eyebrow="ARTICLE WORKFLOW"
         title="Article workspace"
-        description="Inspect certified article state. Generation never publishes on its own."
+        description="Certified article state only. Generation does not publish."
         cards={articleCards}
       />
     );
@@ -57,10 +60,8 @@ export default function ContentPage() {
         },
         {
           title: "Article workspace",
-          description:
-            "Inspect research, draft provenance, quality, links, and publication state.",
+          description: "Inspect the article evidence and publication state.",
           href: "/content/articles",
-          actionLabel: "Open article workspace",
           status: "preview",
         },
       ]}
