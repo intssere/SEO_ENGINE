@@ -393,7 +393,7 @@ function crawlEvidenceFor(
   }
   return Object.freeze({
     availability: "observed" as const,
-    analysisPageId: page.pageId,
+    analysisPageId: page.analysisPageId,
     evidenceId: page.evidenceId,
     pageFingerprint: page.pageFingerprint,
     sourceFingerprint: page.sourceFingerprint,
