@@ -55,6 +55,14 @@ jobs:
           set -euo pipefail
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
+      - name: Initialize attestation-capable Buildx builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx create --name p12-2-l1a-e7 --driver docker-container --use
+          docker buildx inspect --bootstrap
+          test "$(docker buildx inspect --format '{{.Driver}}')" = "docker-container"
+
       - name: Build and push immutable runner image
         id: build
         shell: bash
