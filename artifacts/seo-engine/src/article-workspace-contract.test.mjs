@@ -48,7 +48,7 @@ test("publication remains explicit and separate from generation completion", () 
 
 test("quality gate remains separate from model confidence", () => {
   assert.ok(model.includes("modelConfidenceIsNotQualityGate: true"));
-  assert.match(page, /Confidence ≠ gate/);
+  assert.match(page, /Confidence≠gate/);
   assert.match(model, /Quality-gate status remains separate from model confidence/);
 });
 
