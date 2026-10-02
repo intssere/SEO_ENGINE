@@ -31,7 +31,8 @@ test("article workspace exposes every required customer-facing area", () => {
 
 test("article workspace is mounted under the customer Content domain", () => {
   assert.ok(app.includes('import ArticleWorkspacePage from \'./pages/article-workspace\';'));
-  assert.ok(app.includes('<Route path="/content/articles" component={ArticleWorkspacePage} />'));
+  assert.ok(app.includes('<Route path="/content/articles">'));
+  assert.ok(app.includes('<ArticleWorkspacePage />'));
   assert.ok(content.includes('href: "/content/articles"'));
   assert.ok(content.includes('title: "Article workspace"'));
   assert.ok(content.includes('status: "preview"'));
