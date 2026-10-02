@@ -16,7 +16,6 @@ import DashboardPage from './pages/dashboard';
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
 import ContentPage from './pages/content';
-import ArticleWorkspacePage from './pages/article-workspace';
 import SiteAuditHubPage from './pages/site-audit-hub';
 import AuthorityPage from './pages/authority';
 import AutomationPage from './pages/automation';
@@ -38,6 +37,7 @@ import LearningPage from './pages/learning';
 import ImpactPage from './pages/impact';
 import ReportsPage from './pages/reports';
 
+const ArticleWorkspacePage = lazy(() => import('./pages/article-workspace'));
 const WebsiteConnectionWizardPage = lazy(() => import('./pages/website-connection-wizard'));
 const ConnectionsPage = lazy(() => import('./pages/connections'));
 
@@ -69,7 +69,7 @@ function Router() {
           <Route path="/content/research" component={SearchIntelligencePage} />
           <Route path="/content/rankings" component={RankingsPage} />
           <Route path="/content/ai-visibility" component={AiVisibilityPage} />
-          <Route path="/content/articles" component={ArticleWorkspacePage} />
+          <Route path="/content/articles"><Suspense fallback={<div className="content"><div className="card" role="status">Loading article workspace…</div></div>}><ArticleWorkspacePage /></Suspense></Route>
 
           <Route path="/site-audit/technical" component={TechnicalSeoPage} />
           <Route path="/site-audit/internal-links" component={InternalLinksPage} />
