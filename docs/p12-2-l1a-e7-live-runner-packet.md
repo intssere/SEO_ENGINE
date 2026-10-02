@@ -2,10 +2,10 @@
 
 ## Canonical repository state
 
-Current canonical main before E11 merge:
+Current canonical main after E12 release workflow merge:
 
-- commit: `707678a207aa659dbdbcaae80f111f15f7e5518f`
-- tree: `69c381f29e20a1478393a79adeed5d01550040d3`
+- commit: `a6b05a2127947e6106fafe1fde34c6b19bc47d52`
+- tree: `30aa6c459796f3c0e6f263d40bf7011b2bf6df15`
 
 Railway Production binding remains:
 
@@ -109,18 +109,37 @@ Expected fresh live DB authorization literal:
 
 The consumed V1 literal must fail closed before executor invocation.
 
+## E12 V2-authorized immutable runner release
+
+Manual workflow run `37033458122` (run #13) completed successfully.
+
+Released source:
+
+- source commit: `f1516e0e7d8faad17ad640bacf23d6d9484647b3`
+- source tree: `baca98465d90eb02245e36871ca6f4f781ef6bfd`
+- Dockerfile: `Dockerfile.p12-2-l1a-observation`
+- release authorization: `AUTHORIZE:P12_2_L1A_E12_IMAGE_RELEASE:f1516e0e7d8faad17ad640bacf23d6d9484647b3`
+- immutable image: `ghcr.io/intssere/seo-engine-p12-2-l1a-observation@sha256:a0bb8134ff103b00d397a05f9fd0a1ee5a89d76b26e683faef75948fd6c428b2`
+
+The release passed exact authorization verification, exact-source checkout, source identity verification, GHCR login, docker-container Buildx verification, provenance generation, SBOM generation, image push and immutable digest readback.
+
+The V2 DB authorization has now been explicitly granted:
+
+`AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT_V2:744498635c3a55b0accf4eaefe25d81a43e14b501b6e4eb0045abf6f69a3509f`
+
+This V2 DB authorization is **granted but unconsumed**. It becomes consumed only when query ordinal 1 crosses the executor boundary.
+
+The E10 digest `sha256:de477773d34edf6d027a44ab8b25ea8a4482359655bd4f90fcbc3fbe96d310d7` remains ineligible for attempt 2.
+
 ## Required sequence before attempt 2
 
-1. Merge and CI-certify E11.
-2. Release a new immutable observation-runner image from the exact E11 canonical source.
-3. Record and independently read back the new immutable digest.
-4. Prepare a fresh Railway packet bound to that new digest and the V2 DB authorization literal above.
-5. Obtain separate explicit Railway one-shot authorization.
-6. Re-read Railway skill and independently verify Production project/environment/service state.
-7. Execute exactly one configured deployment.
-8. Once query ordinal 1 is invoked, the V2 authorization is consumed; zero retries, redeploys, restarts, second runners, alternate transports, subset replays or ad-hoc SQL.
-
-The E10 digest `sha256:de477773d34edf6d027a44ab8b25ea8a4482359655bd4f90fcbc3fbe96d310d7` is not eligible for attempt 2 because it predates E11 authorization generation.
+1. Merge and CI-certify this E13 packet.
+2. Obtain separate explicit Railway mutation/deployment authorization bound to the E12 immutable digest below.
+3. Re-read the Railway skill.
+4. Independently verify Production project/environment/service state and ensure no unexpected staged changes.
+5. Configure the disposable runner with deploy suppression where supported.
+6. Execute exactly one configured deployment.
+7. Once query ordinal 1 is invoked, the V2 DB authorization is consumed; zero retries, redeploys, restarts, second runners, alternate transports, subset replays or ad-hoc SQL.
 
 ## Railway runner contract for attempt 2
 
@@ -128,7 +147,7 @@ The eventual runner must preserve:
 
 - exact project/environment/Postgres binding above;
 - disposable one-shot service only;
-- exact immutable image digest only;
+- exact immutable image digest only: `ghcr.io/intssere/seo-engine-p12-2-l1a-observation@sha256:a0bb8134ff103b00d397a05f9fd0a1ee5a89d76b26e683faef75948fd6c428b2`;
 - no GitHub source/autodeploy;
 - no public/custom domain;
 - no volume;
@@ -158,3 +177,14 @@ After exactly seven successful SELECTs:
 Migration `0004_first_party_crawl_execution_state.sql` is never implicitly authorized.
 
 Generic `continue` is not live Railway or Production DB authorization.
+
+
+## Exact Railway mutation/deployment authorization boundary
+
+The V2 DB authorization above does not authorize Railway service creation/configuration/deployment.
+
+A suitable exact Railway authorization for attempt 2 is:
+
+`AUTHORIZE P12.2-L1A-E13 LIVE RAILWAY ONE-SHOT — project 52265e29-921b-4652-ac0d-9da4e5e69936; environment 7f8d920f-f6c6-44f0-b9fe-252cb4f32298; use disposable one-shot service only from exact immutable image ghcr.io/intssere/seo-engine-p12-2-l1a-observation@sha256:a0bb8134ff103b00d397a05f9fd0a1ee5a89d76b26e683faef75948fd6c428b2; restartPolicyType=NEVER; no domain/volume/cron/GitHub source/autodeploy; set only P12_2_L1A_POSTGRES_SERVICE_ID=${{Postgres.RAILWAY_SERVICE_ID}}, DATABASE_URL=${{Postgres.DATABASE_URL}}, and P12_2_L1A_AUTHORIZATION_LITERAL=AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT_V2:744498635c3a55b0accf4eaefe25d81a43e14b501b6e4eb0045abf6f69a3509f with deploy suppression where supported; verify configuration and secret-free binding shape before execution; execute exactly one configured deployment; collect bounded secret-free receipt; once query ordinal 1 is invoked, zero retries/redeploys/restarts/second runners/alternate transports/subset replays/ad-hoc SQL; no migration/crawl/provider/public-site/application/Postgres mutation.`
+
+Generic `continue` is not this Railway authorization.
