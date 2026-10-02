@@ -18,7 +18,6 @@ const read = (relativePath) => readFileSync(join(here, relativePath), "utf8");
 const customerSources = [
   "components/customer-domain-hub.tsx",
   "pages/content.tsx",
-  "pages/article-workspace.tsx",
   "pages/site-audit-hub.tsx",
   "pages/authority.tsx",
   "pages/automation.tsx",
