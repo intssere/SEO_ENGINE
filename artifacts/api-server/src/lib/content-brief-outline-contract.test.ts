@@ -12,7 +12,7 @@ function plan(): ResearchPlan {
   const questionBase = {
     question: 'What evidence is needed for "stress relief journal"?',
     purposeCode: "establish_background",
-    requiredEvidenceClasses: Object.freeze(["primary_authoritative_sources"] as const),
+    requiredEvidenceClasses: Object.freeze(["definitions_and_background", "primary_authoritative_sources"] as const),
   };
   const questionFingerprint = stableEvidenceHash({
     purpose: "ugp_research_question",
@@ -39,7 +39,7 @@ function plan(): ResearchPlan {
     recommendedContentType: "article_or_guide" as const,
     objective: "Build an evidence plan.",
     questions: Object.freeze([question]),
-    requiredEvidenceClasses: Object.freeze(["primary_authoritative_sources"] as const),
+    requiredEvidenceClasses: Object.freeze(["definitions_and_background", "primary_authoritative_sources"] as const),
     discoveryPlan: Object.freeze([{
       stepId: "3".repeat(64),
       order: 1,
@@ -151,13 +151,21 @@ function ledger(researchPlan: ResearchPlan): SourceEvidenceLedger {
     targetTopic: researchPlan.targetTopic,
     sources: Object.freeze([source]),
     evidence: Object.freeze([evidence]),
-    coverage: Object.freeze([Object.freeze({
-      requiredEvidenceClass: "primary_authoritative_sources" as const,
-      evidenceCount: 1,
-      sourceCount: 1,
-      status: "observed" as const,
-    })]),
-    unresolvedEvidenceClasses: Object.freeze([]),
+    coverage: Object.freeze([
+      Object.freeze({
+        requiredEvidenceClass: "definitions_and_background" as const,
+        evidenceCount: 0,
+        sourceCount: 0,
+        status: "missing" as const,
+      }),
+      Object.freeze({
+        requiredEvidenceClass: "primary_authoritative_sources" as const,
+        evidenceCount: 1,
+        sourceCount: 1,
+        status: "observed" as const,
+      }),
+    ]),
+    unresolvedEvidenceClasses: Object.freeze(["definitions_and_background"] as const),
     provenance: researchPlan.provenance,
     semantics: Object.freeze({
       deterministic: true as const,
@@ -239,39 +247,12 @@ test("UGP-7.3 rejects entities and links without ledger evidence", () => {
 test("UGP-7.3 preserves unresolved evidence by section and brief", () => {
   const researchPlan = plan();
   const sourceLedger = ledger(researchPlan);
-  const withoutEvidence = {
-    ...sourceLedger,
-    evidence: Object.freeze([]),
-    coverage: Object.freeze([Object.freeze({
-      requiredEvidenceClass: "primary_authoritative_sources" as const,
-      evidenceCount: 0,
-      sourceCount: 0,
-      status: "missing" as const,
-    })]),
-    unresolvedEvidenceClasses: Object.freeze(["primary_authoritative_sources"] as const),
-  };
-  const { ledgerId: _id, ledgerFingerprint: _fp, ...ledgerBase } = withoutEvidence;
-  const ledgerFingerprint = stableEvidenceHash({
-    purpose: "ugp_source_evidence_ledger",
-    ...ledgerBase,
-  });
-  const validLedger = {
-    ...ledgerBase,
-    ledgerId: stableEvidenceHash({
-      purpose: "ugp_source_evidence_ledger_id",
-      version: "ugp-7-2-source-evidence-ledger-v1",
-      researchPlanId: researchPlan.planId,
-      ledgerFingerprint,
-    }),
-    ledgerFingerprint,
-  } as SourceEvidenceLedger;
-
   const result = buildContentBriefOutline({
     researchPlan,
-    sourceEvidenceLedger: validLedger,
+    sourceEvidenceLedger: sourceLedger,
   });
-  assert.deepEqual(result.unresolvedEvidenceClasses, ["primary_authoritative_sources"]);
-  assert.deepEqual(result.outline[0]?.unresolvedEvidenceClasses, ["primary_authoritative_sources"]);
+  assert.deepEqual(result.unresolvedEvidenceClasses, ["definitions_and_background"]);
+  assert.deepEqual(result.outline[0]?.unresolvedEvidenceClasses, ["definitions_and_background"]);
 });
 
 test("UGP-7.3 rejects research-plan and ledger lineage mismatch", () => {
