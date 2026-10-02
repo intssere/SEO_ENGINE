@@ -32,11 +32,12 @@ export default function ContentPage() {
           status: "preview",
         },
         {
-          title: "Article automation",
+          title: "Article workspace",
           description:
-            "Plan, draft, optimize, and publish articles from one workflow.",
-          actionLabel: "Article automation is coming",
-          status: "coming_soon",
+            "Inspect research, sources, outline, draft provenance, quality checks, internal links, and publication state.",
+          href: "/content/articles",
+          actionLabel: "Open article workspace",
+          status: "preview",
         },
       ]}
     />
