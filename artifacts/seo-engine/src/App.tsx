@@ -16,6 +16,7 @@ import DashboardPage from './pages/dashboard';
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
 import ContentPage from './pages/content';
+import ArticleWorkspacePage from './pages/article-workspace';
 import SiteAuditHubPage from './pages/site-audit-hub';
 import AuthorityPage from './pages/authority';
 import AutomationPage from './pages/automation';
@@ -68,6 +69,7 @@ function Router() {
           <Route path="/content/research" component={SearchIntelligencePage} />
           <Route path="/content/rankings" component={RankingsPage} />
           <Route path="/content/ai-visibility" component={AiVisibilityPage} />
+          <Route path="/content/articles" component={ArticleWorkspacePage} />
 
           <Route path="/site-audit/technical" component={TechnicalSeoPage} />
           <Route path="/site-audit/internal-links" component={InternalLinksPage} />
