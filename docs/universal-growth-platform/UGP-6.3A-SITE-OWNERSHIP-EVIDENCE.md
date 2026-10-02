@@ -33,7 +33,7 @@ UGP-3.3 `UniversalReadOnlySiteAnalysis` already models, per page:
 - internal-link graph evidence;
 - source and page fingerprints.
 
-UGP-6.3A reuses this model. It does not create a competing crawl/page schema.
+UGP-6.3A reuses this model semantically through a narrow supplied projection. It intentionally does not import the UGP-3.3 runtime module, preserving the existing isolation invariant that keeps pure UGP-3.3 analysis out of non-test API runtime source. It does not create a competing crawl/page schema.
 
 ### Existing GSC runner is intentionally aggregate-only downstream
 
@@ -51,7 +51,7 @@ UGP-6.3A therefore introduces a small provider-neutral supplied evidence type fo
 
 `buildSiteOwnershipEvidence` consumes:
 
-1. one integrity-checked `UniversalReadOnlySiteAnalysis`;
+1. one bounded `SiteOwnershipPageInventory` projection derived from already integrity-checked UGP-3.3 analysis evidence;
 2. one exact UGP `SearchMarket`;
 3. zero or more bounded `SiteOwnershipQueryPageObservation` records.
 
@@ -85,6 +85,8 @@ A query/page row may refer to a same-origin page that was not observed in the su
 `crawlEvidence.availability = "not_observed"`
 
 and all unsupported technical facts remain `null`.
+
+The projection carries only UGP-3.3 page identity, lineage fingerprints, crawl outcome, indexability, canonical state, title/H1/headings, and content fingerprint. The 6.3A runtime module does not import or execute UGP-3.3.
 
 The contract does not invent crawl/index/canonical evidence.
 
