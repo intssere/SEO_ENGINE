@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   P12_2_L1A_E1_QUERIES,
   P12_2_L1A_E1_SITE_ID,
@@ -6,6 +7,9 @@ import {
 } from "./p12-2-l1a-e1-readonly-query-contract.js";
 
 export const P12_2_L1A_E2_VERSION = "p12-2-l1a-e2-psql-transport-plan-v1" as const;
+
+export const P12_2_L1A_E11_AUTHORIZATION_GENERATION =
+  "attempt-2-after-e9-transport-repair" as const;
 
 export type P122L1AE2Command = {
   ordinal: number;
@@ -141,8 +145,16 @@ export function assertP122L1AE2Plan(plan: P122L1AE2Plan): void {
   }
 }
 
-export function p122L1AE2LiveAuthorizationLiteral(): string {
+export function p122L1AE2LiveAuthorizationFingerprint(): string {
   const plan = buildP122L1AE2Plan();
   assertP122L1AE2Plan(plan);
-  return `AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT:${plan.querySetFingerprint}`;
+  const stable = JSON.stringify({
+    querySetFingerprint: plan.querySetFingerprint,
+    authorizationGeneration: P12_2_L1A_E11_AUTHORIZATION_GENERATION,
+  });
+  return createHash("sha256").update(stable).digest("hex");
+}
+
+export function p122L1AE2LiveAuthorizationLiteral(): string {
+  return `AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT_V2:${p122L1AE2LiveAuthorizationFingerprint()}`;
 }
