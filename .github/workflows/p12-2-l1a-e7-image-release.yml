@@ -1,0 +1,73 @@
+name: P12.2 L1A immutable observation runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      authorization:
+        description: Exact E7 image-release authorization literal
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: p12-2-l1a-e7-image-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_SHA: bebcf8aba3c3f1a1790ce0937c3e954006229d61
+      SOURCE_TREE: 439c01e603f5558b2d96ee4e31b74ff11a45d934
+      IMAGE: ghcr.io/intssere/seo-engine-p12-2-l1a-observation
+      AUTH_LITERAL: AUTHORIZE:P12_2_L1A_E7_IMAGE_RELEASE:bebcf8aba3c3f1a1790ce0937c3e954006229d61
+
+    steps:
+      - name: Verify manual authorization
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ inputs.authorization ${{" = "$AUTH_LITERAL"
+
+      - name: Checkout exact E6 source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: bebcf8aba3c3f1a1790ce0937c3e954006229d61
+          fetch-depth: 1
+
+      - name: Verify source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git rev-parse 'HEAD^{tree}')" = "$SOURCE_TREE"
+          test "$(git status --porcelain=v1 | wc -l)" -eq 0
+
+      - name: Login to GHCR
+        shell: bash
+        env:
+          GHCR_TOKEN: "${{ secrets.GITHUB_TOKEN ${{"
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor ${{" --password-stdin
+
+      - name: Build and push immutable runner image
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx build             --file Dockerfile.p12-2-l1a-observation             --build-arg EXPECTED_CANONICAL_COMMIT="$SOURCE_SHA"             --build-arg EXPECTED_CANONICAL_TREE="$SOURCE_TREE"             --build-arg EXPECTED_SOURCE_BRANCH="main"             --provenance=mode=max             --sbom=true             --tag "$IMAGE:$SOURCE_SHA"             --push             .
+          DIGEST="$(docker buildx imagetools inspect "$IMAGE:$SOURCE_SHA" --format '{{json .Manifest.Digest}}' | tr -d '"')"
+          test -n "$DIGEST"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "image=$IMAGE@$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Emit release receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n'             "source_sha=$SOURCE_SHA"             "source_tree=$SOURCE_TREE"             "image=${{ steps.build.outputs.image ${{"             "dockerfile=Dockerfile.p12-2-l1a-observation"             "authorization=$AUTH_LITERAL"
