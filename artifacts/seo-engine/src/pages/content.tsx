@@ -12,12 +12,12 @@ const articleCards: CustomerDomainCard[] = [
 ].map((title) => ({ title, description: "", status: "unavailable" }));
 
 export default function ContentPage() {
-  if (window.location.pathname.endsWith("/articles")) {
+  if (location.pathname.endsWith("/articles")) {
     return (
       <CustomerDomainHub
-        eyebrow="ARTICLE WORKFLOW"
+        eyebrow="ARTICLE"
         title="Article workspace"
-        description="NOT PUBLISHED. Confidence is not the quality gate."
+        description="NOT PUBLISHED. Confidence ≠ quality gate."
         cards={articleCards}
       />
     );
@@ -27,30 +27,24 @@ export default function ContentPage() {
     <CustomerDomainHub
       eyebrow="CONTENT GROWTH"
       title="Content"
-      description="Research demand, find content gaps, and manage organic content."
+      description="Research demand, gaps, and organic content."
       cards={[
         {
           title: "Search research",
-          description:
-            "Explore topics, gaps, demand signals, and supporting evidence.",
+          description: "Topics, gaps, demand, and evidence.",
           href: "/content/research",
-          actionLabel: "Open search research",
           status: "preview",
         },
         {
           title: "Rank tracking",
-          description:
-            "Check rank tracking availability. No ranking metrics are invented without a live source.",
+          description: "Requires live ranking data.",
           href: "/content/rankings",
-          actionLabel: "View rank tracking",
           status: "unavailable",
         },
         {
           title: "AI visibility",
-          description:
-            "Inspect AI-answer visibility and citation observations.",
+          description: "AI-answer visibility and citations.",
           href: "/content/ai-visibility",
-          actionLabel: "Open AI visibility",
           status: "preview",
         },
       ]}
