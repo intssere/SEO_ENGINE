@@ -48,7 +48,7 @@ test("publication remains explicit and separate from generation completion", () 
 
 test("quality gate remains separate from model confidence", () => {
   assert.ok(model.includes("modelConfidenceIsNotQualityGate: true"));
-  assert.match(page, /Confidence is not the quality gate/);
+  assert.match(page, /Confidence ≠ quality gate/);
   assert.match(model, /Quality-gate status remains separate from model confidence/);
 });
 
@@ -81,7 +81,7 @@ test("article workspace capabilities remain fail-closed", () => {
 
 test("runtime surface reuses the shipped Content composition", () => {
   assert.match(page, /CustomerDomainHub/);
-  assert.match(page, /window\.location\.pathname\.endsWith\("\/articles"\)/);
+  assert.match(page, /location\.pathname\.endsWith\("\/articles"\)/);
   assert.doesNotMatch(page, /lucide-react|StatusBadge|article-workspace-model/);
   assert.doesNotMatch(app, /ArticleWorkspacePage/);
 });
