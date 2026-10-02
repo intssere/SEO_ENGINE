@@ -36,20 +36,25 @@ test("executes exactly seven canonical commands once in order", async () => {
   });
 });
 
-test("fails closed on authorization mismatch before executor invocation", async () => {
-  let calls = 0;
-  await assert.rejects(
-    runP122L1AE3OneShot({
-      authorizationLiteral: "AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT:wrong",
-      databaseUrl: DATABASE_URL,
-      executor: async () => {
-        calls += 1;
-        return { exitCode: 0, stdout: "", stderr: "" };
-      },
-    }),
-    /p12_2_l1a_e3_authorization_mismatch/,
-  );
-  assert.equal(calls, 0);
+test("fails closed on authorization mismatch and rejects consumed V1 before executor invocation", async () => {
+  for (const authorizationLiteral of [
+    "AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT:wrong",
+    "AUTHORIZE:P12_2_L1A_PSQL_ONE_SHOT:6104ada21e043706664ca76b139d08338f637db98becbf66ca34113ce4f64d79",
+  ]) {
+    let calls = 0;
+    await assert.rejects(
+      runP122L1AE3OneShot({
+        authorizationLiteral,
+        databaseUrl: DATABASE_URL,
+        executor: async () => {
+          calls += 1;
+          return { exitCode: 0, stdout: "", stderr: "" };
+        },
+      }),
+      /p12_2_l1a_e3_authorization_mismatch/,
+    );
+    assert.equal(calls, 0);
+  }
 });
 
 test("stops on first nonzero result and does not retry", async () => {
