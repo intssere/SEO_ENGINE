@@ -197,6 +197,15 @@ export function detectCannibalization(input: {
   const clusterAssessments = input.clustering.clusters
     .map((cluster): CannibalizationClusterAssessment => {
       exactFingerprint(cluster.clusterFingerprint, "cluster_fingerprint");
+      const expectedClusterFingerprint = stableEvidenceHash({
+        purpose: "ugp_topic_cluster",
+        version: "ugp-6-2a-deterministic-topic-clustering-v1",
+        representativeKeyword: cluster.representativeKeyword,
+        members: cluster.members,
+      });
+      if (cluster.clusterFingerprint !== expectedClusterFingerprint) {
+        throw new Error("ugp_cannibalization_cluster_integrity_failed");
+      }
       const memberKeywords = Object.freeze(
         [...new Set(cluster.members.map((member) => normalizeQuery(member.keyword)))]
           .sort(),
