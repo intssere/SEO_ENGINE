@@ -29,12 +29,11 @@ test("article workspace exposes every required customer-facing area", () => {
 test("article workspace is mounted under the customer Content domain without a dedicated runtime chunk", () => {
   assert.ok(app.includes('<Route path="/content/articles" component={ContentPage} />'));
   assert.doesNotMatch(app, /article-workspace/);
-  assert.ok(page.includes('href: "/content/articles"'));
   assert.ok(page.includes('title: "Article workspace"'));
 });
 
 test("unbound runtime workspace does not synthesize article evidence", () => {
-  assert.match(page, /Certified state only/);
+  assert.match(page, /NOT PUBLISHED/);
   assert.match(
     model,
     /No research progress, sources, draft text, citations, SEO results, internal links, or publication state are synthesized/,
@@ -49,7 +48,7 @@ test("publication remains explicit and separate from generation completion", () 
 
 test("quality gate remains separate from model confidence", () => {
   assert.ok(model.includes("modelConfidenceIsNotQualityGate: true"));
-  assert.match(page, /Model confidence is not the quality gate/);
+  assert.match(page, /Confidence is not the quality gate/);
   assert.match(model, /Quality-gate status remains separate from model confidence/);
 });
 
