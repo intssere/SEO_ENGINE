@@ -1,8 +1,4 @@
 import {
-  assertUniversalReadOnlySiteAnalysisIntegrity,
-  type UniversalReadOnlySiteAnalysis,
-} from "./universal-read-only-site-analysis.js";
-import {
   stableEvidenceHash,
   type SearchMarket,
 } from "./keyword-serp-evidence-contract.js";
@@ -17,6 +13,43 @@ export const UGP_SITE_OWNERSHIP_EVIDENCE_POLICY = Object.freeze({
   maxSourceIdLength: 160,
   maxPosition: 10_000,
 } as const);
+
+export type SiteOwnershipPageInventory = Readonly<{
+  version: "ugp-6-3a-page-inventory-projection-v1";
+  canonicalOrigin: string;
+  sourceAnalysisFingerprint: string;
+  coverage: "observed_inventory_complete" | "partial";
+  wholeSiteCertified: false;
+  pages: readonly Readonly<{
+    url: string;
+    analysisPageId: string;
+    evidenceId: string;
+    pageFingerprint: string;
+    sourceFingerprint: string;
+    outcome:
+      | "success"
+      | "redirect"
+      | "http_error"
+      | "failure"
+      | "robots_excluded";
+    indexability:
+      | "indexable"
+      | "noindex"
+      | "http_not_indexable"
+      | "unavailable";
+    canonicalUrl: string | null;
+    canonicalState:
+      | "self"
+      | "same_origin_other"
+      | "external"
+      | "missing"
+      | "unavailable";
+    title: string | null;
+    h1: string | null;
+    headings: readonly string[];
+    contentFingerprint: string | null;
+  }>[];
+}>;
 
 export type SiteOwnershipQueryPageObservation = Readonly<{
   query: string;
@@ -339,7 +372,7 @@ function normalizeObservation(input: {
 }
 
 function crawlEvidenceFor(
-  page: UniversalReadOnlySiteAnalysis["pages"][number] | undefined,
+  page: SiteOwnershipPageInventory["pages"][number] | undefined,
 ): SiteOwnershipPageEvidence["crawlEvidence"] {
   if (!page) {
     return Object.freeze({
@@ -376,7 +409,7 @@ function crawlEvidenceFor(
 }
 
 export function buildSiteOwnershipEvidence(input: {
-  analysis: UniversalReadOnlySiteAnalysis;
+  pageInventory: SiteOwnershipPageInventory;
   market: SearchMarket;
   queryPageObservations?: readonly SiteOwnershipQueryPageObservation[];
 }): SiteOwnershipEvidence {
@@ -384,8 +417,18 @@ export function buildSiteOwnershipEvidence(input: {
     throw new Error("ugp_site_ownership_invalid_input");
   }
 
-  assertUniversalReadOnlySiteAnalysisIntegrity(input.analysis);
-  const origin = canonicalOrigin(input.analysis.site.canonicalOrigin);
+  if (
+    !input.pageInventory
+    || input.pageInventory.version !== "ugp-6-3a-page-inventory-projection-v1"
+    || input.pageInventory.wholeSiteCertified !== false
+  ) {
+    throw new Error("ugp_site_ownership_page_inventory_invalid");
+  }
+  exactFingerprint(
+    input.pageInventory.sourceAnalysisFingerprint,
+    "source_analysis_fingerprint",
+  );
+  const origin = canonicalOrigin(input.pageInventory.canonicalOrigin);
   const market = exactMarket(input.market);
   const suppliedObservations = input.queryPageObservations ?? [];
   if (
@@ -396,7 +439,7 @@ export function buildSiteOwnershipEvidence(input: {
     throw new Error("ugp_site_ownership_query_page_observation_limit");
   }
   if (
-    input.analysis.pages.length
+    input.pageInventory.pages.length
       > UGP_SITE_OWNERSHIP_EVIDENCE_POLICY.maxPages
   ) {
     throw new Error("ugp_site_ownership_page_limit");
@@ -427,7 +470,7 @@ export function buildSiteOwnershipEvidence(input: {
   }
 
   const analysisPages = new Map(
-    input.analysis.pages.map((page) => [
+    input.pageInventory.pages.map((page) => [
       canonicalPageUrl(page.url, origin),
       page,
     ] as const),
@@ -495,7 +538,7 @@ export function buildSiteOwnershipEvidence(input: {
   if (normalizedRows.length === 0) {
     missingEvidence.push("query_page_performance_not_supplied");
   }
-  if (input.analysis.crawl.coverage.state === "partial") {
+  if (input.pageInventory.coverage === "partial") {
     missingEvidence.push("crawl_inventory_partial");
   }
   missingEvidence.push("whole_site_not_independently_certified");
@@ -514,8 +557,8 @@ export function buildSiteOwnershipEvidence(input: {
     market,
     policy: UGP_SITE_OWNERSHIP_EVIDENCE_POLICY,
     provenance: Object.freeze({
-      universalReadAnalysisFingerprint: input.analysis.analysisFingerprint,
-      universalReadAnalysisCoverage: input.analysis.crawl.coverage.state,
+      universalReadAnalysisFingerprint: input.pageInventory.sourceAnalysisFingerprint,
+      universalReadAnalysisCoverage: input.pageInventory.coverage,
       wholeSiteCertified: false as const,
       queryPageEvidenceAvailability:
         normalizedRows.length > 0 ? "available" as const : "not_supplied" as const,
