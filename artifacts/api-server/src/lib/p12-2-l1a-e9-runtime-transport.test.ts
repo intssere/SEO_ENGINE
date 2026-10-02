@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   assertP122L1AE9NoCredentialArgv,
   buildP122L1AE9PsqlConnectionEnv,
+  p122L1AE9ProcessExitCode,
 } from "./p12-2-l1a-e9-runtime-transport.js";
 
 test("maps DATABASE_URL into explicit libpq connection environment without URI argv", () => {
@@ -70,4 +71,9 @@ test("rejects credential-bearing psql argv", () => {
     () => assertP122L1AE9NoCredentialArgv(["--set", "PASSWORD=secret"], databaseUrl),
     /p12_2_l1a_e9_credential_in_argv_forbidden/,
   );
+});
+
+test("returns zero only after a bounded E5 receipt exists", () => {
+  assert.equal(p122L1AE9ProcessExitCode(true), 0);
+  assert.equal(p122L1AE9ProcessExitCode(false), 1);
 });
