@@ -137,6 +137,26 @@ export type FullSiteCrawlBridgeSnapshot = {
   fingerprint: string;
 };
 
+export type FullSiteCrawlInterruptionReceipt = {
+  version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+  status: "intentional_interruption";
+  runId: string;
+  observedAt: string;
+  siteId: string;
+  canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+  executionPlanFingerprint: string;
+  checkpointRevision: number;
+  checkpointFingerprint: string;
+  persistence: {
+    checkpointPersisted: true;
+    completedRunPersisted: false;
+    rawResponseBodyPersisted: false;
+    rawSitemapXmlPersisted: false;
+    pageContentPersisted: false;
+  };
+  fingerprint: string;
+};
+
 export type IncrementalCrawlUrlReceipt = {
   canonicalUrl: string;
   attempts: number;
@@ -563,14 +583,23 @@ function historySource(snapshot: FullSiteCrawlBridgeSnapshot): CrawlHistorySourc
   return { inventory: snapshot.inventory, certification: snapshot.certification };
 }
 
-export async function runFullSiteCrawlBridge(
+async function runFullSiteCrawlBridgeInternal(
   input: FullSiteCrawlBridgeRunInput,
   options: FirstPartyCrawlBridgeOptions = {},
-): Promise<FullSiteCrawlBridgeSnapshot> {
+  control: { stopAfterCheckpointRevision?: number | null } = {},
+): Promise<FullSiteCrawlBridgeSnapshot | FullSiteCrawlInterruptionReceipt> {
   const runId = requireRunId(input.runId);
   const observedAt = requireObservedAt(input.observedAt);
   const binding = normalizeBinding(input.binding);
   assertExecutable(options);
+
+  const stopAfterCheckpointRevision = control.stopAfterCheckpointRevision ?? null;
+  if (
+    stopAfterCheckpointRevision !== null &&
+    (!Number.isInteger(stopAfterCheckpointRevision) || stopAfterCheckpointRevision < 1)
+  ) {
+    throw new Error("crawl_bridge_interruption_revision_invalid");
+  }
 
   const crawlPlan = planFirstPartyCrawl(
     {
@@ -628,6 +657,38 @@ export async function runFullSiteCrawlBridge(
     checkpoint,
   }));
 
+  const interruptionReceipt = (): FullSiteCrawlInterruptionReceipt => {
+    const withoutFingerprint: Omit<FullSiteCrawlInterruptionReceipt, "fingerprint"> = {
+      version: P12_2_CRAWL_BRIDGE_VERSION,
+      status: "intentional_interruption",
+      runId,
+      observedAt,
+      siteId: binding.siteId,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      executionPlanFingerprint: executionPlan.fingerprint,
+      checkpointRevision: checkpoint.sequence,
+      checkpointFingerprint: checkpoint.fingerprint,
+      persistence: {
+        checkpointPersisted: true,
+        completedRunPersisted: false,
+        rawResponseBodyPersisted: false,
+        rawSitemapXmlPersisted: false,
+        pageContentPersisted: false,
+      },
+    };
+    return {
+      ...withoutFingerprint,
+      fingerprint: fingerprint(withoutFingerprint),
+    };
+  };
+
+  if (stopAfterCheckpointRevision !== null) {
+    if (checkpoint.sequence === stopAfterCheckpointRevision) return interruptionReceipt();
+    if (checkpoint.sequence > stopAfterCheckpointRevision) {
+      throw new Error("crawl_bridge_interruption_revision_already_passed");
+    }
+  }
+
   const requestState = { pageRequestsStarted: 0 };
   while (checkpoint.status !== "completed") {
     const outcomes = await checkpointOutcomes({
@@ -654,6 +715,12 @@ export async function runFullSiteCrawlBridge(
       plan: executionPlan,
       checkpoint,
     }));
+    if (stopAfterCheckpointRevision !== null) {
+      if (checkpoint.sequence === stopAfterCheckpointRevision) return interruptionReceipt();
+      if (checkpoint.sequence > stopAfterCheckpointRevision) {
+        throw new Error("crawl_bridge_interruption_revision_already_passed");
+      }
+    }
   }
 
   const certification = buildFullSiteCrawlCertification({
@@ -710,6 +777,29 @@ export async function runFullSiteCrawlBridge(
   assertFullSiteCrawlBridgeSnapshotIntegrity(snapshot);
   await options.persistence.saveCompletedRun(snapshot);
   return snapshot;
+}
+
+export async function runFullSiteCrawlBridge(
+  input: FullSiteCrawlBridgeRunInput,
+  options: FirstPartyCrawlBridgeOptions = {},
+): Promise<FullSiteCrawlBridgeSnapshot> {
+  const result = await runFullSiteCrawlBridgeInternal(input, options);
+  if ("status" in result && result.status === "intentional_interruption") {
+    throw new Error("crawl_bridge_unexpected_interruption");
+  }
+  return result;
+}
+
+export async function runFullSiteCrawlBridgeUntilCheckpoint(
+  input: FullSiteCrawlBridgeRunInput,
+  stopAfterCheckpointRevision: number,
+  options: FirstPartyCrawlBridgeOptions = {},
+): Promise<FullSiteCrawlInterruptionReceipt> {
+  const result = await runFullSiteCrawlBridgeInternal(input, options, { stopAfterCheckpointRevision });
+  if (!("status" in result) || result.status !== "intentional_interruption") {
+    throw new Error("crawl_bridge_interruption_revision_unreachable");
+  }
+  return result;
 }
 
 function assertIncrementalLineage(input: IncrementalCrawlBridgeRunInput): void {
