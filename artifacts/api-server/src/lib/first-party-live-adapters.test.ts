@@ -90,7 +90,7 @@ test("sitemap acquisition recursively follows exact-origin indexes without netwo
     [
       DIAMOND_SHELF_CANONICAL_ORIGIN + "/sitemap.xml",
       new Response(
-        '<sitemapindex><sitemap><loc>https://diamondshelf.us/products.xml?from=100&to=200</loc></sitemap></sitemapindex>',
+        '<sitemapindex><sitemap><loc>https://diamondshelf.us/products.xml?from=100&amp;to=200</loc></sitemap></sitemapindex>',
         { status: 200, headers: { "content-type": "application/xml" } },
       ),
     ],
