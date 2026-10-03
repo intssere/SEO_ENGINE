@@ -90,12 +90,12 @@ test("sitemap acquisition recursively follows exact-origin indexes without netwo
     [
       DIAMOND_SHELF_CANONICAL_ORIGIN + "/sitemap.xml",
       new Response(
-        '<sitemapindex><sitemap><loc>https://diamondshelf.us/products.xml</loc></sitemap></sitemapindex>',
+        '<sitemapindex><sitemap><loc>https://diamondshelf.us/products.xml?from=100&to=200</loc></sitemap></sitemapindex>',
         { status: 200, headers: { "content-type": "application/xml" } },
       ),
     ],
     [
-      DIAMOND_SHELF_CANONICAL_ORIGIN + "/products.xml",
+      DIAMOND_SHELF_CANONICAL_ORIGIN + "/products.xml?from=100&to=200",
       new Response(
         '<urlset><url><loc>https://diamondshelf.us/products/a</loc></url></urlset>',
         { status: 200, headers: { "content-type": "application/xml" } },
@@ -118,7 +118,7 @@ test("sitemap acquisition recursively follows exact-origin indexes without netwo
 
   assert.deepEqual(calls, [
     DIAMOND_SHELF_CANONICAL_ORIGIN + "/sitemap.xml",
-    DIAMOND_SHELF_CANONICAL_ORIGIN + "/products.xml",
+    DIAMOND_SHELF_CANONICAL_ORIGIN + "/products.xml?from=100&to=200",
   ]);
   assert.deepEqual(documents.map((item) => item.url), calls);
 });
