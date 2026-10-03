@@ -90,6 +90,21 @@ function assertSource(label: "before" | "after", source: P122L2IncrementalMateri
   if (source.checkpoint.siteId !== source.siteId || source.checkpoint.canonicalOrigin !== source.canonicalOrigin) {
     throw new Error(`p12_2_l6_2_${label}_checkpoint_identity_mismatch`);
   }
+  if (
+    source.inventory.siteId !== source.siteId ||
+    source.inventory.canonicalOrigin !== source.canonicalOrigin ||
+    source.certification.siteId !== source.siteId ||
+    source.certification.canonicalOrigin !== source.canonicalOrigin
+  ) {
+    throw new Error(`p12_2_l6_2_${label}_source_identity_mismatch`);
+  }
+  if (
+    source.certification.lineage.inventoryFingerprint !== source.inventory.fingerprint ||
+    source.certification.lineage.executionPlanFingerprint !== source.executionPlan.fingerprint ||
+    source.certification.lineage.checkpointFingerprint !== source.checkpoint.fingerprint
+  ) {
+    throw new Error(`p12_2_l6_2_${label}_certification_lineage_mismatch`);
+  }
 }
 
 export function resolveP122L2IncrementalExecutableMaterial(input: {
