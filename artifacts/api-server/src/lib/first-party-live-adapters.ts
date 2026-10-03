@@ -92,7 +92,12 @@ function exactFirstPartyUrl(
   return url.toString();
 }
 
-function statusRedirectTarget(response: Response, requestedUrl: string, maxUrlLength: number): string | null {
+function statusRedirectTarget(
+  response: Response,
+  requestedUrl: string,
+  maxUrlLength: number,
+  queryAllowed = false,
+): string | null {
   if (!REDIRECT_STATUSES.has(response.status)) return null;
   const location = response.headers.get("location");
   if (!location) throw new Error("p12_2_live_redirect_location_missing");
@@ -104,7 +109,7 @@ function statusRedirectTarget(response: Response, requestedUrl: string, maxUrlLe
   }
   return exactFirstPartyUrl(resolved, {
     maxUrlLength,
-    queryAllowed: false,
+    queryAllowed,
     fragmentAllowed: false,
   });
 }
@@ -316,7 +321,7 @@ export function createFirstPartySitemapAcquirer(
               "user-agent": P12_2_ROBOTS_USER_AGENT,
             },
           });
-          const redirect = statusRedirectTarget(response, currentUrl, request.maxUrlLength);
+          const redirect = statusRedirectTarget(response, currentUrl, request.maxUrlLength, true);
           if (!redirect) break;
           redirects += 1;
           if (redirects > P12_2_SITEMAP_REDIRECT_LIMIT) throw new Error("p12_2_live_sitemap_redirect_limit_exceeded");
@@ -331,7 +336,7 @@ export function createFirstPartySitemapAcquirer(
           for (const rawChild of [...parsed.sitemapLocations].sort()) {
             const child = exactFirstPartyUrl(rawChild, {
               maxUrlLength: request.maxUrlLength,
-              queryAllowed: false,
+              queryAllowed: true,
               fragmentAllowed: false,
             });
             if (item.depth + 1 > request.maxDepth) throw new Error("p12_2_live_sitemap_depth_exceeded");
