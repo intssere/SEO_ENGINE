@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertP122L2PacketIntegrity,
   buildP122L2Packet,
   executeP122L2OneShot,
   executeP122L2OneShotDurable,
@@ -301,5 +302,38 @@ test("durable one-shot keeps a failed executor claim consumed and performs no co
       },
     }),
     /p12_2_l2_packet_already_consumed/,
+  );
+});
+
+
+test("L6.3 packet integrity accepts exact packets and rejects post-build tampering", () => {
+  const packet = buildP122L2Packet({
+    phase: "full_initial",
+    runId: "p12-2-l6-3-integrity-001",
+    observedAt: "2026-10-03T07:35:00.000Z",
+    config: executableConfig(),
+  });
+
+  assert.doesNotThrow(() => assertP122L2PacketIntegrity(packet));
+
+  const tamperedLimit = structuredClone(packet);
+  tamperedLimit.limits.hardPageLimit -= 1;
+  assert.throws(
+    () => assertP122L2PacketIntegrity(tamperedLimit),
+    /p12_2_l2_packet_fingerprint_mismatch|p12_2_manual_sitemap_inventory_exceeds_page_limit/,
+  );
+
+  const tamperedSafety = structuredClone(packet);
+  (tamperedSafety as unknown as { schedulerEnabled: boolean }).schedulerEnabled = true;
+  assert.throws(
+    () => assertP122L2PacketIntegrity(tamperedSafety),
+    /p12_2_l2_packet_safety_boundary_invalid/,
+  );
+
+  const tamperedFingerprint = structuredClone(packet);
+  (tamperedFingerprint as unknown as { fingerprint: string }).fingerprint = "f".repeat(64);
+  assert.throws(
+    () => assertP122L2PacketIntegrity(tamperedFingerprint),
+    /p12_2_l2_packet_fingerprint_mismatch/,
   );
 });
