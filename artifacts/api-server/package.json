@@ -15,6 +15,7 @@
     "test:p12-2-persistence-ephemeral": "tsx --test src/lib/first-party-crawl-persistence.ephemeral.test.ts",
     "test:p12-2-l6-durable-ephemeral": "tsx --test src/lib/p12-2-l2-durable-receipt-store.ephemeral.test.ts",
     "p12-2:crawl": "node --enable-source-maps ./dist/p12-2-crawl.mjs",
+    "p12-2:live-operator": "node --enable-source-maps ./dist/p12-2-live-operator.mjs",
     "test:p8-8-w04-persistence-ephemeral": "tsx --test src/lib/p8-8-reservation-store.ephemeral.test.ts",
     "test:p8-8-w05-persistence-ephemeral": "tsx --test src/lib/p8-8-mutation-control-store.ephemeral.test.ts",
     "test:p8-8-w06-persistence-ephemeral": "tsx --test src/lib/p8-8-policy-preflight-store.ephemeral.test.ts",
