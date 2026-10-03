@@ -54,6 +54,10 @@ function executableConfig(after: P122L2IncrementalMaterialSource) {
       ...config.limits,
       hardPageLimit: after.executionPlan.source.pageHardLimit,
       absolutePageCeiling: after.executionPlan.source.absolutePageCeiling,
+      sitemapPolicy: {
+        ...config.limits.sitemapPolicy,
+        maxInventoryUrls: after.executionPlan.source.pageHardLimit,
+      },
       incremental: { ...POLICY },
     },
   };
