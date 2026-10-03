@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -51,4 +54,12 @@ test("L7.1 query surface explicitly covers absence/presence, legacy lineage, and
     "legacy_p12_columns",
     "exact_site_binding",
   ]);
+});
+
+
+test("L7.1 migration SHA-256 constant matches the exact repository SQL bytes", async () => {
+  const migrationPath = path.resolve(process.cwd(), "../../", P12_2_L7_1_MIGRATION_PATH);
+  const bytes = await readFile(migrationPath);
+  const actual = createHash("sha256").update(bytes).digest("hex");
+  assert.equal(actual, P12_2_L7_1_MIGRATION_SHA256);
 });
