@@ -16,7 +16,7 @@ function fixture(includeRollback=true){
   {capability:"write.internal_links",resourceKinds:["article"],verification:"required",rollback:"supported",maxOperationsPerRequest:10,maxPayloadBytes:2000000},
   {capability:"preview.change",resourceKinds:["article"],verification:"not_applicable",rollback:"not_applicable",maxOperationsPerRequest:10,maxPayloadBytes:2000000},
   {capability:"verify.change",resourceKinds:["article"],verification:"not_applicable",rollback:"not_applicable",maxOperationsPerRequest:10,maxPayloadBytes:2000000},
-  ...(includeRollback?[{capability:"rollback.change" as const,resourceKinds:["article" as const],verification:"required" as const,rollback:"not_applicable" as const,maxOperationsPerRequest:10,maxPayloadBytes:2000000}]:[]),
+  ...(includeRollback?[{capability:"rollback.change" as const,resourceKinds:["article" as const],verification:"required" as const,rollback:"unsupported" as const,maxOperationsPerRequest:10,maxPayloadBytes:2000000}]:[]),
  ]});
  const descriptor=buildUniversalConnectorDescriptor({connectorId:"wp",connectorKind:"native_api",registry});
  const source=buildUniversalResourceLocator({site,connection,provider:"wordpress",kind:"article",externalId:"42",canonicalUrl:"https://example.test/source"});
