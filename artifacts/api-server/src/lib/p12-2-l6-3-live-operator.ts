@@ -56,7 +56,7 @@ function configFromPacket(packet: P122L2Packet): P12_2ManualConfig {
   };
 }
 
-function assertEnvelopeBindings(envelope: P122L3OperatorEnvelope): void {
+export function assertP122L3OperatorEnvelopeIntegrity(envelope: P122L3OperatorEnvelope): void {
   if (envelope.version !== P12_2_L6_3_LIVE_OPERATOR_VERSION) {
     throw new Error("p12_2_l6_3_envelope_version_invalid");
   }
@@ -179,7 +179,7 @@ export async function executeP122L3LiveOperator(input: {
 }): Promise<P122L2Receipt> {
   const databaseUrl = input.databaseUrl.trim();
   if (!databaseUrl) throw new Error("p12_2_l6_3_database_url_required");
-  assertEnvelopeBindings(input.envelope);
+  assertP122L3OperatorEnvelopeIntegrity(input.envelope);
 
   const store = new P122L2PostgresReceiptStore({ databaseUrl });
   const executor = new P122L3LiveExecutor(input.envelope, databaseUrl);
