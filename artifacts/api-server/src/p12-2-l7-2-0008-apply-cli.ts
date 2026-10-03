@@ -57,18 +57,18 @@ function wrapperSql(): string {
           AND canonical_origin = '${P12_2_L7_2_ORIGIN}'
           AND is_active = true
       )
-      THEN 1 ELSE 0 END`,
+      THEN 1 ELSE 0 END;`,
     `\\i ${MIGRATION_FILE}`,
-    `SELECT 'post_table_count', count(*)::int FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'`,
-    `SELECT 'post_l2_presence', count(*)::int FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name = 'first_party_crawl_l2_invocations'`,
-    `SELECT 'post_l2_columns', column_name, ordinal_position, data_type, udt_name, is_nullable, character_maximum_length FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'first_party_crawl_l2_invocations' ORDER BY ordinal_position`,
-    `SELECT 'post_l2_constraints', con.conname, con.contype, pg_get_constraintdef(con.oid, true) FROM pg_catalog.pg_constraint con JOIN pg_catalog.pg_class c ON c.oid = con.conrelid JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relname = 'first_party_crawl_l2_invocations' ORDER BY con.conname`,
-    `SELECT 'post_l2_indexes', indexname, indexdef FROM pg_catalog.pg_indexes WHERE schemaname = 'public' AND tablename = 'first_party_crawl_l2_invocations' ORDER BY indexname`,
-    `SELECT 'post_site_binding', id::text, domain, canonical_origin, is_active FROM public.sites WHERE id = '${P12_2_L7_2_SITE_ID}'::uuid`,
+    `SELECT 'post_table_count', count(*)::int FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';`,
+    `SELECT 'post_l2_presence', count(*)::int FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name = 'first_party_crawl_l2_invocations';`,
+    `SELECT 'post_l2_columns', column_name, ordinal_position, data_type, udt_name, is_nullable, character_maximum_length FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'first_party_crawl_l2_invocations' ORDER BY ordinal_position;`,
+    `SELECT 'post_l2_constraints', con.conname, con.contype, pg_get_constraintdef(con.oid, true) FROM pg_catalog.pg_constraint con JOIN pg_catalog.pg_class c ON c.oid = con.conrelid JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relname = 'first_party_crawl_l2_invocations' ORDER BY con.conname;`,
+    `SELECT 'post_l2_indexes', indexname, indexdef FROM pg_catalog.pg_indexes WHERE schemaname = 'public' AND tablename = 'first_party_crawl_l2_invocations' ORDER BY indexname;`,
+    `SELECT 'post_site_binding', id::text, domain, canonical_origin, is_active FROM public.sites WHERE id = '${P12_2_L7_2_SITE_ID}'::uuid;`,
     `SELECT 'post_guard', 1 / CASE WHEN
       (SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE') = ${P12_2_L7_2_EXPECTED_POST_TABLE_COUNT}
       AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name = 'first_party_crawl_l2_invocations')
-      THEN 1 ELSE 0 END`,
+      THEN 1 ELSE 0 END;`,
   ].join("\n") + "\n";
 }
 
