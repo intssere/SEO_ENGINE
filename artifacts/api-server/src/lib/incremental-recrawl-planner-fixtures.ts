@@ -78,5 +78,5 @@ export function buildIncrementalRecrawlTestSource(input: {
     outcomes,
   });
   const certification = buildFullSiteCrawlCertification({ crawlPlan: plan, inventory, executionPlan, checkpoint });
-  return { inventory, certification };
+  return { inventory, certification, executionPlan, checkpoint };
 }

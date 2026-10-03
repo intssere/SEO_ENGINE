@@ -84,7 +84,7 @@ export function currentP122L6LiveExecutorAudit(): P122L6Readiness {
     fullInterruptCheckpointStopBindingPresent: true,
     fullResumePersistenceBindingPresent: true,
     fullReconciliationBindingPresent: true,
-    incrementalMaterialBindingPresent: false,
+    incrementalMaterialBindingPresent: true,
     durablePacketConsumptionReceiptPresent: true,
     liveExecutableEntrypointPresent: false,
     productionImageContainsLiveEntrypoint: false,
