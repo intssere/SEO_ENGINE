@@ -22,6 +22,7 @@ async function buildAll() {
       "p12-2-l1a-observation": path.resolve(artifactDir, "src/p12-2-l1a-observation-cli.ts"),
       "p12-2-l2-one-shot": path.resolve(artifactDir, "src/lib/p12-2-l2-one-shot-operator-caller.ts"),
       "p12-2-live-operator": path.resolve(artifactDir, "src/p12-2-live-operator-cli.ts"),
+      "p12-2-l7-1-0008-cert": path.resolve(artifactDir, "src/p12-2-l7-1-0008-cert-cli.ts"),
     },
     platform: "node",
     bundle: true,
