@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildP122L2Packet,
   executeP122L2OneShot,
+  executeP122L2OneShotDurable,
   p122L2AuthorizationLiteral,
 } from "./p12-2-l2-one-shot-operator-caller.js";
 import {
@@ -195,4 +196,110 @@ test("intentional interruption must match the packet boundary", async () => {
     },
   });
   assert.equal(receipt.result.status, "intentional_interruption");
+});
+
+
+test("durable one-shot claims before execution, completes once, and blocks cross-process replay", async () => {
+  const packet = buildP122L2Packet({
+    phase: "full_initial",
+    runId: "p12-2-live-durable-001",
+    observedAt: "2026-10-02T18:30:00.000Z",
+    config: executableConfig(),
+  });
+  const claims = new Set<string>();
+  const completed = new Map<string, string>();
+  const store = {
+    async claim(value: typeof packet) {
+      if (claims.has(value.fingerprint)) throw new Error("p12_2_l2_packet_already_consumed");
+      claims.add(value.fingerprint);
+    },
+    async complete(value: typeof packet, receipt: { fingerprint: string }) {
+      assert.equal(claims.has(value.fingerprint), true);
+      completed.set(value.fingerprint, receipt.fingerprint);
+    },
+  };
+
+  let calls = 0;
+  const receipt = await executeP122L2OneShotDurable({
+    packet,
+    authorizationLiteral: p122L2AuthorizationLiteral(packet),
+    receiptStore: store,
+    executor: {
+      async execute() {
+        calls += 1;
+        return { status: "completed" as const, receiptFingerprint: HEX_C };
+      },
+    },
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(claims.has(packet.fingerprint), true);
+  assert.equal(completed.get(packet.fingerprint), receipt.fingerprint);
+
+  await assert.rejects(
+    executeP122L2OneShotDurable({
+      packet,
+      authorizationLiteral: p122L2AuthorizationLiteral(packet),
+      receiptStore: store,
+      executor: {
+        async execute() {
+          calls += 1;
+          return { status: "completed" as const, receiptFingerprint: HEX_C };
+        },
+      },
+    }),
+    /p12_2_l2_packet_already_consumed/,
+  );
+  assert.equal(calls, 1);
+});
+
+test("durable one-shot keeps a failed executor claim consumed and performs no completion", async () => {
+  const packet = buildP122L2Packet({
+    phase: "full_initial",
+    runId: "p12-2-live-durable-failure-001",
+    observedAt: "2026-10-02T18:31:00.000Z",
+    config: executableConfig(),
+  });
+  let claimed = false;
+  let completed = false;
+  const store = {
+    async claim() {
+      if (claimed) throw new Error("p12_2_l2_packet_already_consumed");
+      claimed = true;
+    },
+    async complete() {
+      completed = true;
+    },
+  };
+
+  await assert.rejects(
+    executeP122L2OneShotDurable({
+      packet,
+      authorizationLiteral: p122L2AuthorizationLiteral(packet),
+      receiptStore: store,
+      executor: {
+        async execute() {
+          throw new Error("synthetic_executor_failure");
+        },
+      },
+    }),
+    /synthetic_executor_failure/,
+  );
+
+  assert.equal(claimed, true);
+  assert.equal(completed, false);
+
+  await assert.rejects(
+    executeP122L2OneShotDurable({
+      packet,
+      authorizationLiteral: p122L2AuthorizationLiteral(packet),
+      receiptStore: store,
+      executor: {
+        async execute() {
+          return { status: "completed" as const, receiptFingerprint: HEX_C };
+        },
+      },
+    }),
+    /p12_2_l2_packet_already_consumed/,
+  );
 });

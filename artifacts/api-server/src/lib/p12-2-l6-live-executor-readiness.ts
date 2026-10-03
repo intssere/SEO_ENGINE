@@ -81,11 +81,11 @@ export function currentP122L6LiveExecutorAudit(): P122L6Readiness {
   return inspectP122L6LiveExecutorReadiness({
     l2OperatorArtifactPresent: true,
     manualFullInitialBindingPresent: true,
-    fullInterruptCheckpointStopBindingPresent: false,
+    fullInterruptCheckpointStopBindingPresent: true,
     fullResumePersistenceBindingPresent: true,
     fullReconciliationBindingPresent: true,
     incrementalMaterialBindingPresent: false,
-    durablePacketConsumptionReceiptPresent: false,
+    durablePacketConsumptionReceiptPresent: true,
     liveExecutableEntrypointPresent: false,
     productionImageContainsLiveEntrypoint: false,
   });

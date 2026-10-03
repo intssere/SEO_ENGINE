@@ -13,9 +13,17 @@ test("current post-L5 state remains fail-closed for first live crawl", () => {
   assert.equal(readiness.readyForFirstLiveCrawl, false);
   assert.equal(readiness.capabilities.l2OperatorArtifactPresent, true);
   assert.equal(readiness.capabilities.manualFullInitialBindingPresent, true);
+  assert.equal(readiness.capabilities.fullInterruptCheckpointStopBindingPresent, true);
   assert.equal(readiness.capabilities.fullResumePersistenceBindingPresent, true);
   assert.equal(readiness.capabilities.fullReconciliationBindingPresent, true);
-  assert.deepEqual(readiness.blockers, [...P12_2_L6_BLOCKERS]);
+  assert.equal(readiness.capabilities.durablePacketConsumptionReceiptPresent, true);
+  assert.deepEqual(readiness.blockers, [
+    "incremental_material_binding_missing",
+    "live_executable_entrypoint_missing",
+    "production_image_live_entrypoint_proof_missing",
+  ]);
+  assert.ok(P12_2_L6_BLOCKERS.includes("full_interrupt_checkpoint_stop_binding_missing"));
+  assert.ok(P12_2_L6_BLOCKERS.includes("durable_packet_consumption_receipt_missing"));
   assert.equal(readiness.executionPerformed, false);
   assert.equal(readiness.schedulerEnabled, false);
   assert.equal(readiness.autonomousWorkerEnabled, false);
@@ -25,7 +33,7 @@ test("current post-L5 state remains fail-closed for first live crawl", () => {
 
   assert.throws(
     () => assertP122L6ReadyForFirstLiveCrawl(readiness),
-    /p12_2_l6_live_executor_not_ready:full_interrupt_checkpoint_stop_binding_missing,incremental_material_binding_missing,durable_packet_consumption_receipt_missing,live_executable_entrypoint_missing,production_image_live_entrypoint_proof_missing/,
+    /p12_2_l6_live_executor_not_ready:incremental_material_binding_missing,live_executable_entrypoint_missing,production_image_live_entrypoint_proof_missing/,
   );
 });
 

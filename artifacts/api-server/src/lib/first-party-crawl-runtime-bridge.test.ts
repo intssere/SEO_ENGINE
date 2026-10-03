@@ -7,6 +7,7 @@ import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
   firstPartyCrawlBridgeReadiness,
   runFullSiteCrawlBridge,
+  runFullSiteCrawlBridgeUntilCheckpoint,
   runIncrementalCrawlBridge,
   type CrawlCheckpointPersistenceRecord,
   type FirstPartyCrawlBridgeOptions,
@@ -438,4 +439,72 @@ test("source contract contains no direct network/database/timer/scheduler implem
   assert.match(source, /autonomousWorkerEnabled:\s*false/);
   assert.match(source, /providerWrites:\s*false/);
   assert.match(source, /publicSiteWrites:\s*false/);
+});
+
+
+test("intentional interruption stops only after the exact checkpoint revision is durably persisted", async () => {
+  const documents = [{
+    url: `${DIAMOND_SHELF_CANONICAL_ORIGIN}/sitemap.xml`,
+    xml: urlset([
+      { path: "/a" },
+      { path: "/b" },
+      { path: "/c" },
+    ]),
+  }];
+  const state = harness({ documents });
+
+  const receipt = await runFullSiteCrawlBridgeUntilCheckpoint(
+    fullInput("interrupt-001"),
+    1,
+    state.options,
+  );
+
+  assert.equal(receipt.status, "intentional_interruption");
+  assert.equal(receipt.checkpointRevision, 1);
+  assert.match(receipt.checkpointFingerprint, /^[a-f0-9]{64}$/);
+  assert.match(receipt.executionPlanFingerprint, /^[a-f0-9]{64}$/);
+  assert.equal(receipt.persistence.checkpointPersisted, true);
+  assert.equal(receipt.persistence.completedRunPersisted, false);
+  assert.equal(state.persistence.completed.length, 0);
+  assert.ok(
+    state.persistence.checkpointWrites.some(
+      (record) =>
+        record.checkpoint.sequence === 1 &&
+        record.checkpoint.fingerprint === receipt.checkpointFingerprint,
+    ),
+  );
+});
+
+test("intentional interruption fails closed when the requested checkpoint revision is unreachable", async () => {
+  const state = harness({
+    documents: [{
+      url: `${DIAMOND_SHELF_CANONICAL_ORIGIN}/sitemap.xml`,
+      xml: urlset([{ path: "/a" }]),
+    }],
+  });
+
+  await assert.rejects(
+    runFullSiteCrawlBridgeUntilCheckpoint(fullInput("interrupt-unreachable"), 99, state.options),
+    /crawl_bridge_interruption_revision_unreachable/,
+  );
+  assert.equal(state.persistence.completed.length, 1);
+});
+
+test("intentional interruption refuses a revision already passed by a supplied checkpoint", async () => {
+  const state = harness({
+    documents: [{
+      url: `${DIAMOND_SHELF_CANONICAL_ORIGIN}/sitemap.xml`,
+      xml: urlset([{ path: "/a" }, { path: "/b" }, { path: "/c" }]),
+    }],
+  });
+  const completed = await runFullSiteCrawlBridge(fullInput("interrupt-source"), state.options);
+
+  await assert.rejects(
+    runFullSiteCrawlBridgeUntilCheckpoint(
+      fullInput("interrupt-target", { resumeCheckpoint: completed.checkpoint }),
+      1,
+      state.options,
+    ),
+    /crawl_bridge_interruption_revision_already_passed/,
+  );
 });

@@ -94,6 +94,11 @@ export interface P122L2InjectedExecutor {
   execute(packet: P122L2Packet): Promise<P122L2ExecutionResult>;
 }
 
+export interface P122L2DurableReceiptStore {
+  claim(packet: P122L2Packet): Promise<void>;
+  complete(packet: P122L2Packet, receipt: P122L2Receipt): Promise<void>;
+}
+
 const HEX64 = /^[0-9a-f]{64}$/;
 
 function stableSerialize(value: unknown): string {
@@ -254,4 +259,35 @@ export async function executeP122L2OneShot(input: {
     ...withoutFingerprint,
     fingerprint: sha256(withoutFingerprint),
   });
+}
+
+export async function executeP122L2OneShotDurable(input: {
+  packet: P122L2Packet;
+  authorizationLiteral: string;
+  executor: P122L2InjectedExecutor;
+  receiptStore: P122L2DurableReceiptStore;
+}): Promise<P122L2Receipt> {
+  if (input.authorizationLiteral !== p122L2AuthorizationLiteral(input.packet)) {
+    throw new Error("p12_2_l2_operator_authorization_required");
+  }
+  if (!input.executor || typeof input.executor.execute !== "function") {
+    throw new Error("p12_2_l2_executor_required");
+  }
+  if (
+    !input.receiptStore ||
+    typeof input.receiptStore.claim !== "function" ||
+    typeof input.receiptStore.complete !== "function"
+  ) {
+    throw new Error("p12_2_l2_durable_receipt_store_required");
+  }
+
+  await input.receiptStore.claim(input.packet);
+
+  const receipt = await executeP122L2OneShot({
+    packet: input.packet,
+    authorizationLiteral: input.authorizationLiteral,
+    executor: input.executor,
+  });
+  await input.receiptStore.complete(input.packet, receipt);
+  return receipt;
 }
