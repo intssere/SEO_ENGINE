@@ -86,7 +86,7 @@ export function currentP122L6LiveExecutorAudit(): P122L6Readiness {
     fullReconciliationBindingPresent: true,
     incrementalMaterialBindingPresent: true,
     durablePacketConsumptionReceiptPresent: true,
-    liveExecutableEntrypointPresent: false,
+    liveExecutableEntrypointPresent: true,
     productionImageContainsLiveEntrypoint: false,
   });
 }
