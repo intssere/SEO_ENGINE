@@ -145,6 +145,37 @@ test("missing supplied child is explicit and incomplete without network fallback
   assert.equal(result.authorization.networkFetchingEnabled, false);
 });
 
+test("same-origin child sitemap document query URLs are accepted while page URLs with queries remain rejected", () => {
+  const root = "https://diamondshelf.us/sitemap.xml";
+  const child = "https://diamondshelf.us/sitemap_products_1.xml?from=100&to=200";
+  const result = buildSitemapInventory({
+    plan: fullSitePlan(),
+    rootSitemapUrl: root,
+    documents: [
+      {
+        url: root,
+        xml: `<sitemapindex><sitemap><loc>https://diamondshelf.us/sitemap_products_1.xml?from=100&amp;to=200</loc></sitemap></sitemapindex>`,
+      },
+      {
+        url: child,
+        xml: `<urlset><url><loc>https://diamondshelf.us/products/alpha?variant=1</loc></url><url><loc>https://diamondshelf.us/products/beta</loc></url></urlset>`,
+      },
+    ],
+    policy: policy(),
+  });
+
+  assert.equal(result.completeness.complete, true);
+  assert.equal(result.documents.processed, 2);
+  assert.equal(result.documents.referenced, 1);
+  assert.deepEqual(result.documents.missingSupplied, []);
+  assert.equal(result.inventory.uniqueUrls, 1);
+  assert.deepEqual(result.inventory.entries.map((entry) => entry.canonicalUrl), [
+    "https://diamondshelf.us/products/beta",
+  ]);
+  assert.equal(result.rejectionCounts.query_not_allowed, 1);
+  assert.deepEqual(result.inventory.entries[0]?.sourceSitemaps, [child]);
+});
+
 test("URL policy rejects unsupported scheme, credentials, cross-origin, fragment, query and trap paths", () => {
   const document: SuppliedSitemapDocument = {
     url: "https://diamondshelf.us/sitemap.xml",
