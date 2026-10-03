@@ -22,7 +22,7 @@ import {
   type P122L2IncrementalMaterialSource,
 } from "./p12-2-l6-2-incremental-material-binding.js";
 import type { IncrementalRecrawlPolicy, IncrementalRecrawlTrustedCandidate } from "./incremental-recrawl-planner.js";
-import type { FullSiteCrawlCheckpoint } from "./full-site-crawl-control.js";
+import { assertFullSiteCrawlCheckpointFingerprintIntegrity, type FullSiteCrawlCheckpoint } from "./full-site-crawl-control.js";
 
 export const P12_2_L6_3_LIVE_OPERATOR_VERSION = "p12-2-l6-3-live-operator-v1" as const;
 
@@ -66,6 +66,7 @@ function assertEnvelopeBindings(envelope: P122L3OperatorEnvelope): void {
 
   if (envelope.packet.phase === "full_resume") {
     if (!resume || !envelope.packet.resume) throw new Error("p12_2_l6_3_resume_material_required");
+    assertFullSiteCrawlCheckpointFingerprintIntegrity(resume);
     if (
       resume.sequence !== envelope.packet.resume.checkpointRevision ||
       resume.fingerprint !== envelope.packet.resume.checkpointFingerprint ||
@@ -82,10 +83,23 @@ function assertEnvelopeBindings(envelope: P122L3OperatorEnvelope): void {
   }
 }
 
-class P122L3LiveExecutor implements P122L2InjectedExecutor {
+export type P122L3ExecutionAdapter = {
+  fullCrawl: typeof executeP12_2FullCrawl;
+  fullCrawlUntilCheckpoint: typeof executeP12_2FullCrawlUntilCheckpoint;
+  incrementalCrawl: typeof executeP12_2IncrementalCrawl;
+};
+
+const DEFAULT_EXECUTION_ADAPTER: P122L3ExecutionAdapter = {
+  fullCrawl: executeP12_2FullCrawl,
+  fullCrawlUntilCheckpoint: executeP12_2FullCrawlUntilCheckpoint,
+  incrementalCrawl: executeP12_2IncrementalCrawl,
+};
+
+export class P122L3LiveExecutor implements P122L2InjectedExecutor {
   constructor(
     private readonly envelope: P122L3OperatorEnvelope,
     private readonly databaseUrl: string,
+    private readonly adapter: P122L3ExecutionAdapter = DEFAULT_EXECUTION_ADAPTER,
   ) {}
 
   async execute(packet: P122L2Packet): Promise<P122L2ExecutionResult> {
@@ -96,14 +110,14 @@ class P122L3LiveExecutor implements P122L2InjectedExecutor {
     const dependencies = { databaseUrl: this.databaseUrl };
 
     if (packet.phase === "full_initial") {
-      const result = await executeP12_2FullCrawl({
+      const result = await this.adapter.fullCrawl({
         config, dependencies, runId: packet.runId, observedAt: packet.observedAt, compareToPrevious: false,
       });
       return { status: "completed", receiptFingerprint: result.fingerprint };
     }
 
     if (packet.phase === "full_reconciliation") {
-      const result = await executeP12_2FullCrawl({
+      const result = await this.adapter.fullCrawl({
         config, dependencies, runId: packet.runId, observedAt: packet.observedAt, compareToPrevious: true,
       });
       return { status: "completed", receiptFingerprint: result.fingerprint };
@@ -112,7 +126,7 @@ class P122L3LiveExecutor implements P122L2InjectedExecutor {
     if (packet.phase === "full_interrupt") {
       const revision = packet.intentionalInterruptionAfterCheckpointRevision;
       if (revision === null) throw new Error("p12_2_l6_3_interruption_revision_missing");
-      const result = await executeP12_2FullCrawlUntilCheckpoint({
+      const result = await this.adapter.fullCrawlUntilCheckpoint({
         config, dependencies, runId: packet.runId, observedAt: packet.observedAt,
         stopAfterCheckpointRevision: revision,
       });
@@ -128,7 +142,7 @@ class P122L3LiveExecutor implements P122L2InjectedExecutor {
     if (packet.phase === "full_resume") {
       const checkpoint = this.envelope.resumeCheckpoint;
       if (!checkpoint) throw new Error("p12_2_l6_3_resume_material_required");
-      const result = await executeP12_2FullCrawl({
+      const result = await this.adapter.fullCrawl({
         config, dependencies, runId: packet.runId, observedAt: packet.observedAt,
         resumeCheckpoint: checkpoint, compareToPrevious: false,
       });
@@ -144,7 +158,7 @@ class P122L3LiveExecutor implements P122L2InjectedExecutor {
       policy: materialInput.policy,
       trustedCandidates: materialInput.trustedCandidates,
     });
-    const result = await executeP12_2IncrementalCrawl({
+    const result = await this.adapter.incrementalCrawl({
       config,
       dependencies,
       run: {
