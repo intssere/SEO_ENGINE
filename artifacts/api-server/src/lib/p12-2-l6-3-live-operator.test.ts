@@ -27,7 +27,7 @@ const HEX_A = "a".repeat(64);
 const HEX_B = "b".repeat(64);
 const HEX_C = "c".repeat(64);
 
-function config(hardPageLimit = 30) {
+function config(hardPageLimit = 30, absolutePageCeiling = 25_000) {
   const base = defaultP12_2InspectionConfig();
   return {
     ...base,
@@ -39,6 +39,7 @@ function config(hardPageLimit = 30) {
     limits: {
       ...base.limits,
       hardPageLimit,
+      absolutePageCeiling,
       sitemapPolicy: { ...base.limits.sitemapPolicy, maxInventoryUrls: hardPageLimit },
       incremental: { maxPlanUrls: Math.min(10, hardPageLimit), batchSize: Math.min(2, hardPageLimit) },
     },
@@ -149,7 +150,7 @@ test("L6.3 validates and maps full_resume checkpoint material", async () => {
     phase: "full_resume",
     runId: "l6-3-resume",
     observedAt: "2026-10-03T07:42:00.000Z",
-    config: config(20),
+    config: config(20, built.executionPlan.source.absolutePageCeiling),
     resume: {
       checkpointRevision: built.checkpoint.sequence,
       checkpointFingerprint: built.checkpoint.fingerprint,
@@ -202,7 +203,7 @@ test("L6.3 resolves exact incremental material before mapping incremental execut
   const plan = buildIncrementalRecrawlPlan({ comparison, before: beforeHistory, after: afterHistory, policy });
   const packet = buildP122L2Packet({
     phase: "incremental", runId: "l6-3-incremental", observedAt: "2026-10-03T07:43:00.000Z",
-    config: config(20),
+    config: config(20, after.executionPlan.source.absolutePageCeiling),
     incremental: { incrementalPlanFingerprint: plan.fingerprint, executionPlanFingerprint: after.executionPlan.fingerprint },
   });
   const e = envelope(packet, { incrementalMaterial: { before, after, policy } });
