@@ -70,10 +70,10 @@ export const P12_2_L7_1_QUERIES: readonly P122L71Query[] = Object.freeze([
   },
 ]);
 
-const FORBIDDEN_SQL = /\\b(?:insert|update|delete|merge|truncate|alter|create|drop|grant|revoke|comment|vacuum|analyze|refresh|reindex|cluster|copy|call|do|execute|prepare|deallocate|listen|notify|lock)\\b/i;
+const FORBIDDEN_SQL = /\b(?:insert|update|delete|merge|truncate|alter|create|drop|grant|revoke|comment|vacuum|analyze|refresh|reindex|cluster|copy|call|do|execute|prepare|deallocate|listen|notify|lock)\b/i;
 
 function normalizedSql(value: string): string {
-  return value.replace(/\\s+/g, " ").trim();
+  return value.replace(/\s+/g, " ").trim();
 }
 
 export function assertP122L71QueryContract(): void {
@@ -82,7 +82,7 @@ export function assertP122L71QueryContract(): void {
   if (new Set(ids).size !== ids.length) throw new Error("p12_2_l7_1_query_id_duplicate");
   for (const query of P12_2_L7_1_QUERIES) {
     const sql = normalizedSql(query.sql);
-    if (!/^SELECT\\b/i.test(sql)) throw new Error("p12_2_l7_1_non_select_forbidden");
+    if (!/^SELECT\b/i.test(sql)) throw new Error("p12_2_l7_1_non_select_forbidden");
     if (FORBIDDEN_SQL.test(sql)) throw new Error("p12_2_l7_1_mutation_keyword_forbidden");
     if (sql.includes(";")) throw new Error("p12_2_l7_1_multi_statement_forbidden");
   }
