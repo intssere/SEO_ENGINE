@@ -53,7 +53,7 @@ test("UGP-8.2C rejects unchanged proposed state",()=>{
 
 test("UGP-8.2C rejects descriptor provider drift",()=>{
  const otherConnection=buildUniversalConnectionIdentity({site,connectionId:"shop-1",provider:"shopify",externalAccountId:"store-1",connectionMode:"native_api"});
- const otherRegistry=buildUniversalCapabilityRegistry({site,connection:otherConnection,provider:"shopify",connectorVersion:"test-v1",capabilities:[
+ const otherRegistry=buildUniversalCapabilityRegistry({site,connection:otherConnection,provider:"shopify",connectorVersion:"test-v1",credentialProfileId:"shop-test-profile",capabilities:[
   {capability:"write.internal_links",resourceKinds:["article"],verification:"required",rollback:"supported",maxOperationsPerRequest:10,maxPayloadBytes:100000},
   {capability:"preview.change",resourceKinds:["article"],verification:"not_applicable",rollback:"not_applicable",maxOperationsPerRequest:10,maxPayloadBytes:100000},
  ]});
