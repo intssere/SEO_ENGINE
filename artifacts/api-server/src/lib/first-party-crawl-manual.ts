@@ -1,6 +1,7 @@
 import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
   runFullSiteCrawlBridge,
+  runFullSiteCrawlBridgeUntilCheckpoint,
   runIncrementalCrawlBridge,
   type FullSiteCrawlBridgeRunInput,
   type IncrementalCrawlBridgeRunInput,
@@ -256,6 +257,33 @@ export async function executeP12_2FullCrawl(input: {
     resumeCheckpoint: input.resumeCheckpoint,
     compareToPrevious: input.compareToPrevious,
   }, options);
+}
+
+export async function executeP12_2FullCrawlUntilCheckpoint(input: {
+  config: P12_2ManualConfig;
+  dependencies: P12_2ManualDependencies;
+  runId: string;
+  observedAt: string;
+  stopAfterCheckpointRevision: number;
+  resumeCheckpoint?: FullSiteCrawlBridgeRunInput["resumeCheckpoint"];
+}) {
+  const { config } = input;
+  const options = compose(config, input.dependencies);
+  return runFullSiteCrawlBridgeUntilCheckpoint({
+    runId: input.runId,
+    observedAt: input.observedAt,
+    binding: {
+      siteId: DIAMOND_SHELF_SITE_ID,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      rootSitemapUrl: validateRootSitemap(config.rootSitemapUrl),
+    },
+    hardPageLimit: config.limits.hardPageLimit,
+    absolutePageCeiling: config.limits.absolutePageCeiling,
+    sitemapPolicy: config.limits.sitemapPolicy,
+    executionPolicy: config.limits.executionPolicy,
+    resumeCheckpoint: input.resumeCheckpoint,
+    compareToPrevious: false,
+  }, input.stopAfterCheckpointRevision, options);
 }
 
 export async function executeP12_2IncrementalCrawl(input: {

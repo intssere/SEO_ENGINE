@@ -18,8 +18,8 @@ test("current post-L5 state remains fail-closed for first live crawl", () => {
   assert.equal(readiness.capabilities.fullReconciliationBindingPresent, true);
   assert.equal(readiness.capabilities.incrementalMaterialBindingPresent, true);
   assert.equal(readiness.capabilities.durablePacketConsumptionReceiptPresent, true);
+  assert.equal(readiness.capabilities.liveExecutableEntrypointPresent, true);
   assert.deepEqual(readiness.blockers, [
-    "live_executable_entrypoint_missing",
     "production_image_live_entrypoint_proof_missing",
   ]);
   assert.ok(P12_2_L6_BLOCKERS.includes("full_interrupt_checkpoint_stop_binding_missing"));
@@ -33,7 +33,7 @@ test("current post-L5 state remains fail-closed for first live crawl", () => {
 
   assert.throws(
     () => assertP122L6ReadyForFirstLiveCrawl(readiness),
-    /p12_2_l6_live_executor_not_ready:live_executable_entrypoint_missing,production_image_live_entrypoint_proof_missing/,
+    /p12_2_l6_live_executor_not_ready:production_image_live_entrypoint_proof_missing/,
   );
 });
 

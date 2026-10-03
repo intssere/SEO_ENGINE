@@ -13,6 +13,8 @@ const p122Bundle = await readFile(path.join(distDir, "p12-2-crawl.mjs"), "utf8")
 const p122SourceMap = await readFile(path.join(distDir, "p12-2-crawl.mjs.map"), "utf8");
 const p122L2Bundle = await readFile(path.join(distDir, "p12-2-l2-one-shot.mjs"), "utf8");
 const p122L2SourceMap = await readFile(path.join(distDir, "p12-2-l2-one-shot.mjs.map"), "utf8");
+const p122LiveBundle = await readFile(path.join(distDir, "p12-2-live-operator.mjs"), "utf8");
+const p122LiveSourceMap = await readFile(path.join(distDir, "p12-2-live-operator.mjs.map"), "utf8");
 const provenanceRaw = await readFile(path.join(distDir, "build-provenance.json"), "utf8");
 const provenance = JSON.parse(provenanceRaw);
 function git(args) {
@@ -164,6 +166,31 @@ const requiredP122L2SourceMarkers = [
   "lib/first-party-live-adapters.ts",
 ];
 
+const requiredP122LiveBundleMarkers = [
+  "p12-2-l6-3-live-operator-v1",
+  "--execute",
+  "--envelope",
+  "P12_2_L2_AUTHORIZATION_LITERAL",
+  "p12_2_l6_3_authorization_literal_required",
+  "p12_2_l2_packet_fingerprint_mismatch",
+  "first_party_crawl_l2_invocations",
+  "0008_first_party_crawl_l2_invocations.sql",
+  "automaticWholeRunRetry",
+  "schedulerEnabled",
+  "autonomousWorkerEnabled",
+  "providerWrites",
+  "publicSiteWrites",
+];
+
+const requiredP122LiveSourceMarkers = [
+  "src/p12-2-live-operator-cli.ts",
+  "lib/p12-2-l6-3-live-operator.ts",
+  "lib/p12-2-l2-one-shot-operator-caller.ts",
+  "lib/p12-2-l2-durable-receipt-store.ts",
+  "lib/p12-2-l6-2-incremental-material-binding.ts",
+  "lib/first-party-crawl-manual.ts",
+];
+
 const requiredSourceMarkers = [
   "routes/execution.ts",
   "routes/connections.ts",
@@ -191,6 +218,8 @@ const missingP122BundleMarkers = requiredP122BundleMarkers.filter((marker) => !p
 const missingP122SourceMarkers = requiredP122SourceMarkers.filter((marker) => !p122SourceMap.includes(marker));
 const missingP122L2BundleMarkers = requiredP122L2BundleMarkers.filter((marker) => !p122L2Bundle.includes(marker));
 const missingP122L2SourceMarkers = requiredP122L2SourceMarkers.filter((marker) => !p122L2SourceMap.includes(marker));
+const missingP122LiveBundleMarkers = requiredP122LiveBundleMarkers.filter((marker) => !p122LiveBundle.includes(marker));
+const missingP122LiveSourceMarkers = requiredP122LiveSourceMarkers.filter((marker) => !p122LiveSourceMap.includes(marker));
 
 if (
   missingBundleMarkers.length > 0 ||
@@ -198,7 +227,9 @@ if (
   missingP122BundleMarkers.length > 0 ||
   missingP122SourceMarkers.length > 0 ||
   missingP122L2BundleMarkers.length > 0 ||
-  missingP122L2SourceMarkers.length > 0
+  missingP122L2SourceMarkers.length > 0 ||
+  missingP122LiveBundleMarkers.length > 0 ||
+  missingP122LiveSourceMarkers.length > 0
 ) {
   const details = [
     missingBundleMarkers.length > 0 ? `bundle markers: ${missingBundleMarkers.join(", ")}` : null,
@@ -207,9 +238,11 @@ if (
     missingP122SourceMarkers.length > 0 ? `P12.2 source-map markers: ${missingP122SourceMarkers.join(", ")}` : null,
     missingP122L2BundleMarkers.length > 0 ? `P12.2 L2 bundle markers: ${missingP122L2BundleMarkers.join(", ")}` : null,
     missingP122L2SourceMarkers.length > 0 ? `P12.2 L2 source-map markers: ${missingP122L2SourceMarkers.join(", ")}` : null,
+    missingP122LiveBundleMarkers.length > 0 ? `P12.2 live-operator bundle markers: ${missingP122LiveBundleMarkers.join(", ")}` : null,
+    missingP122LiveSourceMarkers.length > 0 ? `P12.2 live-operator source-map markers: ${missingP122LiveSourceMarkers.join(", ")}` : null,
   ].filter(Boolean).join("; ");
 
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, the default-off P12.2 manual crawl entrypoint, and the bounded P12.2 L2 one-shot operator artifact are present.");
+console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, the default-off P12.2 manual crawl entrypoint, the bounded P12.2 L2 one-shot operator artifact, and the explicit fail-closed P12.2 live one-shot operator executable are present.");
