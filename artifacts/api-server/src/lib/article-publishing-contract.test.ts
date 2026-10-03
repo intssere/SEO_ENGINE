@@ -8,7 +8,10 @@ import {
   buildUniversalConnectionIdentity,
   buildUniversalResourceLocator,
 } from "./universal-site-resource-identity.js";
-import { buildUniversalCapabilityRegistry } from "./universal-capability-registry.js";
+import {
+  buildUniversalCapabilityRegistry,
+  type UniversalCapabilityName,
+} from "./universal-capability-registry.js";
 import { buildUniversalConnectorDescriptor } from "./universal-connector-contract.js";
 import {
   assertArticlePublicationPlanIntegrity,
@@ -126,13 +129,15 @@ function qualityGateFixture(
   });
 }
 
-function connectorFixture(capabilities = [
-  "create.article",
-  "update.article",
-  "publish.article",
-  "preview.change",
-  "verify.change",
-] as const) {
+function connectorFixture(
+  capabilities: readonly UniversalCapabilityName[] = [
+    "create.article",
+    "update.article",
+    "publish.article",
+    "preview.change",
+    "verify.change",
+  ],
+) {
   const site = buildUniversalSiteIdentity({
     siteId: "site-1",
     canonicalOrigin: "https://example.com",
