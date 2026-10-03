@@ -89,6 +89,23 @@ function exactText(value: unknown, field: string, max: number): string {
   return value;
 }
 
+function exactMultilineText(
+  value: unknown,
+  field: string,
+  max: number,
+): string {
+  if (
+    typeof value !== "string"
+    || value !== value.trim()
+    || value.length < 1
+    || value.length > max
+    || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)
+  ) {
+    throw new Error("ugp_git_markdown_article_invalid_" + field);
+  }
+  return value;
+}
+
 function asObject(value: unknown, field: string): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("ugp_git_markdown_article_invalid_" + field);
@@ -201,7 +218,7 @@ function articlePayload(plan: ArticlePublicationPlan): Readonly<{
       "meta_description",
       1024,
     ),
-    body: exactText(article.body, "article_body", 2_000_000),
+    body: exactMultilineText(article.body, "article_body", 2_000_000),
   });
 }
 
