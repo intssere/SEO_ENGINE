@@ -168,6 +168,12 @@ export function buildArticlePublicationPlan(input: {
   assertArticleTarget(input.target);
   assertPublishableLineage(input.draft, input.qualityGate);
 
+  const articleBody = input.draft.articleBody;
+  const finishingAssets = input.draft.finishingAssets;
+  if (articleBody === null || finishingAssets === null) {
+    throw new Error("ugp_article_publishing_complete_draft_required");
+  }
+
   const capability = OPERATION_CAPABILITY[input.operation];
   if (!capability) {
     throw new Error("ugp_article_publishing_invalid_operation");
@@ -195,14 +201,14 @@ export function buildArticlePublicationPlan(input: {
         qualityGateId: input.qualityGate.gateId,
         qualityGateFingerprint: input.qualityGate.gateFingerprint,
         targetTopic: input.draft.targetTopic,
-        body: input.draft.articleBody,
+        body: articleBody,
         metadata: {
-          title: input.draft.finishingAssets.metadata.title,
+          title: finishingAssets.metadata.title,
           metaDescription:
-            input.draft.finishingAssets.metadata.metaDescription,
+            finishingAssets.metadata.metaDescription,
         },
-        schemaPlan: input.draft.finishingAssets.schemaPlan,
-        mediaPlan: input.draft.finishingAssets.mediaPlan,
+        schemaPlan: finishingAssets.schemaPlan,
+        mediaPlan: finishingAssets.mediaPlan,
       },
       publication: {
         operation: input.operation,
