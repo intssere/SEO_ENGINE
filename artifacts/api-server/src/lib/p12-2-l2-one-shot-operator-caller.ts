@@ -211,6 +211,54 @@ export function p122L2AuthorizationLiteral(packet: P122L2Packet): string {
   return `AUTHORIZE:P12_2_L2_ONE_SHOT:${packet.fingerprint}`;
 }
 
+export function assertP122L2PacketIntegrity(packet: P122L2Packet): void {
+  if (packet.version !== P12_2_L2_VERSION) throw new Error("p12_2_l2_packet_version_invalid");
+  if (!P12_2_L2_PHASES.includes(packet.phase)) throw new Error("p12_2_l2_packet_phase_invalid");
+  if (packet.siteId !== DIAMOND_SHELF_SITE_ID) throw new Error("p12_2_l2_packet_site_id_mismatch");
+  if (packet.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN) {
+    throw new Error("p12_2_l2_packet_origin_mismatch");
+  }
+  if (packet.confirmation !== P12_2_EXECUTION_CONFIRMATION) {
+    throw new Error("p12_2_l2_packet_confirmation_invalid");
+  }
+  if (
+    packet.maxInvocationAttempts !== 1 ||
+    packet.automaticWholeRunRetry !== false ||
+    packet.schedulerEnabled !== false ||
+    packet.autonomousWorkerEnabled !== false ||
+    packet.providerWrites !== false ||
+    packet.publicSiteWrites !== false ||
+    packet.deploymentAuthorized !== false ||
+    packet.publicationAuthorized !== false
+  ) {
+    throw new Error("p12_2_l2_packet_safety_boundary_invalid");
+  }
+
+  const config: P12_2ManualConfig = {
+    siteId: DIAMOND_SHELF_SITE_ID,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    rootSitemapUrl: DIAMOND_SHELF_CANONICAL_ORIGIN + "/sitemap.xml",
+    confirmation: P12_2_EXECUTION_CONFIRMATION,
+    networkReady: true,
+    liveExecutionAuthorized: true,
+    persistenceReady: true,
+    persistenceAuthorized: true,
+    limits: packet.limits,
+  };
+  const rebuilt = buildP122L2Packet({
+    phase: packet.phase,
+    runId: packet.runId,
+    observedAt: packet.observedAt,
+    config,
+    intentionalInterruptionAfterCheckpointRevision: packet.intentionalInterruptionAfterCheckpointRevision,
+    resume: packet.resume,
+    incremental: packet.incremental,
+  });
+  if (rebuilt.fingerprint !== packet.fingerprint) {
+    throw new Error("p12_2_l2_packet_fingerprint_mismatch");
+  }
+}
+
 function assertResult(packet: P122L2Packet, result: P122L2ExecutionResult): void {
   requireFingerprint(result.receiptFingerprint, "p12_2_l2_executor_receipt_fingerprint_invalid");
   if (packet.phase === "full_interrupt") {
