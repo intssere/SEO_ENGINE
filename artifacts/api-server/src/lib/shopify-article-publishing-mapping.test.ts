@@ -113,11 +113,12 @@ function planFixture(
       },
     },
   });
-  const capability = operation === "create"
-    ? "create.article"
-    : operation === "update"
-      ? "update.article"
-      : "publish.article";
+  const capability: ArticlePublicationPlan["capability"] =
+    operation === "create"
+      ? "create.article"
+      : operation === "update"
+        ? "update.article"
+        : "publish.article";
   const mutationIntent = buildUniversalMutationIntent({
     descriptor,
     capability,
