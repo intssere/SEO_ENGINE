@@ -784,10 +784,12 @@ export async function runFullSiteCrawlBridge(
   options: FirstPartyCrawlBridgeOptions = {},
 ): Promise<FullSiteCrawlBridgeSnapshot> {
   const result = await runFullSiteCrawlBridgeInternal(input, options);
-  if ("status" in result && result.status === "intentional_interruption") {
-    throw new Error("crawl_bridge_unexpected_interruption");
+  if ("status" in result) {
+    if (result.status === "intentional_interruption") {
+      throw new Error("crawl_bridge_unexpected_interruption");
+    }
   }
-  return result;
+  return result as FullSiteCrawlBridgeSnapshot;
 }
 
 export async function runFullSiteCrawlBridgeUntilCheckpoint(
