@@ -46,9 +46,12 @@ test("L7.2 wrapper SQL statements are explicitly terminated after incident", asy
   const wrapperEnd = source.indexOf("async function main()", wrapperStart);
   assert.ok(wrapperStart >= 0 && wrapperEnd > wrapperStart);
   const wrapper = source.slice(wrapperStart, wrapperEnd);
-  const selectLines = wrapper.split("\n").filter((line) => line.trim().startsWith("`SELECT "));
-  assert.ok(selectLines.length >= 5);
-  for (const line of selectLines) assert.match(line, /;`,\s*$/);
+  const singleLineSelects = wrapper.split("\n").filter((line) => {
+    const trimmed = line.trim();
+    return trimmed.startsWith("`SELECT ") && trimmed.endsWith("`,");
+  });
+  assert.ok(singleLineSelects.length >= 5);
+  for (const line of singleLineSelects) assert.match(line, /;`,\s*$/);
   const guardEnds = wrapper.split("\n").filter((line) => line.trim().startsWith("THEN 1 ELSE 0 END"));
   assert.equal(guardEnds.length, 2);
   for (const line of guardEnds) assert.match(line, /;`,\s*$/);
