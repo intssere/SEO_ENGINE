@@ -107,6 +107,45 @@ test("supplied sitemap index and urlsets produce deterministic canonical invento
   });
 });
 
+test("query-bearing same-origin child sitemap documents are accepted while root and page queries remain rejected", () => {
+  const child = "https://diamondshelf.us/sitemap_products_1.xml?from=100&to=200";
+  const result = buildSitemapInventory({
+    plan: fullSitePlan(),
+    rootSitemapUrl: "https://diamondshelf.us/sitemap.xml",
+    documents: [
+      {
+        url: "https://diamondshelf.us/sitemap.xml",
+        xml: `<sitemapindex><sitemap><loc>https://diamondshelf.us/sitemap_products_1.xml?from=100&amp;to=200</loc></sitemap></sitemapindex>`,
+      },
+      {
+        url: child,
+        xml: `<urlset>
+          <url><loc>https://diamondshelf.us/products/alpha</loc></url>
+          <url><loc>https://diamondshelf.us/products/beta?variant=1</loc></url>
+        </urlset>`,
+      },
+    ],
+    policy: policy(),
+  });
+
+  assert.equal(result.completeness.complete, true);
+  assert.equal(result.documents.processed, 2);
+  assert.equal(result.documents.referenced, 1);
+  assert.equal(result.inventory.uniqueUrls, 1);
+  assert.equal(result.inventory.entries[0]?.canonicalUrl, "https://diamondshelf.us/products/alpha");
+  assert.equal(result.rejectionCounts.query_not_allowed, 1);
+
+  assert.throws(
+    () => buildSitemapInventory({
+      plan: fullSitePlan(),
+      rootSitemapUrl: "https://diamondshelf.us/sitemap.xml?unexpected=1",
+      documents: [],
+      policy: policy(),
+    }),
+    /sitemap_document_url_query_not_allowed/,
+  );
+});
+
 test("equivalent supplied-document ordering produces identical fingerprint and inventory", () => {
   const forward = buildSitemapInventory({
     plan: fullSitePlan(),
