@@ -15,8 +15,8 @@ export function AuthorityOpportunitiesPage(){
 export default function AuthorityPage(){
   return <CustomerDomainHub eyebrow="AUTHORITY" title="Authority" description="Links." cards={[
     {title:"Backlink gaps",description:"",href:"/authority/backlinks",status:"preview"},
-    {title:"Competitor authority",description:"",href:"/authority/competitors",status:"preview"},
-    {title:"Outreach",description:"",status:"coming_soon"},
-    {title:"Authority opportunities",description:"Evidence-backed.",href:"/authority/opportunities",status:"available"},
+    {title:"Competitors",description:"",href:"/authority/competitors",status:"preview"},
+    {title:"Outreach",description:".",status:"coming_soon"},
+    {title:"Opportunities",description:"Evidence.",href:"/authority/opportunities",status:"available"},
   ]}/>;
 }
