@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
+  ROBOTS_POLICY_REJECTION_REASONS,
   type BoundedPilotFailureAttribution,
 } from "./first-party-crawl-runtime-bridge.js";
 import {
@@ -286,6 +287,34 @@ function assertResult(packet: P122L2Packet, result: P122L2ExecutionResult): void
     }
     if (!Number.isInteger(attribution.policyRejections) || attribution.policyRejections < 0) {
       throw new Error("p12_2_l2_bounded_diagnostics_policy_rejections_invalid");
+    }
+    if (
+      !Number.isInteger(attribution.robotsPolicyRejections.total) ||
+      attribution.robotsPolicyRejections.total < 0 ||
+      !Number.isInteger(attribution.otherPolicyRejections) ||
+      attribution.otherPolicyRejections < 0
+    ) {
+      throw new Error("p12_2_l2_bounded_diagnostics_policy_breakdown_invalid");
+    }
+    const seenRobotReasons = new Set<string>();
+    let robotsPolicyTotal = 0;
+    for (const item of attribution.robotsPolicyRejections.reasons) {
+      if (
+        !ROBOTS_POLICY_REJECTION_REASONS.includes(item.reason) ||
+        !Number.isInteger(item.count) ||
+        item.count < 1 ||
+        seenRobotReasons.has(item.reason)
+      ) {
+        throw new Error("p12_2_l2_bounded_diagnostics_robots_reason_invalid");
+      }
+      seenRobotReasons.add(item.reason);
+      robotsPolicyTotal += item.count;
+    }
+    if (
+      robotsPolicyTotal !== attribution.robotsPolicyRejections.total ||
+      robotsPolicyTotal + attribution.otherPolicyRejections !== attribution.policyRejections
+    ) {
+      throw new Error("p12_2_l2_bounded_diagnostics_policy_breakdown_mismatch");
     }
     for (const item of [...attribution.permanentHttp, ...attribution.attemptsExhausted.http]) {
       if (
