@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import assert from "node:assert/strict";
+import test from "node:test";
 import {
   P12_2_L10_PACKET_FINGERPRINT,
   P12_2_L10_PHASE,
@@ -10,36 +11,35 @@ import {
   p122L10QuerySetFingerprint,
 } from "./p12-2-l10-packet-005-durable-receipt-certification.js";
 
-describe("P12.2-L10 packet 005 durable receipt certification", () => {
-  it("is bound to packet 005 and bounded_pilot", () => {
-    expect(P12_2_L10_PACKET_FINGERPRINT).toBe("669a9120f744e3470d1f106d7a094b414015d25b5da8f37ac2864765f4254f85");
-    expect(P12_2_L10_RUN_ID).toBe("p12-2-diamond-shelf-bounded-pilot-005");
-    expect(P12_2_L10_PHASE).toBe("bounded_pilot");
-  });
+test("P12.2-L10 is bound to packet 005 and bounded_pilot", () => {
+  assert.equal(P12_2_L10_PACKET_FINGERPRINT, "669a9120f744e3470d1f106d7a094b414015d25b5da8f37ac2864765f4254f85");
+  assert.equal(P12_2_L10_RUN_ID, "p12-2-diamond-shelf-bounded-pilot-005");
+  assert.equal(P12_2_L10_PHASE, "bounded_pilot");
+});
 
-  it("contains only single SELECT statements", () => {
-    expect(() => assertP122L10QueryContract()).not.toThrow();
-    expect(P12_2_L10_QUERIES).toHaveLength(7);
-    for (const query of P12_2_L10_QUERIES) {
-      expect(query.sql.trim().toUpperCase().startsWith("SELECT")).toBe(true);
-      expect(query.sql.includes(";")).toBe(false);
-    }
-  });
+test("P12.2-L10 contains only single SELECT statements", () => {
+  assert.doesNotThrow(() => assertP122L10QueryContract());
+  assert.equal(P12_2_L10_QUERIES.length, 7);
+  for (const query of P12_2_L10_QUERIES) {
+    assert.match(query.sql.trim(), /^SELECT\b/i);
+    assert.equal(query.sql.includes(";"), false);
+  }
+});
 
-  it("binds durable invocation, checkpoint, and no completed whole-site run", () => {
-    const byId = new Map(P12_2_L10_QUERIES.map((query) => [query.id, query.sql]));
-    expect(byId.get("invocation_receipt")).toContain("first_party_crawl_l2_invocations");
-    expect(byId.get("checkpoint_state")).toContain("first_party_crawl_checkpoints");
-    expect(byId.get("completed_run_state")).toContain("first_party_crawl_completed_runs");
-    expect(byId.get("bounded_persistence_guard")).toContain("NOT EXISTS");
-    expect(byId.get("durable_completion_guard")).toContain("status='completed'");
-  });
+test("P12.2-L10 binds durable invocation, checkpoint, and no completed whole-site run", () => {
+  const byId = new Map(P12_2_L10_QUERIES.map((query) => [query.id, query.sql]));
+  assert.match(byId.get("invocation_receipt") ?? "", /first_party_crawl_l2_invocations/);
+  assert.match(byId.get("checkpoint_state") ?? "", /first_party_crawl_checkpoints/);
+  assert.match(byId.get("completed_run_state") ?? "", /first_party_crawl_completed_runs/);
+  assert.match(byId.get("bounded_persistence_guard") ?? "", /NOT EXISTS/);
+  assert.match(byId.get("durable_completion_guard") ?? "", /status='completed'/);
+});
 
-  it("produces deterministic fingerprints and exact authorization prefix", () => {
-    expect(p122L10QuerySetFingerprint()).toMatch(/^[0-9a-f]{64}$/);
-    expect(p122L10AuthorizationFingerprint()).toMatch(/^[0-9a-f]{64}$/);
-    expect(p122L10AuthorizationLiteral()).toBe(
-      "AUTHORIZE:P12_2_L10_PACKET_005_READ_ONLY:" + p122L10AuthorizationFingerprint(),
-    );
-  });
+test("P12.2-L10 fingerprints and authorization are deterministic", () => {
+  assert.match(p122L10QuerySetFingerprint(), /^[0-9a-f]{64}$/);
+  assert.match(p122L10AuthorizationFingerprint(), /^[0-9a-f]{64}$/);
+  assert.equal(
+    p122L10AuthorizationLiteral(),
+    "AUTHORIZE:P12_2_L10_PACKET_005_READ_ONLY:" + p122L10AuthorizationFingerprint(),
+  );
 });
