@@ -68,6 +68,6 @@ test("P12.2-L10.6 fingerprints and authorization are deterministic", () => {
   assert.match(p122L106AuthorizationFingerprint(), /^[0-9a-f]{64}$/);
   assert.equal(
     p122L106AuthorizationLiteral(),
-    "AUTHORIZE:P12_2_L10_6_PACKET_007_READ_ONLY:" + p122L106AuthorizationFingerprint(),
+    "AUTHORIZE:P12_2_L10_6_PACKET_008_READ_ONLY:" + p122L106AuthorizationFingerprint(),
   );
 });
