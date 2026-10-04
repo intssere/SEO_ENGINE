@@ -3,6 +3,7 @@ import {
   P12_2_CRAWL_BRIDGE_VERSION,
   P12_2_ROBOTS_USER_AGENT,
   RobotsPolicyEvaluationError,
+  type OtherPolicyRejectionReason,
   type RobotsPolicyRejectionReason,
   type FirstPartyCrawlClock,
   type FirstPartyPageTransport,
@@ -160,15 +161,39 @@ async function fetchWithTimeout(
   }
 }
 
+function classifyOtherPolicyError(error: unknown): OtherPolicyRejectionReason | null {
+  if (!(error instanceof Error)) return null;
+  const code = error.message;
+  if (code === "p12_2_live_page_body_oversize") return "response_oversize";
+  if (
+    code === "p12_2_live_redirect_location_missing" ||
+    code === "p12_2_live_redirect_location_invalid"
+  ) return "redirect_validation";
+  if (
+    code === "p12_2_live_version_mismatch" ||
+    code === "p12_2_live_site_id_mismatch" ||
+    code === "p12_2_live_page_scope_invalid" ||
+    code.startsWith("p12_2_live_url_") ||
+    code === "p12_2_live_query_rejected" ||
+    code === "p12_2_live_fragment_rejected"
+  ) return "scope_validation";
+  if (SECURITY_ERRORS.has(code)) return "secure_transport_rejection";
+  if (code === "p12_2_live_timeout_invalid") return "request_validation";
+  if (code.startsWith("p12_2_live_")) return "unclassified";
+  return null;
+}
+
 function transportFailure(error: unknown): PageTransportResult {
   if (error instanceof Error && error.name === "AbortError") {
     return { kind: "failure", signal: { kind: "network_timeout" } };
   }
-  if (error instanceof Error && SECURITY_ERRORS.has(error.message)) {
-    return { kind: "failure", signal: { kind: "policy_rejection" } };
-  }
-  if (error instanceof Error && error.message.startsWith("p12_2_live_")) {
-    return { kind: "failure", signal: { kind: "policy_rejection" } };
+  const policyRejectionReason = classifyOtherPolicyError(error);
+  if (policyRejectionReason) {
+    return {
+      kind: "failure",
+      signal: { kind: "policy_rejection" },
+      policyRejectionReason,
+    };
   }
   return { kind: "failure", signal: { kind: "transport_unavailable" } };
 }
