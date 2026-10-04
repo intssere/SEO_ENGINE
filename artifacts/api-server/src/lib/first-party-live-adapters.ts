@@ -2,6 +2,8 @@ import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
   P12_2_CRAWL_BRIDGE_VERSION,
   P12_2_ROBOTS_USER_AGENT,
+  RobotsPolicyEvaluationError,
+  type RobotsPolicyRejectionReason,
   type FirstPartyCrawlClock,
   type FirstPartyPageTransport,
   type FirstPartyRobotsEvaluator,
@@ -169,6 +171,29 @@ function transportFailure(error: unknown): PageTransportResult {
     return { kind: "failure", signal: { kind: "policy_rejection" } };
   }
   return { kind: "failure", signal: { kind: "transport_unavailable" } };
+}
+
+function classifyRobotsPolicyError(error: unknown): { reason: RobotsPolicyRejectionReason; code: string } {
+  const code = error instanceof Error ? error.message : "p12_2_live_robots_unknown_failure";
+  if (code === "p12_2_live_robots_unavailable") return { reason: "http_unavailable", code };
+  if (code === "p12_2_live_robots_redirect_limit_exceeded") return { reason: "redirect_limit", code };
+  if (code === "p12_2_live_robots_oversize") return { reason: "response_oversize", code };
+  if (
+    code === "p12_2_robots_malformed_policy_line" ||
+    code === "p12_2_robots_user_agent_invalid" ||
+    code === "p12_2_robots_rule_without_agent" ||
+    code === "p12_2_robots_rule_invalid"
+  ) return { reason: "malformed_policy", code };
+  if (
+    code === "p12_2_live_version_mismatch" ||
+    code === "p12_2_live_site_id_mismatch" ||
+    code === "p12_2_live_robots_scope_invalid" ||
+    code.startsWith("p12_2_live_url_") ||
+    code === "p12_2_live_query_rejected" ||
+    code === "p12_2_live_fragment_rejected"
+  ) return { reason: "scope_validation", code };
+  if (SECURITY_ERRORS.has(code)) return { reason: "secure_transport_rejection", code };
+  return { reason: "transport_error", code: "p12_2_live_robots_transport_error" };
 }
 
 function robotsRuleExpression(pattern: string): { expression: RegExp; specificity: number } {
@@ -391,19 +416,25 @@ export function createFirstPartyRobotsEvaluator(
 
   return {
     async evaluate(request: RobotsEvaluationRequest): Promise<{ allowed: boolean }> {
-      if (request.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("p12_2_live_version_mismatch");
-      exactSiteId(request.siteId);
-      if (
-        request.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
-        request.userAgent !== P12_2_ROBOTS_USER_AGENT ||
-        request.method !== "GET"
-      ) throw new Error("p12_2_live_robots_scope_invalid");
-      const url = exactFirstPartyUrl(request.canonicalUrl, {
-        maxUrlLength: 2_048,
-        queryAllowed: false,
-        fragmentAllowed: false,
-      });
-      return { allowed: robotsAllows(await loadPolicy(), url) };
+      try {
+        if (request.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("p12_2_live_version_mismatch");
+        exactSiteId(request.siteId);
+        if (
+          request.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+          request.userAgent !== P12_2_ROBOTS_USER_AGENT ||
+          request.method !== "GET"
+        ) throw new Error("p12_2_live_robots_scope_invalid");
+        const url = exactFirstPartyUrl(request.canonicalUrl, {
+          maxUrlLength: 2_048,
+          queryAllowed: false,
+          fragmentAllowed: false,
+        });
+        return { allowed: robotsAllows(await loadPolicy(), url) };
+      } catch (error) {
+        if (error instanceof RobotsPolicyEvaluationError) throw error;
+        const classified = classifyRobotsPolicyError(error);
+        throw new RobotsPolicyEvaluationError(classified.reason, classified.code);
+      }
     },
   };
 }
