@@ -329,7 +329,11 @@ test("bounded pilot separates robots policy rejection reasons from other policy 
     xml: urlset([{ path: "/robots-policy" }, { path: "/page-policy" }, { path: "/z-extra" }]),
   }];
   const pageResults = new Map<string, PageTransportResult[]>([
-    [pageUrl, [{ kind: "failure", signal: { kind: "policy_rejection" } }]],
+    [pageUrl, [{
+      kind: "failure",
+      signal: { kind: "policy_rejection" },
+      policyRejectionReason: "response_oversize",
+    }]],
   ]);
   const state = harness({ documents, pageResults });
   state.options.robotsEvaluator = {
@@ -353,6 +357,9 @@ test("bounded pilot separates robots policy rejection reasons from other policy 
     reasons: [{ reason: "http_unavailable", count: 1 }],
   });
   assert.equal(pilot.failureAttribution.otherPolicyRejections, 1);
+  assert.deepEqual(pilot.failureAttribution.otherPolicyRejectionReasons, [
+    { reason: "response_oversize", count: 1 },
+  ]);
   assert.equal(
     pilot.failureAttribution.robotsPolicyRejections.total +
       pilot.failureAttribution.otherPolicyRejections,

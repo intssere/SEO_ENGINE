@@ -88,6 +88,16 @@ export const ROBOTS_POLICY_REJECTION_REASONS = Object.freeze([
 ] as const);
 export type RobotsPolicyRejectionReason = (typeof ROBOTS_POLICY_REJECTION_REASONS)[number];
 
+export const OTHER_POLICY_REJECTION_REASONS = Object.freeze([
+  "response_oversize",
+  "redirect_validation",
+  "scope_validation",
+  "secure_transport_rejection",
+  "request_validation",
+  "unclassified",
+] as const);
+export type OtherPolicyRejectionReason = (typeof OTHER_POLICY_REJECTION_REASONS)[number];
+
 export class RobotsPolicyEvaluationError extends Error {
   constructor(
     readonly reason: RobotsPolicyRejectionReason,
@@ -117,7 +127,11 @@ export type PageTransportRequest = {
 export type PageTransportResult =
   | { kind: "success"; noindex?: boolean }
   | { kind: "redirect"; redirectTarget: string; redirectCount: number }
-  | { kind: "failure"; signal: CrawlRetrySignal };
+  | {
+      kind: "failure";
+      signal: CrawlRetrySignal;
+      policyRejectionReason?: OtherPolicyRejectionReason;
+    };
 
 export interface FirstPartyPageTransport {
   get(request: PageTransportRequest): Promise<PageTransportResult>;
@@ -168,6 +182,7 @@ export type BoundedPilotFailureAttribution = {
     reasons: Array<{ reason: RobotsPolicyRejectionReason; count: number }>;
   };
   otherPolicyRejections: number;
+  otherPolicyRejectionReasons: Array<{ reason: OtherPolicyRejectionReason; count: number }>;
   permanentHttp: Array<{ httpStatus: number; count: number }>;
   attemptsExhausted: {
     networkTimeout: number;
@@ -538,7 +553,7 @@ function normalizeTransportResult(
   canonicalUrl: string,
   plan: FullSiteCrawlExecutionPlan,
   result: PageTransportResult,
-): SuppliedCrawlUrlOutcome {
+): AttributedCrawlUrlOutcome {
   if (result.kind === "success") {
     return result.noindex === true
       ? { canonicalUrl, kind: "noindex" }
@@ -560,11 +575,19 @@ function normalizeTransportResult(
       redirectCount: result.redirectCount,
     };
   }
-  return { canonicalUrl, kind: "failure", signal: result.signal };
+  return {
+    canonicalUrl,
+    kind: "failure",
+    signal: result.signal,
+    ...(result.policyRejectionReason
+      ? { otherPolicyRejectionReason: result.policyRejectionReason }
+      : {}),
+  };
 }
 
 type AttributedCrawlUrlOutcome = SuppliedCrawlUrlOutcome & {
   robotsPolicyRejectionReason?: RobotsPolicyRejectionReason;
+  otherPolicyRejectionReason?: OtherPolicyRejectionReason;
 };
 
 async function executeCanonicalUrl(input: {
@@ -666,6 +689,7 @@ type MutableBoundedPilotFailureAttribution = {
   policyRejections: number;
   robotsPolicyRejections: Map<RobotsPolicyRejectionReason, number>;
   otherPolicyRejections: number;
+  otherPolicyRejectionReasons: Map<OtherPolicyRejectionReason, number>;
   permanentHttp: Map<number, number>;
   attemptsExhausted: {
     networkTimeout: number;
@@ -680,6 +704,7 @@ function createBoundedPilotFailureAttribution(): MutableBoundedPilotFailureAttri
     policyRejections: 0,
     robotsPolicyRejections: new Map(),
     otherPolicyRejections: 0,
+    otherPolicyRejectionReasons: new Map(),
     permanentHttp: new Map(),
     attemptsExhausted: {
       networkTimeout: 0,
@@ -714,6 +739,11 @@ function observeBoundedPilotTerminalFailures(input: {
         );
       } else {
         input.attribution.otherPolicyRejections += 1;
+        const reason = outcome.otherPolicyRejectionReason ?? "unclassified";
+        input.attribution.otherPolicyRejectionReasons.set(
+          reason,
+          (input.attribution.otherPolicyRejectionReasons.get(reason) ?? 0) + 1,
+        );
       }
       continue;
     }
@@ -749,7 +779,14 @@ function finalizeBoundedPilotFailureAttribution(
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([reason, count]) => ({ reason, count }));
   const robotsPolicyTotal = robotsPolicyReasons.reduce((sum, item) => sum + item.count, 0);
-  if (robotsPolicyTotal + input.otherPolicyRejections !== input.policyRejections) {
+  const otherPolicyReasons = [...input.otherPolicyRejectionReasons.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([reason, count]) => ({ reason, count }));
+  const otherPolicyTotal = otherPolicyReasons.reduce((sum, item) => sum + item.count, 0);
+  if (
+    otherPolicyTotal !== input.otherPolicyRejections ||
+    robotsPolicyTotal + input.otherPolicyRejections !== input.policyRejections
+  ) {
     throw new Error("crawl_bridge_failure_attribution_policy_counter_mismatch");
   }
   const permanentHttp = [...input.permanentHttp.entries()]
@@ -776,6 +813,7 @@ function finalizeBoundedPilotFailureAttribution(
       reasons: robotsPolicyReasons,
     },
     otherPolicyRejections: input.otherPolicyRejections,
+    otherPolicyRejectionReasons: otherPolicyReasons,
     permanentHttp,
     attemptsExhausted: {
       networkTimeout: input.attemptsExhausted.networkTimeout,
