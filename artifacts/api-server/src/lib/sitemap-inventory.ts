@@ -302,7 +302,12 @@ function pathSegmentCount(pathname: string): number {
   return pathname.split("/").filter(Boolean).length;
 }
 
-function normalizeCandidateUrl(value: string, canonicalOrigin: string, maxPathSegments: number): UrlPolicyResult {
+function normalizeCandidateUrl(
+  value: string,
+  canonicalOrigin: string,
+  maxPathSegments: number,
+  queryAllowed = false,
+): UrlPolicyResult {
   let parsed: URL;
   try {
     parsed = new URL(value.trim());
@@ -313,7 +318,7 @@ function normalizeCandidateUrl(value: string, canonicalOrigin: string, maxPathSe
   if (parsed.username || parsed.password) return { ok: false, reason: "credentials_not_allowed" };
   if (parsed.origin !== canonicalOrigin) return { ok: false, reason: "cross_origin" };
   if (parsed.hash) return { ok: false, reason: "fragment_not_allowed" };
-  if (parsed.search) return { ok: false, reason: "query_not_allowed" };
+  if (!queryAllowed && parsed.search) return { ok: false, reason: "query_not_allowed" };
   if (EXCLUDED_PATH.test(parsed.pathname)) return { ok: false, reason: "excluded_path" };
   if (pathSegmentCount(parsed.pathname) > maxPathSegments) return { ok: false, reason: "path_depth_exceeded" };
 
@@ -322,8 +327,13 @@ function normalizeCandidateUrl(value: string, canonicalOrigin: string, maxPathSe
   return { ok: true, url: normalized === canonicalOrigin.replace(/\/$/, "") ? canonicalOrigin : normalized };
 }
 
-function normalizeDocumentUrl(value: string, canonicalOrigin: string, maxPathSegments: number): string {
-  const result = normalizeCandidateUrl(value, canonicalOrigin, maxPathSegments);
+function normalizeDocumentUrl(
+  value: string,
+  canonicalOrigin: string,
+  maxPathSegments: number,
+  queryAllowed = false,
+): string {
+  const result = normalizeCandidateUrl(value, canonicalOrigin, maxPathSegments, queryAllowed);
   if (!result.ok) throw new Error(`sitemap_document_url_${result.reason}`);
   return result.url;
 }
@@ -364,7 +374,7 @@ export function buildSitemapInventory(input: SitemapInventoryInput): SitemapInve
   if (input.documents.length > policy.maxDocuments) throw new Error("sitemap_supplied_document_count_exceeds_limit");
   const supplied = new Map<string, string>();
   for (const document of input.documents) {
-    const url = normalizeDocumentUrl(document.url, canonicalOrigin, policy.maxPathSegments);
+    const url = normalizeDocumentUrl(document.url, canonicalOrigin, policy.maxPathSegments, true);
     if (supplied.has(url)) throw new Error("sitemap_supplied_document_duplicate");
     if (Buffer.byteLength(document.xml, "utf8") > policy.maxDocumentBytes) throw new Error("sitemap_document_bytes_exceeds_limit");
     supplied.set(url, document.xml);
@@ -409,7 +419,7 @@ export function buildSitemapInventory(input: SitemapInventoryInput): SitemapInve
 
     if (parsed.root === "sitemapindex") {
       for (const rawChild of [...parsed.sitemapLocations].sort()) {
-        const normalized = normalizeCandidateUrl(rawChild, canonicalOrigin, policy.maxPathSegments);
+        const normalized = normalizeCandidateUrl(rawChild, canonicalOrigin, policy.maxPathSegments, true);
         if (!normalized.ok) {
           reject("sitemap_reference", current.url, normalized.reason);
           completenessReasons.add("rejected_sitemap_reference");
