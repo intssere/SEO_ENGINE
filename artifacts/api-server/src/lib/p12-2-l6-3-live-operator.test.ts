@@ -90,7 +90,20 @@ test("L6.3 maps bounded_pilot only to the non-certifying pilot executor", async 
   const a = adapter({
     async boundedPilotCrawl(input) {
       calls.push(input.runId);
-      return { fingerprint: HEX_A } as never;
+      return {
+        fingerprint: HEX_A,
+        failureAttribution: {
+          terminalFailures: 2,
+          policyRejections: 1,
+          permanentHttp: [{ httpStatus: 404, count: 1 }],
+          attemptsExhausted: {
+            networkTimeout: 0,
+            connectionReset: 0,
+            transportUnavailable: 0,
+            http: [],
+          },
+        },
+      } as never;
     },
     async fullCrawl() {
       throw new Error("full_crawl_must_not_run_for_pilot");
@@ -105,6 +118,17 @@ test("L6.3 maps bounded_pilot only to the non-certifying pilot executor", async 
   const result = await new P122L3LiveExecutor(envelope(packet), "postgres://unused", a).execute(packet);
   assert.equal(result.status, "completed");
   assert.equal(result.receiptFingerprint, HEX_A);
+  assert.deepEqual(result.boundedPilotFailureAttribution, {
+    terminalFailures: 2,
+    policyRejections: 1,
+    permanentHttp: [{ httpStatus: 404, count: 1 }],
+    attemptsExhausted: {
+      networkTimeout: 0,
+      connectionReset: 0,
+      transportUnavailable: 0,
+      http: [],
+    },
+  });
   assert.deepEqual(calls, ["l6-3-bounded-pilot"]);
 });
 

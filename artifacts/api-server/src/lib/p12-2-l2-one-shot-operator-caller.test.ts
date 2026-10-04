@@ -77,6 +77,68 @@ test("bounded_pilot is a first-class packet phase with no resume or incremental 
   assert.match(packet.fingerprint, /^[a-f0-9]{64}$/);
 });
 
+test("bounded_pilot durable result accepts only internally consistent aggregate failure attribution", async () => {
+  const packet = buildP122L2Packet({
+    phase: "bounded_pilot",
+    runId: "p12-2-bounded-pilot-diagnostics",
+    observedAt: "2026-10-04T12:45:00.000Z",
+    config: executableConfig(),
+  });
+  const receipt = await executeP122L2OneShot({
+    packet,
+    authorizationLiteral: p122L2AuthorizationLiteral(packet),
+    executor: {
+      async execute() {
+        return {
+          status: "completed" as const,
+          receiptFingerprint: HEX_C,
+          boundedPilotFailureAttribution: {
+            terminalFailures: 3,
+            policyRejections: 1,
+            permanentHttp: [{ httpStatus: 404, count: 1 }],
+            attemptsExhausted: {
+              networkTimeout: 1,
+              connectionReset: 0,
+              transportUnavailable: 0,
+              http: [],
+            },
+          },
+        };
+      },
+    },
+  });
+  assert.equal(receipt.result.status, "completed");
+  if (receipt.result.status !== "completed") throw new Error("unexpected_result");
+  assert.equal(receipt.result.boundedPilotFailureAttribution?.terminalFailures, 3);
+
+  await assert.rejects(
+    executeP122L2OneShot({
+      packet,
+      authorizationLiteral: p122L2AuthorizationLiteral(packet),
+      executor: {
+        async execute() {
+          return {
+            status: "completed" as const,
+            receiptFingerprint: HEX_C,
+            boundedPilotFailureAttribution: {
+              terminalFailures: 4,
+              policyRejections: 1,
+              permanentHttp: [{ httpStatus: 404, count: 1 }],
+              attemptsExhausted: {
+                networkTimeout: 1,
+                connectionReset: 0,
+                transportUnavailable: 0,
+                http: [],
+              },
+            },
+          };
+        },
+      },
+    }),
+    /bounded_diagnostics_counter_mismatch/,
+  );
+});
+
 test("full_interrupt requires exact intended checkpoint revision", () => {
   assert.throws(() => buildP122L2Packet({
     phase: "full_interrupt",

@@ -270,6 +270,56 @@ test("bounded pilot executes only the explicitly truncated inventory and never c
   assert.match(pilot.fingerprint, /^[a-f0-9]{64}$/);
 });
 
+test("bounded pilot attributes terminal failures without persisting page content", async () => {
+  const documents = [{
+    url: `${DIAMOND_SHELF_CANONICAL_ORIGIN}/sitemap.xml`,
+    xml: urlset([
+      { path: "/policy" },
+      { path: "/404" },
+      { path: "/timeout" },
+      { path: "/503" },
+    ]),
+  }];
+  const policyUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/policy`;
+  const notFoundUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/404`;
+  const timeoutUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/timeout`;
+  const unavailableUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/503`;
+  const pageResults = new Map<string, PageTransportResult[]>([
+    [policyUrl, [{ kind: "failure", signal: { kind: "policy_rejection" } }]],
+    [notFoundUrl, [{ kind: "failure", signal: { kind: "http_status", httpStatus: 404 } }]],
+    [timeoutUrl, [
+      { kind: "failure", signal: { kind: "network_timeout" } },
+      { kind: "failure", signal: { kind: "network_timeout" } },
+      { kind: "failure", signal: { kind: "network_timeout" } },
+    ]],
+    [unavailableUrl, [
+      { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } },
+      { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } },
+      { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } },
+    ]],
+  ]);
+  const state = harness({ documents, pageResults });
+
+  const pilot = await runBoundedPilotCrawlBridge(fullInput("pilot-failure-attribution", {
+    hardPageLimit: 3,
+    sitemapPolicy: sitemapPolicy(3),
+  }), state.options);
+
+  assert.equal(pilot.status, "bounded_pilot_completed");
+  assert.equal(pilot.summary.failures, 3);
+  assert.equal(pilot.failureAttribution.terminalFailures, 3);
+  const categories =
+    pilot.failureAttribution.policyRejections +
+    pilot.failureAttribution.permanentHttp.reduce((sum, item) => sum + item.count, 0) +
+    pilot.failureAttribution.attemptsExhausted.networkTimeout +
+    pilot.failureAttribution.attemptsExhausted.connectionReset +
+    pilot.failureAttribution.attemptsExhausted.transportUnavailable +
+    pilot.failureAttribution.attemptsExhausted.http.reduce((sum, item) => sum + item.count, 0);
+  assert.equal(categories, pilot.summary.failures);
+  assert.equal(pilot.persistence.rawResponseBodyPersisted, false);
+  assert.equal(pilot.persistence.pageContentPersisted, false);
+});
+
 test("retryable transport failure resumes through the exact P2 checkpoint attempt sequence", async () => {
   const url = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/a`;
   const pageResults = new Map<string, PageTransportResult[]>([
