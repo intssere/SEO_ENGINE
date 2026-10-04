@@ -39,7 +39,6 @@ import ReportsPage from './pages/reports';
 
 const WebsiteConnectionWizardPage = lazy(() => import('./pages/website-connection-wizard'));
 const ConnectionsPage = lazy(() => import('./pages/connections'));
-const AuthorityOpportunitiesPage = lazy(() => import('./pages/authority-opportunities'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,7 +75,7 @@ function Router() {
 
           <Route path="/authority/backlinks" component={SearchIntelligencePage} />
           <Route path="/authority/competitors" component={SearchIntelligencePage} />
-          <Route path="/authority/opportunities"><Suspense fallback={<div className="content"><div className="card" role="status">Loading authority opportunities…</div></div>}><AuthorityOpportunitiesPage /></Suspense></Route>
+          <Route path="/authority/opportunities" component={AuthorityPage} />
 
           <Route path="/automation/review" component={ApprovalsPage} />
           <Route path="/automation/changes" component={ActionsPage} />
