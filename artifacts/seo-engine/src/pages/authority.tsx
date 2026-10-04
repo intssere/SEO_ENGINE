@@ -12,8 +12,8 @@ export default function AuthorityPage() {
           description:
             "Inspect referring-domain gaps and shared coverage evidence.",
           href: "/authority/backlinks",
-          actionLabel: "Review backlink gaps",
-          status: "preview",
+          actionLabel: "Open authority dashboard",
+          status: "available",
         },
         {
           title: "Competitor authority",
