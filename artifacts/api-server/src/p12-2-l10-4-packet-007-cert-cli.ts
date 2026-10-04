@@ -132,7 +132,7 @@ async function main() {
     queryReceipts,
     attempts: 1,
     retries: 0,
-    fallbackransportUsed: false,
+    fallbackTransportUsed: false,
     credentialMaterialRecorded: false,
     sessionReadOnly: true,
     crawlExecutionPossible: false,
