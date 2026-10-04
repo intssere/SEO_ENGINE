@@ -40,48 +40,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DashboardSnapshot"
-  /authority/dashboard:
-    get:
-      operationId: getAuthorityDashboard
-      tags: [authority]
-      summary: Load the authenticated read-only authority dashboard
-      responses:
-        "200":
-          description: Authority dashboard evidence state and projection
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [version, state, reason, readiness, projection, semantics]
-                properties:
-                  version: { type: string, enum: [ugp-9-2b-authority-dashboard-api-v1] }
-                  state: { type: string, enum: [available, partial, unavailable] }
-                  reason: { type: [string, "null"] }
-                  readiness:
-                    type: object
-                    required: [evidence, trend, competitorGap, observedAt, providerKey, providerDataset]
-                    properties:
-                      evidence: { type: string, enum: [available, unavailable] }
-                      trend: { type: string, enum: [available, unavailable] }
-                      competitorGap: { type: string, enum: [available, unavailable] }
-                      observedAt: { type: [string, "null"] }
-                      providerKey: { type: [string, "null"] }
-                      providerDataset: { type: [string, "null"] }
-                  projection:
-                    oneOf:
-                      - type: object
-                        additionalProperties: true
-                      - type: "null"
-                  semantics:
-                    type: object
-                    required: [authenticatedReadOnly, syntheticFallback, persistenceRequired, liveProviderExecutionAuthorized, outreachAuthorized, publicSiteWrites]
-                    properties:
-                      authenticatedReadOnly: { type: boolean, enum: [true] }
-                      syntheticFallback: { type: boolean, enum: [false] }
-                      persistenceRequired: { type: boolean, enum: [false] }
-                      liveProviderExecutionAuthorized: { type: boolean, enum: [false] }
-                      outreachAuthorized: { type: boolean, enum: [false] }
-                      publicSiteWrites: { type: boolean, enum: [false] }
   /pilot/authorization:
     get:
       operationId: getPilotAuthorization
@@ -149,6 +107,30 @@ paths:
         "200": { description: Performance data, content: { application/json: { schema: { $ref: "#/components/schemas/OperationalResponse" } } } }
   /opportunities:
     get: { operationId: listOpportunities, responses: { "200": { description: Active and historical evidence-backed opportunities, content: { application/json: { schema: { $ref: "#/components/schemas/OpportunityResponse" } } } } } }
+  /authority/dashboard:
+    get:
+      operationId: getAuthorityDashboard
+      tags: [authority]
+      summary: Load the authenticated read-only authority dashboard
+      responses:
+        "200":
+          description: Authority dashboard evidence state and projection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorityDashboardApiResponse"
+  /authority/opportunities:
+    get:
+      operationId: getAuthorityOpportunities
+      tags: [authority]
+      summary: Load evidence-backed authority opportunity discovery
+      responses:
+        "200":
+          description: Read-only authority opportunity discovery state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorityOpportunityApiResponse"
   /actions:
     get: { operationId: listActions, responses: { "200": { description: Read-only dry-run action proposals, content: { application/json: { schema: { $ref: "#/components/schemas/ProposalResponse" } } } } } }
   /approvals:
@@ -345,6 +327,60 @@ components:
       properties:
         readiness: { type: object }
         rows: { type: array, items: { $ref: "#/components/schemas/ProposalRecord" } }
+    AuthorityDashboardApiResponse:
+      type: object
+      required: [version, state, reason, readiness, projection, semantics]
+      properties:
+        version: { type: string, enum: [ugp-9-2b-authority-dashboard-api-v1] }
+        state: { type: string, enum: [available, partial, unavailable] }
+        reason: { type: [string, "null"] }
+        readiness:
+          type: object
+          required: [evidence, trend, competitorGap, observedAt, providerKey, providerDataset]
+          properties:
+            evidence: { type: string, enum: [available, unavailable] }
+            trend: { type: string, enum: [available, unavailable] }
+            competitorGap: { type: string, enum: [available, unavailable] }
+            observedAt: { type: [string, "null"] }
+            providerKey: { type: [string, "null"] }
+            providerDataset: { type: [string, "null"] }
+        projection:
+          type: [object, "null"]
+          additionalProperties: true
+        semantics:
+          type: object
+          additionalProperties: false
+          required: [authenticatedReadOnly, syntheticFallback, persistenceRequired, liveProviderExecutionAuthorized, outreachAuthorized, publicSiteWrites]
+          properties:
+            authenticatedReadOnly: { type: boolean, enum: [true] }
+            syntheticFallback: { type: boolean, enum: [false] }
+            persistenceRequired: { type: boolean, enum: [false] }
+            liveProviderExecutionAuthorized: { type: boolean, enum: [false] }
+            outreachAuthorized: { type: boolean, enum: [false] }
+            publicSiteWrites: { type: boolean, enum: [false] }
+    AuthorityOpportunityApiResponse:
+      type: object
+      required: [version, state, reason, discovery, semantics]
+      properties:
+        version: { type: string, enum: [ugp-9-3b-authority-opportunity-api-v1] }
+        state: { type: string, enum: [available, unavailable] }
+        reason: { type: [string, "null"] }
+        discovery:
+          type: [object, "null"]
+          additionalProperties: true
+        semantics:
+          type: object
+          additionalProperties: false
+          required: [authenticatedReadOnly, syntheticFallback, persistenceRequired, liveProviderExecutionAuthorized, scoringAuthorized, prospectQualificationAuthorized, outreachAuthorized, publicSiteWrites]
+          properties:
+            authenticatedReadOnly: { type: boolean, enum: [true] }
+            syntheticFallback: { type: boolean, enum: [false] }
+            persistenceRequired: { type: boolean, enum: [false] }
+            liveProviderExecutionAuthorized: { type: boolean, enum: [false] }
+            scoringAuthorized: { type: boolean, enum: [false] }
+            prospectQualificationAuthorized: { type: boolean, enum: [false] }
+            outreachAuthorized: { type: boolean, enum: [false] }
+            publicSiteWrites: { type: boolean, enum: [false] }
     OpportunityRecord:
       type: object
       required: [id, title, opportunity_type, score, status, rationale, evidence_count, url, query, risk_classification, confidence, score_components, why_qualifies, recommendation, execution_authorized, lifecycle, updated_at]

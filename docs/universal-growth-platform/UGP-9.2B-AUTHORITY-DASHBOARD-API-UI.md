@@ -19,7 +19,7 @@ This increment adds:
 - explicit available / partial / unavailable states;
 - honest no-data behavior when no durable backlink evidence source exists.
 
-The generic Search Intelligence page is no longer used for `/authority/backlinks`.
+The reconciled Authority data surface serves `/authority/backlinks` alongside the already-merged `/authority/opportunities` view without overwriting UGP-9.3B.
 
 ## Runtime truthfulness
 
@@ -104,19 +104,15 @@ This lets the UI explain incomplete coverage instead of hiding it.
 
 `/authority/backlinks` now opens a dedicated Authority dashboard.
 
-When evidence is available it displays:
+When evidence is available it displays a compact customer view of:
 
-- backlink total;
-- referring-domain total;
-- provider-reported new links;
-- provider-reported lost links;
-- trend deltas where a prior snapshot exists;
-- referring-domain table;
-- provider-native authority;
+- backlink and referring-domain totals;
+- referring domains;
 - top linked pages;
 - anchor distribution;
-- descriptive competitor-gap evidence;
-- explicit interpretation limitations.
+- descriptive competitor gaps.
+
+Provider-native authority and exact normalized-loss semantics remain in the authenticated projection contract and are not converted into a universal score.
 
 When evidence is unavailable it displays a customer-safe empty state:
 
@@ -222,21 +218,8 @@ UGP-9.2B does not:
 - mutate customer websites;
 - change Railway or production deployment state.
 
-## Next milestone
+## Reconciliation and next milestone
 
-After UGP-9.2B merges, the next product milestone is:
+UGP-9.3A and UGP-9.3B are already merged on the initiative branch. This reconciliation preserves their Authority opportunity API/UI while adding the 9.2B dashboard endpoint and `/authority/backlinks` binding.
 
-**UGP-9.3 — Opportunity Discovery**
-
-That work may consume 9.2 descriptive authority evidence to identify:
-
-- competitor link gaps;
-- domain intersections;
-- broken-link opportunities;
-- unlinked brand mentions;
-- lost-link recovery;
-- resource-page opportunities;
-- partner/supplier citations;
-- content-promotion prospects.
-
-Scoring and prospect qualification remain separate from the 9.2 dashboard.
+The next product milestone is **UGP-9.4 — Prospect Qualification**, which may score certified 9.3 discovery candidates without changing the underlying discovery evidence or authorizing outreach.

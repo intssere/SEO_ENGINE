@@ -288,6 +288,23 @@ const authorityFixture = {
   },
 };
 
+const authorityOpportunityFixture = {
+  version: "ugp-9-3b-authority-opportunity-api-v1",
+  state: "unavailable",
+  reason: "No durable authority opportunity discovery source is configured.",
+  discovery: null,
+  semantics: {
+    authenticatedReadOnly: true,
+    syntheticFallback: false,
+    persistenceRequired: false,
+    liveProviderExecutionAuthorized: false,
+    scoringAuthorized: false,
+    prospectQualificationAuthorized: false,
+    outreachAuthorized: false,
+    publicSiteWrites: false,
+  },
+};
+
 const performanceFixture = {
   readiness,
   rows: [
@@ -409,6 +426,10 @@ export async function installSyntheticNetwork(page) {
     }
     if (method === "GET" && path === "/api/authority/dashboard") {
       await json(route, authorityFixture);
+      return;
+    }
+    if (method === "GET" && path === "/api/authority/opportunities") {
+      await json(route, authorityOpportunityFixture);
       return;
     }
     if (method === "GET" && path === "/api/performance") {

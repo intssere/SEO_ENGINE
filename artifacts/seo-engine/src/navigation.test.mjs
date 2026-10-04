@@ -57,6 +57,7 @@ const customerMappedRoutes = [
   "/site-audit/internal-links",
   "/authority/backlinks",
   "/authority/competitors",
+  "/authority/opportunities",
   "/automation/review",
   "/automation/changes",
   "/automation/history",

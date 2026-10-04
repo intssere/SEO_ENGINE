@@ -1,28 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { OperationalTable } from "../components/operational-table";
 
-const load=async()=>{
-  const r=await fetch("/api/authority/dashboard");
-  if(!r.ok) throw Error();
-  return r.json();
-};
+const A="/api/authority/";
+
+export function AuthorityDataPage(){
+  const opportunity=location.pathname.endsWith("opportunities");
+  const u=A+(opportunity?"opportunities":"dashboard");
+  const q=useQuery({queryKey:[u],queryFn:()=>fetch(u).then(r=>r.json())});
+  const d=opportunity?q.data?.discovery:q.data?.projection;
+  if(!d)return <div className="content"><h1>Authority</h1><p>{q.data?q.data.reason:"…"} {q.data&&<b>NO SYNTHETIC FALLBACK</b>}</p></div>;
+  if(opportunity)return <div className="content"><h1>Authority opportunities</h1>{d.opportunities.map((x:any)=><p key={x.opportunityId}>{x.sourceDomain} · {x.kind}</p>)}</div>;
+  const sets=[["Domains",d.referringDomains,"domain"],["Pages",d.linkedPages,"targetUrl"],["Anchors",d.anchors,"anchorText"],["Gaps",d.competitorGaps,"referringDomain"]];
+  return <div className="content"><h1>Backlinks</h1><p>{d.targetDomain} · {d.summary.backlinkCount} backlinks · {d.summary.referringDomainCount} domains</p>{sets.map(([t,rows,k]:any)=><section key={t}><h2>{t}</h2>{rows.map((x:any)=><p key={x[k]}>{x[k]} · {x.backlinkCount??x.classification}</p>)}</section>)}</div>;
+}
 
 export default function AuthorityPage(){
-  const q=useQuery({queryKey:["/api/authority/dashboard"],queryFn:load});
-  const p=q.data?.projection;
-  if(q.isLoading)return <div className="content card">Loading authority evidence…</div>;
-  if(q.isError||!q.data)return <div className="content card" role="alert">Authority dashboard unavailable.</div>;
-  if(!p)return <div className="content"><h1>Authority dashboard</h1><section className="card"><h2>Authority evidence is not available yet</h2><p>{q.data.reason}</p><strong>NO SYNTHETIC FALLBACK</strong></section></div>;
-  const sets=[
-    ["Referring domains",p.referringDomains],
-    ["Top linked pages",p.linkedPages],
-    ["Anchor distribution",p.anchors],
-    ["Competitor gaps",p.competitorGaps],
-  ];
-  return <div className="content">
-    <h1>Authority dashboard</h1>
-    <section className="card"><h2>{p.targetDomain}</h2><p>{p.summary.backlinkCount} backlinks · {p.summary.referringDomainCount} referring domains · {p.summary.providerReportedNewBacklinkCount} provider-reported new · {p.summary.providerReportedLostBacklinkCount} provider-reported lost</p></section>
-    {sets.map(([title,rows])=><section className="card mt-5" key={title as string}><h2>{title as string}</h2><OperationalTable data={rows as any[]}/></section>)}
-    <section className="card mt-5"><strong>Evidence guardrails</strong><p>Provider authority is provider-native. Reported lost links are not exact normalized loss timestamps. Competitor gaps are descriptive only. No acquisition, outreach, scheduling, or site changes are authorized here.</p></section>
-  </div>;
+  return <div className="content"><h1>Authority</h1><p><a href="/authority/backlinks">Backlinks</a> · <a href="/authority/competitors">Competitors</a> · <a href="/authority/opportunities">Opportunities</a></p></div>;
 }
