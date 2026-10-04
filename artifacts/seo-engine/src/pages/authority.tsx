@@ -31,11 +31,12 @@ export default function AuthorityPage() {
           status: "coming_soon",
         },
         {
-          title: "Digital PR opportunities",
+          title: "Authority opportunities",
           description:
-            "PR and citation opportunities will appear as connectors are added.",
-          actionLabel: "Opportunity workflow is being added",
-          status: "coming_soon",
+            "Review evidence-backed link, mention, recovery, resource, partner, and promotion opportunities.",
+          href: "/authority/opportunities",
+          actionLabel: "Review authority opportunities",
+          status: "available",
         },
       ]}
     />
