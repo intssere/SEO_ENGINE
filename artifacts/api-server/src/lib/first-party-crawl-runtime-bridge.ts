@@ -76,6 +76,28 @@ export type RobotsEvaluationRequest = {
   method: "GET";
 };
 
+export const ROBOTS_POLICY_REJECTION_REASONS = Object.freeze([
+  "http_unavailable",
+  "redirect_limit",
+  "response_oversize",
+  "malformed_policy",
+  "scope_validation",
+  "secure_transport_rejection",
+  "transport_error",
+  "unclassified",
+] as const);
+export type RobotsPolicyRejectionReason = (typeof ROBOTS_POLICY_REJECTION_REASONS)[number];
+
+export class RobotsPolicyEvaluationError extends Error {
+  constructor(
+    readonly reason: RobotsPolicyRejectionReason,
+    code: string,
+  ) {
+    super(code);
+    this.name = "RobotsPolicyEvaluationError";
+  }
+}
+
 export interface FirstPartyRobotsEvaluator {
   evaluate(request: RobotsEvaluationRequest): Promise<{ allowed: boolean }>;
 }
@@ -141,6 +163,11 @@ export type FullSiteCrawlBridgeSnapshot = {
 export type BoundedPilotFailureAttribution = {
   terminalFailures: number;
   policyRejections: number;
+  robotsPolicyRejections: {
+    total: number;
+    reasons: Array<{ reason: RobotsPolicyRejectionReason; count: number }>;
+  };
+  otherPolicyRejections: number;
   permanentHttp: Array<{ httpStatus: number; count: number }>;
   attemptsExhausted: {
     networkTimeout: number;
@@ -536,13 +563,17 @@ function normalizeTransportResult(
   return { canonicalUrl, kind: "failure", signal: result.signal };
 }
 
+type AttributedCrawlUrlOutcome = SuppliedCrawlUrlOutcome & {
+  robotsPolicyRejectionReason?: RobotsPolicyRejectionReason;
+};
+
 async function executeCanonicalUrl(input: {
   siteId: string;
   plan: FullSiteCrawlExecutionPlan;
   canonicalUrl: string;
   options: ExecutableCrawlAdapters;
   requestState: { pageRequestsStarted: number };
-}): Promise<SuppliedCrawlUrlOutcome> {
+}): Promise<AttributedCrawlUrlOutcome> {
   let robotsAllowed: boolean;
   try {
     const robots = await input.options.robotsEvaluator.evaluate({
@@ -557,7 +588,14 @@ async function executeCanonicalUrl(input: {
     robotsAllowed = robots.allowed;
   } catch (error) {
     if (error instanceof Error && error.message === "crawl_bridge_robots_result_invalid") throw error;
-    return { canonicalUrl: input.canonicalUrl, kind: "failure", signal: { kind: "policy_rejection" } };
+    const robotsPolicyRejectionReason =
+      error instanceof RobotsPolicyEvaluationError ? error.reason : "unclassified";
+    return {
+      canonicalUrl: input.canonicalUrl,
+      kind: "failure",
+      signal: { kind: "policy_rejection" },
+      robotsPolicyRejectionReason,
+    };
   }
   if (!robotsAllowed) return { canonicalUrl: input.canonicalUrl, kind: "robots_excluded" };
 
@@ -581,7 +619,7 @@ async function checkpointOutcomes(input: {
   checkpoint: FullSiteCrawlCheckpoint;
   options: ExecutableCrawlAdapters;
   requestState: { pageRequestsStarted: number };
-}): Promise<SuppliedCrawlUrlOutcome[]> {
+}): Promise<AttributedCrawlUrlOutcome[]> {
   assertFullSiteCrawlCheckpointIntegrity(input.plan, input.checkpoint);
   const resume = describeCrawlResumeWork(input.plan, input.checkpoint);
   if (resume.status === "completed") return [];
@@ -591,7 +629,7 @@ async function checkpointOutcomes(input: {
     await input.options.clock.sleep(retryDelayForAttempt((resume.attempt ?? 1) - 1, input.plan.policy));
   }
 
-  const outcomes: SuppliedCrawlUrlOutcome[] = [];
+  const outcomes: AttributedCrawlUrlOutcome[] = [];
   for (const canonicalUrl of resume.canonicalUrls) {
     outcomes.push(await executeCanonicalUrl({
       siteId: input.siteId,
@@ -626,6 +664,8 @@ function checkpointRecord(input: {
 
 type MutableBoundedPilotFailureAttribution = {
   policyRejections: number;
+  robotsPolicyRejections: Map<RobotsPolicyRejectionReason, number>;
+  otherPolicyRejections: number;
   permanentHttp: Map<number, number>;
   attemptsExhausted: {
     networkTimeout: number;
@@ -638,6 +678,8 @@ type MutableBoundedPilotFailureAttribution = {
 function createBoundedPilotFailureAttribution(): MutableBoundedPilotFailureAttribution {
   return {
     policyRejections: 0,
+    robotsPolicyRejections: new Map(),
+    otherPolicyRejections: 0,
     permanentHttp: new Map(),
     attemptsExhausted: {
       networkTimeout: 0,
@@ -653,7 +695,7 @@ function incrementStatusCount(target: Map<number, number>, status: number): void
 }
 
 function observeBoundedPilotTerminalFailures(input: {
-  outcomes: SuppliedCrawlUrlOutcome[];
+  outcomes: AttributedCrawlUrlOutcome[];
   attempt: number;
   policy: FullSiteExecutionPolicy;
   attribution: MutableBoundedPilotFailureAttribution;
@@ -665,6 +707,14 @@ function observeBoundedPilotTerminalFailures(input: {
 
     if (decision.reason === "policy_rejection") {
       input.attribution.policyRejections += 1;
+      if (outcome.robotsPolicyRejectionReason) {
+        input.attribution.robotsPolicyRejections.set(
+          outcome.robotsPolicyRejectionReason,
+          (input.attribution.robotsPolicyRejections.get(outcome.robotsPolicyRejectionReason) ?? 0) + 1,
+        );
+      } else {
+        input.attribution.otherPolicyRejections += 1;
+      }
       continue;
     }
     if (decision.reason === "permanent_http") {
@@ -695,6 +745,13 @@ function finalizeBoundedPilotFailureAttribution(
   input: MutableBoundedPilotFailureAttribution,
   expectedTerminalFailures: number,
 ): BoundedPilotFailureAttribution {
+  const robotsPolicyReasons = [...input.robotsPolicyRejections.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([reason, count]) => ({ reason, count }));
+  const robotsPolicyTotal = robotsPolicyReasons.reduce((sum, item) => sum + item.count, 0);
+  if (robotsPolicyTotal + input.otherPolicyRejections !== input.policyRejections) {
+    throw new Error("crawl_bridge_failure_attribution_policy_counter_mismatch");
+  }
   const permanentHttp = [...input.permanentHttp.entries()]
     .sort(([a], [b]) => a - b)
     .map(([httpStatus, count]) => ({ httpStatus, count }));
@@ -714,6 +771,11 @@ function finalizeBoundedPilotFailureAttribution(
   return {
     terminalFailures: expectedTerminalFailures,
     policyRejections: input.policyRejections,
+    robotsPolicyRejections: {
+      total: robotsPolicyTotal,
+      reasons: robotsPolicyReasons,
+    },
+    otherPolicyRejections: input.otherPolicyRejections,
     permanentHttp,
     attemptsExhausted: {
       networkTimeout: input.attemptsExhausted.networkTimeout,
