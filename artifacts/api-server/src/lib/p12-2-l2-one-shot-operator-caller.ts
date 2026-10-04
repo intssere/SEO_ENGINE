@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
+  type BoundedPilotFailureAttribution,
 } from "./first-party-crawl-runtime-bridge.js";
 import {
   P12_2_EXECUTION_CONFIRMATION,
@@ -71,6 +72,7 @@ export type P122L2ExecutionResult =
   | {
       status: "completed";
       receiptFingerprint: string;
+      boundedPilotFailureAttribution?: BoundedPilotFailureAttribution;
     }
   | {
       status: "intentional_interruption";
@@ -273,6 +275,48 @@ function assertResult(packet: P122L2Packet, result: P122L2ExecutionResult): void
     requireFingerprint(result.executionPlanFingerprint, "p12_2_l2_interruption_execution_fingerprint_invalid");
   } else if (result.status !== "completed") {
     throw new Error("p12_2_l2_unexpected_interruption");
+  }
+  if (result.status === "completed" && result.boundedPilotFailureAttribution !== undefined) {
+    if (packet.phase !== "bounded_pilot") {
+      throw new Error("p12_2_l2_bounded_diagnostics_phase_mismatch");
+    }
+    const attribution = result.boundedPilotFailureAttribution;
+    if (!Number.isInteger(attribution.terminalFailures) || attribution.terminalFailures < 0) {
+      throw new Error("p12_2_l2_bounded_diagnostics_terminal_failures_invalid");
+    }
+    if (!Number.isInteger(attribution.policyRejections) || attribution.policyRejections < 0) {
+      throw new Error("p12_2_l2_bounded_diagnostics_policy_rejections_invalid");
+    }
+    for (const item of [...attribution.permanentHttp, ...attribution.attemptsExhausted.http]) {
+      if (
+        !Number.isInteger(item.httpStatus) ||
+        item.httpStatus < 100 ||
+        item.httpStatus > 599 ||
+        !Number.isInteger(item.count) ||
+        item.count < 1
+      ) {
+        throw new Error("p12_2_l2_bounded_diagnostics_http_invalid");
+      }
+    }
+    for (const value of [
+      attribution.attemptsExhausted.networkTimeout,
+      attribution.attemptsExhausted.connectionReset,
+      attribution.attemptsExhausted.transportUnavailable,
+    ]) {
+      if (!Number.isInteger(value) || value < 0) {
+        throw new Error("p12_2_l2_bounded_diagnostics_transport_invalid");
+      }
+    }
+    const attributed =
+      attribution.policyRejections +
+      attribution.permanentHttp.reduce((sum, item) => sum + item.count, 0) +
+      attribution.attemptsExhausted.networkTimeout +
+      attribution.attemptsExhausted.connectionReset +
+      attribution.attemptsExhausted.transportUnavailable +
+      attribution.attemptsExhausted.http.reduce((sum, item) => sum + item.count, 0);
+    if (attributed !== attribution.terminalFailures) {
+      throw new Error("p12_2_l2_bounded_diagnostics_counter_mismatch");
+    }
   }
 }
 
