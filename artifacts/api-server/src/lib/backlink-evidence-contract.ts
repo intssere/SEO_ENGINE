@@ -512,7 +512,11 @@ export function assertBacklinkEvidenceDatasetIntegrity(
       providerMetrics:row.providerMetrics,
     })),
   });
-  if(rebuilt.datasetFingerprint!==fp(result.datasetFingerprint,"dataset_fingerprint")){
+  fp(result.datasetFingerprint,"dataset_fingerprint");
+  if(
+    rebuilt.datasetFingerprint!==result.datasetFingerprint
+    ||JSON.stringify(rebuilt)!==JSON.stringify(result)
+  ){
     throw new Error("ugp_backlink_dataset_fingerprint_mismatch");
   }
 }
