@@ -18,6 +18,7 @@ import OpportunitiesPage from './pages/opportunities';
 import ContentPage from './pages/content';
 import SiteAuditHubPage from './pages/site-audit-hub';
 import AuthorityPage from './pages/authority';
+import AuthorityDashboardPage from './pages/authority-dashboard';
 import AutomationPage from './pages/automation';
 import GovernancePage from './pages/governance';
 import ActionsPage from './pages/actions';
@@ -73,7 +74,7 @@ function Router() {
           <Route path="/site-audit/technical" component={TechnicalSeoPage} />
           <Route path="/site-audit/internal-links" component={InternalLinksPage} />
 
-          <Route path="/authority/backlinks" component={SearchIntelligencePage} />
+          <Route path="/authority/backlinks" component={AuthorityDashboardPage} />
           <Route path="/authority/competitors" component={SearchIntelligencePage} />
 
           <Route path="/automation/review" component={ApprovalsPage} />
