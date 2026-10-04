@@ -4,6 +4,7 @@ import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
   P12_2_CRAWL_BRIDGE_VERSION,
   P12_2_ROBOTS_USER_AGENT,
+  RobotsPolicyEvaluationError,
   type PageTransportRequest,
   type RobotsEvaluationRequest,
   type SitemapAcquisitionRequest,
@@ -214,6 +215,36 @@ test("robots evaluator is cached in-memory and malformed policy fails closed", a
   await assert.rejects(
     malformed.evaluate(robotsRequest(DIAMOND_SHELF_CANONICAL_ORIGIN + "/x")),
     /p12_2_robots_malformed_policy_line/,
+  );
+});
+
+test("robots evaluator emits closed safe rejection reasons without robots content", async () => {
+  const unavailable = createFirstPartyRobotsEvaluator({
+    maxTransientPageBytes: P12_2_DEFAULT_TRANSIENT_PAGE_BYTES,
+    fetchImpl: async () => new Response("", { status: 503 }),
+  });
+  await assert.rejects(
+    unavailable.evaluate(robotsRequest(DIAMOND_SHELF_CANONICAL_ORIGIN + "/a")),
+    (error: unknown) => {
+      assert.ok(error instanceof RobotsPolicyEvaluationError);
+      assert.equal(error.reason, "http_unavailable");
+      assert.equal(error.message, "p12_2_live_robots_unavailable");
+      return true;
+    },
+  );
+
+  const malformed = createFirstPartyRobotsEvaluator({
+    maxTransientPageBytes: P12_2_DEFAULT_TRANSIENT_PAGE_BYTES,
+    fetchImpl: async () => new Response("User-agent *\nDisallow: /x\n", { status: 200 }),
+  });
+  await assert.rejects(
+    malformed.evaluate(robotsRequest(DIAMOND_SHELF_CANONICAL_ORIGIN + "/a")),
+    (error: unknown) => {
+      assert.ok(error instanceof RobotsPolicyEvaluationError);
+      assert.equal(error.reason, "malformed_policy");
+      assert.equal(error.message, "p12_2_robots_malformed_policy_line");
+      return true;
+    },
   );
 });
 
