@@ -6,6 +6,7 @@ import { compareFullSiteCrawlHistory } from "./crawl-history-comparison.js";
 import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
   firstPartyCrawlBridgeReadiness,
+  RobotsPolicyEvaluationError,
   runBoundedPilotCrawlBridge,
   runFullSiteCrawlBridge,
   runFullSiteCrawlBridgeUntilCheckpoint,
@@ -318,6 +319,45 @@ test("bounded pilot attributes terminal failures without persisting page content
   assert.equal(categories, pilot.summary.failures);
   assert.equal(pilot.persistence.rawResponseBodyPersisted, false);
   assert.equal(pilot.persistence.pageContentPersisted, false);
+});
+
+test("bounded pilot separates robots policy rejection reasons from other policy rejections", async () => {
+  const robotsUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/robots-policy`;
+  const pageUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/page-policy`;
+  const documents = [{
+    url: `${DIAMOND_SHELF_CANONICAL_ORIGIN}/sitemap.xml`,
+    xml: urlset([{ path: "/robots-policy" }, { path: "/page-policy" }]),
+  }];
+  const pageResults = new Map<string, PageTransportResult[]>([
+    [pageUrl, [{ kind: "failure", signal: { kind: "policy_rejection" } }]],
+  ]);
+  const state = harness({ documents, pageResults });
+  state.options.robotsEvaluator = {
+    async evaluate(request) {
+      if (request.canonicalUrl === robotsUrl) {
+        throw new RobotsPolicyEvaluationError("http_unavailable", "p12_2_live_robots_unavailable");
+      }
+      return { allowed: true };
+    },
+  };
+
+  const pilot = await runBoundedPilotCrawlBridge(fullInput("pilot-robots-attribution", {
+    hardPageLimit: 2,
+    sitemapPolicy: sitemapPolicy(2),
+  }), state.options);
+
+  assert.equal(pilot.summary.failures, 2);
+  assert.equal(pilot.failureAttribution.policyRejections, 2);
+  assert.deepEqual(pilot.failureAttribution.robotsPolicyRejections, {
+    total: 1,
+    reasons: [{ reason: "http_unavailable", count: 1 }],
+  });
+  assert.equal(pilot.failureAttribution.otherPolicyRejections, 1);
+  assert.equal(
+    pilot.failureAttribution.robotsPolicyRejections.total +
+      pilot.failureAttribution.otherPolicyRejections,
+    pilot.failureAttribution.policyRejections,
+  );
 });
 
 test("retryable transport failure resumes through the exact P2 checkpoint attempt sequence", async () => {
