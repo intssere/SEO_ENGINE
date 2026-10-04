@@ -56,6 +56,7 @@ function envelope(packet: ReturnType<typeof buildP122L2Packet>, extras: Partial<
 
 function adapter(overrides: Partial<P122L3ExecutionAdapter> = {}): P122L3ExecutionAdapter {
   return {
+    async boundedPilotCrawl() { return { fingerprint: HEX_A } as never; },
     async fullCrawl() { return { fingerprint: HEX_A } as never; },
     async fullCrawlUntilCheckpoint() {
       return {
@@ -82,6 +83,29 @@ test("L6.3 capability remains one-shot, first-party, and non-autonomous", () => 
   assert.equal(capability.autonomousWorkerEnabled, false);
   assert.equal(capability.providerWrites, false);
   assert.equal(capability.publicSiteWrites, false);
+});
+
+test("L6.3 maps bounded_pilot only to the non-certifying pilot executor", async () => {
+  const calls: string[] = [];
+  const a = adapter({
+    async boundedPilotCrawl(input) {
+      calls.push(input.runId);
+      return { fingerprint: HEX_A } as never;
+    },
+    async fullCrawl() {
+      throw new Error("full_crawl_must_not_run_for_pilot");
+    },
+  });
+  const packet = buildP122L2Packet({
+    phase: "bounded_pilot",
+    runId: "l6-3-bounded-pilot",
+    observedAt: "2026-10-04T08:30:00.000Z",
+    config: config(),
+  });
+  const result = await new P122L3LiveExecutor(envelope(packet), "postgres://unused", a).execute(packet);
+  assert.equal(result.status, "completed");
+  assert.equal(result.receiptFingerprint, HEX_A);
+  assert.deepEqual(calls, ["l6-3-bounded-pilot"]);
 });
 
 test("L6.3 maps full_initial and full_reconciliation to bounded full crawl calls", async () => {

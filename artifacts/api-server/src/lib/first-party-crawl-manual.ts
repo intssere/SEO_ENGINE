@@ -1,5 +1,6 @@
 import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
+  runBoundedPilotCrawlBridge,
   runFullSiteCrawlBridge,
   runFullSiteCrawlBridgeUntilCheckpoint,
   runIncrementalCrawlBridge,
@@ -230,6 +231,30 @@ function compose(config: P12_2ManualConfig, dependencies: P12_2ManualDependencie
     persistenceReady: true,
     persistenceAuthorized: true,
   } as const;
+}
+
+export async function executeP12_2BoundedPilotCrawl(input: {
+  config: P12_2ManualConfig;
+  dependencies: P12_2ManualDependencies;
+  runId: string;
+  observedAt: string;
+}) {
+  const { config } = input;
+  const options = compose(config, input.dependencies);
+  return runBoundedPilotCrawlBridge({
+    runId: input.runId,
+    observedAt: input.observedAt,
+    binding: {
+      siteId: DIAMOND_SHELF_SITE_ID,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      rootSitemapUrl: validateRootSitemap(config.rootSitemapUrl),
+    },
+    hardPageLimit: config.limits.hardPageLimit,
+    absolutePageCeiling: config.limits.absolutePageCeiling,
+    sitemapPolicy: config.limits.sitemapPolicy,
+    executionPolicy: config.limits.executionPolicy,
+    compareToPrevious: false,
+  }, options);
 }
 
 export async function executeP12_2FullCrawl(input: {

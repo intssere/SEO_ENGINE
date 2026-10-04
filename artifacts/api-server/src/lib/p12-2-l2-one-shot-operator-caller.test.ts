@@ -63,6 +63,20 @@ test("fails closed when any manual gate is false", () => {
   }
 });
 
+test("bounded_pilot is a first-class packet phase with no resume or incremental lineage", () => {
+  const packet = buildP122L2Packet({
+    phase: "bounded_pilot",
+    runId: "p12-2-bounded-pilot-001",
+    observedAt: "2026-10-04T08:30:00.000Z",
+    config: executableConfig(),
+  });
+  assert.equal(packet.phase, "bounded_pilot");
+  assert.equal(packet.resume, null);
+  assert.equal(packet.incremental, null);
+  assert.equal(packet.intentionalInterruptionAfterCheckpointRevision, null);
+  assert.match(packet.fingerprint, /^[a-f0-9]{64}$/);
+});
+
 test("full_interrupt requires exact intended checkpoint revision", () => {
   assert.throws(() => buildP122L2Packet({
     phase: "full_interrupt",

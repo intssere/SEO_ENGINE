@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import {
+  executeP12_2BoundedPilotCrawl,
   executeP12_2FullCrawl,
   executeP12_2FullCrawlUntilCheckpoint,
   executeP12_2IncrementalCrawl,
@@ -84,12 +85,14 @@ export function assertP122L3OperatorEnvelopeIntegrity(envelope: P122L3OperatorEn
 }
 
 export type P122L3ExecutionAdapter = {
+  boundedPilotCrawl: typeof executeP12_2BoundedPilotCrawl;
   fullCrawl: typeof executeP12_2FullCrawl;
   fullCrawlUntilCheckpoint: typeof executeP12_2FullCrawlUntilCheckpoint;
   incrementalCrawl: typeof executeP12_2IncrementalCrawl;
 };
 
 const DEFAULT_EXECUTION_ADAPTER: P122L3ExecutionAdapter = {
+  boundedPilotCrawl: executeP12_2BoundedPilotCrawl,
   fullCrawl: executeP12_2FullCrawl,
   fullCrawlUntilCheckpoint: executeP12_2FullCrawlUntilCheckpoint,
   incrementalCrawl: executeP12_2IncrementalCrawl,
@@ -108,6 +111,13 @@ export class P122L3LiveExecutor implements P122L2InjectedExecutor {
     }
     const config = configFromPacket(packet);
     const dependencies = { databaseUrl: this.databaseUrl };
+
+    if (packet.phase === "bounded_pilot") {
+      const result = await this.adapter.boundedPilotCrawl({
+        config, dependencies, runId: packet.runId, observedAt: packet.observedAt,
+      });
+      return { status: "completed", receiptFingerprint: result.fingerprint };
+    }
 
     if (packet.phase === "full_initial") {
       const result = await this.adapter.fullCrawl({

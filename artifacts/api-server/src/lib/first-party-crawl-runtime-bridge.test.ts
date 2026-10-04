@@ -6,6 +6,7 @@ import { compareFullSiteCrawlHistory } from "./crawl-history-comparison.js";
 import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
   firstPartyCrawlBridgeReadiness,
+  runBoundedPilotCrawlBridge,
   runFullSiteCrawlBridge,
   runFullSiteCrawlBridgeUntilCheckpoint,
   runIncrementalCrawlBridge,
@@ -228,6 +229,45 @@ test("full-site bridge preserves P2 robots/noindex/redirect accounting and persi
   assert.ok(calls.sleeps.includes(500));
   assert.ok(persistence.checkpointWrites.length >= 2);
   assert.equal(persistence.completed.length, 1);
+});
+
+test("bounded pilot executes only the explicitly truncated inventory and never claims whole-site completion", async () => {
+  const documents = [{
+    url: `${DIAMOND_SHELF_CANONICAL_ORIGIN}/sitemap.xml`,
+    xml: urlset([
+      { path: "/a" },
+      { path: "/b" },
+      { path: "/c" },
+    ]),
+  }];
+  const state = harness({ documents });
+
+  await assert.rejects(
+    runFullSiteCrawlBridge(fullInput("pilot-full-site-rejected", {
+      hardPageLimit: 2,
+      sitemapPolicy: sitemapPolicy(2),
+    }), state.options),
+    /crawl_execution_complete_inventory_required/,
+  );
+  assert.equal(state.calls.pages.length, 0);
+
+  const pilot = await runBoundedPilotCrawlBridge(fullInput("pilot-001", {
+    hardPageLimit: 2,
+    sitemapPolicy: sitemapPolicy(2),
+  }), state.options);
+
+  assert.equal(pilot.status, "bounded_pilot_completed");
+  assert.equal(pilot.selectedUrls, 2);
+  assert.equal(pilot.inventoryTruncated, true);
+  assert.deepEqual(pilot.truncationReasons, ["inventory_url_limit_reached"]);
+  assert.equal(pilot.wholeSiteCertified, false);
+  assert.equal(pilot.persistence.completedRunPersisted, false);
+  assert.equal(state.persistence.completed.length, 0);
+  assert.deepEqual(state.calls.pages, [
+    `${DIAMOND_SHELF_CANONICAL_ORIGIN}/a`,
+    `${DIAMOND_SHELF_CANONICAL_ORIGIN}/b`,
+  ]);
+  assert.match(pilot.fingerprint, /^[a-f0-9]{64}$/);
 });
 
 test("retryable transport failure resumes through the exact P2 checkpoint attempt sequence", async () => {

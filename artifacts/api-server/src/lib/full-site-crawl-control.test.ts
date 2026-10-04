@@ -11,6 +11,7 @@ import {
   createInitialCrawlCheckpoint,
   describeCrawlResumeWork,
   evaluateFullSiteExecutionUrl,
+  planBoundedPilotCrawlExecution,
   planFullSiteCrawlExecution,
   type FullSiteCrawlExecutionPlan,
   type FullSiteExecutionPolicy,
@@ -115,6 +116,46 @@ test("deterministic inventory-derived batches bind rate controls and keep all ex
   assert.ok(Object.values(first.authorization).every((value) => value === false));
   assert.match(first.fingerprint, /^[a-f0-9]{64}$/);
   assertFullSiteCrawlExecutionPlanIntegrity(first);
+});
+
+test("bounded pilot accepts only deterministic inventory-limit truncation and carries explicit non-full scope", () => {
+  const crawlPlan = fullSitePlan(2);
+  const xml = `<urlset>
+    <url><loc>https://diamondshelf.us/a</loc></url>
+    <url><loc>https://diamondshelf.us/b</loc></url>
+    <url><loc>https://diamondshelf.us/c</loc></url>
+  </urlset>`;
+  const truncated = buildSitemapInventory({
+    plan: crawlPlan,
+    rootSitemapUrl: "https://diamondshelf.us/sitemap.xml",
+    documents: [{ url: "https://diamondshelf.us/sitemap.xml", xml }],
+    policy: sitemapPolicy(2),
+  });
+  assert.equal(truncated.completeness.complete, false);
+  assert.equal(truncated.completeness.hardLimitReached, true);
+  assert.deepEqual(truncated.completeness.reasons, ["inventory_url_limit_reached"]);
+
+  const pilot = planBoundedPilotCrawlExecution(crawlPlan, truncated, executionPolicy());
+  assert.equal(pilot.scope, "bounded_pilot");
+  assert.equal(pilot.source.inventoryUniqueUrls, 2);
+  assert.deepEqual(pilot.batches.flatMap((batch) => batch.canonicalUrls), [
+    "https://diamondshelf.us/a",
+    "https://diamondshelf.us/b",
+  ]);
+  assertFullSiteCrawlExecutionPlanIntegrity(pilot);
+
+  assert.throws(
+    () => planFullSiteCrawlExecution(crawlPlan, truncated, executionPolicy()),
+    /crawl_execution_complete_inventory_required/,
+  );
+
+  const incomplete = structuredClone(truncated);
+  incomplete.completeness.reasons = ["missing_supplied_sitemap_document"];
+  incomplete.documents.missingSupplied = ["https://diamondshelf.us/missing.xml"];
+  assert.throws(
+    () => planBoundedPilotCrawlExecution(crawlPlan, incomplete, executionPolicy()),
+    /crawl_execution_bounded_pilot_truncation_required/,
+  );
 });
 
 test("P2.3 rejects baseline, incomplete inventory, identity drift and open upstream authorization", () => {
