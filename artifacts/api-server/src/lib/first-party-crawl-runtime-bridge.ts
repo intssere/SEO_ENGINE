@@ -138,6 +138,18 @@ export type FullSiteCrawlBridgeSnapshot = {
   fingerprint: string;
 };
 
+export type BoundedPilotFailureAttribution = {
+  terminalFailures: number;
+  policyRejections: number;
+  permanentHttp: Array<{ httpStatus: number; count: number }>;
+  attemptsExhausted: {
+    networkTimeout: number;
+    connectionReset: number;
+    transportUnavailable: number;
+    http: Array<{ httpStatus: number; count: number }>;
+  };
+};
+
 export type BoundedPilotCrawlBridgeReceipt = {
   version: typeof P12_2_CRAWL_BRIDGE_VERSION;
   status: "bounded_pilot_completed";
@@ -158,6 +170,7 @@ export type BoundedPilotCrawlBridgeReceipt = {
     robotsExcluded: number;
     failures: number;
   };
+  failureAttribution: BoundedPilotFailureAttribution;
   wholeSiteCertified: false;
   persistence: {
     checkpointPersisted: true;
@@ -611,6 +624,106 @@ function checkpointRecord(input: {
   };
 }
 
+type MutableBoundedPilotFailureAttribution = {
+  policyRejections: number;
+  permanentHttp: Map<number, number>;
+  attemptsExhausted: {
+    networkTimeout: number;
+    connectionReset: number;
+    transportUnavailable: number;
+    http: Map<number, number>;
+  };
+};
+
+function createBoundedPilotFailureAttribution(): MutableBoundedPilotFailureAttribution {
+  return {
+    policyRejections: 0,
+    permanentHttp: new Map(),
+    attemptsExhausted: {
+      networkTimeout: 0,
+      connectionReset: 0,
+      transportUnavailable: 0,
+      http: new Map(),
+    },
+  };
+}
+
+function incrementStatusCount(target: Map<number, number>, status: number): void {
+  target.set(status, (target.get(status) ?? 0) + 1);
+}
+
+function observeBoundedPilotTerminalFailures(input: {
+  outcomes: SuppliedCrawlUrlOutcome[];
+  attempt: number;
+  policy: FullSiteExecutionPolicy;
+  attribution: MutableBoundedPilotFailureAttribution;
+}): void {
+  for (const outcome of input.outcomes) {
+    if (outcome.kind !== "failure") continue;
+    const decision = classifyCrawlRetry(outcome.signal, input.attempt, input.policy);
+    if (decision.retryable) continue;
+
+    if (decision.reason === "policy_rejection") {
+      input.attribution.policyRejections += 1;
+      continue;
+    }
+    if (decision.reason === "permanent_http") {
+      if (outcome.signal.kind !== "http_status") {
+        throw new Error("crawl_bridge_failure_attribution_permanent_http_signal_invalid");
+      }
+      incrementStatusCount(input.attribution.permanentHttp, outcome.signal.httpStatus);
+      continue;
+    }
+    if (decision.reason !== "attempts_exhausted") {
+      throw new Error("crawl_bridge_failure_attribution_reason_invalid");
+    }
+    if (outcome.signal.kind === "http_status") {
+      incrementStatusCount(input.attribution.attemptsExhausted.http, outcome.signal.httpStatus);
+    } else if (outcome.signal.kind === "network_timeout") {
+      input.attribution.attemptsExhausted.networkTimeout += 1;
+    } else if (outcome.signal.kind === "connection_reset") {
+      input.attribution.attemptsExhausted.connectionReset += 1;
+    } else if (outcome.signal.kind === "transport_unavailable") {
+      input.attribution.attemptsExhausted.transportUnavailable += 1;
+    } else {
+      throw new Error("crawl_bridge_failure_attribution_exhausted_signal_invalid");
+    }
+  }
+}
+
+function finalizeBoundedPilotFailureAttribution(
+  input: MutableBoundedPilotFailureAttribution,
+  expectedTerminalFailures: number,
+): BoundedPilotFailureAttribution {
+  const permanentHttp = [...input.permanentHttp.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([httpStatus, count]) => ({ httpStatus, count }));
+  const exhaustedHttp = [...input.attemptsExhausted.http.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([httpStatus, count]) => ({ httpStatus, count }));
+  const attributed =
+    input.policyRejections +
+    permanentHttp.reduce((sum, item) => sum + item.count, 0) +
+    input.attemptsExhausted.networkTimeout +
+    input.attemptsExhausted.connectionReset +
+    input.attemptsExhausted.transportUnavailable +
+    exhaustedHttp.reduce((sum, item) => sum + item.count, 0);
+  if (attributed !== expectedTerminalFailures) {
+    throw new Error("crawl_bridge_failure_attribution_counter_mismatch");
+  }
+  return {
+    terminalFailures: expectedTerminalFailures,
+    policyRejections: input.policyRejections,
+    permanentHttp,
+    attemptsExhausted: {
+      networkTimeout: input.attemptsExhausted.networkTimeout,
+      connectionReset: input.attemptsExhausted.connectionReset,
+      transportUnavailable: input.attemptsExhausted.transportUnavailable,
+      http: exhaustedHttp,
+    },
+  };
+}
+
 function historySource(snapshot: FullSiteCrawlBridgeSnapshot): CrawlHistorySource {
   return { inventory: snapshot.inventory, certification: snapshot.certification };
 }
@@ -731,6 +844,7 @@ async function runFullSiteCrawlBridgeInternal(
   }
 
   const requestState = { pageRequestsStarted: 0 };
+  const boundedFailureAttribution = createBoundedPilotFailureAttribution();
   while (checkpoint.status !== "completed") {
     const outcomes = await checkpointOutcomes({
       siteId: binding.siteId,
@@ -743,6 +857,14 @@ async function runFullSiteCrawlBridgeInternal(
       },
       requestState,
     });
+    if (scope === "bounded_pilot") {
+      observeBoundedPilotTerminalFailures({
+        outcomes,
+        attempt: checkpoint.nextAttempt!,
+        policy: executionPlan.policy,
+        attribution: boundedFailureAttribution,
+      });
+    }
     checkpoint = advanceCrawlCheckpoint(executionPlan, checkpoint, {
       expectedCheckpointFingerprint: checkpoint.fingerprint,
       batchId: checkpoint.activeBatchId!,
@@ -785,6 +907,10 @@ async function runFullSiteCrawlBridgeInternal(
         robotsExcluded: checkpoint.counters.robotsExcluded,
         failures: checkpoint.counters.terminalFailures,
       },
+      failureAttribution: finalizeBoundedPilotFailureAttribution(
+        boundedFailureAttribution,
+        checkpoint.counters.terminalFailures,
+      ),
       wholeSiteCertified: false,
       persistence: {
         checkpointPersisted: true,
