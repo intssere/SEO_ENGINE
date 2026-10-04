@@ -1,25 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { CustomerDomainHub } from "../components/customer-domain-hub";
-import { OperationalTable } from "../components/operational-table";
 
 export function AuthorityOpportunitiesPage(){
   const q=useQuery({
     queryKey:["/api/authority/opportunities"],
-    queryFn:async()=>{
-      const r=await fetch("/api/authority/opportunities");
-      if(!r.ok) throw Error();
+    queryFn:()=>fetch("/api/authority/opportunities").then(r=>{
+      if(!r.ok)throw Error();
       return r.json();
-    },
+    }),
   });
   const d=q.data?.discovery;
-  return <div className="content">
-    <h1>Authority opportunities</h1>
-    <p className="muted">Evidence-backed only. No scoring, qualification, or outreach.</p>
-    {q.isLoading?<section className="card" role="status">Loading…</section>
-    :q.isError||!q.data?<section className="card" role="alert">Unavailable.</section>
-    :!d?<section className="card"><h2>No authority opportunity evidence</h2><p>{q.data.reason}</p><strong>NO SYNTHETIC FALLBACK</strong></section>
-    :<section className="card"><h2>{d.targetDomain}</h2><p>{d.summary.total} discoveries</p><OperationalTable data={d.opportunities}/></section>}
-  </div>;
+  if(q.isLoading)return <div className="content card" role="status">Loading…</div>;
+  if(q.isError||!q.data)return <div className="content card" role="alert">Unavailable.</div>;
+  if(!d)return <div className="content card"><h1>Authority opportunities</h1><p>{q.data.reason}</p><strong>NO SYNTHETIC FALLBACK</strong></div>;
+  return <div className="content"><h1>Authority opportunities</h1><p>{d.summary.total} evidence-backed discoveries. No scoring, qualification, or outreach.</p><div className="card">{d.opportunities.map((x:any)=><p key={x.opportunityId}><strong>{x.sourceDomain}</strong> · {x.kind} · {x.rationaleCode}</p>)}</div></div>;
 }
 
 export default function AuthorityPage(){
