@@ -95,6 +95,8 @@ test("bounded_pilot durable result accepts only internally consistent aggregate 
           boundedPilotFailureAttribution: {
             terminalFailures: 3,
             policyRejections: 1,
+            robotsPolicyRejections: { total: 0, reasons: [] },
+            otherPolicyRejections: 1,
             permanentHttp: [{ httpStatus: 404, count: 1 }],
             attemptsExhausted: {
               networkTimeout: 1,
