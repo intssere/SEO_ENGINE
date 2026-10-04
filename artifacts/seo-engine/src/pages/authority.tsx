@@ -31,7 +31,7 @@ export default function AuthorityPage(){
         ["Anchor distribution",p.anchors,"anchorText"],
         ["Competitor gaps",p.competitorGaps,"referringDomain"],
       ].map(([title,rows,key])=><section className="card mt-5" key={title as string}>
-        <div className="p-5 pb-0"><h2>{title as string}</h2>{title==="Competitor gaps"&&<p className="muted">Descriptive only; opportunity scoring starts in UGP-9.3.</p>}</div>
+        <div className="p-5 pb-0"><h2>{title as string}</h2>{title==="Competitor gaps"&&<p className="muted">Descriptive evidence only; opportunity scoring is handled separately.</p>}</div>
         <OperationalTable data={rows as any[]} label={title as string} rowKey={(row)=>String(row[key as string])}/>
       </section>)}
       <section className="card p-5 mt-5"><strong>Interpretation guardrails</strong><p className="muted">Provider-reported lost links are not exact normalized loss timestamps. This dashboard authorizes no acquisition, outreach, scheduling, or site changes.</p></section>
