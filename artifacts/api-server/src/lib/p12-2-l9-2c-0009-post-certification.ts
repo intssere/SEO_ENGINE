@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const P12_2_L9_2C_VERSION = "p12-2-l9-2a-0009-post-apply-readonly-cert-v1" as const;
+export const P12_2_L9_2C_VERSION = "p12-2-l9-2c-0009-post-apply-readonly-cert-v1" as const;
 export const P12_2_L9_2C_PROJECT_ID = "52265e29-921b-4652-ac0d-9da4e5e69936" as const;
 export const P12_2_L9_2C_ENVIRONMENT_ID = "7f8d920f-f6c6-44f0-b9fe-252cb4f32298" as const;
 export const P12_2_L9_2C_POSTGRES_SERVICE_ID = "b69e0633-7ab9-40ab-85f3-c9edd6acb031" as const;
@@ -19,7 +19,7 @@ export const P12_2_L9_2C_QUERIES: readonly P122L92CQuery[] = Object.freeze([
     (SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') = ${P12_2_L9_2C_EXPECTED_TABLE_COUNT}
     AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='first_party_crawl_l2_invocations')
     AND EXISTS (SELECT 1 FROM pg_catalog.pg_constraint con JOIN pg_catalog.pg_class c ON c.oid=con.conrelid JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname='first_party_crawl_l2_invocations' AND con.conname='first_party_crawl_l2_invocations_phase_check' AND pg_get_constraintdef(con.oid,true) ILIKE '%bounded_pilot%')
-    AND NOT EXISTS (SELECT 1 FROM first_party_crawl_l2_invocations WHERE phase NOT IN ('full_initial','full_interrupt','full_resume','full_reconciliation','incremental'))
+    AND NOT EXISTS (SELECT 1 FROM first_party_crawl_l2_invocations WHERE phase NOT IN ('bounded_pilot','full_initial','full_interrupt','full_resume','full_reconciliation','incremental'))
     AND EXISTS (SELECT 1 FROM public.sites WHERE id='${P12_2_L9_2C_SITE_ID}'::uuid AND lower(domain)='diamondshelf.us' AND canonical_origin='${P12_2_L9_2C_ORIGIN}' AND is_active=true)
     THEN 1 ELSE 0 END AS post_state_guard` },
   { id:"l2_constraint_contract", sql:"SELECT con.conname AS constraint_name, con.contype AS constraint_type, pg_get_constraintdef(con.oid,true) AS definition FROM pg_catalog.pg_constraint con JOIN pg_catalog.pg_class c ON c.oid=con.conrelid JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname='first_party_crawl_l2_invocations' ORDER BY con.conname" },
