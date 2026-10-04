@@ -374,7 +374,7 @@ export function buildSitemapInventory(input: SitemapInventoryInput): SitemapInve
   if (input.documents.length > policy.maxDocuments) throw new Error("sitemap_supplied_document_count_exceeds_limit");
   const supplied = new Map<string, string>();
   for (const document of input.documents) {
-    const url = normalizeDocumentUrl(document.url, canonicalOrigin, policy.maxPathSegments, document.url !== input.rootSitemapUrl);
+    const url = normalizeDocumentUrl(document.url, canonicalOrigin, policy.maxPathSegments, true);
     if (supplied.has(url)) throw new Error("sitemap_supplied_document_duplicate");
     if (Buffer.byteLength(document.xml, "utf8") > policy.maxDocumentBytes) throw new Error("sitemap_document_bytes_exceeds_limit");
     supplied.set(url, document.xml);
