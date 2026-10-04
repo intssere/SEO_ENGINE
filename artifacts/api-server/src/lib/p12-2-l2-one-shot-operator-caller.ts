@@ -13,6 +13,7 @@ export const P12_2_L2_VERSION = "p12-2-l2-one-shot-operator-v1" as const;
 export const P12_2_L2_MAX_INVOCATION_ATTEMPTS = 1 as const;
 
 export const P12_2_L2_PHASES = [
+  "bounded_pilot",
   "full_initial",
   "full_interrupt",
   "full_resume",
