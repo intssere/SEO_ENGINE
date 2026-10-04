@@ -97,6 +97,8 @@ test("L6.3 maps bounded_pilot only to the non-certifying pilot executor", async 
           policyRejections: 1,
           robotsPolicyRejections: { total: 0, reasons: [] },
           otherPolicyRejections: 1,
+
+          otherPolicyRejectionReasons: [{ reason: "unclassified", count: 1 }],
           permanentHttp: [{ httpStatus: 404, count: 1 }],
           attemptsExhausted: {
             networkTimeout: 0,
@@ -125,6 +127,8 @@ test("L6.3 maps bounded_pilot only to the non-certifying pilot executor", async 
     policyRejections: 1,
     robotsPolicyRejections: { total: 0, reasons: [] },
     otherPolicyRejections: 1,
+
+    otherPolicyRejectionReasons: [{ reason: "unclassified", count: 1 }],
     permanentHttp: [{ httpStatus: 404, count: 1 }],
     attemptsExhausted: {
       networkTimeout: 0,
