@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
+  OTHER_POLICY_REJECTION_REASONS,
   ROBOTS_POLICY_REJECTION_REASONS,
   type BoundedPilotFailureAttribution,
 } from "./first-party-crawl-runtime-bridge.js";
@@ -310,8 +311,23 @@ function assertResult(packet: P122L2Packet, result: P122L2ExecutionResult): void
       seenRobotReasons.add(item.reason);
       robotsPolicyTotal += item.count;
     }
+    const seenOtherReasons = new Set<string>();
+    let otherPolicyTotal = 0;
+    for (const item of attribution.otherPolicyRejectionReasons) {
+      if (
+        !OTHER_POLICY_REJECTION_REASONS.includes(item.reason) ||
+        !Number.isInteger(item.count) ||
+        item.count < 1 ||
+        seenOtherReasons.has(item.reason)
+      ) {
+        throw new Error("p12_2_l2_bounded_diagnostics_other_policy_reason_invalid");
+      }
+      seenOtherReasons.add(item.reason);
+      otherPolicyTotal += item.count;
+    }
     if (
       robotsPolicyTotal !== attribution.robotsPolicyRejections.total ||
+      otherPolicyTotal !== attribution.otherPolicyRejections ||
       robotsPolicyTotal + attribution.otherPolicyRejections !== attribution.policyRejections
     ) {
       throw new Error("p12_2_l2_bounded_diagnostics_policy_breakdown_mismatch");
