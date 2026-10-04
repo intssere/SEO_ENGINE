@@ -116,7 +116,11 @@ export class P122L3LiveExecutor implements P122L2InjectedExecutor {
       const result = await this.adapter.boundedPilotCrawl({
         config, dependencies, runId: packet.runId, observedAt: packet.observedAt,
       });
-      return { status: "completed", receiptFingerprint: result.fingerprint };
+      return {
+        status: "completed",
+        receiptFingerprint: result.fingerprint,
+        boundedPilotFailureAttribution: result.failureAttribution,
+      };
     }
 
     if (packet.phase === "full_initial") {
