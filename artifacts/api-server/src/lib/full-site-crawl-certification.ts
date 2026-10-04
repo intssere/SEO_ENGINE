@@ -382,6 +382,7 @@ function assertExactLineage(input: FullSiteCrawlCertificationInput): void {
   assertCrawlPlanSemanticIntegrity(crawlPlan);
   assertInventorySemanticIntegrity(inventory);
   assertFullSiteCrawlExecutionPlanIntegrity(executionPlan);
+  if (executionPlan.scope !== "full_site") throw new Error("crawl_certification_full_site_execution_scope_required");
   assertFullSiteCrawlCheckpointIntegrity(executionPlan, checkpoint);
 
   if (
