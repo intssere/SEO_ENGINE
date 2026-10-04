@@ -18,7 +18,6 @@ import OpportunitiesPage from './pages/opportunities';
 import ContentPage from './pages/content';
 import SiteAuditHubPage from './pages/site-audit-hub';
 import AuthorityPage from './pages/authority';
-import AuthorityDashboardPage from './pages/authority-dashboard';
 import AutomationPage from './pages/automation';
 import GovernancePage from './pages/governance';
 import ActionsPage from './pages/actions';
@@ -40,6 +39,7 @@ import ReportsPage from './pages/reports';
 
 const WebsiteConnectionWizardPage = lazy(() => import('./pages/website-connection-wizard'));
 const ConnectionsPage = lazy(() => import('./pages/connections'));
+const AuthorityDashboardPage = lazy(() => import('./pages/authority-dashboard'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,7 +74,11 @@ function Router() {
           <Route path="/site-audit/technical" component={TechnicalSeoPage} />
           <Route path="/site-audit/internal-links" component={InternalLinksPage} />
 
-          <Route path="/authority/backlinks" component={AuthorityDashboardPage} />
+          <Route path="/authority/backlinks">
+            <Suspense fallback={<div className="content"><div className="card" role="status">Loading authority dashboard…</div></div>}>
+              <AuthorityDashboardPage />
+            </Suspense>
+          </Route>
           <Route path="/authority/competitors" component={SearchIntelligencePage} />
 
           <Route path="/automation/review" component={ApprovalsPage} />
