@@ -326,7 +326,7 @@ test("bounded pilot separates robots policy rejection reasons from other policy 
   const pageUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/page-policy`;
   const documents = [{
     url: `${DIAMOND_SHELF_CANONICAL_ORIGIN}/sitemap.xml`,
-    xml: urlset([{ path: "/robots-policy" }, { path: "/page-policy" }]),
+    xml: urlset([{ path: "/robots-policy" }, { path: "/page-policy" }, { path: "/z-extra" }]),
   }];
   const pageResults = new Map<string, PageTransportResult[]>([
     [pageUrl, [{ kind: "failure", signal: { kind: "policy_rejection" } }]],
