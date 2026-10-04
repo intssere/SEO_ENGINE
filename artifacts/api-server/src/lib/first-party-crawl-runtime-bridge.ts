@@ -14,6 +14,7 @@ import {
   createInitialCrawlCheckpoint,
   describeCrawlResumeWork,
   evaluateFullSiteExecutionUrl,
+  planBoundedPilotCrawlExecution,
   planFullSiteCrawlExecution,
   type CrawlRetrySignal,
   type FullSiteCrawlCheckpoint,
@@ -130,6 +131,37 @@ export type FullSiteCrawlBridgeSnapshot = {
   certification: FullSiteCrawlCertification;
   comparisonToPrevious: CrawlHistoryComparison | null;
   persistence: {
+    rawResponseBodyPersisted: false;
+    rawSitemapXmlPersisted: false;
+    pageContentPersisted: false;
+  };
+  fingerprint: string;
+};
+
+export type BoundedPilotCrawlBridgeReceipt = {
+  version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+  status: "bounded_pilot_completed";
+  runId: string;
+  observedAt: string;
+  siteId: string;
+  canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+  inventoryFingerprint: string;
+  executionPlanFingerprint: string;
+  checkpointFingerprint: string;
+  selectedUrls: number;
+  inventoryTruncated: true;
+  truncationReasons: string[];
+  summary: {
+    fetchedSuccessful: number;
+    noindex: number;
+    redirects: number;
+    robotsExcluded: number;
+    failures: number;
+  };
+  wholeSiteCertified: false;
+  persistence: {
+    checkpointPersisted: true;
+    completedRunPersisted: false;
     rawResponseBodyPersisted: false;
     rawSitemapXmlPersisted: false;
     pageContentPersisted: false;
@@ -586,14 +618,21 @@ function historySource(snapshot: FullSiteCrawlBridgeSnapshot): CrawlHistorySourc
 async function runFullSiteCrawlBridgeInternal(
   input: FullSiteCrawlBridgeRunInput,
   options: FirstPartyCrawlBridgeOptions = {},
-  control: { stopAfterCheckpointRevision?: number | null } = {},
-): Promise<FullSiteCrawlBridgeSnapshot | FullSiteCrawlInterruptionReceipt> {
+  control: {
+    stopAfterCheckpointRevision?: number | null;
+    scope?: "full_site" | "bounded_pilot";
+  } = {},
+): Promise<FullSiteCrawlBridgeSnapshot | FullSiteCrawlInterruptionReceipt | BoundedPilotCrawlBridgeReceipt> {
   const runId = requireRunId(input.runId);
   const observedAt = requireObservedAt(input.observedAt);
   const binding = normalizeBinding(input.binding);
   assertExecutable(options);
 
   const stopAfterCheckpointRevision = control.stopAfterCheckpointRevision ?? null;
+  const scope = control.scope ?? "full_site";
+  if (scope === "bounded_pilot" && stopAfterCheckpointRevision !== null) {
+    throw new Error("crawl_bridge_bounded_pilot_interruption_not_supported");
+  }
   if (
     stopAfterCheckpointRevision !== null &&
     (!Number.isInteger(stopAfterCheckpointRevision) || stopAfterCheckpointRevision < 1)
@@ -636,7 +675,9 @@ async function runFullSiteCrawlBridgeInternal(
     documents,
     policy: input.sitemapPolicy,
   });
-  const executionPlan = planFullSiteCrawlExecution(crawlPlan, inventory, input.executionPolicy);
+  const executionPlan = scope === "bounded_pilot"
+    ? planBoundedPilotCrawlExecution(crawlPlan, inventory, input.executionPolicy)
+    : planFullSiteCrawlExecution(crawlPlan, inventory, input.executionPolicy);
   assertFullSiteCrawlExecutionPlanIntegrity(executionPlan);
 
   const storedCheckpoint = input.resumeCheckpoint ?? await options.persistence.loadCheckpoint({
@@ -723,6 +764,42 @@ async function runFullSiteCrawlBridgeInternal(
     }
   }
 
+  if (scope === "bounded_pilot") {
+    const withoutFingerprint: Omit<BoundedPilotCrawlBridgeReceipt, "fingerprint"> = {
+      version: P12_2_CRAWL_BRIDGE_VERSION,
+      status: "bounded_pilot_completed",
+      runId,
+      observedAt,
+      siteId: binding.siteId,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      inventoryFingerprint: inventory.fingerprint,
+      executionPlanFingerprint: executionPlan.fingerprint,
+      checkpointFingerprint: checkpoint.fingerprint,
+      selectedUrls: executionPlan.source.inventoryUniqueUrls,
+      inventoryTruncated: true,
+      truncationReasons: [...inventory.completeness.reasons],
+      summary: {
+        fetchedSuccessful: checkpoint.counters.fetchedSuccessful,
+        noindex: checkpoint.counters.noindex,
+        redirects: checkpoint.counters.redirects,
+        robotsExcluded: checkpoint.counters.robotsExcluded,
+        failures: checkpoint.counters.terminalFailures,
+      },
+      wholeSiteCertified: false,
+      persistence: {
+        checkpointPersisted: true,
+        completedRunPersisted: false,
+        rawResponseBodyPersisted: false,
+        rawSitemapXmlPersisted: false,
+        pageContentPersisted: false,
+      },
+    };
+    return {
+      ...withoutFingerprint,
+      fingerprint: fingerprint(withoutFingerprint),
+    };
+  }
+
   const certification = buildFullSiteCrawlCertification({
     crawlPlan,
     inventory,
@@ -790,6 +867,17 @@ export async function runFullSiteCrawlBridge(
     }
   }
   return result as FullSiteCrawlBridgeSnapshot;
+}
+
+export async function runBoundedPilotCrawlBridge(
+  input: FullSiteCrawlBridgeRunInput,
+  options: FirstPartyCrawlBridgeOptions = {},
+): Promise<BoundedPilotCrawlBridgeReceipt> {
+  const result = await runFullSiteCrawlBridgeInternal(input, options, { scope: "bounded_pilot" });
+  if (!("status" in result) || result.status !== "bounded_pilot_completed") {
+    throw new Error("crawl_bridge_bounded_pilot_receipt_required");
+  }
+  return result;
 }
 
 export async function runFullSiteCrawlBridgeUntilCheckpoint(
