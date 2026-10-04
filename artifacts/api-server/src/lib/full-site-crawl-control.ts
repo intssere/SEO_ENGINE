@@ -74,8 +74,11 @@ export type CrawlExecutionAuthorization = {
   publicSiteWrites: false;
 };
 
+export type CrawlExecutionScope = "full_site" | "bounded_pilot";
+
 export type FullSiteCrawlExecutionPlan = {
   version: "first_party_full_site_crawl_control_v1";
+  scope: CrawlExecutionScope;
   siteId: string;
   canonicalOrigin: string;
   source: {
@@ -258,7 +261,11 @@ function validateRetryPolicy(policy: Pick<FullSiteExecutionPolicy, "maxAttemptsP
   if (policy.retryMaxDelayMs < policy.retryBaseDelayMs) throw new Error("crawl_execution_retry_delay_order_invalid");
 }
 
-function validateLineage(crawlPlan: CrawlControllerPlan, inventory: SitemapInventoryResult): void {
+function validateLineage(
+  crawlPlan: CrawlControllerPlan,
+  inventory: SitemapInventoryResult,
+  scope: CrawlExecutionScope,
+): void {
   if (crawlPlan.version !== "first_party_crawl_controller_v1" || crawlPlan.mode !== "full_site") throw new Error("crawl_execution_full_site_plan_required");
   if (crawlPlan.target.targetClass !== "first_party" || !crawlPlan.target.siteId.trim()) throw new Error("crawl_execution_first_party_plan_required");
   requireCanonicalOrigin(crawlPlan.target.canonicalOrigin);
@@ -282,7 +289,19 @@ function validateLineage(crawlPlan: CrawlControllerPlan, inventory: SitemapInven
 
   if (inventory.version !== "first_party_sitemap_inventory_v1") throw new Error("crawl_execution_inventory_version_invalid");
   if (inventory.siteId !== crawlPlan.target.siteId || inventory.canonicalOrigin !== crawlPlan.target.canonicalOrigin) throw new Error("crawl_execution_inventory_identity_mismatch");
-  if (!inventory.completeness.complete || inventory.completeness.hardLimitReached) throw new Error("crawl_execution_complete_inventory_required");
+  if (scope === "full_site") {
+    if (!inventory.completeness.complete || inventory.completeness.hardLimitReached) throw new Error("crawl_execution_complete_inventory_required");
+  } else {
+    const reasons = inventory.completeness.reasons;
+    const onlyInventoryLimit =
+      inventory.completeness.complete === false &&
+      inventory.completeness.hardLimitReached === true &&
+      reasons.length === 1 &&
+      reasons[0] === "inventory_url_limit_reached" &&
+      inventory.documents.missingSupplied.length === 0 &&
+      inventory.rejectionCounts.inventory_url_limit_reached > 0;
+    if (!onlyInventoryLimit) throw new Error("crawl_execution_bounded_pilot_truncation_required");
+  }
   if (!allFalse(inventory.authorization as unknown as Record<string, boolean>)) throw new Error("crawl_execution_inventory_authorization_must_be_closed");
   if (!/^[a-f0-9]{64}$/.test(inventory.fingerprint)) throw new Error("crawl_execution_inventory_fingerprint_invalid");
   if (!Number.isInteger(inventory.inventory.uniqueUrls) || inventory.inventory.uniqueUrls < 0 || inventory.inventory.uniqueUrls !== inventory.inventory.entries.length) {
@@ -354,12 +373,13 @@ function batchFingerprint(index: number, urls: string[], inventoryFingerprint: s
   return fingerprint({ index, urls, inventoryFingerprint });
 }
 
-export function planFullSiteCrawlExecution(
+function planCrawlExecution(
   crawlPlan: CrawlControllerPlan,
   inventory: SitemapInventoryResult,
   policyInput: FullSiteExecutionPolicy,
+  scope: CrawlExecutionScope,
 ): FullSiteCrawlExecutionPlan {
-  validateLineage(crawlPlan, inventory);
+  validateLineage(crawlPlan, inventory, scope);
   const policy = validateExecutionPolicyValues(policyInput, crawlPlan.limits.pageHardLimit);
 
   const canonicalUrls = inventory.inventory.entries.map((entry) => entry.canonicalUrl);
@@ -385,6 +405,7 @@ export function planFullSiteCrawlExecution(
 
   const withoutFingerprint: Omit<FullSiteCrawlExecutionPlan, "fingerprint"> = {
     version: "first_party_full_site_crawl_control_v1",
+    scope,
     siteId: crawlPlan.target.siteId,
     canonicalOrigin: crawlPlan.target.canonicalOrigin,
     source: {
@@ -410,8 +431,25 @@ export function planFullSiteCrawlExecution(
   return { ...withoutFingerprint, fingerprint: fingerprint(withoutFingerprint) };
 }
 
+export function planFullSiteCrawlExecution(
+  crawlPlan: CrawlControllerPlan,
+  inventory: SitemapInventoryResult,
+  policyInput: FullSiteExecutionPolicy,
+): FullSiteCrawlExecutionPlan {
+  return planCrawlExecution(crawlPlan, inventory, policyInput, "full_site");
+}
+
+export function planBoundedPilotCrawlExecution(
+  crawlPlan: CrawlControllerPlan,
+  inventory: SitemapInventoryResult,
+  policyInput: FullSiteExecutionPolicy,
+): FullSiteCrawlExecutionPlan {
+  return planCrawlExecution(crawlPlan, inventory, policyInput, "bounded_pilot");
+}
+
 export function assertFullSiteCrawlExecutionPlanIntegrity(plan: FullSiteCrawlExecutionPlan): void {
   if (plan.version !== "first_party_full_site_crawl_control_v1") throw new Error("crawl_execution_plan_version_invalid");
+  if (plan.scope !== "full_site" && plan.scope !== "bounded_pilot") throw new Error("crawl_execution_scope_invalid");
   if (!plan.siteId.trim()) throw new Error("crawl_execution_site_id_invalid");
   requireCanonicalOrigin(plan.canonicalOrigin);
   if (plan.source.crawlPlanVersion !== "first_party_crawl_controller_v1") throw new Error("crawl_execution_source_version_invalid");
