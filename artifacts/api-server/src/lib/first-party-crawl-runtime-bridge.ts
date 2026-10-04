@@ -619,7 +619,7 @@ async function checkpointOutcomes(input: {
   checkpoint: FullSiteCrawlCheckpoint;
   options: ExecutableCrawlAdapters;
   requestState: { pageRequestsStarted: number };
-}): Promise<SuppliedCrawlUrlOutcome[]> {
+}): Promise<AttributedCrawlUrlOutcome[]> {
   assertFullSiteCrawlCheckpointIntegrity(input.plan, input.checkpoint);
   const resume = describeCrawlResumeWork(input.plan, input.checkpoint);
   if (resume.status === "completed") return [];
@@ -629,7 +629,7 @@ async function checkpointOutcomes(input: {
     await input.options.clock.sleep(retryDelayForAttempt((resume.attempt ?? 1) - 1, input.plan.policy));
   }
 
-  const outcomes: SuppliedCrawlUrlOutcome[] = [];
+  const outcomes: AttributedCrawlUrlOutcome[] = [];
   for (const canonicalUrl of resume.canonicalUrls) {
     outcomes.push(await executeCanonicalUrl({
       siteId: input.siteId,
