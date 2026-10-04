@@ -29,6 +29,7 @@ async function buildAll() {
       "p12-2-l9-2b-0009-apply": path.resolve(artifactDir, "src/p12-2-l9-2b-0009-apply-cli.ts"),
       "p12-2-l9-2c-0009-post-cert": path.resolve(artifactDir, "src/p12-2-l9-2c-0009-post-cert-cli.ts"),
       "p12-2-l10-packet-005-cert": path.resolve(artifactDir, "src/p12-2-l10-packet-005-cert-cli.ts"),
+      "p12-2-l10-2-packet-006-cert": path.resolve(artifactDir, "src/p12-2-l10-2-packet-006-cert-cli.ts"),
     },
     platform: "node",
     bundle: true,
