@@ -4,6 +4,7 @@ import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
   P12_2_CRAWL_BRIDGE_VERSION,
   P12_2_ROBOTS_USER_AGENT,
+  OTHER_POLICY_REJECTION_REASONS,
   RobotsPolicyEvaluationError,
   type PageTransportRequest,
   type RobotsEvaluationRequest,
@@ -277,6 +278,7 @@ test("page transport detects noindex, enforces transient body bound, and returns
   assert.deepEqual(await oversize.get(pageRequest()), {
     kind: "failure",
     signal: { kind: "policy_rejection" },
+    policyRejectionReason: "response_oversize",
   });
 
   const redirect = createFirstPartyPageTransport({
@@ -290,6 +292,37 @@ test("page transport detects noindex, enforces transient body bound, and returns
     kind: "redirect",
     redirectTarget: DIAMOND_SHELF_CANONICAL_ORIGIN + "/products/b",
     redirectCount: 1,
+  });
+});
+
+test("page transport emits a closed aggregate-safe non-robots policy taxonomy", async () => {
+  assert.deepEqual(OTHER_POLICY_REJECTION_REASONS, [
+    "response_oversize",
+    "redirect_validation",
+    "scope_validation",
+    "secure_transport_rejection",
+    "request_validation",
+    "unclassified",
+  ]);
+
+  const redirectInvalid = createFirstPartyPageTransport({
+    maxTransientPageBytes: 1_000,
+    fetchImpl: async () => new Response(null, { status: 302 }),
+  });
+  assert.deepEqual(await redirectInvalid.get(pageRequest()), {
+    kind: "failure",
+    signal: { kind: "policy_rejection" },
+    policyRejectionReason: "redirect_validation",
+  });
+
+  const timeoutInvalid = createFirstPartyPageTransport({
+    maxTransientPageBytes: 1_000,
+    fetchImpl: async () => new Response("", { status: 200 }),
+  });
+  assert.deepEqual(await timeoutInvalid.get({ ...pageRequest(), timeoutMs: 0 }), {
+    kind: "failure",
+    signal: { kind: "policy_rejection" },
+    policyRejectionReason: "request_validation",
   });
 });
 
@@ -310,6 +343,7 @@ test("first-party page transport inherits public-address pinning and rejects mix
   assert.deepEqual(await mixed.get(pageRequest()), {
     kind: "failure",
     signal: { kind: "policy_rejection" },
+    policyRejectionReason: "secure_transport_rejection",
   });
   assert.equal(executions, 0);
 
@@ -326,6 +360,7 @@ test("first-party page transport inherits public-address pinning and rejects mix
   assert.deepEqual(await rebinding.get(pageRequest(DIAMOND_SHELF_CANONICAL_ORIGIN + "/products/b")), {
     kind: "failure",
     signal: { kind: "policy_rejection" },
+    policyRejectionReason: "secure_transport_rejection",
   });
   assert.equal(resolverCalls, 2);
   assert.equal(executions, 1);
@@ -345,15 +380,21 @@ test("exact site/origin/HTTPS/query/credential scope fails closed before transpo
   assert.deepEqual(await transport.get({
     ...pageRequest(),
     siteId: "wrong-site",
-  }), { kind: "failure", signal: { kind: "policy_rejection" } });
+  }), {
+    kind: "failure",
+    signal: { kind: "policy_rejection" },
+    policyRejectionReason: "scope_validation",
+  });
 
   assert.deepEqual(await transport.get(pageRequest("https://example.com/a")), {
     kind: "failure",
     signal: { kind: "policy_rejection" },
+    policyRejectionReason: "scope_validation",
   });
   assert.deepEqual(await transport.get(pageRequest("https://diamondshelf.us/a?x=1")), {
     kind: "failure",
     signal: { kind: "policy_rejection" },
+    policyRejectionReason: "scope_validation",
   });
   assert.equal(calls, 0);
 });
