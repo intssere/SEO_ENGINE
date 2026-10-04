@@ -11,6 +11,7 @@ import task53WriteScopeRouter from "./task53-write-scope";
 import connectionsRouter from "./connections";
 import pilotRouter from "./pilot";
 import executionRouter from "./execution";
+import authorityOpportunitiesRouter from "./authority-opportunities";
 import { requireApiAuthentication, sensitiveMutationRateLimit } from "../middlewares/auth-security.js";
 
 const router: IRouter = Router();
@@ -34,5 +35,6 @@ router.use(task53WriteScopeRouter);
 router.use(connectionsRouter);
 router.use(pilotRouter);
 router.use(executionRouter);
+router.use(authorityOpportunitiesRouter);
 
 export default router;
