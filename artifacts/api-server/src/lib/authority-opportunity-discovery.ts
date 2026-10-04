@@ -199,21 +199,16 @@ function assertCompetitorBasis(current:BacklinkEvidenceDataset,bundle:BacklinkFi
   }
   const authority=current.source.authorityMetric;
   if(
-    bundle.basis.providerKey!==current.source.providerKey
+    authority===null
+    ||bundle.basis.providerKey!==current.source.providerKey
     ||bundle.basis.providerMethod!==current.source.providerDataset
     ||bundle.basis.sourceFingerprint!==current.source.sourceFingerprint
     ||bundle.basis.marketFingerprint!==current.source.marketFingerprint
     ||bundle.basis.categoryFingerprint!==current.source.categoryFingerprint
-    ||(authority===null)!==(bundle.basis.authorityMetric===null)
-    ||(
-      authority!==null
-      &&(
-        bundle.basis.authorityMetric.name!==authority.key
-        ||bundle.basis.authorityMetric.min!==authority.min
-        ||bundle.basis.authorityMetric.max!==authority.max
-        ||bundle.basis.authorityMetric.crossProviderComparable!==false
-      )
-    )
+    ||bundle.basis.authorityMetric.name!==authority.key
+    ||bundle.basis.authorityMetric.min!==authority.min
+    ||bundle.basis.authorityMetric.max!==authority.max
+    ||bundle.basis.authorityMetric.crossProviderComparable!==false
   ){
     throw new Error("ugp_authority_opportunity_competitor_basis_mismatch");
   }
