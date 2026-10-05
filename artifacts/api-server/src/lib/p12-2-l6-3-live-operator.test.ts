@@ -22,7 +22,11 @@ import {
 } from "./first-party-crawl-manual.js";
 import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
 import { DIAMOND_SHELF_CANONICAL_ORIGIN } from "./first-party-crawl-runtime-bridge.js";
-import { createInitialCrawlCheckpoint } from "./full-site-crawl-control.js";
+import {
+  advanceCrawlCheckpoint,
+  createInitialCrawlCheckpoint,
+  type SuppliedCrawlUrlOutcome,
+} from "./full-site-crawl-control.js";
 
 const HEX_A = "a".repeat(64);
 const HEX_B = "b".repeat(64);
@@ -203,7 +207,20 @@ test("L6.3 validates and maps full_resume checkpoint material", async () => {
     canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     entries: [{ path: "/a" }, { path: "/b" }],
   });
-  const checkpoint = createInitialCrawlCheckpoint(built.executionPlan);
+  const initial = createInitialCrawlCheckpoint(built.executionPlan);
+  const outcomes: SuppliedCrawlUrlOutcome[] = initial.pendingCanonicalUrls.map((canonicalUrl, index) =>
+    index === 0
+      ? { canonicalUrl, kind: "failure", signal: { kind: "network_timeout" } }
+      : { canonicalUrl, kind: "success" },
+  );
+  const checkpoint = advanceCrawlCheckpoint(built.executionPlan, initial, {
+    expectedCheckpointFingerprint: initial.fingerprint,
+    batchId: initial.activeBatchId!,
+    attempt: initial.nextAttempt!,
+    outcomes,
+  });
+  assert.equal(checkpoint.sequence, 1);
+  assert.equal(checkpoint.status, "pending");
   const packet = buildP122L2Packet({
     phase: "full_resume",
     runId: "l6-3-resume",
