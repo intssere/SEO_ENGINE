@@ -143,6 +143,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AuthorityOutreachApiResponse"
+  /authority/outreach/reviews:
+    post:
+      operationId: commitAuthorityOutreachReview
+      tags: [authority]
+      summary: Persist one authenticated human outreach review decision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorityOutreachReviewMutationRequest"
+      responses:
+        "200":
+          description: Durable immutable review event committed or exact retry replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorityOutreachReviewCommitResult"
+        "400": { description: Invalid review request or explicit confirmation }
+        "401": { description: Authenticated reviewer required }
+        "403": { description: Operator role, CSRF, or same-origin requirement failed }
+        "404": { description: Review workspace item or site not found }
+        "409": { description: Stale workspace, concurrent review change, or terminal decision }
+        "503": { description: Durable review schema or qualification evidence unavailable }
   /authority/opportunities:
     get:
       operationId: getAuthorityOpportunities
@@ -408,7 +432,7 @@ components:
       type: object
       required: [version, state, reason, workspace, semantics]
       properties:
-        version: { type: string, enum: [ugp-10-2-outreach-workspace-api-v1] }
+        version: { type: string, enum: [ugp-10-3-outreach-workspace-api-v1] }
         state: { type: string, enum: [available, unavailable] }
         reason: { type: [string, "null"] }
         workspace:
@@ -422,12 +446,65 @@ components:
             authenticatedReadOnly: { type: boolean, enum: [true] }
             syntheticFallback: { type: boolean, enum: [false] }
             humanReviewRequired: { type: boolean, enum: [true] }
-            reviewMutationAuthorized: { type: boolean, enum: [false] }
+            reviewMutationAuthorized: { type: boolean }
             reviewPersistenceConfigured: { type: boolean }
             contactDiscoveryAuthorized: { type: boolean, enum: [false] }
             outreachDraftingAuthorized: { type: boolean, enum: [false] }
             outreachSendingAuthorized: { type: boolean, enum: [false] }
             liveProviderExecutionAuthorized: { type: boolean, enum: [false] }
+            publicSiteWrites: { type: boolean, enum: [false] }
+    AuthorityOutreachReviewMutationRequest:
+      type: object
+      additionalProperties: false
+      required: [workspaceFingerprint, workspaceItemId, workspaceItemFingerprint, qualificationFingerprint, prospectFingerprint, expectedLatestReviewFingerprint, decision, reasonCode, confirmation]
+      properties:
+        workspaceFingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+        workspaceItemId: { type: string, pattern: "^uaow-[0-9a-f]{24}$" }
+        workspaceItemFingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+        qualificationFingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+        prospectFingerprint: { type: string, pattern: "^[0-9a-f]{64}$" }
+        expectedLatestReviewFingerprint:
+          type: [string, "null"]
+          pattern: "^[0-9a-f]{64}$"
+        decision:
+          type: string
+          enum: [approved_for_draft, rejected, deferred]
+        reasonCode:
+          type: string
+          enum: [editorial_fit_confirmed, needs_more_context, relationship_conflict, target_not_appropriate, timing_not_right, policy_or_reputation_risk]
+        confirmation: { type: string, minLength: 1, maxLength: 512 }
+    AuthorityOutreachReviewCommitResult:
+      type: object
+      additionalProperties: false
+      required: [version, status, idempotent, event, resultingState, semantics]
+      properties:
+        version: { type: string, enum: [ugp-10-3-durable-outreach-review-store-v1] }
+        status: { type: string, enum: [committed] }
+        idempotent: { type: boolean }
+        event:
+          type: object
+          additionalProperties: true
+        resultingState:
+          type: string
+          enum: [approved_for_draft, rejected, deferred]
+        semantics:
+          type: object
+          additionalProperties: false
+          required: [durablePersistence, appendOnlyAudit, immutableAudit, authenticatedOperatorRequired, csrfRequired, sameOriginRequired, idempotentRetry, contactDiscoveryAuthorized, outreachDraftingAuthorized, outreachSendingAuthorized, liveProviderExecutionAuthorized, schedulerEnabled, workerEnabled, publicSiteWrites]
+          properties:
+            durablePersistence: { type: boolean, enum: [true] }
+            appendOnlyAudit: { type: boolean, enum: [true] }
+            immutableAudit: { type: boolean, enum: [true] }
+            authenticatedOperatorRequired: { type: boolean, enum: [true] }
+            csrfRequired: { type: boolean, enum: [true] }
+            sameOriginRequired: { type: boolean, enum: [true] }
+            idempotentRetry: { type: boolean, enum: [true] }
+            contactDiscoveryAuthorized: { type: boolean, enum: [false] }
+            outreachDraftingAuthorized: { type: boolean, enum: [false] }
+            outreachSendingAuthorized: { type: boolean, enum: [false] }
+            liveProviderExecutionAuthorized: { type: boolean, enum: [false] }
+            schedulerEnabled: { type: boolean, enum: [false] }
+            workerEnabled: { type: boolean, enum: [false] }
             publicSiteWrites: { type: boolean, enum: [false] }
     AuthorityOpportunityApiResponse:
       type: object
