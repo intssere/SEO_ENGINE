@@ -9,6 +9,7 @@ import {
   assertFullSiteCrawlCheckpointIntegrity,
   assertFullSiteCrawlExecutionPlanIntegrity,
   planFullSiteCrawlExecution,
+  planFullSiteCrawlExecutionForResume,
   type FullSiteCrawlCheckpoint,
   type FullSiteCrawlExecutionPlan,
 } from "./full-site-crawl-control.js";
@@ -71,6 +72,7 @@ export type FullSiteCrawlCertification = {
     pageHardLimit: number;
     absolutePageCeiling: number;
     inventoryFingerprint: string;
+    executionInventoryFingerprint: string;
     executionPlanFingerprint: string;
     checkpointFingerprint: string;
     checkpointSequence: number;
@@ -397,8 +399,7 @@ function assertExactLineage(input: FullSiteCrawlCertificationInput): void {
     executionPlan.source.pageHardLimit !== crawlPlan.limits.pageHardLimit ||
     executionPlan.source.absolutePageCeiling !== crawlPlan.limits.absolutePageCeiling ||
     executionPlan.source.inventoryUniqueUrls !== inventory.inventory.uniqueUrls ||
-    executionPlan.source.inventoryFingerprint !== inventory.fingerprint ||
-    checkpoint.inventoryFingerprint !== inventory.fingerprint ||
+    checkpoint.inventoryFingerprint !== executionPlan.source.inventoryFingerprint ||
     checkpoint.planFingerprint !== executionPlan.fingerprint
   ) throw new Error("crawl_certification_fingerprint_lineage_mismatch");
   if (inventory.policy.maxInventoryUrls > crawlPlan.limits.pageHardLimit || inventory.inventory.uniqueUrls > crawlPlan.limits.pageHardLimit) {
@@ -408,7 +409,15 @@ function assertExactLineage(input: FullSiteCrawlCertificationInput): void {
     throw new Error("crawl_certification_inventory_not_certifiable");
   }
 
-  const reconstructedExecutionPlan = planFullSiteCrawlExecution(crawlPlan, inventory, executionPlan.policy);
+  const reconstructedExecutionPlan =
+    executionPlan.source.inventoryFingerprint === inventory.fingerprint
+      ? planFullSiteCrawlExecution(crawlPlan, inventory, executionPlan.policy)
+      : planFullSiteCrawlExecutionForResume(
+          crawlPlan,
+          inventory,
+          executionPlan.policy,
+          executionPlan.source.inventoryFingerprint,
+        );
   if (stableSerialize(reconstructedExecutionPlan) !== stableSerialize(executionPlan)) {
     throw new Error("crawl_certification_execution_plan_semantic_mismatch");
   }
@@ -448,6 +457,7 @@ export function buildFullSiteCrawlCertification(
       pageHardLimit: input.crawlPlan.limits.pageHardLimit,
       absolutePageCeiling: input.crawlPlan.limits.absolutePageCeiling,
       inventoryFingerprint: input.inventory.fingerprint,
+      executionInventoryFingerprint: input.executionPlan.source.inventoryFingerprint,
       executionPlanFingerprint: input.executionPlan.fingerprint,
       checkpointFingerprint: input.checkpoint.fingerprint,
       checkpointSequence: input.checkpoint.sequence,
@@ -478,6 +488,7 @@ export function assertFullSiteCrawlCertificationIntegrity(certification: FullSit
   if (!certification.siteId.trim()) throw new Error("crawl_certification_site_id_invalid");
   requireCanonicalOrigin(certification.canonicalOrigin);
   requireSha256(certification.lineage.inventoryFingerprint, "crawl_certification_lineage_fingerprint_invalid");
+  requireSha256(certification.lineage.executionInventoryFingerprint, "crawl_certification_lineage_fingerprint_invalid");
   requireSha256(certification.lineage.executionPlanFingerprint, "crawl_certification_lineage_fingerprint_invalid");
   requireSha256(certification.lineage.checkpointFingerprint, "crawl_certification_lineage_fingerprint_invalid");
   requirePositiveInteger(certification.lineage.pageHardLimit, "crawl_certification_page_hard_limit_invalid");
