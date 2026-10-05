@@ -23,7 +23,12 @@ import {
   type P122L2IncrementalMaterialSource,
 } from "./p12-2-l6-2-incremental-material-binding.js";
 import type { IncrementalRecrawlPolicy, IncrementalRecrawlTrustedCandidate } from "./incremental-recrawl-planner.js";
-import { assertFullSiteCrawlCheckpointFingerprintIntegrity, type FullSiteCrawlCheckpoint } from "./full-site-crawl-control.js";
+import type { FullSiteCrawlCheckpoint } from "./full-site-crawl-control.js";
+import {
+  assertP122L1010ResumeCheckpointBinding,
+  loadP122L1010PersistedResumeCheckpoint,
+  type P122L1010ResumeCheckpointLoader,
+} from "./p12-2-l10-10-persisted-resume-checkpoint.js";
 
 export const P12_2_L6_3_LIVE_OPERATOR_VERSION = "p12-2-l6-3-live-operator-v1" as const;
 
@@ -66,13 +71,8 @@ export function assertP122L3OperatorEnvelopeIntegrity(envelope: P122L3OperatorEn
   const incremental = envelope.incrementalMaterial ?? null;
 
   if (envelope.packet.phase === "full_resume") {
-    if (!resume || !envelope.packet.resume) throw new Error("p12_2_l6_3_resume_material_required");
-    assertFullSiteCrawlCheckpointFingerprintIntegrity(resume);
-    if (
-      resume.sequence !== envelope.packet.resume.checkpointRevision ||
-      resume.fingerprint !== envelope.packet.resume.checkpointFingerprint ||
-      resume.planFingerprint !== envelope.packet.resume.executionPlanFingerprint
-    ) throw new Error("p12_2_l6_3_resume_material_mismatch");
+    if (!envelope.packet.resume) throw new Error("p12_2_l6_3_resume_binding_required");
+    if (resume !== null) assertP122L1010ResumeCheckpointBinding(envelope.packet, resume);
   } else if (resume !== null) {
     throw new Error("p12_2_l6_3_resume_material_unexpected");
   }
@@ -103,6 +103,7 @@ export class P122L3LiveExecutor implements P122L2InjectedExecutor {
     private readonly envelope: P122L3OperatorEnvelope,
     private readonly databaseUrl: string,
     private readonly adapter: P122L3ExecutionAdapter = DEFAULT_EXECUTION_ADAPTER,
+    private readonly resumeCheckpointLoader: P122L1010ResumeCheckpointLoader = loadP122L1010PersistedResumeCheckpoint,
   ) {}
 
   async execute(packet: P122L2Packet): Promise<P122L2ExecutionResult> {
@@ -154,8 +155,14 @@ export class P122L3LiveExecutor implements P122L2InjectedExecutor {
     }
 
     if (packet.phase === "full_resume") {
-      const checkpoint = this.envelope.resumeCheckpoint;
-      if (!checkpoint) throw new Error("p12_2_l6_3_resume_material_required");
+      if (!packet.resume) throw new Error("p12_2_l6_3_resume_binding_required");
+      const checkpoint = this.envelope.resumeCheckpoint ?? await this.resumeCheckpointLoader({
+        databaseUrl: this.databaseUrl,
+        runId: packet.runId,
+        executionPlanFingerprint: packet.resume.executionPlanFingerprint,
+      });
+      if (!checkpoint) throw new Error("p12_2_l6_3_resume_checkpoint_not_found");
+      assertP122L1010ResumeCheckpointBinding(packet, checkpoint);
       const result = await this.adapter.fullCrawl({
         config, dependencies, runId: packet.runId, observedAt: packet.observedAt,
         resumeCheckpoint: checkpoint, compareToPrevious: false,
@@ -212,6 +219,9 @@ export function p122L3LiveOperatorCapability() {
     exactPacketIntegrityRequired: true,
     packetSpecificAuthorizationRequired: true,
     durableClaimBeforeNetworkExecution: true,
+    persistedResumeCheckpointResolution: true,
+    resumeCheckpointPayloadTransportRequired: false,
+    resumeMaterialFailClosed: true,
     migrationRequired: "0008_first_party_crawl_l2_invocations.sql",
     maxInvocationAttempts: 1,
     automaticWholeRunRetry: false,
