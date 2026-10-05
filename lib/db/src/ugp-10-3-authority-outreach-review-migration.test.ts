@@ -78,35 +78,35 @@ test("UGP-10.3 migration applies only to localhost W07 baseline and database rej
     await sql.end({ timeout: 1 }).catch(() => undefined);
   });
 
-  const before = await sql<{ count: number }[]>\`
+  const before = await sql<{ count: number }[]>`
     SELECT COUNT(*)::int AS count
     FROM information_schema.tables
     WHERE table_schema='public' AND table_type='BASE TABLE'
-  \`;
+  `;
   assert.equal(Number(before[0]?.count ?? 0), EXPECTED_P8_8_W07_TABLE_COUNT);
 
-  const absent = await sql<{ relation: string | null }[]>\`
+  const absent = await sql<{ relation: string | null }[]>`
     SELECT to_regclass('public.authority_outreach_review_events')::text AS relation
-  \`;
+  `;
   assert.equal(absent[0]?.relation ?? null, null);
 
   const migration = await readFile(migrationPath(), "utf8");
   await sql.unsafe(migration);
 
-  const after = await sql<{ count: number }[]>\`
+  const after = await sql<{ count: number }[]>`
     SELECT COUNT(*)::int AS count
     FROM information_schema.tables
     WHERE table_schema='public' AND table_type='BASE TABLE'
-  \`;
+  `;
   assert.equal(Number(after[0]?.count ?? 0), EXPECTED_UGP_10_3_TABLE_COUNT);
 
-  const triggers = await sql<{ tgname: string }[]>\`
+  const triggers = await sql<{ tgname: string }[]>`
     SELECT tgname
     FROM pg_trigger
     WHERE tgrelid='authority_outreach_review_events'::regclass
       AND NOT tgisinternal
     ORDER BY tgname
-  \`;
+  `;
   assert.deepEqual(
     triggers.map((row) => row.tgname),
     [
@@ -119,19 +119,19 @@ test("UGP-10.3 migration applies only to localhost W07 baseline and database rej
   assert.equal(identity.status, "ready");
   assert.equal(identity.tableCount, EXPECTED_UGP_10_3_TABLE_COUNT);
 
-  const sites = await sql<{ id: string }[]>\`
+  const sites = await sql<{ id: string }[]>`
     SELECT id::text AS id
     FROM sites
     WHERE lower(domain)='diamondshelf.us' AND is_active=true
     ORDER BY updated_at DESC
     LIMIT 1
-  \`;
+  `;
   const siteId = sites[0]?.id;
   assert.ok(siteId);
 
   await sql.unsafe("BEGIN");
   try {
-    await sql\`
+    await sql`
       INSERT INTO authority_outreach_review_events(
         event_id,event_version,event_fingerprint,request_fingerprint,site_id,
         sequence,previous_event_fingerprint,workspace_version,workspace_fingerprint,
@@ -140,31 +140,31 @@ test("UGP-10.3 migration applies only to localhost W07 baseline and database rej
         target_url,qualification_status,decision,reason_code,reviewer_id,reviewed_at,
         review_fingerprint
       ) VALUES(
-        \${"uaoe-"+"a".repeat(24)},
-        \${"ugp-10-3-outreach-review-persistence-contract-v1"},
-        \${"a".repeat(64)},
-        \${"b".repeat(64)},
-        \${siteId}::uuid,
+        ${"uaoe-"+"a".repeat(24)},
+        ${"ugp-10-3-outreach-review-persistence-contract-v1"},
+        ${"a".repeat(64)},
+        ${"b".repeat(64)},
+        ${siteId}::uuid,
         1,
         NULL,
-        \${"ugp-10-1-outreach-review-workspace-v1"},
-        \${"c".repeat(64)},
-        \${"uaow-"+"d".repeat(24)},
-        \${"d".repeat(64)},
-        \${"e".repeat(64)},
-        \${"f".repeat(64)},
-        \${"1".repeat(64)},
-        \${"diamondshelf.us"},
-        \${"publisher.example.org"},
-        \${"https://diamondshelf.us/guide"},
-        \${"qualified_for_review"},
-        \${"deferred"},
-        \${"needs_more_context"},
-        \${"operator@example.com"},
-        \${"2026-10-05T14:55:00.000Z"},
-        \${"2".repeat(64)}
+        ${"ugp-10-1-outreach-review-workspace-v1"},
+        ${"c".repeat(64)},
+        ${"uaow-"+"d".repeat(24)},
+        ${"d".repeat(64)},
+        ${"e".repeat(64)},
+        ${"f".repeat(64)},
+        ${"1".repeat(64)},
+        ${"diamondshelf.us"},
+        ${"publisher.example.org"},
+        ${"https://diamondshelf.us/guide"},
+        ${"qualified_for_review"},
+        ${"deferred"},
+        ${"needs_more_context"},
+        ${"operator@example.com"},
+        ${"2026-10-05T14:55:00.000Z"},
+        ${"2".repeat(64)}
       )
-    \`;
+    `;
 
     for (const [name, statement] of [
       ["update", "UPDATE authority_outreach_review_events SET reason_code='timing_not_right'"],
@@ -185,8 +185,8 @@ test("UGP-10.3 migration applies only to localhost W07 baseline and database rej
     await sql.unsafe("ROLLBACK");
   }
 
-  const rows = await sql<{ count: number }[]>\`
+  const rows = await sql<{ count: number }[]>`
     SELECT COUNT(*)::int AS count FROM authority_outreach_review_events
-  \`;
+  `;
   assert.equal(rows[0]?.count, 0);
 });
