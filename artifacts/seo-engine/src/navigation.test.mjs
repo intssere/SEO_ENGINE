@@ -15,16 +15,17 @@ const layoutSource = readFileSync(
 );
 const cssSource = readFileSync(join(here, "index.css"), "utf8");
 const read = (relativePath) => readFileSync(join(here, relativePath), "utf8");
+const authoritySource = read("pages/authority.tsx");
 const customerSources = [
   "components/customer-domain-hub.tsx",
   "pages/content.tsx",
   "pages/site-audit-hub.tsx",
-  "pages/authority.tsx",
   "pages/automation.tsx",
   "pages/dashboard.tsx",
   "pages/settings.tsx",
   "pages/website-connection-wizard.tsx",
 ].map(read);
+customerSources.push(authoritySource);
 
 const expectedPrimaryLabels = [
   "Home",
@@ -175,4 +176,11 @@ test("UGP-2.1 keeps unavailable and future capability states explicit", () => {
   assert.match(source, /UNAVAILABLE/);
   assert.match(source, /PREVIEW/);
   assert.match(source, /No ranking metrics are invented/);
+});
+
+
+test("UGP-10.2 prospects customer surface binds to outreach workspace", () => {
+  assert.match(authoritySource, /c=="p"\?"outreach"/);
+  assert.match(authoritySource, /a\?\.workspace\?\.items/);
+  assert.doesNotMatch(authoritySource, /c=="p"\?"qualification"/);
 });
