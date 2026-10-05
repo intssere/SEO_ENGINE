@@ -50,6 +50,7 @@ export type AuthorityOutreachReviewAuditEvent = Readonly<{
   reviewerId: string;
   reviewedAt: string;
   reviewFingerprint: string;
+  requestFingerprint: string;
   semantics: Readonly<{
     humanDecision: true;
     appendOnlyAuditRequired: true;
@@ -234,6 +235,10 @@ function assertEventIntegrity(
     event.reviewFingerprint,
     "ugp_outreach_review_audit_review_invalid",
   );
+  fingerprint(
+    event.requestFingerprint,
+    "ugp_outreach_review_audit_request_invalid",
+  );
   const supplied = fingerprint(
     event.eventFingerprint,
     "ugp_outreach_review_audit_event_invalid",
@@ -384,6 +389,19 @@ export function prepareAuthorityOutreachReviewDecision(input: Readonly<{
   const sequence = auditEvents.length + 1;
   const previousEventFingerprint =
     auditEvents.at(-1)?.eventFingerprint ?? null;
+  const requestFingerprint = hash({
+    purpose: "ugp_authority_outreach_review_request",
+    version: UGP_AUTHORITY_OUTREACH_REVIEW_PERSISTENCE_CONTRACT_VERSION,
+    workspaceFingerprint: request.workspaceFingerprint,
+    workspaceItemId: request.workspaceItemId,
+    workspaceItemFingerprint: request.workspaceItemFingerprint,
+    qualificationFingerprint: request.qualificationFingerprint,
+    prospectFingerprint: request.prospectFingerprint,
+    expectedLatestReviewFingerprint: request.expectedLatestReviewFingerprint,
+    decision: request.decision,
+    reasonCode: request.reasonCode,
+    reviewerId: review.reviewerId,
+  });
   const eventBase = Object.freeze({
     version: UGP_AUTHORITY_OUTREACH_REVIEW_PERSISTENCE_CONTRACT_VERSION,
     sequence,
@@ -410,6 +428,7 @@ export function prepareAuthorityOutreachReviewDecision(input: Readonly<{
     reviewerId: review.reviewerId,
     reviewedAt: review.reviewedAt,
     reviewFingerprint: nextItem.latestReview.reviewFingerprint,
+    requestFingerprint,
     semantics: EVENT_SEMANTICS,
   });
   const eventFingerprint = hash(eventFingerprintPayload(eventBase));
