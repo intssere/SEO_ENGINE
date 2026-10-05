@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import provenanceRouter from "./provenance";
 import authRouter from "./auth";
 import dashboardRouter from "./dashboard";
+import authorityRouter from "./authority";
 import operationalRouter from "./operational";
 import competitorAcquisitionRouter from "./competitor-acquisition";
 import competitorPilotExecutionRouter from "./competitor-pilot-execution";
@@ -27,6 +28,7 @@ router.use((req, res, next) => {
   return next();
 });
 router.use(dashboardRouter);
+router.use(authorityRouter);
 router.use(operationalRouter);
 router.use(competitorAcquisitionRouter);
 router.use(competitorPilotExecutionRouter);

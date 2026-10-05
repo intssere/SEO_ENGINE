@@ -265,6 +265,29 @@ const emptyListFixture = {
   rows: [],
 };
 
+const authorityFixture = {
+  version: "ugp-9-2b-authority-dashboard-api-v1",
+  state: "unavailable",
+  reason: "No normalized backlink evidence snapshot is currently available.",
+  readiness: {
+    evidence: "unavailable",
+    trend: "unavailable",
+    competitorGap: "unavailable",
+    observedAt: null,
+    providerKey: null,
+    providerDataset: null,
+  },
+  projection: null,
+  semantics: {
+    authenticatedReadOnly: true,
+    syntheticFallback: false,
+    persistenceRequired: false,
+    liveProviderExecutionAuthorized: false,
+    outreachAuthorized: false,
+    publicSiteWrites: false,
+  },
+};
+
 const authorityOpportunityFixture = {
   version: "ugp-9-3b-authority-opportunity-api-v1",
   state: "unavailable",
@@ -399,6 +422,10 @@ export async function installSyntheticNetwork(page) {
       ].includes(path)
     ) {
       await json(route, emptyListFixture);
+      return;
+    }
+    if (method === "GET" && path === "/api/authority/dashboard") {
+      await json(route, authorityFixture);
       return;
     }
     if (method === "GET" && path === "/api/authority/opportunities") {
