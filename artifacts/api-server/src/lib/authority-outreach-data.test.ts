@@ -93,6 +93,7 @@ test("unavailable qualification remains truthful with no synthetic workspace",as
     },
   });
   const result=await loadAuthorityOutreachData(loader,null);
+  assert.equal(result.version,"ugp-10-3-outreach-workspace-api-v1");
   assert.equal(result.state,"unavailable");
   assert.equal(result.workspace,null);
   assert.equal(result.semantics.syntheticFallback,false);
@@ -131,6 +132,7 @@ test("explicit review source projects reviewed state without authorizing executi
   );
   assert.equal(result.state,"available");
   assert.equal(result.workspace?.items[0]?.state,"approved_for_draft");
+  assert.equal(result.semantics.reviewMutationAuthorized,true);
   assert.equal(result.semantics.reviewPersistenceConfigured,true);
   assert.equal(result.workspace?.semantics.outreachDraftingPerformed,false);
   assert.equal(result.workspace?.semantics.outreachSendingAuthorized,false);
