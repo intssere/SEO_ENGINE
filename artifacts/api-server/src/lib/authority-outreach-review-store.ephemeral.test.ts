@@ -215,19 +215,19 @@ test("UGP-10.3 durable store appends, retries idempotently, chains review histor
 
   const sql=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
   t.after(async()=>sql.end({timeout:1}).catch(()=>undefined));
-  const rows=await sql<{count:number}[]>\`
+  const rows=await sql<{count:number}[]>`
     SELECT COUNT(*)::int AS count
     FROM authority_outreach_review_events
-    WHERE qualification_fingerprint=\${q.qualificationFingerprint}
-  \`;
+    WHERE qualification_fingerprint=${q.qualificationFingerprint}
+  `;
   assert.equal(rows[0]?.count,2);
 
   await assert.rejects(
-    ()=>sql\`
+    ()=>sql`
       UPDATE authority_outreach_review_events
       SET reason_code='timing_not_right'
-      WHERE event_id=\${first.event.eventId}
-    \`,
+      WHERE event_id=${first.event.eventId}
+    `,
     (error:unknown)=>{
       assert.equal((error as {code?:string}).code,"55000");
       return true;
