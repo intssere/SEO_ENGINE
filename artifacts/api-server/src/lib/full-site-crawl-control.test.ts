@@ -13,6 +13,7 @@ import {
   evaluateFullSiteExecutionUrl,
   planBoundedPilotCrawlExecution,
   planFullSiteCrawlExecution,
+  planFullSiteCrawlExecutionForResume,
   type FullSiteCrawlExecutionPlan,
   type FullSiteExecutionPolicy,
   type SuppliedCrawlBatchAttempt,
@@ -92,6 +93,95 @@ function attemptFor(
     ...overrides,
   };
 }
+
+test("L10.11 resume planning reconstructs original execution lineage across metadata-only sitemap drift", () => {
+  const crawlPlan = fullSitePlan(20);
+  const firstInventory = buildSitemapInventory({
+    plan: crawlPlan,
+    rootSitemapUrl: "https://diamondshelf.us/sitemap.xml",
+    documents: [{
+      url: "https://diamondshelf.us/sitemap.xml",
+      xml: "<urlset><url><loc>https://diamondshelf.us/a</loc><lastmod>2026-10-01</lastmod></url><url><loc>https://diamondshelf.us/b</loc><lastmod>2026-10-01</lastmod></url><url><loc>https://diamondshelf.us/c</loc><lastmod>2026-10-01</lastmod></url></urlset>",
+    }],
+    policy: sitemapPolicy(20),
+  });
+  const currentInventory = buildSitemapInventory({
+    plan: crawlPlan,
+    rootSitemapUrl: "https://diamondshelf.us/sitemap.xml",
+    documents: [{
+      url: "https://diamondshelf.us/sitemap.xml",
+      xml: "<urlset><url><loc>https://diamondshelf.us/a</loc><lastmod>2026-10-05</lastmod></url><url><loc>https://diamondshelf.us/b</loc><lastmod>2026-10-04</lastmod></url><url><loc>https://diamondshelf.us/c</loc><lastmod>2026-10-03</lastmod></url></urlset>",
+    }],
+    policy: sitemapPolicy(20),
+  });
+
+  assert.notEqual(firstInventory.fingerprint, currentInventory.fingerprint);
+  assert.deepEqual(
+    firstInventory.inventory.entries.map((entry) => entry.canonicalUrl),
+    currentInventory.inventory.entries.map((entry) => entry.canonicalUrl),
+  );
+
+  const originalPlan = planFullSiteCrawlExecution(crawlPlan, firstInventory, executionPolicy());
+  const normalCurrentPlan = planFullSiteCrawlExecution(crawlPlan, currentInventory, executionPolicy());
+  assert.notEqual(originalPlan.fingerprint, normalCurrentPlan.fingerprint);
+
+  const resumePlan = planFullSiteCrawlExecutionForResume(
+    crawlPlan,
+    currentInventory,
+    executionPolicy(),
+    firstInventory.fingerprint,
+  );
+  assert.equal(resumePlan.source.inventoryFingerprint, firstInventory.fingerprint);
+  assert.equal(resumePlan.fingerprint, originalPlan.fingerprint);
+  assert.deepEqual(resumePlan.batches, originalPlan.batches);
+
+  const checkpoint = createInitialCrawlCheckpoint(originalPlan);
+  assert.doesNotThrow(() => assertFullSiteCrawlCheckpointIntegrity(resumePlan, checkpoint));
+});
+
+test("L10.11 resume planning still rejects canonical URL-set drift", () => {
+  const original = inventory([
+    "https://diamondshelf.us/a",
+    "https://diamondshelf.us/b",
+    "https://diamondshelf.us/c",
+  ]);
+  const changed = inventory([
+    "https://diamondshelf.us/a",
+    "https://diamondshelf.us/b",
+    "https://diamondshelf.us/d",
+  ]);
+  const originalPlan = planFullSiteCrawlExecution(original.crawlPlan, original.result, executionPolicy());
+  const checkpoint = createInitialCrawlCheckpoint(originalPlan);
+
+  const resumePlan = planFullSiteCrawlExecutionForResume(
+    changed.crawlPlan,
+    changed.result,
+    executionPolicy(),
+    original.result.fingerprint,
+  );
+
+  assert.notEqual(resumePlan.fingerprint, originalPlan.fingerprint);
+  assert.throws(
+    () => assertFullSiteCrawlCheckpointIntegrity(resumePlan, checkpoint),
+    /crawl_checkpoint_lineage_mismatch/,
+  );
+});
+
+test("L10.11 resume planning rejects an invalid certified inventory-lineage fingerprint", () => {
+  const source = inventory([
+    "https://diamondshelf.us/a",
+    "https://diamondshelf.us/b",
+  ]);
+  assert.throws(
+    () => planFullSiteCrawlExecutionForResume(
+      source.crawlPlan,
+      source.result,
+      executionPolicy(),
+      "not-a-fingerprint",
+    ),
+    /crawl_execution_lineage_inventory_fingerprint_invalid/,
+  );
+});
 
 test("deterministic inventory-derived batches bind rate controls and keep all execution gates closed", () => {
   const source = inventory([
