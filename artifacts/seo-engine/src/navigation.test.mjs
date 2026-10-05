@@ -135,9 +135,19 @@ test("UGP-2.1 legacy engineering routes map to exactly one customer domain", () 
 });
 
 test("UGP-2.1 customer routes and legacy certification routes remain mounted", () => {
-  const routedPaths = [...appSource.matchAll(/<Route path="([^"]+)"/g)].map(
-    (match) => match[1],
+  assert.ok(
+    appSource.includes(
+      '{["backlinks","opportunities","prospects"].map(view=><Route key={view} path={"/authority/"+view} component={AuthorityPage} />)}',
+    ),
   );
+  const routedPaths = [
+    ...[...appSource.matchAll(/<Route path="([^"]+)"/g)].map(
+      (match) => match[1],
+    ),
+    "/authority/backlinks",
+    "/authority/opportunities",
+    "/authority/prospects",
+  ];
   assert.equal(new Set(routedPaths).size, routedPaths.length);
   assert.deepEqual([...routedPaths].sort(), [...expectedRoutedPaths].sort());
 });
