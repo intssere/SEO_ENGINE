@@ -378,8 +378,12 @@ function planCrawlExecution(
   inventory: SitemapInventoryResult,
   policyInput: FullSiteExecutionPolicy,
   scope: CrawlExecutionScope,
+  lineageInventoryFingerprint: string = inventory.fingerprint,
 ): FullSiteCrawlExecutionPlan {
   validateLineage(crawlPlan, inventory, scope);
+  if (!/^[a-f0-9]{64}$/.test(lineageInventoryFingerprint)) {
+    throw new Error("crawl_execution_lineage_inventory_fingerprint_invalid");
+  }
   const policy = validateExecutionPolicyValues(policyInput, crawlPlan.limits.pageHardLimit);
 
   const canonicalUrls = inventory.inventory.entries.map((entry) => entry.canonicalUrl);
@@ -394,7 +398,7 @@ function planCrawlExecution(
   const batches: CrawlExecutionBatch[] = [];
   for (let start = 0, index = 0; start < sortedUrls.length; start += policy.batchSize, index += 1) {
     const canonicalBatchUrls = sortedUrls.slice(start, start + policy.batchSize);
-    const batchHash = batchFingerprint(index, canonicalBatchUrls, inventory.fingerprint);
+    const batchHash = batchFingerprint(index, canonicalBatchUrls, lineageInventoryFingerprint);
     batches.push({
       index,
       batchId: `batch-${String(index + 1).padStart(6, "0")}-${batchHash.slice(0, 16)}`,
@@ -412,7 +416,7 @@ function planCrawlExecution(
       crawlPlanVersion: "first_party_crawl_controller_v1",
       pageHardLimit: crawlPlan.limits.pageHardLimit,
       absolutePageCeiling: crawlPlan.limits.absolutePageCeiling,
-      inventoryFingerprint: inventory.fingerprint,
+      inventoryFingerprint: lineageInventoryFingerprint,
       inventoryUniqueUrls: inventory.inventory.uniqueUrls,
     },
     policy,
@@ -437,6 +441,21 @@ export function planFullSiteCrawlExecution(
   policyInput: FullSiteExecutionPolicy,
 ): FullSiteCrawlExecutionPlan {
   return planCrawlExecution(crawlPlan, inventory, policyInput, "full_site");
+}
+
+export function planFullSiteCrawlExecutionForResume(
+  crawlPlan: CrawlControllerPlan,
+  currentInventory: SitemapInventoryResult,
+  policyInput: FullSiteExecutionPolicy,
+  checkpointInventoryFingerprint: string,
+): FullSiteCrawlExecutionPlan {
+  return planCrawlExecution(
+    crawlPlan,
+    currentInventory,
+    policyInput,
+    "full_site",
+    checkpointInventoryFingerprint,
+  );
 }
 
 export function planBoundedPilotCrawlExecution(

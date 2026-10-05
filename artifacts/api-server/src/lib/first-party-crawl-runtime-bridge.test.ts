@@ -448,6 +448,55 @@ test("Diamond Shelf identity, sitemap origin and redirect target fail closed", a
   );
 });
 
+test("L10.11 resumes a pending checkpoint when only sitemap lastmod metadata changed", async () => {
+  const state = harness({
+    documents: [{
+      url: `${DIAMOND_SHELF_CANONICAL_ORIGIN}/sitemap.xml`,
+      xml: urlset([
+        { path: "/a", lastmod: "2026-10-01" },
+        { path: "/b", lastmod: "2026-10-01" },
+        { path: "/c", lastmod: "2026-10-01" },
+      ]),
+    }],
+  });
+  const runId = "l10-11-lastmod-resume";
+
+  const interrupted = await runFullSiteCrawlBridgeUntilCheckpoint(
+    fullInput(runId),
+    1,
+    state.options,
+  );
+  assert.equal(interrupted.status, "intentional_interruption");
+  assert.equal(interrupted.checkpointRevision, 1);
+
+  const checkpoint = state.persistence.checkpoints.get(runId);
+  assert.ok(checkpoint);
+  assert.equal(checkpoint!.status, "pending");
+  assert.equal(checkpoint!.progress.finalizedUrls, 2);
+  const originalInventoryFingerprint = checkpoint!.inventoryFingerprint;
+  const callsBeforeResume = state.calls.pages.length;
+
+  state.documents[0]!.xml = urlset([
+    { path: "/a", lastmod: "2026-10-05" },
+    { path: "/b", lastmod: "2026-10-04" },
+    { path: "/c", lastmod: "2026-10-03" },
+  ]);
+
+  const resumed = await runFullSiteCrawlBridge(
+    fullInput(runId, { resumeCheckpoint: checkpoint! }),
+    state.options,
+  );
+
+  assert.equal(resumed.certification.certification.wholeSiteCertified, true);
+  assert.equal(resumed.checkpoint.status, "completed");
+  assert.equal(resumed.executionPlan.source.inventoryFingerprint, originalInventoryFingerprint);
+  assert.equal(resumed.executionPlan.fingerprint, checkpoint!.planFingerprint);
+  assert.deepEqual(
+    state.calls.pages.slice(callsBeforeResume),
+    [`${DIAMOND_SHELF_CANONICAL_ORIGIN}/c`],
+  );
+});
+
 test("stored checkpoint is fail-closed when rebuilt inventory/execution lineage changes", async () => {
   const firstHarness = harness();
   const first = await runFullSiteCrawlBridge(fullInput("resume-source"), firstHarness.options);
