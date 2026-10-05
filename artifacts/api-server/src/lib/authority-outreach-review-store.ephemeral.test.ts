@@ -233,4 +233,40 @@ test("UGP-10.3 durable store appends, retries idempotently, chains review histor
       return true;
     },
   );
+
+  const q2Response=qualified("6");
+  const q2=q2Response.qualification;
+  assert.ok(q2);
+  const q2Loader=async()=>q2Response;
+  const q2Reviews=await loadDurableAuthorityOutreachReviews(q2,url);
+  assert.equal(q2Reviews.length,0);
+  const concurrentDeferred=request(q2,q2Reviews,"deferred");
+  const concurrentApproved=request(q2,q2Reviews,"approved_for_draft");
+  const concurrent=await Promise.allSettled([
+    commitAuthorityOutreachReviewDecision(
+      concurrentDeferred,
+      reviewer,
+      q2Loader,
+      url,
+    ),
+    commitAuthorityOutreachReviewDecision(
+      concurrentApproved,
+      reviewer,
+      q2Loader,
+      url,
+    ),
+  ]);
+  const fulfilled=concurrent.filter(
+    (result)=>result.status==="fulfilled",
+  );
+  const rejected=concurrent.filter(
+    (result)=>result.status==="rejected",
+  );
+  assert.equal(fulfilled.length,1);
+  assert.equal(rejected.length,1);
+  const rejectedReason=(rejected[0] as PromiseRejectedResult).reason;
+  assert.ok(rejectedReason instanceof AuthorityOutreachReviewStoreError);
+  assert.equal(rejectedReason.status,409);
+  const q2Final=await loadDurableAuthorityOutreachReviews(q2,url);
+  assert.equal(q2Final.length,1);
 });
