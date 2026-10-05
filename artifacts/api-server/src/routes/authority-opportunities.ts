@@ -26,6 +26,9 @@ router.get("/authority/outreach",async(_req,res)=>{
 });
 
 router.post("/authority/outreach/reviews",async(req,res)=>{
+  if(!req.auth){
+    return res.status(401).json({error:"authentication_required"});
+  }
   if(!isSameOriginRequest(req.get("origin"),req.get("host"))){
     return res.status(403).json({error:"same_origin_outreach_review_required"});
   }
