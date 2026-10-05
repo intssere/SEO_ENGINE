@@ -149,7 +149,9 @@ test("workspace integrity detects state tampering", () => {
   const q = qualification(true);
   const input = { qualification: q, reviews: [review(q, "deferred")] };
   const workspace = buildAuthorityOutreachWorkspace(input);
-  const tampered = structuredClone(workspace);
+  const tampered = structuredClone(workspace) as {
+    items: Array<{ state: string }>;
+  } & typeof workspace;
   tampered.items[0]!.state = "approved_for_draft";
 
   assert.throws(
