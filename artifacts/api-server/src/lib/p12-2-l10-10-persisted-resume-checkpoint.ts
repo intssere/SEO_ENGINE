@@ -31,6 +31,13 @@ export function assertP122L1010ResumeCheckpointBinding(
   }
   assertFullSiteCrawlCheckpointFingerprintIntegrity(checkpoint);
   if (
+    checkpoint.siteId !== packet.siteId ||
+    checkpoint.canonicalOrigin !== packet.canonicalOrigin ||
+    checkpoint.status !== "pending"
+  ) {
+    throw new Error("p12_2_l10_10_resume_checkpoint_state_invalid");
+  }
+  if (
     checkpoint.sequence !== packet.resume.checkpointRevision ||
     checkpoint.fingerprint !== packet.resume.checkpointFingerprint ||
     checkpoint.planFingerprint !== packet.resume.executionPlanFingerprint
