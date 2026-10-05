@@ -455,6 +455,23 @@ test("incomplete or hard-limit-truncated inventory cannot enter certification", 
   );
 });
 
+test("L10.11 integrity remains compatible with pre-dual-lineage certifications", () => {
+  const source = sourceFromXml(`<urlset><url><loc>https://diamondshelf.us/a</loc></url></urlset>`);
+  const checkpoint = completeWithOutcomes(source, [
+    { canonicalUrl: "https://diamondshelf.us/a", kind: "success" },
+  ]);
+  const current = buildFullSiteCrawlCertification({
+    crawlPlan: source.plan,
+    inventory: source.inventory,
+    executionPlan: source.executionPlan,
+    checkpoint,
+  });
+  const legacy = structuredClone(current);
+  delete legacy.lineage.executionInventoryFingerprint;
+  const refingerprinted = refingerprint(legacy);
+  assert.doesNotThrow(() => assertFullSiteCrawlCertificationIntegrity(refingerprinted));
+});
+
 test("P2.4 semantic integrity rejects tampering even when the certification fingerprint is recomputed", () => {
   const source = sourceFromXml(`<urlset><url><loc>https://diamondshelf.us/a</loc></url></urlset>`);
   const checkpoint = completeWithOutcomes(source, [
