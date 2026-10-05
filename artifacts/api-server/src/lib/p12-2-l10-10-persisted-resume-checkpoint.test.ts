@@ -23,6 +23,7 @@ import {
 } from "./first-party-crawl-manual.js";
 import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
 import { DIAMOND_SHELF_CANONICAL_ORIGIN } from "./first-party-crawl-runtime-bridge.js";
+import { createInitialCrawlCheckpoint } from "./full-site-crawl-control.js";
 
 const RECEIPT_FINGERPRINT = "a".repeat(64);
 const OTHER_FINGERPRINT = "b".repeat(64);
@@ -63,11 +64,15 @@ function fullCrawlAdapter(onFullCrawl: P122L3ExecutionAdapter["fullCrawl"]): P12
 }
 
 function fixture() {
-  return buildIncrementalRecrawlTestSource({
+  const built = buildIncrementalRecrawlTestSource({
     siteId: DIAMOND_SHELF_SITE_ID,
     canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     entries: [{ path: "/a" }, { path: "/b" }],
   });
+  return {
+    ...built,
+    checkpoint: createInitialCrawlCheckpoint(built.executionPlan),
+  };
 }
 
 function resumePacket(
@@ -156,6 +161,29 @@ test("L10.10 rejects missing persisted checkpoint before full crawl", async () =
   await assert.rejects(
     new P122L3LiveExecutor(e, "postgres://unused", adapter, loader).execute(packet),
     /p12_2_l6_3_resume_checkpoint_not_found/,
+  );
+  assert.equal(fullCrawlCalls, 0);
+});
+
+test("L10.10 rejects non-pending checkpoint before full crawl", async () => {
+  const pending = fixture();
+  const completedSource = buildIncrementalRecrawlTestSource({
+    siteId: DIAMOND_SHELF_SITE_ID,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    entries: [{ path: "/a" }, { path: "/b" }],
+  });
+  const packet = resumePacket(pending);
+  const e = envelope(packet);
+  let fullCrawlCalls = 0;
+  const adapter = fullCrawlAdapter(async () => {
+    fullCrawlCalls += 1;
+    return { fingerprint: RECEIPT_FINGERPRINT } as never;
+  });
+  const loader: P122L1010ResumeCheckpointLoader = async () => completedSource.checkpoint;
+
+  await assert.rejects(
+    new P122L3LiveExecutor(e, "postgres://unused", adapter, loader).execute(packet),
+    /p12_2_l10_10_resume_checkpoint_state_invalid|p12_2_l10_10_resume_material_mismatch/,
   );
   assert.equal(fullCrawlCalls, 0);
 });
