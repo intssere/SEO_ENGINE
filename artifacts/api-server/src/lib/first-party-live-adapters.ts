@@ -145,6 +145,43 @@ async function readBoundedText(response: Response, maxBytes: number, code: strin
   return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))).toString("utf8");
 }
 
+async function readBoundedHtmlMetadata(
+  response: Response,
+  maxBytes: number,
+  code: string,
+): Promise<string> {
+  boundedPositiveInteger(maxBytes, P12_2_ABSOLUTE_TRANSIENT_PAGE_BYTES, "p12_2_live_body_limit_invalid");
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const chunks: Buffer[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const part = await reader.read();
+      if (part.done) break;
+      const chunk = Buffer.from(part.value);
+      chunks.push(chunk);
+      total += chunk.byteLength;
+
+      const combined = Buffer.concat(chunks);
+      const bounded = combined.byteLength > maxBytes ? combined.subarray(0, maxBytes) : combined;
+      const text = bounded.toString("utf8");
+      const boundary = /<\/head\s*>|<body(?:\s|>)/i.exec(text);
+      if (boundary) {
+        await reader.cancel().catch(() => undefined);
+        return text.slice(0, boundary.index + boundary[0].length);
+      }
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => undefined);
+        throw new Error(code);
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
 async function fetchWithTimeout(
   fetchImpl: typeof fetch,
   url: string,
@@ -505,20 +542,23 @@ export function createFirstPartyPageTransport(
         }
 
         const headerNoindex = xRobotsNoindex(response);
-        const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
-        let htmlNoindex = false;
-        if (contentType.includes("text/html") || contentType.includes("application/xhtml+xml")) {
-          const html = await readBoundedText(response, maxTransientPageBytes, "p12_2_live_page_body_oversize");
-          htmlNoindex = metaRobotsNoindex(html);
-        } else {
-          const declared = Number(response.headers.get("content-length") ?? "0");
-          if (Number.isFinite(declared) && declared > maxTransientPageBytes) {
-            await response.body?.cancel().catch(() => undefined);
-            throw new Error("p12_2_live_page_body_oversize");
-          }
+        if (headerNoindex) {
           await response.body?.cancel().catch(() => undefined);
+          return { kind: "success", noindex: true };
         }
-        return headerNoindex || htmlNoindex ? { kind: "success", noindex: true } : { kind: "success" };
+
+        const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+        if (contentType.includes("text/html") || contentType.includes("application/xhtml+xml")) {
+          const metadata = await readBoundedHtmlMetadata(
+            response,
+            maxTransientPageBytes,
+            "p12_2_live_page_body_oversize",
+          );
+          return metaRobotsNoindex(metadata) ? { kind: "success", noindex: true } : { kind: "success" };
+        }
+
+        await response.body?.cancel().catch(() => undefined);
+        return { kind: "success" };
       } catch (error) {
         return transportFailure(error);
       }
