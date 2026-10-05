@@ -37,6 +37,7 @@ const REQUEST_KEYS=new Set([
   "decision",
   "reasonCode",
   "confirmation",
+  "_csrf",
 ]);
 
 export type AuthorityOutreachQualificationLoader =
