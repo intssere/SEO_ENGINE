@@ -27,6 +27,17 @@ const REASONS=new Set([
   "timing_not_right",
   "policy_or_reputation_risk",
 ]);
+const REQUEST_KEYS=new Set([
+  "workspaceFingerprint",
+  "workspaceItemId",
+  "workspaceItemFingerprint",
+  "qualificationFingerprint",
+  "prospectFingerprint",
+  "expectedLatestReviewFingerprint",
+  "decision",
+  "reasonCode",
+  "confirmation",
+]);
 
 export type AuthorityOutreachQualificationLoader =
   ()=>Promise<AuthorityQualificationApiResponse>;
@@ -132,6 +143,18 @@ function canonicalTimestamp(value:Date|string):string{
 }
 
 function rowToEvent(row:ReviewRow):AuthorityOutreachReviewAuditEvent{
+  if(row.eventVersion!=="ugp-10-3-outreach-review-persistence-contract-v1"){
+    throw new AuthorityOutreachReviewStoreError(
+      "outreach_review_persisted_version_invalid",
+      503,
+    );
+  }
+  if(row.workspaceVersion!=="ugp-10-1-outreach-review-workspace-v1"){
+    throw new AuthorityOutreachReviewStoreError(
+      "outreach_review_persisted_workspace_version_invalid",
+      503,
+    );
+  }
   return Object.freeze({
     version:"ugp-10-3-outreach-review-persistence-contract-v1",
     eventId:row.eventId,
@@ -340,6 +363,12 @@ export function parseAuthorityOutreachReviewMutationRequest(
     );
   }
   const row=value as Record<string,unknown>;
+  if(Object.keys(row).some(key=>!REQUEST_KEYS.has(key))){
+    throw new AuthorityOutreachReviewStoreError(
+      "invalid_outreach_review_request",
+      400,
+    );
+  }
   const string=(key:string,max:number)=>{
     const v=row[key];
     if(typeof v!=="string"||v.length<1||v.length>max||v.trim()!==v){
