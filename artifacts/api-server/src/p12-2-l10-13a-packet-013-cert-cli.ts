@@ -9,7 +9,7 @@ import {
   P12_2_L10_13A_QUERIES,
   P12_2_L10_13A_RUN_ID,
   P12_2_L10_13A_VERSION,
-  assertP122L1012QueryContract,
+  assertP122L1013AQueryContract,
   p122L1013AAuthorizationLiteral,
   p122L1013AQuerySetFingerprint,
 } from "./lib/p12-2-l10-13a-packet-013-failure-state-certification.js";
@@ -90,7 +90,7 @@ async function executeQuery(databaseUrl: string, sql: string) {
 }
 
 async function main() {
-  assertP122L1012QueryContract();
+  assertP122L1013AQueryContract();
   exact(required("RAILWAY_PROJECT_ID"), P12_2_L10_13A_PROJECT_ID, "p12_2_l10_13a_project_mismatch");
   exact(required("RAILWAY_ENVIRONMENT_ID"), P12_2_L10_13A_ENVIRONMENT_ID, "p12_2_l10_13a_environment_mismatch");
   exact(
