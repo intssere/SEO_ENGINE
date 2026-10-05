@@ -103,6 +103,19 @@ export type AuthorityOutreachWorkspace = Readonly<{
 
 const HEX64 = /^[0-9a-f]{64}$/;
 const REVIEWER = /^[A-Za-z0-9_.:@-]{1,120}$/;
+const DECISIONS = new Set<AuthorityOutreachReviewDecision>([
+  "approved_for_draft",
+  "rejected",
+  "deferred",
+]);
+const REASONS = new Set<AuthorityOutreachReviewReason>([
+  "editorial_fit_confirmed",
+  "needs_more_context",
+  "relationship_conflict",
+  "target_not_appropriate",
+  "timing_not_right",
+  "policy_or_reputation_risk",
+]);
 
 const SEMANTICS = Object.freeze({
   deterministic: true as const,
@@ -187,6 +200,12 @@ function materializeReview(
   prospect: AuthorityProspectQualification,
   qualificationFingerprint: string,
 ): AuthorityOutreachReviewRecord {
+  if (!DECISIONS.has(input.decision)) {
+    throw new Error("ugp_outreach_invalid_review_decision");
+  }
+  if (!REASONS.has(input.reasonCode)) {
+    throw new Error("ugp_outreach_invalid_review_reason");
+  }
   if (input.qualificationFingerprint !== qualificationFingerprint) {
     throw new Error("ugp_outreach_stale_qualification_review");
   }
