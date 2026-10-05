@@ -114,6 +114,7 @@ test("prepares an append-only human review event without performing persistence 
   assert.equal(result.auditEvent.sequence,1);
   assert.equal(result.auditEvent.previousEventFingerprint,null);
   assert.equal(result.auditEvent.decision,"approved_for_draft");
+  assert.equal(result.auditEvent.requestFingerprint.length,64);
   assert.equal(result.auditEvent.semantics.humanDecision,true);
   assert.equal(result.auditEvent.semantics.appendOnlyAuditRequired,true);
   assert.equal(result.auditEvent.semantics.immutableAuditRequired,true);
@@ -266,5 +267,31 @@ test("insufficient evidence cannot be elevated through the persistence contract"
       reviewedAt:"2026-10-05T14:30:00.000Z",
     }),
     /ugp_outreach_review_requires_reviewable_prospect/,
+  );
+});
+
+
+test("exact retry identity is stable independently of server review timestamp",()=>{
+  const q=qualification();
+  const r=request(q);
+  const first=prepareAuthorityOutreachReviewDecision({
+    qualification:q,
+    request:r,
+    reviewerId:"operator@example.com",
+    reviewedAt:"2026-10-05T14:30:00.000Z",
+  });
+  const retry=prepareAuthorityOutreachReviewDecision({
+    qualification:q,
+    request:r,
+    reviewerId:"operator@example.com",
+    reviewedAt:"2026-10-05T14:31:00.000Z",
+  });
+  assert.equal(
+    first.auditEvent.requestFingerprint,
+    retry.auditEvent.requestFingerprint,
+  );
+  assert.notEqual(
+    first.auditEvent.eventFingerprint,
+    retry.auditEvent.eventFingerprint,
   );
 });
