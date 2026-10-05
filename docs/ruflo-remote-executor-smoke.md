@@ -1,0 +1,1 @@
+Ruflo remote executor activation smoke — 2026-09-18.
