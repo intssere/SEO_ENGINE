@@ -7,6 +7,7 @@ import {
   advanceCrawlCheckpoint,
   createInitialCrawlCheckpoint,
   planFullSiteCrawlExecution,
+  planFullSiteCrawlExecutionForResume,
   type FullSiteExecutionPolicy,
   type SuppliedCrawlUrlOutcome,
 } from "./full-site-crawl-control.js";
@@ -172,6 +173,94 @@ test("P2.4 certifies complete reconciled accounting while preserving classified 
   assert.equal(first.certification.assertsSeoHealth, false);
   assert.ok(Object.values(first.authorization).every((value) => value === false));
   assertFullSiteCrawlCertificationIntegrity(first);
+});
+
+test("L10.11 certifies current inventory metadata separately from resume execution lineage", () => {
+  const original = sourceFromXml(`<urlset>
+    <url><loc>https://diamondshelf.us/a</loc><lastmod>2026-10-01</lastmod></url>
+    <url><loc>https://diamondshelf.us/b</loc><lastmod>2026-10-01</lastmod></url>
+  </urlset>`);
+  const checkpoint = completeWithOutcomes(original, [
+    { canonicalUrl: "https://diamondshelf.us/a", kind: "success" },
+    { canonicalUrl: "https://diamondshelf.us/b", kind: "success" },
+  ]);
+
+  const currentInventory = buildSitemapInventory({
+    plan: original.plan,
+    rootSitemapUrl: "https://diamondshelf.us/sitemap.xml",
+    documents: [{
+      url: "https://diamondshelf.us/sitemap.xml",
+      xml: `<urlset>
+        <url><loc>https://diamondshelf.us/a</loc><lastmod>2026-10-05</lastmod></url>
+        <url><loc>https://diamondshelf.us/b</loc><lastmod>2026-10-04</lastmod></url>
+      </urlset>`,
+    }],
+    policy: sitemapPolicy(20),
+  });
+  assert.notEqual(currentInventory.fingerprint, original.inventory.fingerprint);
+
+  const resumePlan = planFullSiteCrawlExecutionForResume(
+    original.plan,
+    currentInventory,
+    original.executionPlan.policy,
+    original.inventory.fingerprint,
+  );
+  assert.equal(resumePlan.fingerprint, original.executionPlan.fingerprint);
+
+  const certification = buildFullSiteCrawlCertification({
+    crawlPlan: original.plan,
+    inventory: currentInventory,
+    executionPlan: resumePlan,
+    checkpoint,
+  });
+
+  assert.equal(certification.certification.wholeSiteCertified, true);
+  assert.equal(certification.lineage.inventoryFingerprint, currentInventory.fingerprint);
+  assert.equal(certification.lineage.executionInventoryFingerprint, original.inventory.fingerprint);
+  assert.notEqual(
+    certification.lineage.inventoryFingerprint,
+    certification.lineage.executionInventoryFingerprint,
+  );
+  assertFullSiteCrawlCertificationIntegrity(certification);
+});
+
+test("L10.11 certification rejects URL-set drift even when old execution inventory lineage is supplied", () => {
+  const original = sourceFromXml(`<urlset>
+    <url><loc>https://diamondshelf.us/a</loc></url>
+    <url><loc>https://diamondshelf.us/b</loc></url>
+  </urlset>`);
+  const checkpoint = completeWithOutcomes(original, [
+    { canonicalUrl: "https://diamondshelf.us/a", kind: "success" },
+    { canonicalUrl: "https://diamondshelf.us/b", kind: "success" },
+  ]);
+  const changedInventory = buildSitemapInventory({
+    plan: original.plan,
+    rootSitemapUrl: "https://diamondshelf.us/sitemap.xml",
+    documents: [{
+      url: "https://diamondshelf.us/sitemap.xml",
+      xml: `<urlset>
+        <url><loc>https://diamondshelf.us/a</loc></url>
+        <url><loc>https://diamondshelf.us/c</loc></url>
+      </urlset>`,
+    }],
+    policy: sitemapPolicy(20),
+  });
+  const changedResumePlan = planFullSiteCrawlExecutionForResume(
+    original.plan,
+    changedInventory,
+    original.executionPlan.policy,
+    original.inventory.fingerprint,
+  );
+
+  assert.throws(
+    () => buildFullSiteCrawlCertification({
+      crawlPlan: original.plan,
+      inventory: changedInventory,
+      executionPlan: changedResumePlan,
+      checkpoint,
+    }),
+    /crawl_checkpoint_lineage_mismatch|crawl_certification_execution_plan_semantic_mismatch/,
+  );
 });
 
 test("noindex is a fetched-success subset and never double-counts finalized coverage", () => {
