@@ -28,11 +28,15 @@ function valid(){
   return body;
 }
 
-test("UGP-10.3 review mutation parser accepts only bounded customer decision fields",()=>{
-  const parsed=parseAuthorityOutreachReviewMutationRequest(valid());
+test("UGP-10.3 review mutation parser accepts bounded decision fields and CSRF transport only",()=>{
+  const parsed=parseAuthorityOutreachReviewMutationRequest({
+    ...valid(),
+    _csrf:"transport-token",
+  });
   assert.equal(parsed.decision,"deferred");
   assert.equal(parsed.reasonCode,"needs_more_context");
   assert.equal(parsed.expectedLatestReviewFingerprint,null);
+  assert.equal("reviewerId" in parsed,false);
 });
 
 test("UGP-10.3 review mutation parser rejects client-supplied reviewer identity and unknown fields",()=>{
@@ -50,4 +54,15 @@ test("UGP-10.3 review mutation parser rejects client-supplied reviewer identity 
       },
     );
   }
+});
+
+
+test("UGP-10.3 review mutation parser rejects malformed optimistic-concurrency fingerprints",()=>{
+  assert.throws(
+    ()=>parseAuthorityOutreachReviewMutationRequest({
+      ...valid(),
+      expectedLatestReviewFingerprint:"not-a-fingerprint",
+    }),
+    /invalid_outreach_review_request/,
+  );
 });
