@@ -1,6 +1,6 @@
 # UGP-10.3 — Durable Human Outreach Review + Immutable Audit History
 
-Status: **pre-migration contract / migration authorization required**
+Status: **migration + durable store/API implementation authorized; production application NOT authorized**
 
 Contract version: `ugp-10-3-outreach-review-persistence-contract-v1`
 
@@ -46,7 +46,7 @@ Its writer intentionally catches and suppresses persistence failures so authenti
 
 It also does not provide the prospect/qualification sequence and fingerprint-chain constraints required by Outreach Workspace.
 
-## Pre-migration contract added in this increment
+## Persistence contract
 
 `authority-outreach-review-persistence-contract.ts` defines deterministic preparation and integrity validation for the future durable write path.
 
@@ -125,15 +125,15 @@ Each accepted decision produces a deterministic audit event with:
 
 Each event fingerprint commits to the previous event fingerprint, producing a tamper-evident chain.
 
-## Proposed migration — NOT YET AUTHORIZED
+## Implemented migration — NOT APPLIED TO STAGING/PRODUCTION
 
 The minimal proposed schema change is a single append-only table:
 
 `authority_outreach_review_events`
 
-No migration file has been created in this pre-migration increment.
+Migration `lib/db/migrations/0008_ugp_10_3_authority_outreach_review_events.sql` implements this dedicated append-only table. The migration is certified only against disposable/local PostgreSQL in CI and has not been applied to staging or production.
 
-The migration should contain fields equivalent to:
+The migration contains the following bounded lineage fields:
 
 - `event_id text PRIMARY KEY`;
 - `event_version text NOT NULL`;
@@ -160,7 +160,7 @@ The migration should contain fields equivalent to:
 - `request_fingerprint char(64) NOT NULL UNIQUE`;
 - `created_at timestamptz NOT NULL DEFAULT transaction_timestamp()`.
 
-Required constraints should include:
+The migration enforces:
 
 - fixed event version;
 - all fingerprints exactly lowercase 64-character SHA-256 values;
@@ -178,15 +178,15 @@ Required constraints should include:
 
 “Immutable audit history” should be enforced by PostgreSQL, not only application convention.
 
-The proposed migration should add a trigger on `authority_outreach_review_events` that rejects every `UPDATE` and `DELETE`.
+The migration adds PostgreSQL triggers that reject every `UPDATE`, `DELETE`, and `TRUNCATE` with SQLSTATE `55000`.
 
 Application runtime access should be append/read only.
 
 Corrections must be represented as new review events where policy permits; historical rows must never be rewritten.
 
-## Planned durable transaction
+## Implemented durable transaction
 
-The future store should perform one bounded PostgreSQL transaction:
+`authority-outreach-review-store.ts` performs one bounded PostgreSQL transaction:
 
 1. resolve the active site from the validated workspace target domain;
 2. lock the site row for the duration of the decision to serialize review writes safely;
@@ -204,9 +204,9 @@ Any failure must roll back the transaction.
 
 There is no provider call or outreach execution inside this transaction.
 
-## Planned authenticated mutation
+## Implemented authenticated mutation
 
-After migration authorization, the bounded API is expected to be:
+The bounded API is:
 
 `POST /api/authority/outreach/reviews`
 
@@ -229,9 +229,9 @@ Expected status behavior:
 - 409: stale workspace, stale qualification, concurrent change, terminal decision, unsafe state;
 - 503: durable review runtime unavailable.
 
-## Planned read integration
+## Implemented read integration
 
-The existing UGP-10.2 `GET /api/authority/outreach` loader should use the new durable store as its review source.
+The UGP-10.3 `GET /api/authority/outreach` loader uses the durable store as its default review source.
 
 If the review table/runtime is unavailable, the API must report unavailable rather than silently dropping durable history and projecting an apparently clean review queue.
 
@@ -254,6 +254,8 @@ UGP-10.3 must continue to guarantee:
 
 ## Current authorization boundary
 
-This pre-migration contract intentionally performs **no persistence** and creates **no database migration**.
+This implementation creates the migration, durable store, read integration, authenticated mutation endpoint, and disposable PostgreSQL certification only.
 
-A separate explicit authorization is required before adding the migration and durable PostgreSQL/API mutation implementation.
+It does **not** apply migration `0008` to staging or production and does not mutate Railway, production databases, credentials, provider state, schedulers, workers, contact data, outreach drafts, outreach sends, or public websites.
+
+The next boundary is the certified feature-PR merge. Any later staging/production migration application remains a separate explicit authorization.
