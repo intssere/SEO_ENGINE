@@ -16,6 +16,8 @@ import {
 export const UGP_AUTHORITY_OUTREACH_REVIEW_STORE_VERSION =
   "ugp-10-3-durable-outreach-review-store-v1" as const;
 
+type SqlLike=postgres.Sql|postgres.TransactionSql;
+
 const HEX64=/^[0-9a-f]{64}$/;
 const WORKSPACE_ITEM_ID=/^uaow-[0-9a-f]{24}$/;
 const DECISIONS=new Set(["approved_for_draft","rejected","deferred"]);
@@ -208,7 +210,7 @@ function assertEventGroups(events:readonly AuthorityOutreachReviewAuditEvent[]):
   }
 }
 
-async function assertReviewTableReady(sql:postgres.Sql):Promise<void>{
+async function assertReviewTableReady(sql:SqlLike):Promise<void>{
   const rows=await sql<{relation:string|null}[]>`
     SELECT to_regclass('public.authority_outreach_review_events')::text AS relation
   `;
@@ -221,7 +223,7 @@ async function assertReviewTableReady(sql:postgres.Sql):Promise<void>{
 }
 
 async function resolveSite(
-  sql:postgres.Sql,
+  sql:SqlLike,
   targetDomain:string,
   lock:boolean,
 ):Promise<string>{
@@ -257,7 +259,7 @@ async function resolveSite(
 }
 
 async function loadEventRows(
-  sql:postgres.Sql,
+  sql:SqlLike,
   siteId:string,
   qualificationFingerprint:string,
 ):Promise<ReviewRow[]>{
