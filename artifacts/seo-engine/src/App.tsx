@@ -73,8 +73,10 @@ function Router() {
           <Route path="/site-audit/technical" component={TechnicalSeoPage} />
           <Route path="/site-audit/internal-links" component={InternalLinksPage} />
 
+          <Route path="/authority/backlinks" component={AuthorityPage} />
           <Route path="/authority/competitors" component={SearchIntelligencePage} />
-          {["backlinks","opportunities","prospects"].map(view=><Route key={view} path={"/authority/"+view} component={AuthorityPage} />)}
+          <Route path="/authority/opportunities" component={AuthorityPage} />
+          <Route path="/authority/prospects" component={AuthorityPage} />
 
           <Route path="/automation/review" component={ApprovalsPage} />
           <Route path="/automation/changes" component={ActionsPage} />
