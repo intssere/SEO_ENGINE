@@ -131,6 +131,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AuthorityQualificationApiResponse"
+  /authority/outreach:
+    get:
+      operationId: getAuthorityOutreachWorkspace
+      tags: [authority]
+      summary: Load the authenticated evidence-bound outreach review workspace
+      responses:
+        "200":
+          description: Read-only outreach review workspace state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorityOutreachApiResponse"
   /authority/opportunities:
     get:
       operationId: getAuthorityOpportunities
@@ -391,6 +403,31 @@ components:
             liveProviderExecutionAuthorized: { type: boolean, enum: [false] }
             contactDiscoveryAuthorized: { type: boolean, enum: [false] }
             outreachAuthorized: { type: boolean, enum: [false] }
+            publicSiteWrites: { type: boolean, enum: [false] }
+    AuthorityOutreachApiResponse:
+      type: object
+      required: [version, state, reason, workspace, semantics]
+      properties:
+        version: { type: string, enum: [ugp-10-2-outreach-workspace-api-v1] }
+        state: { type: string, enum: [available, unavailable] }
+        reason: { type: [string, "null"] }
+        workspace:
+          type: [object, "null"]
+          additionalProperties: true
+        semantics:
+          type: object
+          additionalProperties: false
+          required: [authenticatedReadOnly, syntheticFallback, humanReviewRequired, reviewMutationAuthorized, reviewPersistenceConfigured, contactDiscoveryAuthorized, outreachDraftingAuthorized, outreachSendingAuthorized, liveProviderExecutionAuthorized, publicSiteWrites]
+          properties:
+            authenticatedReadOnly: { type: boolean, enum: [true] }
+            syntheticFallback: { type: boolean, enum: [false] }
+            humanReviewRequired: { type: boolean, enum: [true] }
+            reviewMutationAuthorized: { type: boolean, enum: [false] }
+            reviewPersistenceConfigured: { type: boolean }
+            contactDiscoveryAuthorized: { type: boolean, enum: [false] }
+            outreachDraftingAuthorized: { type: boolean, enum: [false] }
+            outreachSendingAuthorized: { type: boolean, enum: [false] }
+            liveProviderExecutionAuthorized: { type: boolean, enum: [false] }
             publicSiteWrites: { type: boolean, enum: [false] }
     AuthorityOpportunityApiResponse:
       type: object
