@@ -101,13 +101,9 @@ test("source failure is sanitized",async()=>{
 
 test("discovery and current dataset mismatch is rejected",async()=>{
   const input=snapshot();
-  const other=buildBacklinkEvidenceDataset({
-    ...input.current,
-    targetDomain:"other.example",
-  });
   const result=await loadAuthorityQualificationData(async()=>({
     ...input,
-    current:other,
+    current:{...input.current,targetDomain:"other.example"},
   }));
   assert.equal(result.state,"unavailable");
   assert.equal(result.qualification,null);
