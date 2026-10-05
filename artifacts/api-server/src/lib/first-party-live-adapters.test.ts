@@ -249,37 +249,61 @@ test("robots evaluator emits closed safe rejection reasons without robots conten
   );
 });
 
-test("page transport detects noindex, enforces transient body bound, and returns manual redirect outcome", async () => {
+test("page transport reads only bounded HTML metadata, preserves noindex, and returns manual redirects", async () => {
   const noindex = createFirstPartyPageTransport({
     maxTransientPageBytes: 1_000,
     fetchImpl: async () => new Response(
-      '<html><head><meta name="robots" content="noindex,follow"></head></html>',
-      { status: 200, headers: { "content-type": "text/html" } },
+      '<html><head><meta name="robots" content="noindex,follow"></head><body>' +
+        "x".repeat(20_000) +
+        "</body></html>",
+      { status: 200, headers: { "content-type": "text/html", "content-length": "20080" } },
     ),
   });
   assert.deepEqual(await noindex.get(pageRequest()), { kind: "success", noindex: true });
 
+  const largeHtmlBody = createFirstPartyPageTransport({
+    maxTransientPageBytes: 64,
+    fetchImpl: async () => new Response(
+      "<html><head><title>ok</title></head><body>" + "x".repeat(20_000) + "</body></html>",
+      { status: 200, headers: { "content-type": "text/html", "content-length": "20080" } },
+    ),
+  });
+  assert.deepEqual(await largeHtmlBody.get(pageRequest()), { kind: "success" });
+
   const headerNoindex = createFirstPartyPageTransport({
-    maxTransientPageBytes: 1_000,
-    fetchImpl: async () => new Response("", {
+    maxTransientPageBytes: 10,
+    fetchImpl: async () => new Response("x".repeat(20_000), {
       status: 200,
-      headers: { "x-robots-tag": "noindex", "content-type": "text/html" },
+      headers: {
+        "x-robots-tag": "noindex",
+        "content-type": "text/html",
+        "content-length": "20000",
+      },
     }),
   });
   assert.deepEqual(await headerNoindex.get(pageRequest()), { kind: "success", noindex: true });
 
-  const oversize = createFirstPartyPageTransport({
-    maxTransientPageBytes: 10,
-    fetchImpl: async () => new Response("01234567890", {
+  const oversizedMetadata = createFirstPartyPageTransport({
+    maxTransientPageBytes: 32,
+    fetchImpl: async () => new Response("<html><head>" + "x".repeat(100), {
       status: 200,
-      headers: { "content-type": "text/html", "content-length": "11" },
+      headers: { "content-type": "text/html" },
     }),
   });
-  assert.deepEqual(await oversize.get(pageRequest()), {
+  assert.deepEqual(await oversizedMetadata.get(pageRequest()), {
     kind: "failure",
     signal: { kind: "policy_rejection" },
     policyRejectionReason: "response_oversize",
   });
+
+  const largeNonHtmlBody = createFirstPartyPageTransport({
+    maxTransientPageBytes: 10,
+    fetchImpl: async () => new Response("x".repeat(20_000), {
+      status: 200,
+      headers: { "content-type": "application/pdf", "content-length": "20000" },
+    }),
+  });
+  assert.deepEqual(await largeNonHtmlBody.get(pageRequest()), { kind: "success" });
 
   const redirect = createFirstPartyPageTransport({
     maxTransientPageBytes: 1_000,
