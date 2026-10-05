@@ -23,7 +23,11 @@ import {
 } from "./first-party-crawl-manual.js";
 import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
 import { DIAMOND_SHELF_CANONICAL_ORIGIN } from "./first-party-crawl-runtime-bridge.js";
-import { createInitialCrawlCheckpoint } from "./full-site-crawl-control.js";
+import {
+  advanceCrawlCheckpoint,
+  createInitialCrawlCheckpoint,
+  type SuppliedCrawlUrlOutcome,
+} from "./full-site-crawl-control.js";
 
 const RECEIPT_FINGERPRINT = "a".repeat(64);
 const OTHER_FINGERPRINT = "b".repeat(64);
@@ -69,10 +73,21 @@ function fixture() {
     canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     entries: [{ path: "/a" }, { path: "/b" }],
   });
-  return {
-    ...built,
-    checkpoint: createInitialCrawlCheckpoint(built.executionPlan),
-  };
+  const initial = createInitialCrawlCheckpoint(built.executionPlan);
+  const outcomes: SuppliedCrawlUrlOutcome[] = initial.pendingCanonicalUrls.map((canonicalUrl, index) =>
+    index === 0
+      ? { canonicalUrl, kind: "failure", signal: { kind: "network_timeout" } }
+      : { canonicalUrl, kind: "success" },
+  );
+  const checkpoint = advanceCrawlCheckpoint(built.executionPlan, initial, {
+    expectedCheckpointFingerprint: initial.fingerprint,
+    batchId: initial.activeBatchId!,
+    attempt: initial.nextAttempt!,
+    outcomes,
+  });
+  assert.equal(checkpoint.sequence, 1);
+  assert.equal(checkpoint.status, "pending");
+  return { ...built, checkpoint };
 }
 
 function resumePacket(
