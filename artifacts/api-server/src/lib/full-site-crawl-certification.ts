@@ -72,7 +72,7 @@ export type FullSiteCrawlCertification = {
     pageHardLimit: number;
     absolutePageCeiling: number;
     inventoryFingerprint: string;
-    executionInventoryFingerprint: string;
+    executionInventoryFingerprint?: string;
     executionPlanFingerprint: string;
     checkpointFingerprint: string;
     checkpointSequence: number;
@@ -488,7 +488,10 @@ export function assertFullSiteCrawlCertificationIntegrity(certification: FullSit
   if (!certification.siteId.trim()) throw new Error("crawl_certification_site_id_invalid");
   requireCanonicalOrigin(certification.canonicalOrigin);
   requireSha256(certification.lineage.inventoryFingerprint, "crawl_certification_lineage_fingerprint_invalid");
-  requireSha256(certification.lineage.executionInventoryFingerprint, "crawl_certification_lineage_fingerprint_invalid");
+  requireSha256(
+    certification.lineage.executionInventoryFingerprint ?? certification.lineage.inventoryFingerprint,
+    "crawl_certification_lineage_fingerprint_invalid",
+  );
   requireSha256(certification.lineage.executionPlanFingerprint, "crawl_certification_lineage_fingerprint_invalid");
   requireSha256(certification.lineage.checkpointFingerprint, "crawl_certification_lineage_fingerprint_invalid");
   requirePositiveInteger(certification.lineage.pageHardLimit, "crawl_certification_page_hard_limit_invalid");
