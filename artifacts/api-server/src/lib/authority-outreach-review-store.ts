@@ -208,9 +208,9 @@ function assertEventGroups(events:readonly AuthorityOutreachReviewAuditEvent[]):
 }
 
 async function assertReviewTableReady(sql:postgres.Sql):Promise<void>{
-  const rows=await sql<{relation:string|null}[]>\`
+  const rows=await sql<{relation:string|null}[]>`
     SELECT to_regclass('public.authority_outreach_review_events')::text AS relation
-  \`;
+  `;
   if(rows[0]?.relation!=="authority_outreach_review_events"){
     throw new AuthorityOutreachReviewStoreError(
       "outreach_review_schema_unavailable",
@@ -225,21 +225,21 @@ async function resolveSite(
   lock:boolean,
 ):Promise<string>{
   const rows=lock
-    ?await sql<{id:string}[]>\`
+    ?await sql<{id:string}[]>`
       SELECT id::text AS id
       FROM sites
-      WHERE lower(domain)=\${targetDomain.toLowerCase()} AND is_active=true
+      WHERE lower(domain)=${targetDomain.toLowerCase()} AND is_active=true
       ORDER BY updated_at DESC,id
       LIMIT 2
       FOR UPDATE
-    \`
-    :await sql<{id:string}[]>\`
+    `
+    :await sql<{id:string}[]>`
       SELECT id::text AS id
       FROM sites
-      WHERE lower(domain)=\${targetDomain.toLowerCase()} AND is_active=true
+      WHERE lower(domain)=${targetDomain.toLowerCase()} AND is_active=true
       ORDER BY updated_at DESC,id
       LIMIT 2
-    \`;
+    `;
   if(rows.length===0){
     throw new AuthorityOutreachReviewStoreError(
       "outreach_review_site_not_found",
@@ -260,7 +260,7 @@ async function loadEventRows(
   siteId:string,
   qualificationFingerprint:string,
 ):Promise<ReviewRow[]>{
-  return sql<ReviewRow[]>\`
+  return sql<ReviewRow[]>`
     SELECT
       event_id AS "eventId",
       event_version AS "eventVersion",
@@ -285,10 +285,10 @@ async function loadEventRows(
       reviewed_at AS "reviewedAt",
       review_fingerprint AS "reviewFingerprint"
     FROM authority_outreach_review_events
-    WHERE site_id=\${siteId}::uuid
-      AND qualification_fingerprint=\${qualificationFingerprint}
+    WHERE site_id=${siteId}::uuid
+      AND qualification_fingerprint=${qualificationFingerprint}
     ORDER BY prospect_fingerprint,sequence,event_id
-  \`;
+  `;
 }
 
 function persistedEvents(rows:readonly ReviewRow[]):AuthorityOutreachReviewAuditEvent[]{
@@ -510,7 +510,7 @@ export async function commitAuthorityOutreachReviewDecision(
       }
 
       const event=prepared.auditEvent;
-      await tx\`
+      await tx`
         INSERT INTO authority_outreach_review_events(
           event_id,event_version,event_fingerprint,request_fingerprint,site_id,
           sequence,previous_event_fingerprint,workspace_version,
@@ -519,31 +519,31 @@ export async function commitAuthorityOutreachReviewDecision(
           target_domain,source_domain,target_url,qualification_status,decision,
           reason_code,reviewer_id,reviewed_at,review_fingerprint
         ) VALUES(
-          \${event.eventId},
-          \${event.version},
-          \${event.eventFingerprint},
-          \${event.requestFingerprint},
-          \${siteId}::uuid,
-          \${event.sequence},
-          \${event.previousEventFingerprint},
-          \${event.workspaceVersion},
-          \${event.workspaceFingerprint},
-          \${event.workspaceItemId},
-          \${event.workspaceItemFingerprint},
-          \${event.qualificationFingerprint},
-          \${event.prospectFingerprint},
-          \${event.opportunityFingerprint},
-          \${event.targetDomain},
-          \${event.sourceDomain},
-          \${event.targetUrl},
-          \${event.qualificationStatus},
-          \${event.decision},
-          \${event.reasonCode},
-          \${event.reviewerId},
-          \${event.reviewedAt}::timestamptz,
-          \${event.reviewFingerprint}
+          ${event.eventId},
+          ${event.version},
+          ${event.eventFingerprint},
+          ${event.requestFingerprint},
+          ${siteId}::uuid,
+          ${event.sequence},
+          ${event.previousEventFingerprint},
+          ${event.workspaceVersion},
+          ${event.workspaceFingerprint},
+          ${event.workspaceItemId},
+          ${event.workspaceItemFingerprint},
+          ${event.qualificationFingerprint},
+          ${event.prospectFingerprint},
+          ${event.opportunityFingerprint},
+          ${event.targetDomain},
+          ${event.sourceDomain},
+          ${event.targetUrl},
+          ${event.qualificationStatus},
+          ${event.decision},
+          ${event.reasonCode},
+          ${event.reviewerId},
+          ${event.reviewedAt}::timestamptz,
+          ${event.reviewFingerprint}
         )
-      \`;
+      `;
 
       const insertedRows=await loadEventRows(
         tx,
