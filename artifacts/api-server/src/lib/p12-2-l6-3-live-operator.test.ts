@@ -22,6 +22,7 @@ import {
 } from "./first-party-crawl-manual.js";
 import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
 import { DIAMOND_SHELF_CANONICAL_ORIGIN } from "./first-party-crawl-runtime-bridge.js";
+import { createInitialCrawlCheckpoint } from "./full-site-crawl-control.js";
 
 const HEX_A = "a".repeat(64);
 const HEX_B = "b".repeat(64);
@@ -202,18 +203,19 @@ test("L6.3 validates and maps full_resume checkpoint material", async () => {
     canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     entries: [{ path: "/a" }, { path: "/b" }],
   });
+  const checkpoint = createInitialCrawlCheckpoint(built.executionPlan);
   const packet = buildP122L2Packet({
     phase: "full_resume",
     runId: "l6-3-resume",
     observedAt: "2026-10-03T07:42:00.000Z",
     config: config(20, built.executionPlan.source.absolutePageCeiling),
     resume: {
-      checkpointRevision: built.checkpoint.sequence,
-      checkpointFingerprint: built.checkpoint.fingerprint,
+      checkpointRevision: checkpoint.sequence,
+      checkpointFingerprint: checkpoint.fingerprint,
       executionPlanFingerprint: built.executionPlan.fingerprint,
     },
   });
-  const e = envelope(packet, { resumeCheckpoint: built.checkpoint });
+  const e = envelope(packet, { resumeCheckpoint: checkpoint });
   assert.doesNotThrow(() => assertP122L3OperatorEnvelopeIntegrity(e));
   let suppliedFingerprint = "";
   const a = adapter({
@@ -223,7 +225,7 @@ test("L6.3 validates and maps full_resume checkpoint material", async () => {
     },
   });
   const result = await new P122L3LiveExecutor(e, "postgres://unused", a).execute(packet);
-  assert.equal(suppliedFingerprint, built.checkpoint.fingerprint);
+  assert.equal(suppliedFingerprint, checkpoint.fingerprint);
   assert.deepEqual(result, { status: "completed", receiptFingerprint: HEX_A });
 
   const tampered = structuredClone(e);
