@@ -16,6 +16,7 @@ import {
   evaluateFullSiteExecutionUrl,
   planBoundedPilotCrawlExecution,
   planFullSiteCrawlExecution,
+  planFullSiteCrawlExecutionForResume,
   type CrawlRetrySignal,
   type FullSiteCrawlCheckpoint,
   type FullSiteCrawlExecutionPlan,
@@ -890,7 +891,14 @@ async function runFullSiteCrawlBridgeInternal(
   });
   const executionPlan = scope === "bounded_pilot"
     ? planBoundedPilotCrawlExecution(crawlPlan, inventory, input.executionPolicy)
-    : planFullSiteCrawlExecution(crawlPlan, inventory, input.executionPolicy);
+    : input.resumeCheckpoint
+      ? planFullSiteCrawlExecutionForResume(
+          crawlPlan,
+          inventory,
+          input.executionPolicy,
+          input.resumeCheckpoint.inventoryFingerprint,
+        )
+      : planFullSiteCrawlExecution(crawlPlan, inventory, input.executionPolicy);
   assertFullSiteCrawlExecutionPlanIntegrity(executionPlan);
 
   const storedCheckpoint = input.resumeCheckpoint ?? await options.persistence.loadCheckpoint({
