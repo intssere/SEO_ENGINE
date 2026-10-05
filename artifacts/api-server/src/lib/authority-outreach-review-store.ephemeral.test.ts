@@ -28,7 +28,7 @@ function databaseUrl():string|null{
   return raw;
 }
 
-function qualified():AuthorityQualificationApiResponse{
+function qualified(responseFingerprintChar="e"):AuthorityQualificationApiResponse{
   const current=buildBacklinkEvidenceDataset({
     targetDomain:"diamondshelf.us",
     source:{
@@ -45,7 +45,7 @@ function qualified():AuthorityQualificationApiResponse{
         max:1000,
         crossProviderComparable:false,
       },
-      responseFingerprint:FP("e"),
+      responseFingerprint:FP(responseFingerprintChar),
     },
     backlinks:[{
       sourceUrl:"https://publisher.example.org/old-guide",
