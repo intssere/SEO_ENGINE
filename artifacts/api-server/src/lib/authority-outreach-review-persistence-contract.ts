@@ -89,6 +89,7 @@ export type AuthorityOutreachPreparedReviewDecision = Readonly<{
 
 const HEX64 = /^[0-9a-f]{64}$/;
 const EXACT_ID = /^[A-Za-z0-9][A-Za-z0-9._:@+\/-]{0,511}$/;
+const REVIEWER_ID = /^[A-Za-z0-9_.:@-]{1,120}$/;
 
 const EVENT_SEMANTICS = Object.freeze({
   humanDecision: true as const,
@@ -160,7 +161,14 @@ function exactId(value: unknown, code: string): string {
 }
 
 function reviewerId(value: unknown): string {
-  return exactId(value, "ugp_outreach_review_invalid_reviewer");
+  if (
+    typeof value !== "string" ||
+    value.trim() !== value ||
+    !REVIEWER_ID.test(value)
+  ) {
+    throw new Error("ugp_outreach_review_invalid_reviewer");
+  }
+  return value;
 }
 
 export function authorityOutreachReviewRequestFingerprint(
