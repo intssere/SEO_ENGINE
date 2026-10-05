@@ -23,6 +23,13 @@ This has two consequences:
 
 The design does not compare URL counts alone. URL identity and batch membership remain cryptographically bound into every batch and the overall plan.
 
+Completion certification also preserves both facts rather than conflating them:
+
+- `inventoryFingerprint` records the current observed sitemap inventory, including current metadata;
+- `executionInventoryFingerprint` records the certified inventory lineage salt used by the resumed execution plan and checkpoint.
+
+Certification reconstructs the execution plan from the current validated canonical URL set using the execution-lineage fingerprint and requires exact semantic equality with the supplied execution plan. Therefore metadata-only drift is observable in the certification while URL-set drift remains a hard failure.
+
 ## Safety boundary
 
 L10.11 does not disable or weaken checkpoint integrity. It does not bypass current sitemap acquisition, sitemap completeness checks, same-origin URL validation, canonicalization, excluded-path controls, batching, concurrency, robots enforcement, request-rate limits, redirect revalidation, retry bounds, or persistence safety.
