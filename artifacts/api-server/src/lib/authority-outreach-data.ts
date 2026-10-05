@@ -8,9 +8,11 @@ import {
   type AuthorityOutreachReviewInput,
   type AuthorityOutreachWorkspace,
 } from "./authority-outreach-workspace.js";
+import { loadDurableAuthorityOutreachReviews } from "./authority-outreach-review-store.js";
+import type { AuthorityProspectQualificationResult } from "./authority-prospect-qualification.js";
 
 export const UGP_AUTHORITY_OUTREACH_API_VERSION =
-  "ugp-10-2-outreach-workspace-api-v1" as const;
+  "ugp-10-3-outreach-workspace-api-v1" as const;
 
 export type AuthorityOutreachApiResponse = Readonly<{
   version: typeof UGP_AUTHORITY_OUTREACH_API_VERSION;
@@ -21,7 +23,7 @@ export type AuthorityOutreachApiResponse = Readonly<{
     authenticatedReadOnly: true;
     syntheticFallback: false;
     humanReviewRequired: true;
-    reviewMutationAuthorized: false;
+    reviewMutationAuthorized: boolean;
     reviewPersistenceConfigured: boolean;
     contactDiscoveryAuthorized: false;
     outreachDraftingAuthorized: false;
@@ -32,12 +34,14 @@ export type AuthorityOutreachApiResponse = Readonly<{
 }>;
 
 export type AuthorityOutreachReviewSource =
-  ()=>Promise<readonly AuthorityOutreachReviewInput[]|null>;
+  (qualification:AuthorityProspectQualificationResult)=>
+    Promise<readonly AuthorityOutreachReviewInput[]|null>;
 
 export type AuthorityQualificationLoader =
   ()=>Promise<AuthorityQualificationApiResponse>;
 
-let reviewSource:AuthorityOutreachReviewSource|null=null;
+let reviewSource:AuthorityOutreachReviewSource|null=
+  loadDurableAuthorityOutreachReviews;
 
 export function setAuthorityOutreachReviewSourceForRuntime(
   next:AuthorityOutreachReviewSource|null,
@@ -50,7 +54,7 @@ function semantics(configured:boolean){
     authenticatedReadOnly:true as const,
     syntheticFallback:false as const,
     humanReviewRequired:true as const,
-    reviewMutationAuthorized:false as const,
+    reviewMutationAuthorized:configured,
     reviewPersistenceConfigured:configured,
     contactDiscoveryAuthorized:false as const,
     outreachDraftingAuthorized:false as const,
@@ -86,7 +90,9 @@ export async function loadAuthorityOutreachData(
         configured,
       );
     }
-    const reviews=selectedReviews?await selectedReviews():null;
+    const reviews=selectedReviews
+      ?await selectedReviews(qualification.qualification)
+      :null;
     const input={
       qualification:qualification.qualification,
       reviews:reviews??[],
