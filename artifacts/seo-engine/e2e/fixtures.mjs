@@ -305,7 +305,7 @@ const authorityQualificationFixture = {
 };
 
 const authorityOutreachFixture = {
-  version: "ugp-10-2-outreach-workspace-api-v1",
+  version: "ugp-10-3-outreach-workspace-api-v1",
   state: "unavailable",
   reason: "No durable authority qualification evidence source is configured.",
   workspace: null,
@@ -313,8 +313,8 @@ const authorityOutreachFixture = {
     authenticatedReadOnly: true,
     syntheticFallback: false,
     humanReviewRequired: true,
-    reviewMutationAuthorized: false,
-    reviewPersistenceConfigured: false,
+    reviewMutationAuthorized: true,
+    reviewPersistenceConfigured: true,
     contactDiscoveryAuthorized: false,
     outreachDraftingAuthorized: false,
     outreachSendingAuthorized: false,
