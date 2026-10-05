@@ -119,6 +119,7 @@ Each accepted decision produces a deterministic audit event with:
 - reviewer identity;
 - canonical reviewed-at timestamp;
 - UGP-10.1 review fingerprint;
+- deterministic request/idempotency fingerprint;
 - event fingerprint and event ID;
 - explicit non-execution semantics.
 
@@ -156,12 +157,14 @@ The migration should contain fields equivalent to:
 - `reviewer_id text NOT NULL`;
 - `reviewed_at timestamptz NOT NULL`;
 - `review_fingerprint char(64) NOT NULL UNIQUE`;
+- `request_fingerprint char(64) NOT NULL UNIQUE`;
 - `created_at timestamptz NOT NULL DEFAULT transaction_timestamp()`.
 
 Required constraints should include:
 
 - fixed event version;
 - all fingerprints exactly lowercase 64-character SHA-256 values;
+- request fingerprint unique so an exact human-review retry can be recognized idempotently;
 - sequence >= 1;
 - sequence 1 requires null previous fingerprint;
 - later sequences require non-null previous fingerprint;
@@ -192,9 +195,10 @@ The future store should perform one bounded PostgreSQL transaction:
 5. reconstruct UGP-10.1 review inputs from persisted events;
 6. rebuild and integrity-check the current workspace;
 7. run `prepareAuthorityOutreachReviewDecision(...)`;
-8. insert exactly one new immutable event;
-9. read the inserted row back;
-10. verify its fingerprint and sequence before returning success.
+8. check the deterministic request fingerprint for an already-committed identical review and return that verified event for an idempotent retry;
+9. otherwise insert exactly one new immutable event;
+10. read the inserted row back;
+11. verify its fingerprint and sequence before returning success.
 
 Any failure must roll back the transaction.
 
