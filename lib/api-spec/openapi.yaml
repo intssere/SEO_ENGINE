@@ -119,6 +119,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AuthorityDashboardApiResponse"
+  /authority/qualification:
+    get:
+      operationId: getAuthorityQualification
+      tags: [authority]
+      summary: Load evidence-bound prospect qualification
+      responses:
+        "200":
+          description: Read-only authority prospect qualification state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorityQualificationApiResponse"
   /authority/opportunities:
     get:
       operationId: getAuthorityOpportunities
@@ -356,6 +368,28 @@ components:
             syntheticFallback: { type: boolean, enum: [false] }
             persistenceRequired: { type: boolean, enum: [false] }
             liveProviderExecutionAuthorized: { type: boolean, enum: [false] }
+            outreachAuthorized: { type: boolean, enum: [false] }
+            publicSiteWrites: { type: boolean, enum: [false] }
+    AuthorityQualificationApiResponse:
+      type: object
+      required: [version, state, reason, qualification, semantics]
+      properties:
+        version: { type: string, enum: [ugp-9-4b-prospect-qualification-api-v1] }
+        state: { type: string, enum: [available, unavailable] }
+        reason: { type: [string, "null"] }
+        qualification:
+          type: [object, "null"]
+          additionalProperties: true
+        semantics:
+          type: object
+          additionalProperties: false
+          required: [authenticatedReadOnly, syntheticFallback, persistenceRequired, liveProviderExecutionAuthorized, contactDiscoveryAuthorized, outreachAuthorized, publicSiteWrites]
+          properties:
+            authenticatedReadOnly: { type: boolean, enum: [true] }
+            syntheticFallback: { type: boolean, enum: [false] }
+            persistenceRequired: { type: boolean, enum: [false] }
+            liveProviderExecutionAuthorized: { type: boolean, enum: [false] }
+            contactDiscoveryAuthorized: { type: boolean, enum: [false] }
             outreachAuthorized: { type: boolean, enum: [false] }
             publicSiteWrites: { type: boolean, enum: [false] }
     AuthorityOpportunityApiResponse:

@@ -58,6 +58,7 @@ const customerMappedRoutes = [
   "/authority/backlinks",
   "/authority/competitors",
   "/authority/opportunities",
+  "/authority/prospects",
   "/automation/review",
   "/automation/changes",
   "/automation/history",

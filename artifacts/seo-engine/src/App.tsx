@@ -76,6 +76,7 @@ function Router() {
           <Route path="/authority/backlinks" component={AuthorityPage} />
           <Route path="/authority/competitors" component={SearchIntelligencePage} />
           <Route path="/authority/opportunities" component={AuthorityPage} />
+          <Route path="/authority/prospects" component={AuthorityPage} />
 
           <Route path="/automation/review" component={ApprovalsPage} />
           <Route path="/automation/changes" component={ActionsPage} />

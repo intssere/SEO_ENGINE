@@ -288,6 +288,22 @@ const authorityFixture = {
   },
 };
 
+const authorityQualificationFixture = {
+  version: "ugp-9-4b-prospect-qualification-api-v1",
+  state: "unavailable",
+  reason: "No durable authority qualification evidence source is configured.",
+  qualification: null,
+  semantics: {
+    authenticatedReadOnly: true,
+    syntheticFallback: false,
+    persistenceRequired: false,
+    liveProviderExecutionAuthorized: false,
+    contactDiscoveryAuthorized: false,
+    outreachAuthorized: false,
+    publicSiteWrites: false,
+  },
+};
+
 const authorityOpportunityFixture = {
   version: "ugp-9-3b-authority-opportunity-api-v1",
   state: "unavailable",
@@ -430,6 +446,10 @@ export async function installSyntheticNetwork(page) {
     }
     if (method === "GET" && path === "/api/authority/opportunities") {
       await json(route, authorityOpportunityFixture);
+      return;
+    }
+    if (method === "GET" && path === "/api/authority/qualification") {
+      await json(route, authorityQualificationFixture);
       return;
     }
     if (method === "GET" && path === "/api/performance") {
