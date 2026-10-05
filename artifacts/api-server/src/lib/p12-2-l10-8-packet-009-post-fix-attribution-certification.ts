@@ -321,5 +321,5 @@ export function p122L108AuthorizationFingerprint(): string {
 }
 
 export function p122L108AuthorizationLiteral(): string {
-  return `AUTHORIZE:P12_2_L10_8_PACKET_008_READ_ONLY:${p122L108AuthorizationFingerprint()}`;
+  return `AUTHORIZE:P12_2_L10_8_PACKET_009_READ_ONLY:${p122L108AuthorizationFingerprint()}`;
 }
