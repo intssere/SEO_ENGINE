@@ -140,6 +140,8 @@ jobs:
           createdb -h 127.0.0.1 -U postgres seo_engine_p12_2_prod_lineage_test
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
           pnpm db:bootstrap
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -c "UPDATE sites SET id='eb1da9ee-539c-4200-8f04-f64ccaea7768'::uuid WHERE lower(domain)='diamondshelf.us' AND canonical_origin='https://diamondshelf.us' AND is_active=true"
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT id::text FROM sites WHERE lower(domain)='diamondshelf.us' AND canonical_origin='https://diamondshelf.us' AND is_active=true" | grep -Fxq eb1da9ee-539c-4200-8f04-f64ccaea7768
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0003_observation_evidence_schema.sql
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0004_first_party_crawl_execution_state.sql
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0008_first_party_crawl_l2_invocations.sql
