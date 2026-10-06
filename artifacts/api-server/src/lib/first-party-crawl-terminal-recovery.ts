@@ -302,10 +302,65 @@ export function buildTerminalFailureRecoveryReceipt(input: {
     terminalFailuresAfter: input.resultCheckpoint.counters.terminalFailures,
     urlReceipts: [...input.urlReceipts].sort((a, b) => a.canonicalUrl.localeCompare(b.canonicalUrl)),
   };
-  return {
+  const receipt = {
     ...withoutFingerprint,
     fingerprint: fingerprint(withoutFingerprint),
   };
+  assertTerminalFailureRecoveryReceiptIntegrity(receipt);
+  return receipt;
+}
+
+export function assertTerminalFailureRecoveryReceiptIntegrity(
+  receipt: TerminalFailureRecoveryReceipt,
+): void {
+  if (receipt.version !== P12_2_TERMINAL_FAILURE_RECOVERY_RECEIPT_VERSION) {
+    throw new Error("crawl_recovery_receipt_version_invalid");
+  }
+  if (
+    !receipt.runId.trim() ||
+    !receipt.siteId.trim() ||
+    receipt.canonicalOrigin !== CANONICAL_ORIGIN ||
+    !HEX64.test(receipt.executionPlanFingerprint) ||
+    !HEX64.test(receipt.recoveryPlanFingerprint) ||
+    !HEX64.test(receipt.sourceCheckpointFingerprint) ||
+    !HEX64.test(receipt.resultCheckpointFingerprint) ||
+    !HEX64.test(receipt.fingerprint)
+  ) throw new Error("crawl_recovery_receipt_identity_invalid");
+  requireObservedAt(receipt.observedAt);
+  if (
+    !Number.isInteger(receipt.sourceCheckpointRevision) ||
+    receipt.sourceCheckpointRevision < 1 ||
+    !Number.isInteger(receipt.resultCheckpointRevision) ||
+    receipt.resultCheckpointRevision !== receipt.sourceCheckpointRevision + 1
+  ) throw new Error("crawl_recovery_receipt_checkpoint_revision_invalid");
+  if (
+    !Number.isInteger(receipt.terminalFailuresBefore) ||
+    receipt.terminalFailuresBefore < 1 ||
+    !Number.isInteger(receipt.terminalFailuresAfter) ||
+    receipt.terminalFailuresAfter < 0 ||
+    receipt.terminalFailuresAfter > receipt.terminalFailuresBefore
+  ) throw new Error("crawl_recovery_receipt_failure_count_invalid");
+  if (
+    receipt.status === "resolved"
+      ? receipt.terminalFailuresAfter !== 0
+      : receipt.terminalFailuresAfter === 0
+  ) throw new Error("crawl_recovery_receipt_status_mismatch");
+  const urls = new Set<string>();
+  for (const item of receipt.urlReceipts) {
+    requireCanonicalUrl(item.canonicalUrl);
+    if (
+      urls.has(item.canonicalUrl) ||
+      !HEX64.test(item.sourceEventFingerprint) ||
+      !Number.isInteger(item.attempts) ||
+      item.attempts < 1 ||
+      item.outcome.canonicalUrl !== item.canonicalUrl
+    ) throw new Error("crawl_recovery_receipt_url_invalid");
+    urls.add(item.canonicalUrl);
+  }
+  const { fingerprint: actual, ...withoutFingerprint } = receipt;
+  if (actual !== fingerprint(withoutFingerprint)) {
+    throw new Error("crawl_recovery_receipt_fingerprint_mismatch");
+  }
 }
 
 export function recoveryOutcomesFromReceipt(
