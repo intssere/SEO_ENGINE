@@ -272,6 +272,17 @@ function assertCheckpointRecord(record: CrawlCheckpointPersistenceRecord): void 
     record.checkpoint.planFingerprint !== record.executionPlanFingerprint
   ) throw new Error("p12_2_persistence_checkpoint_lineage_invalid");
   assertFullSiteCrawlCheckpointFingerprintIntegrity(record.checkpoint);
+  for (const event of record.terminalFailureEvents) {
+    assertTerminalFailureEventIntegrity(event);
+    if (
+      event.runId !== record.runId ||
+      event.siteId !== record.siteId ||
+      event.canonicalOrigin !== record.canonicalOrigin ||
+      event.executionPlanFingerprint !== record.executionPlanFingerprint ||
+      event.checkpointFingerprint !== record.checkpoint.fingerprint ||
+      event.checkpointRevision !== record.checkpoint.sequence
+    ) throw new Error("p12_2_persistence_terminal_failure_event_lineage_invalid");
+  }
   assertNoForbiddenContent(record);
 }
 
@@ -317,6 +328,7 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
       throw new Error("p12_2_persistence_schema_table_count_mismatch");
     }
 
+    const includeRecoverySchema = tableCount === P12_2_L10_13B_TABLE_COUNT;
     const columns = await sql<{ table_name: string; column_name: string }[]>`
       SELECT table_name, column_name
       FROM information_schema.columns
@@ -324,11 +336,17 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
         AND table_name IN (
           'first_party_crawl_checkpoints',
           'first_party_crawl_completed_runs',
-          'first_party_crawl_incremental_receipts'
+          'first_party_crawl_incremental_receipts',
+          'first_party_crawl_terminal_failure_events',
+          'first_party_crawl_accounting_snapshots',
+          'first_party_crawl_terminal_failure_recovery_receipts'
         )
       ORDER BY table_name, ordinal_position
     `;
-    for (const [table, expected] of Object.entries(EXPECTED_COLUMNS)) {
+    const expectedTables = includeRecoverySchema
+      ? { ...EXPECTED_COLUMNS, ...L10_13B_EXPECTED_COLUMNS }
+      : EXPECTED_COLUMNS;
+    for (const [table, expected] of Object.entries(expectedTables)) {
       const actual = columns.filter((row) => row.table_name === table).map((row) => row.column_name);
       if (actual.length !== expected.length || actual.some((name, index) => name !== expected[index])) {
         throw new Error("p12_2_persistence_schema_mismatch");
