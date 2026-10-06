@@ -802,3 +802,202 @@ test("intentional interruption refuses a revision already passed by a supplied c
     /crawl_bridge_interruption_revision_already_passed/,
   );
 });
+
+
+test("L10.13B persists exact terminal-failure evidence and an uncertified accounting snapshot", async () => {
+  const failedUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/a`;
+  const pageResults = new Map<string, PageTransportResult[]>([
+    [failedUrl, [{ kind: "failure", signal: { kind: "http_status", httpStatus: 404 } }]],
+  ]);
+  const state = harness({ pageResults });
+
+  const result = await runFullSiteCrawlBridgeAccountingAware(
+    fullInput("l10-13b-accounting-failure"),
+    state.options,
+  );
+
+  assert.equal("status" in result ? result.status : null, "accounting_complete_uncertified");
+  if (!("status" in result) || result.status !== "accounting_complete_uncertified") {
+    throw new Error("expected accounting_complete_uncertified");
+  }
+  assert.equal(result.terminalFailures, 1);
+  assert.equal(result.persistence.accountingSnapshotPersisted, true);
+  assert.equal(result.persistence.completedRunPersisted, false);
+  assert.equal(result.persistence.terminalFailureEvidencePersisted, true);
+  assert.equal(state.persistence.accounting.length, 1);
+  assert.equal(state.persistence.completed.length, 0);
+  assert.equal(state.persistence.terminalEvents.length, 1);
+
+  const event = state.persistence.terminalEvents[0]!;
+  assert.equal(event.eventType, "terminal_failure");
+  assert.equal(event.canonicalUrl, failedUrl);
+  assert.equal(event.sourceEventFingerprint, null);
+  assert.equal(event.decisionReason, "permanent_http");
+  assert.equal(event.outcome.kind, "failure");
+  if (event.outcome.kind !== "failure" || event.outcome.signal.kind !== "http_status") {
+    throw new Error("expected persisted HTTP failure evidence");
+  }
+  assert.equal(event.outcome.signal.httpStatus, 404);
+
+  const accounting = state.persistence.accounting[0]!;
+  assert.equal(accounting.checkpoint.status, "completed");
+  assert.equal(accounting.checkpoint.progress.pendingUrls, 0);
+  assert.equal(accounting.checkpoint.counters.terminalFailures, 1);
+  assert.equal(accounting.certification.certification.wholeSiteCertified, false);
+  assert.ok(accounting.certification.certification.blockers.includes("terminal_failures_present"));
+});
+
+test("L10.13B recovery refuses legacy counter-only accounting when exact failure evidence is absent", async () => {
+  const failedUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/a`;
+  const pageResults = new Map<string, PageTransportResult[]>([
+    [failedUrl, [{ kind: "failure", signal: { kind: "http_status", httpStatus: 404 } }]],
+  ]);
+  const state = harness({ pageResults });
+
+  const accountingResult = await runFullSiteCrawlBridgeAccountingAware(
+    fullInput("l10-13b-evidence-gap"),
+    state.options,
+  );
+  assert.equal(
+    "status" in accountingResult ? accountingResult.status : null,
+    "accounting_complete_uncertified",
+  );
+
+  state.persistence.terminalEvents.length = 0;
+  const accounting = state.persistence.accounting[0]!;
+  await assert.rejects(
+    runTerminalFailureRecoveryBridge(
+      {
+        runId: accounting.runId,
+        observedAt: "2026-09-22T00:05:00.000Z",
+        siteId: accounting.siteId,
+        canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+        executionPlanFingerprint: accounting.executionPlan.fingerprint,
+      },
+      state.options,
+    ),
+    /crawl_recovery_failure_evidence_incomplete/,
+  );
+  assert.equal(state.calls.pages.filter((url) => url === failedUrl).length, 1);
+  assert.equal(state.persistence.completed.length, 0);
+});
+
+test("L10.13B retries only evidenced failed URLs and atomically promotes a resolved run", async () => {
+  const failedUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/a`;
+  const pageResults = new Map<string, PageTransportResult[]>([
+    [failedUrl, [{ kind: "failure", signal: { kind: "http_status", httpStatus: 404 } }]],
+  ]);
+  const state = harness({ pageResults });
+
+  const accountingResult = await runFullSiteCrawlBridgeAccountingAware(
+    fullInput("l10-13b-resolved-recovery"),
+    state.options,
+  );
+  if (!("status" in accountingResult) || accountingResult.status !== "accounting_complete_uncertified") {
+    throw new Error("expected accounting_complete_uncertified");
+  }
+  const sourceAccounting = state.persistence.accounting[0]!;
+  const sourceCheckpointRevision = sourceAccounting.checkpoint.sequence;
+  const sourceEvent = state.persistence.terminalEvents[0]!;
+
+  pageResults.set(failedUrl, [{ kind: "success" }]);
+  const recovery = await runTerminalFailureRecoveryBridge(
+    {
+      runId: sourceAccounting.runId,
+      observedAt: "2026-09-22T00:10:00.000Z",
+      siteId: sourceAccounting.siteId,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      executionPlanFingerprint: sourceAccounting.executionPlan.fingerprint,
+    },
+    state.options,
+  );
+
+  assert.equal(recovery.recoveryPlan.evidence.length, 1);
+  assert.equal(recovery.recoveryPlan.evidence[0]?.canonicalUrl, failedUrl);
+  assert.equal(recovery.recoveryReceipt.status, "resolved");
+  assert.equal(recovery.recoveryReceipt.terminalFailuresBefore, 1);
+  assert.equal(recovery.recoveryReceipt.terminalFailuresAfter, 0);
+  assert.equal(recovery.completedRunPersisted, true);
+  assert.equal(recovery.accountingSnapshot.checkpoint.sequence, sourceCheckpointRevision + 1);
+  assert.equal(recovery.accountingSnapshot.checkpoint.counters.terminalFailures, 0);
+  assert.equal(recovery.accountingSnapshot.certification.certification.wholeSiteCertified, true);
+  assert.equal(state.persistence.accounting.length, 2);
+  assert.equal(state.persistence.completed.length, 1);
+  assert.equal(state.persistence.recoveryReceipts.length, 1);
+
+  const resolvedEvent = state.persistence.terminalEvents.find(
+    (event) => event.eventType === "recovery_resolved",
+  );
+  assert.ok(resolvedEvent);
+  assert.equal(resolvedEvent!.canonicalUrl, failedUrl);
+  assert.equal(resolvedEvent!.sourceEventFingerprint, sourceEvent.fingerprint);
+
+  const unresolved = await state.persistence.loadUnresolvedTerminalFailures({
+    runId: sourceAccounting.runId,
+    executionPlanFingerprint: sourceAccounting.executionPlan.fingerprint,
+  });
+  assert.equal(unresolved.length, 0);
+  assert.deepEqual(
+    state.calls.pages.filter((url) => url === failedUrl),
+    [failedUrl, failedUrl],
+  );
+});
+
+test("L10.13B chains an incomplete recovery to new unresolved evidence without certifying the run", async () => {
+  const failedUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/a`;
+  const pageResults = new Map<string, PageTransportResult[]>([
+    [failedUrl, [
+      { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } },
+      { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } },
+      { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } },
+    ]],
+  ]);
+  const state = harness({ pageResults });
+
+  const accountingResult = await runFullSiteCrawlBridgeAccountingAware(
+    fullInput("l10-13b-incomplete-recovery"),
+    state.options,
+  );
+  if (!("status" in accountingResult) || accountingResult.status !== "accounting_complete_uncertified") {
+    throw new Error("expected accounting_complete_uncertified");
+  }
+  const sourceAccounting = state.persistence.accounting[0]!;
+  const sourceEvent = state.persistence.terminalEvents[0]!;
+  assert.equal(sourceEvent.decisionReason, "attempts_exhausted");
+
+  pageResults.set(failedUrl, [
+    { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } },
+    { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } },
+    { kind: "failure", signal: { kind: "http_status", httpStatus: 503 } },
+  ]);
+  const recovery = await runTerminalFailureRecoveryBridge(
+    {
+      runId: sourceAccounting.runId,
+      observedAt: "2026-09-22T00:15:00.000Z",
+      siteId: sourceAccounting.siteId,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      executionPlanFingerprint: sourceAccounting.executionPlan.fingerprint,
+    },
+    state.options,
+  );
+
+  assert.equal(recovery.recoveryReceipt.status, "incomplete");
+  assert.equal(recovery.recoveryReceipt.terminalFailuresAfter, 1);
+  assert.equal(recovery.completedRunPersisted, false);
+  assert.equal(recovery.accountingSnapshot.certification.certification.wholeSiteCertified, false);
+  assert.equal(state.persistence.completed.length, 0);
+
+  const recoveryFailure = state.persistence.terminalEvents.find(
+    (event) => event.eventType === "recovery_failure",
+  );
+  assert.ok(recoveryFailure);
+  assert.equal(recoveryFailure!.sourceEventFingerprint, sourceEvent.fingerprint);
+  assert.equal(recoveryFailure!.decisionReason, "attempts_exhausted");
+
+  const unresolved = await state.persistence.loadUnresolvedTerminalFailures({
+    runId: sourceAccounting.runId,
+    executionPlanFingerprint: sourceAccounting.executionPlan.fingerprint,
+  });
+  assert.equal(unresolved.length, 1);
+  assert.equal(unresolved[0]?.fingerprint, recoveryFailure!.fingerprint);
+});
