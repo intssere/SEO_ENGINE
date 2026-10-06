@@ -32,20 +32,20 @@ function dedicatedEphemeralUrl(): string | null {
 test("P12.2-L10.13B migration is additive, transactional, append-only, and contains no data backfill", async () => {
   const source = await readFile(migrationPath(), "utf8");
   assert.match(source, /^BEGIN;/);
-  assert.match(source, /COMMIT;\\s*$/);
-  assert.equal((source.match(/\\bCREATE\\s+TABLE\\s+/gi) ?? []).length, 3);
+  assert.match(source, /COMMIT;\s*$/);
+  assert.equal((source.match(/\bCREATE\s+TABLE\s+/gi) ?? []).length, 3);
   assert.deepEqual(
-    [...source.matchAll(/\\bCREATE\\s+TABLE\\s+([a-z_]+)/gi)].map((match) => match[1]).sort(),
+    [...source.matchAll(/\bCREATE\s+TABLE\s+([a-z_]+)/gi)].map((match) => match[1]).sort(),
     [...TARGET_TABLES].sort(),
   );
-  assert.equal(/\\bCREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\b/i.test(source), false);
+  assert.equal(/\bCREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\b/i.test(source), false);
   assert.equal(
-    /\\bINSERT\\s+INTO\\b|\\bUPDATE\\s+[A-Za-z_][A-Za-z0-9_.]*\\s+SET\\b|\\bDELETE\\s+FROM\\b|\\bMERGE\\s+INTO\\b|\\bCOPY\\s+[A-Za-z_]/i.test(source),
+    /\bINSERT\s+INTO\b|\bUPDATE\s+[A-Za-z_][A-Za-z0-9_.]*\s+SET\b|\bDELETE\s+FROM\b|\bMERGE\s+INTO\b|\bCOPY\s+[A-Za-z_]/i.test(source),
     false,
   );
-  assert.equal((source.match(/\\bCREATE\\s+TRIGGER\\s+/gi) ?? []).length, 3);
+  assert.equal((source.match(/\bCREATE\s+TRIGGER\s+/gi) ?? []).length, 3);
   assert.match(source, /p12_2_l10_13b_append_only_violation/);
-  assert.match(source, /UNIQUE \\(source_event_fingerprint\\)/);
+  assert.match(source, /UNIQUE \(source_event_fingerprint\)/);
 });
 
 test("P12.2-L10.13B migration adds exactly three empty tables and rejects UPDATE/DELETE on disposable PostgreSQL", async (t) => {
