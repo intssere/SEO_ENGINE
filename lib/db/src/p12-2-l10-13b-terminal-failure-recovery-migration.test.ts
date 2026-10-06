@@ -23,7 +23,7 @@ function dedicatedEphemeralUrl(): string | null {
   if (!["127.0.0.1", "localhost"].includes(parsed.hostname)) {
     throw new Error("p12_2_l10_13b_ephemeral_database_must_be_localhost");
   }
-  if (parsed.pathname.replace(/^\\//, "") !== "seo_engine_test") {
+  if (parsed.pathname.replace(/^\//, "") !== "seo_engine_test") {
     throw new Error("p12_2_l10_13b_ephemeral_database_name_invalid");
   }
   return raw;
