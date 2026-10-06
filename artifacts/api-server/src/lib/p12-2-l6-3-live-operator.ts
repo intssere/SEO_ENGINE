@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import {
   executeP12_2BoundedPilotCrawl,
-  executeP12_2FullCrawl,
   executeP12_2FullCrawlAccountingAware,
   executeP12_2FullCrawlUntilCheckpoint,
   executeP12_2IncrementalCrawl,
