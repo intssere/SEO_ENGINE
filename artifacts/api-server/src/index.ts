@@ -26,6 +26,7 @@ if (databaseBinding?.trim()) {
     {
       status: identity.status,
       tableCount: identity.tableCount,
+      schemaState: identity.schemaState ?? undefined,
       reason: identity.reason ?? undefined,
     },
     "Diamond Shelf identity check",
