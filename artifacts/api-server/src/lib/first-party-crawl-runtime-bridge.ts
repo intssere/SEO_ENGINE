@@ -41,7 +41,6 @@ import {
   type IncrementalRecrawlPlan,
 } from "./incremental-recrawl-planner.js";
 import {
-  assertTerminalFailureEventIntegrity,
   buildTerminalFailureRecoveryPlan,
   buildTerminalFailureRecoveryReceipt,
   createTerminalFailureEvent,
