@@ -217,6 +217,22 @@ export type FullSiteCrawlAccountingAwareResult =
   | FullSiteCrawlBridgeSnapshot
   | FullSiteCrawlAccountingReceipt;
 
+export type TerminalFailureRecoveryPersistenceTransition = {
+  version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+  sourceCheckpointFingerprint: string;
+  checkpointRecord: CrawlCheckpointPersistenceRecord;
+  accountingSnapshot: FullSiteCrawlBridgeSnapshot;
+  recoveryReceipt: TerminalFailureRecoveryReceipt;
+  completedRunPersisted: boolean;
+};
+
+export type TerminalFailureRecoveryBridgeResult = {
+  recoveryPlan: TerminalFailureRecoveryPlan;
+  recoveryReceipt: TerminalFailureRecoveryReceipt;
+  accountingSnapshot: FullSiteCrawlBridgeSnapshot;
+  completedRunPersisted: boolean;
+};
+
 export type BoundedPilotFailureAttribution = {
   terminalFailures: number;
   policyRejections: number;
@@ -348,6 +364,7 @@ export interface FirstPartyCrawlPersistence {
   saveAccountingRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void>;
   saveCompletedRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void>;
   saveRecoveryReceipt(receipt: TerminalFailureRecoveryReceipt): Promise<void>;
+  saveRecoveryTransition(transition: TerminalFailureRecoveryPersistenceTransition): Promise<void>;
   saveIncrementalRun(receipt: IncrementalCrawlBridgeReceipt): Promise<void>;
 }
 
