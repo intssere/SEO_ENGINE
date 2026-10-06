@@ -555,6 +555,199 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
     });
   }
 
+  async loadLatestAccounting(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    runId: string;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+    executionPlanFingerprint: string;
+  }): Promise<FullSiteCrawlBridgeSnapshot | null> {
+    if (input.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("p12_2_persistence_version_mismatch");
+    const runId = requireRunId(input.runId);
+    requireBinding(input.siteId, input.canonicalOrigin);
+    requireHex(input.executionPlanFingerprint, "p12_2_persistence_execution_fingerprint_invalid");
+
+    return this.withSql(async (sql) => {
+      const rows = await sql<{
+        snapshot_fingerprint: string;
+        snapshot_payload: FullSiteCrawlBridgeSnapshot;
+      }[]>`
+        SELECT snapshot_fingerprint, snapshot_payload
+        FROM first_party_crawl_accounting_snapshots
+        WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+          AND run_id = ${runId}
+          AND canonical_origin = ${DIAMOND_SHELF_CANONICAL_ORIGIN}
+          AND execution_plan_fingerprint = ${input.executionPlanFingerprint}
+        ORDER BY checkpoint_revision DESC, accounting_snapshot_id DESC
+        LIMIT 1
+      `;
+      const row = rows[0];
+      if (!row) return null;
+      if (row.snapshot_payload.fingerprint !== row.snapshot_fingerprint) {
+        throw new Error("p12_2_persistence_accounting_snapshot_storage_mismatch");
+      }
+      assertFullSiteCrawlBridgeSnapshotIntegrity(row.snapshot_payload);
+      assertNoForbiddenContent(row.snapshot_payload);
+      return row.snapshot_payload;
+    });
+  }
+
+  async loadUnresolvedTerminalFailures(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    runId: string;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+    executionPlanFingerprint: string;
+  }): Promise<TerminalFailureEvent[]> {
+    if (input.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("p12_2_persistence_version_mismatch");
+    const runId = requireRunId(input.runId);
+    requireBinding(input.siteId, input.canonicalOrigin);
+    requireHex(input.executionPlanFingerprint, "p12_2_persistence_execution_fingerprint_invalid");
+
+    return this.withSql(async (sql) => {
+      const rows = await sql<{ event_payload: TerminalFailureEvent }[]>`
+        SELECT parent.event_payload
+        FROM first_party_crawl_terminal_failure_events parent
+        WHERE parent.site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+          AND parent.run_id = ${runId}
+          AND parent.canonical_origin = ${DIAMOND_SHELF_CANONICAL_ORIGIN}
+          AND parent.execution_plan_fingerprint = ${input.executionPlanFingerprint}
+          AND parent.event_type IN ('terminal_failure', 'recovery_failure')
+          AND NOT EXISTS (
+            SELECT 1
+            FROM first_party_crawl_terminal_failure_events child
+            WHERE child.source_event_fingerprint = parent.event_fingerprint
+          )
+        ORDER BY parent.canonical_url, parent.observed_at, parent.event_id
+      `;
+      const events = rows.map((row) => row.event_payload);
+      const urls = new Set<string>();
+      for (const event of events) {
+        assertTerminalFailureEventIntegrity(event);
+        assertNoForbiddenContent(event);
+        if (
+          event.runId !== runId ||
+          event.siteId !== DIAMOND_SHELF_SITE_ID ||
+          event.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+          event.executionPlanFingerprint !== input.executionPlanFingerprint ||
+          urls.has(event.canonicalUrl)
+        ) throw new Error("p12_2_persistence_unresolved_terminal_failure_invalid");
+        urls.add(event.canonicalUrl);
+      }
+      return events;
+    });
+  }
+
+  async saveAccountingRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void> {
+    requireRunId(snapshot.runId);
+    requireObservedAt(snapshot.observedAt);
+    requireBinding(snapshot.siteId, snapshot.canonicalOrigin);
+    assertFullSiteCrawlBridgeSnapshotIntegrity(snapshot);
+    if (snapshot.checkpoint.status !== "completed") {
+      throw new Error("p12_2_persistence_accounting_checkpoint_incomplete");
+    }
+    assertNoForbiddenContent(snapshot);
+
+    await this.withSql(async (sql) => {
+      await sql.begin(async (tx) => {
+        await tx`
+          SELECT pg_advisory_xact_lock(
+            hashtext('p12_2_accounting:' || ${DIAMOND_SHELF_SITE_ID}),
+            hashtext(${snapshot.runId} || ':' || ${snapshot.executionPlan.fingerprint})
+          )
+        `;
+        const existing = await tx<{
+          snapshot_fingerprint: string;
+          snapshot_payload: FullSiteCrawlBridgeSnapshot;
+        }[]>`
+          SELECT snapshot_fingerprint, snapshot_payload
+          FROM first_party_crawl_accounting_snapshots
+          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+            AND run_id = ${snapshot.runId}
+            AND execution_plan_fingerprint = ${snapshot.executionPlan.fingerprint}
+            AND checkpoint_fingerprint = ${snapshot.checkpoint.fingerprint}
+          FOR UPDATE
+        `;
+        if (existing[0]) {
+          if (
+            existing[0].snapshot_fingerprint === snapshot.fingerprint &&
+            stableSerialize(existing[0].snapshot_payload) === stableSerialize(snapshot)
+          ) return;
+          throw new Error("p12_2_persistence_accounting_conflicting_replay");
+        }
+
+        await tx`
+          INSERT INTO first_party_crawl_accounting_snapshots (
+            accounting_snapshot_id, site_id, run_id, canonical_origin,
+            execution_plan_fingerprint, checkpoint_fingerprint, checkpoint_revision,
+            snapshot_fingerprint, whole_site_certified, terminal_failure_count,
+            observed_at, snapshot_payload
+          ) VALUES (
+            ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${snapshot.runId},
+            ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${snapshot.executionPlan.fingerprint},
+            ${snapshot.checkpoint.fingerprint}, ${snapshot.checkpoint.sequence}::bigint,
+            ${snapshot.fingerprint}, ${snapshot.certification.certification.wholeSiteCertified},
+            ${snapshot.checkpoint.counters.terminalFailures}::integer,
+            ${snapshot.observedAt}::timestamptz, ${tx.json(snapshot)}
+          )
+        `;
+      });
+    });
+  }
+
+  async saveRecoveryReceipt(receipt: TerminalFailureRecoveryReceipt): Promise<void> {
+    requireRunId(receipt.runId);
+    requireObservedAt(receipt.observedAt);
+    requireBinding(receipt.siteId, receipt.canonicalOrigin);
+    requireHex(receipt.executionPlanFingerprint, "p12_2_persistence_execution_fingerprint_invalid");
+    assertTerminalFailureRecoveryReceiptIntegrity(receipt);
+    assertNoForbiddenContent(receipt);
+
+    await this.withSql(async (sql) => {
+      await sql.begin(async (tx) => {
+        await tx`
+          SELECT pg_advisory_xact_lock(
+            hashtext('p12_2_recovery:' || ${DIAMOND_SHELF_SITE_ID}),
+            hashtext(${receipt.runId} || ':' || ${receipt.executionPlanFingerprint})
+          )
+        `;
+        const existing = await tx<{
+          receipt_fingerprint: string;
+          receipt_payload: TerminalFailureRecoveryReceipt;
+        }[]>`
+          SELECT receipt_fingerprint, receipt_payload
+          FROM first_party_crawl_terminal_failure_recovery_receipts
+          WHERE recovery_plan_fingerprint = ${receipt.recoveryPlanFingerprint}
+          FOR UPDATE
+        `;
+        if (existing[0]) {
+          if (
+            existing[0].receipt_fingerprint === receipt.fingerprint &&
+            stableSerialize(existing[0].receipt_payload) === stableSerialize(receipt)
+          ) return;
+          throw new Error("p12_2_persistence_recovery_conflicting_replay");
+        }
+
+        await tx`
+          INSERT INTO first_party_crawl_terminal_failure_recovery_receipts (
+            recovery_receipt_id, site_id, run_id, canonical_origin,
+            execution_plan_fingerprint, source_checkpoint_fingerprint,
+            source_checkpoint_revision, result_checkpoint_fingerprint,
+            result_checkpoint_revision, recovery_plan_fingerprint,
+            receipt_fingerprint, status, observed_at, receipt_payload
+          ) VALUES (
+            ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${receipt.runId},
+            ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${receipt.executionPlanFingerprint},
+            ${receipt.sourceCheckpointFingerprint}, ${receipt.sourceCheckpointRevision}::bigint,
+            ${receipt.resultCheckpointFingerprint}, ${receipt.resultCheckpointRevision}::bigint,
+            ${receipt.recoveryPlanFingerprint}, ${receipt.fingerprint}, ${receipt.status},
+            ${receipt.observedAt}::timestamptz, ${tx.json(receipt)}
+          )
+        `;
+      });
+    });
+  }
+
   async saveCompletedRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void> {
     requireRunId(snapshot.runId);
     requireObservedAt(snapshot.observedAt);
