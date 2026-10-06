@@ -9,7 +9,10 @@ import {
   buildAuthorityOutreachTargetBindingProjection,
   type AuthorityOutreachTargetBindingInput,
 } from "./authority-outreach-target-binding.js";
-import type { AuthorityOutreachReviewInput } from "./authority-outreach-workspace.js";
+import {
+  buildAuthorityOutreachWorkspace,
+  type AuthorityOutreachReviewInput,
+} from "./authority-outreach-workspace.js";
 import type {
   AuthorityProspectQualificationResult,
   AuthorityProspectRiskClass,
@@ -272,41 +275,21 @@ export function buildAuthorityOutreachDraftGenerationRequestProjection(
       throw new Error("ugp_outreach_draft_request_without_human_approval");
     }
 
-    const approvalReviewFingerprint=prepared.brief?.approvalReviewFingerprint
-      ??(()=>{
-        const workspace=buildAuthorityOutreachDraftPreparation(preparationInput);
-        const item=workspace.items.find(
-          candidate=>candidate.prospectFingerprint===prepared.prospectFingerprint,
-        );
-        if(item?.brief?.approvalReviewFingerprint){
-          return item.brief.approvalReviewFingerprint;
-        }
-        const prospect=input.qualification.prospects.find(
-          candidate=>candidate.prospectFingerprint===prepared.prospectFingerprint,
-        );
-        if(!prospect){
-          throw new Error("ugp_outreach_draft_request_unknown_prospect");
-        }
-        const review=(input.reviews??[]).find(
-          candidate=>
-            candidate.prospectFingerprint===prepared.prospectFingerprint
-            &&candidate.decision==="approved_for_draft",
-        );
-        if(!review){
-          throw new Error("ugp_outreach_draft_request_approval_missing");
-        }
-        const reviewWorkspace=buildAuthorityOutreachDraftPreparation({
-          qualification:input.qualification,
-          reviews:[review],
-        });
-        const approved=reviewWorkspace.items.find(
-          candidate=>candidate.prospectFingerprint===prepared.prospectFingerprint,
-        );
-        if(!approved?.brief?.approvalReviewFingerprint){
-          throw new Error("ugp_outreach_draft_request_approval_fingerprint_missing");
-        }
-        return approved.brief.approvalReviewFingerprint;
-      })();
+    const reviewWorkspace=buildAuthorityOutreachWorkspace({
+      qualification:input.qualification,
+      reviews:input.reviews??[],
+    });
+    const reviewedItem=reviewWorkspace.items.find(
+      candidate=>candidate.prospectFingerprint===prepared.prospectFingerprint,
+    );
+    if(
+      reviewedItem?.latestReview?.decision!=="approved_for_draft"
+      ||reviewedItem.latestReview.reasonCode!=="editorial_fit_confirmed"
+    ){
+      throw new Error("ugp_outreach_draft_request_approval_missing");
+    }
+    const approvalReviewFingerprint=
+      reviewedItem.latestReview.reviewFingerprint;
 
     const prospect=input.qualification.prospects.find(
       candidate=>candidate.prospectFingerprint===prepared.prospectFingerprint,
