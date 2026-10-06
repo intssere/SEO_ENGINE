@@ -427,6 +427,62 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
             AND execution_plan_fingerprint = ${record.executionPlanFingerprint}
           FOR UPDATE
         `;
+        for (const event of record.terminalFailureEvents) {
+          const replay = await tx<{
+            event_fingerprint: string;
+            event_payload: TerminalFailureEvent;
+          }[]>`
+            SELECT event_fingerprint, event_payload
+            FROM first_party_crawl_terminal_failure_events
+            WHERE event_fingerprint = ${event.fingerprint}
+            FOR UPDATE
+          `;
+          if (replay[0]) {
+            if (stableSerialize(replay[0].event_payload) !== stableSerialize(event)) {
+              throw new Error("p12_2_persistence_terminal_failure_event_conflicting_replay");
+            }
+            continue;
+          }
+
+          if (event.sourceEventFingerprint) {
+            const source = await tx<{
+              event_fingerprint: string;
+              canonical_url: string;
+            }[]>`
+              SELECT event_fingerprint, canonical_url
+              FROM first_party_crawl_terminal_failure_events
+              WHERE event_fingerprint = ${event.sourceEventFingerprint}
+              FOR UPDATE
+            `;
+            if (!source[0] || source[0].canonical_url !== event.canonicalUrl) {
+              throw new Error("p12_2_persistence_terminal_failure_source_missing");
+            }
+            const consumed = await tx<{ count: number }[]>`
+              SELECT COUNT(*)::int AS count
+              FROM first_party_crawl_terminal_failure_events
+              WHERE source_event_fingerprint = ${event.sourceEventFingerprint}
+            `;
+            if (Number(consumed[0]?.count ?? 0) !== 0) {
+              throw new Error("p12_2_persistence_terminal_failure_source_consumed");
+            }
+          }
+
+          await tx`
+            INSERT INTO first_party_crawl_terminal_failure_events (
+              event_id, site_id, run_id, canonical_origin,
+              execution_plan_fingerprint, canonical_url, event_type,
+              source_event_fingerprint, checkpoint_fingerprint, checkpoint_revision,
+              observed_at, event_fingerprint, event_payload
+            ) VALUES (
+              ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${runId},
+              ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${record.executionPlanFingerprint},
+              ${event.canonicalUrl}, ${event.eventType}, ${event.sourceEventFingerprint},
+              ${event.checkpointFingerprint}, ${event.checkpointRevision}::bigint,
+              ${event.observedAt}::timestamptz, ${event.fingerprint}, ${tx.json(event)}
+            )
+          `;
+        }
+
         const current = existing[0];
         if (!current) {
           await tx`
