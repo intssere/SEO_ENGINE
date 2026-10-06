@@ -331,7 +331,23 @@ export interface FirstPartyCrawlPersistence {
     siteId: string;
     canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
   }): Promise<FullSiteCrawlBridgeSnapshot | null>;
+  loadLatestAccounting(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    runId: string;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+    executionPlanFingerprint: string;
+  }): Promise<FullSiteCrawlBridgeSnapshot | null>;
+  loadUnresolvedTerminalFailures(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    runId: string;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+    executionPlanFingerprint: string;
+  }): Promise<TerminalFailureEvent[]>;
+  saveAccountingRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void>;
   saveCompletedRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void>;
+  saveRecoveryReceipt(receipt: TerminalFailureRecoveryReceipt): Promise<void>;
   saveIncrementalRun(receipt: IncrementalCrawlBridgeReceipt): Promise<void>;
 }
 
@@ -714,6 +730,7 @@ function checkpointRecord(input: {
   siteId: string;
   plan: FullSiteCrawlExecutionPlan;
   checkpoint: FullSiteCrawlCheckpoint;
+  terminalFailureEvents?: TerminalFailureEvent[];
 }): CrawlCheckpointPersistenceRecord {
   return {
     version: P12_2_CRAWL_BRIDGE_VERSION,
@@ -723,6 +740,7 @@ function checkpointRecord(input: {
     canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     executionPlanFingerprint: input.plan.fingerprint,
     checkpoint: input.checkpoint,
+    terminalFailureEvents: input.terminalFailureEvents ?? [],
     rawResponseBodyPersisted: false,
     rawSitemapXmlPersisted: false,
   };
