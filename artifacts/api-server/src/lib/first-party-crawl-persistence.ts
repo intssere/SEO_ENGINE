@@ -16,6 +16,7 @@ import {
 } from "./full-site-crawl-control.js";
 import {
   assertTerminalFailureEventIntegrity,
+  assertTerminalFailureRecoveryReceiptIntegrity,
   type TerminalFailureEvent,
   type TerminalFailureRecoveryReceipt,
 } from "./first-party-crawl-terminal-recovery.js";
