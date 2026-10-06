@@ -88,9 +88,11 @@ Therefore the bounded recovery path intentionally fails closed for packet 013. A
 
 ## Schema compatibility
 
-The pre-L10.13B Production schema remains a recognized 44-table state. After migration 0010, the 47-table state is also recognized.
+The pre-L10.13B Production schema remains a recognized 44-table state. After migration 0010, the 47-table state is also recognized by current L10.13B source.
 
-The new live accounting-aware path requires the 47-table schema before it can durably record accounting/failure recovery state. Production migration remains a separate explicit authorization boundary.
+The currently deployed pre-L10.13B application image recognizes the 44-table state but not the 47-table state. Therefore a current application image that recognizes both 44 and 47 tables must be released and transitioned while Production is still at 44 tables, with health/readiness certified there, before migration 0010 can be applied.
+
+The new live accounting-aware path requires the 47-table schema before it can durably record accounting/failure recovery state. Production application transition and Production migration remain separate explicit authorization boundaries.
 
 ## Safety properties
 
