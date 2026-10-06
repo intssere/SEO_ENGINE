@@ -749,6 +749,257 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
     });
   }
 
+  async saveRecoveryTransition(
+    transition: TerminalFailureRecoveryPersistenceTransition,
+  ): Promise<void> {
+    if (transition.version !== P12_2_CRAWL_BRIDGE_VERSION) {
+      throw new Error("p12_2_persistence_version_mismatch");
+    }
+    requireHex(
+      transition.sourceCheckpointFingerprint,
+      "p12_2_persistence_recovery_source_checkpoint_invalid",
+    );
+    assertCheckpointRecord(transition.checkpointRecord);
+    assertFullSiteCrawlBridgeSnapshotIntegrity(transition.accountingSnapshot);
+    assertTerminalFailureRecoveryReceiptIntegrity(transition.recoveryReceipt);
+    assertNoForbiddenContent(transition);
+
+    const record = transition.checkpointRecord;
+    const snapshot = transition.accountingSnapshot;
+    const receipt = transition.recoveryReceipt;
+    const runId = requireRunId(record.runId);
+    requireObservedAt(record.observedAt);
+    requireBinding(record.siteId, record.canonicalOrigin);
+
+    if (
+      receipt.runId !== runId ||
+      receipt.siteId !== record.siteId ||
+      receipt.canonicalOrigin !== record.canonicalOrigin ||
+      receipt.executionPlanFingerprint !== record.executionPlanFingerprint ||
+      receipt.sourceCheckpointFingerprint !== transition.sourceCheckpointFingerprint ||
+      receipt.resultCheckpointFingerprint !== record.checkpoint.fingerprint ||
+      receipt.resultCheckpointRevision !== record.checkpoint.sequence ||
+      snapshot.runId !== runId ||
+      snapshot.siteId !== record.siteId ||
+      snapshot.canonicalOrigin !== record.canonicalOrigin ||
+      snapshot.executionPlan.fingerprint !== record.executionPlanFingerprint ||
+      snapshot.checkpoint.fingerprint !== record.checkpoint.fingerprint ||
+      snapshot.checkpoint.sequence !== record.checkpoint.sequence ||
+      snapshot.fingerprint !== receipt.accountingSnapshotFingerprint ||
+      transition.completedRunPersisted !== receipt.completedRunPersisted ||
+      transition.completedRunPersisted !== snapshot.certification.certification.wholeSiteCertified
+    ) {
+      throw new Error("p12_2_persistence_recovery_transition_lineage_invalid");
+    }
+
+    if (record.terminalFailureEvents.length !== receipt.urlReceipts.length) {
+      throw new Error("p12_2_persistence_recovery_transition_event_count_invalid");
+    }
+    const sourceByUrl = new Map(
+      receipt.urlReceipts.map((item) => [item.canonicalUrl, item.sourceEventFingerprint]),
+    );
+    for (const event of record.terminalFailureEvents) {
+      if (
+        event.sourceEventFingerprint !== sourceByUrl.get(event.canonicalUrl) ||
+        !["recovery_failure", "recovery_resolved"].includes(event.eventType)
+      ) throw new Error("p12_2_persistence_recovery_transition_event_invalid");
+    }
+
+    await this.withSql(async (sql) => {
+      await sql.begin(async (tx) => {
+        await tx`
+          SELECT pg_advisory_xact_lock(
+            hashtext('p12_2_recovery_transition:' || ${DIAMOND_SHELF_SITE_ID}),
+            hashtext(${runId} || ':' || ${record.executionPlanFingerprint})
+          )
+        `;
+
+        const currentRows = await tx<{
+          checkpoint_revision: number;
+          checkpoint_fingerprint: string;
+          checkpoint_payload: FullSiteCrawlCheckpoint;
+        }[]>`
+          SELECT checkpoint_revision, checkpoint_fingerprint, checkpoint_payload
+          FROM first_party_crawl_checkpoints
+          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+            AND run_id = ${runId}
+            AND execution_plan_fingerprint = ${record.executionPlanFingerprint}
+          FOR UPDATE
+        `;
+        const current = currentRows[0];
+        if (
+          !current ||
+          Number(current.checkpoint_revision) !== receipt.sourceCheckpointRevision ||
+          current.checkpoint_fingerprint !== transition.sourceCheckpointFingerprint
+        ) throw new Error("p12_2_persistence_recovery_source_checkpoint_stale");
+
+        for (const event of record.terminalFailureEvents) {
+          const source = await tx<{
+            event_fingerprint: string;
+            canonical_url: string;
+          }[]>`
+            SELECT event_fingerprint, canonical_url
+            FROM first_party_crawl_terminal_failure_events
+            WHERE event_fingerprint = ${event.sourceEventFingerprint}
+              AND site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+              AND run_id = ${runId}
+              AND execution_plan_fingerprint = ${record.executionPlanFingerprint}
+            FOR UPDATE
+          `;
+          if (!source[0] || source[0].canonical_url !== event.canonicalUrl) {
+            throw new Error("p12_2_persistence_terminal_failure_source_missing");
+          }
+
+          const replay = await tx<{
+            event_fingerprint: string;
+            event_payload: TerminalFailureEvent;
+          }[]>`
+            SELECT event_fingerprint, event_payload
+            FROM first_party_crawl_terminal_failure_events
+            WHERE source_event_fingerprint = ${event.sourceEventFingerprint}
+            FOR UPDATE
+          `;
+          if (replay[0]) {
+            if (
+              replay[0].event_fingerprint === event.fingerprint &&
+              stableSerialize(replay[0].event_payload) === stableSerialize(event)
+            ) continue;
+            throw new Error("p12_2_persistence_terminal_failure_source_consumed");
+          }
+
+          await tx`
+            INSERT INTO first_party_crawl_terminal_failure_events (
+              event_id, site_id, run_id, canonical_origin,
+              execution_plan_fingerprint, canonical_url, event_type,
+              source_event_fingerprint, checkpoint_fingerprint, checkpoint_revision,
+              observed_at, event_fingerprint, event_payload
+            ) VALUES (
+              ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${runId},
+              ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${record.executionPlanFingerprint},
+              ${event.canonicalUrl}, ${event.eventType}, ${event.sourceEventFingerprint},
+              ${event.checkpointFingerprint}, ${event.checkpointRevision}::bigint,
+              ${event.observedAt}::timestamptz, ${event.fingerprint}, ${tx.json(event)}
+            )
+          `;
+        }
+
+        await tx`
+          UPDATE first_party_crawl_checkpoints
+          SET checkpoint_fingerprint = ${record.checkpoint.fingerprint},
+              checkpoint_revision = ${record.checkpoint.sequence}::bigint,
+              observed_at = ${record.observedAt}::timestamptz,
+              checkpoint_payload = ${tx.json(record.checkpoint)}
+          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+            AND run_id = ${runId}
+            AND execution_plan_fingerprint = ${record.executionPlanFingerprint}
+        `;
+
+        const accountingExisting = await tx<{
+          snapshot_fingerprint: string;
+          snapshot_payload: FullSiteCrawlBridgeSnapshot;
+        }[]>`
+          SELECT snapshot_fingerprint, snapshot_payload
+          FROM first_party_crawl_accounting_snapshots
+          WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+            AND run_id = ${runId}
+            AND execution_plan_fingerprint = ${record.executionPlanFingerprint}
+            AND checkpoint_fingerprint = ${record.checkpoint.fingerprint}
+          FOR UPDATE
+        `;
+        if (accountingExisting[0]) {
+          if (
+            accountingExisting[0].snapshot_fingerprint !== snapshot.fingerprint ||
+            stableSerialize(accountingExisting[0].snapshot_payload) !== stableSerialize(snapshot)
+          ) throw new Error("p12_2_persistence_accounting_conflicting_replay");
+        } else {
+          await tx`
+            INSERT INTO first_party_crawl_accounting_snapshots (
+              accounting_snapshot_id, site_id, run_id, canonical_origin,
+              execution_plan_fingerprint, checkpoint_fingerprint, checkpoint_revision,
+              snapshot_fingerprint, whole_site_certified, terminal_failure_count,
+              observed_at, snapshot_payload
+            ) VALUES (
+              ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${runId},
+              ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${record.executionPlanFingerprint},
+              ${record.checkpoint.fingerprint}, ${record.checkpoint.sequence}::bigint,
+              ${snapshot.fingerprint}, ${snapshot.certification.certification.wholeSiteCertified},
+              ${snapshot.checkpoint.counters.terminalFailures}::integer,
+              ${snapshot.observedAt}::timestamptz, ${tx.json(snapshot)}
+            )
+          `;
+        }
+
+        if (transition.completedRunPersisted) {
+          if (!snapshot.certification.certification.wholeSiteCertified) {
+            throw new Error("p12_2_persistence_completed_run_not_certified");
+          }
+          const completedExisting = await tx<{
+            snapshot_fingerprint: string;
+            snapshot_payload: FullSiteCrawlBridgeSnapshot;
+          }[]>`
+            SELECT snapshot_fingerprint, snapshot_payload
+            FROM first_party_crawl_completed_runs
+            WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+              AND run_id = ${runId}
+            FOR UPDATE
+          `;
+          if (completedExisting[0]) {
+            if (
+              completedExisting[0].snapshot_fingerprint !== snapshot.fingerprint ||
+              stableSerialize(completedExisting[0].snapshot_payload) !== stableSerialize(snapshot)
+            ) throw new Error("p12_2_persistence_completed_run_conflicting_replay");
+          } else {
+            await tx`
+              INSERT INTO first_party_crawl_completed_runs (
+                completed_run_id, site_id, run_id, canonical_origin,
+                execution_plan_fingerprint, snapshot_fingerprint,
+                observed_at, snapshot_payload
+              ) VALUES (
+                ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${runId},
+                ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${record.executionPlanFingerprint},
+                ${snapshot.fingerprint}, ${snapshot.observedAt}::timestamptz,
+                ${tx.json(snapshot)}
+              )
+            `;
+          }
+        }
+
+        const receiptExisting = await tx<{
+          receipt_fingerprint: string;
+          receipt_payload: TerminalFailureRecoveryReceipt;
+        }[]>`
+          SELECT receipt_fingerprint, receipt_payload
+          FROM first_party_crawl_terminal_failure_recovery_receipts
+          WHERE recovery_plan_fingerprint = ${receipt.recoveryPlanFingerprint}
+          FOR UPDATE
+        `;
+        if (receiptExisting[0]) {
+          if (
+            receiptExisting[0].receipt_fingerprint !== receipt.fingerprint ||
+            stableSerialize(receiptExisting[0].receipt_payload) !== stableSerialize(receipt)
+          ) throw new Error("p12_2_persistence_recovery_conflicting_replay");
+        } else {
+          await tx`
+            INSERT INTO first_party_crawl_terminal_failure_recovery_receipts (
+              recovery_receipt_id, site_id, run_id, canonical_origin,
+              execution_plan_fingerprint, source_checkpoint_fingerprint,
+              source_checkpoint_revision, result_checkpoint_fingerprint,
+              result_checkpoint_revision, recovery_plan_fingerprint,
+              receipt_fingerprint, status, observed_at, receipt_payload
+            ) VALUES (
+              ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${runId},
+              ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${receipt.executionPlanFingerprint},
+              ${receipt.sourceCheckpointFingerprint}, ${receipt.sourceCheckpointRevision}::bigint,
+              ${receipt.resultCheckpointFingerprint}, ${receipt.resultCheckpointRevision}::bigint,
+              ${receipt.recoveryPlanFingerprint}, ${receipt.fingerprint}, ${receipt.status},
+              ${receipt.observedAt}::timestamptz, ${tx.json(receipt)}
+            )
+          `;
+        }
+      });
+    });
+  }
+
   async saveCompletedRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void> {
     requireRunId(snapshot.runId);
     requireObservedAt(snapshot.observedAt);
