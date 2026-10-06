@@ -9,6 +9,7 @@ import {
   type FirstPartyCrawlPersistence as FirstPartyCrawlPersistenceContract,
   type FullSiteCrawlBridgeSnapshot,
   type IncrementalCrawlBridgeReceipt,
+  type TerminalFailureRecoveryPersistenceTransition,
 } from "./first-party-crawl-runtime-bridge.js";
 import {
   assertFullSiteCrawlCheckpointFingerprintIntegrity,
