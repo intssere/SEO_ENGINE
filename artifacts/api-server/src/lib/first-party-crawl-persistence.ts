@@ -32,12 +32,11 @@ export const P12_2_RECOGNIZED_TABLE_COUNTS = Object.freeze([
   37, // P12.2 execution-state baseline
   38, // + durable L2 receipts OR P8.8 W04
   39, // P8.8 W04 + durable L2 receipts
-  41, // P8.8 W05
+  P12_2_L10_13B_TABLE_COUNT, // 41: Production recovery lineage OR P8.8 W05
   42, // P8.8 W05 + durable L2 receipts
   43, // P8.8 W07
   44, // P8.8 W07 + durable L2 receipts
-  P12_2_L10_13B_TABLE_COUNT, // Production: durable L2 + terminal failure/accounting/recovery durability
-  P12_2_L10_13B_ENGINEERING_TABLE_COUNT, // engineering chain with P8.8 tables also present
+  P12_2_L10_13B_ENGINEERING_TABLE_COUNT, // 47: engineering chain with P8.8 tables also present
 ] as const);
 
 type Sql = ReturnType<typeof postgres>;
