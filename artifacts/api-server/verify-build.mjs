@@ -17,6 +17,8 @@ const p122LiveBundle = await readFile(path.join(distDir, "p12-2-live-operator.mj
 const p122LiveSourceMap = await readFile(path.join(distDir, "p12-2-live-operator.mjs.map"), "utf8");
 const p122L1015Bundle = await readFile(path.join(distDir, "p12-2-l10-15-packet-014-live.mjs"), "utf8");
 const p122L1015SourceMap = await readFile(path.join(distDir, "p12-2-l10-15-packet-014-live.mjs.map"), "utf8");
+const p122L1016Bundle = await readFile(path.join(distDir, "p12-2-l10-16-packet-014-preflight.mjs"), "utf8");
+const p122L1016SourceMap = await readFile(path.join(distDir, "p12-2-l10-16-packet-014-preflight.mjs.map"), "utf8");
 const provenanceRaw = await readFile(path.join(distDir, "build-provenance.json"), "utf8");
 const provenance = JSON.parse(provenanceRaw);
 function git(args) {
@@ -216,6 +218,26 @@ const requiredP122L1015SourceMarkers = [
   "lib/first-party-crawl-persistence.ts",
 ];
 
+const requiredP122L1016BundleMarkers = [
+  "p12-2-l10-16-packet-014-pre-execution-readonly-cert-v1",
+  "p12-2-diamond-shelf-post-0010-full-014",
+  "b853dcc4d1cbc383e5f9a1185085b6bc77ac42394a33db9c1380a6e511e7a560",
+  "ghcr.io/intssere/seo-engine@sha256:afa1e3f7bc2b38b59b0fa36aa9eb4d0ed2a533122439d5d9647ed48ee63ecf93",
+  "P12_2_L10_16_AUTHORIZATION_LITERAL",
+  "P12_2_L10_16_POSTGRES_SERVICE_ID",
+  "default_transaction_read_only=on",
+  "packet_014_absence_guard",
+  "first_party_crawl_terminal_failure_events",
+  "first_party_crawl_accounting_snapshots",
+  "first_party_crawl_terminal_failure_recovery_receipts",
+];
+
+const requiredP122L1016SourceMarkers = [
+  "src/p12-2-l10-16-packet-014-preflight-cli.ts",
+  "lib/p12-2-l10-16-packet-014-preflight.ts",
+  "lib/p12-2-l1a-e9-runtime-transport.ts",
+];
+
 const requiredSourceMarkers = [
   "routes/execution.ts",
   "routes/connections.ts",
@@ -247,6 +269,8 @@ const missingP122LiveBundleMarkers = requiredP122LiveBundleMarkers.filter((marke
 const missingP122LiveSourceMarkers = requiredP122LiveSourceMarkers.filter((marker) => !p122LiveSourceMap.includes(marker));
 const missingP122L1015BundleMarkers = requiredP122L1015BundleMarkers.filter((marker) => !p122L1015Bundle.includes(marker));
 const missingP122L1015SourceMarkers = requiredP122L1015SourceMarkers.filter((marker) => !p122L1015SourceMap.includes(marker));
+const missingP122L1016BundleMarkers = requiredP122L1016BundleMarkers.filter((marker) => !p122L1016Bundle.includes(marker));
+const missingP122L1016SourceMarkers = requiredP122L1016SourceMarkers.filter((marker) => !p122L1016SourceMap.includes(marker));
 
 if (
   missingBundleMarkers.length > 0 ||
@@ -258,7 +282,9 @@ if (
   missingP122LiveBundleMarkers.length > 0 ||
   missingP122LiveSourceMarkers.length > 0 ||
   missingP122L1015BundleMarkers.length > 0 ||
-  missingP122L1015SourceMarkers.length > 0
+  missingP122L1015SourceMarkers.length > 0 ||
+  missingP122L1016BundleMarkers.length > 0 ||
+  missingP122L1016SourceMarkers.length > 0
 ) {
   const details = [
     missingBundleMarkers.length > 0 ? `bundle markers: ${missingBundleMarkers.join(", ")}` : null,
@@ -271,9 +297,11 @@ if (
     missingP122LiveSourceMarkers.length > 0 ? `P12.2 live-operator source-map markers: ${missingP122LiveSourceMarkers.join(", ")}` : null,
     missingP122L1015BundleMarkers.length > 0 ? `P12.2 L10.15 packet-014 bundle markers: ${missingP122L1015BundleMarkers.join(", ")}` : null,
     missingP122L1015SourceMarkers.length > 0 ? `P12.2 L10.15 packet-014 source-map markers: ${missingP122L1015SourceMarkers.join(", ")}` : null,
+    missingP122L1016BundleMarkers.length > 0 ? `P12.2 L10.16 preflight bundle markers: ${missingP122L1016BundleMarkers.join(", ")}` : null,
+    missingP122L1016SourceMarkers.length > 0 ? `P12.2 L10.16 preflight source-map markers: ${missingP122L1016SourceMarkers.join(", ")}` : null,
   ].filter(Boolean).join("; ");
 
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, the default-off P12.2 manual crawl entrypoint, the bounded P12.2 L2 one-shot operator artifact, the explicit fail-closed P12.2 live one-shot operator executable, and the exact-bound L10.15 packet-014 executable are present.");
+console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, the default-off P12.2 manual crawl entrypoint, the bounded P12.2 L2 one-shot operator artifact, the explicit fail-closed P12.2 live one-shot operator executable, the exact-bound L10.15 packet-014 executable, and the SELECT-only L10.16 packet-014 preflight executable are present.");
