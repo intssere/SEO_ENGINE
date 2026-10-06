@@ -4,8 +4,8 @@ import {
   buildAuthorityOutreachDraftPreparation,
   UGP_AUTHORITY_OUTREACH_DRAFT_BRIEF_VERSION,
   type AuthorityOutreachDraftBrief,
-  type AuthorityOutreachReviewInput,
 } from "./authority-outreach-draft-brief.js";
+import type { AuthorityOutreachReviewInput } from "./authority-outreach-workspace.js";
 import type { AuthorityProspectQualificationResult } from "./authority-prospect-qualification.js";
 import {
   assertUniversalResourceLocatorIntegrity,
