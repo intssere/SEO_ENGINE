@@ -74,7 +74,7 @@ const CONTROL=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const EMAIL=/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
 const MAILTO_OR_TEL=/\b(?:mailto|tel):/i;
 const HTML_TAG=/<\/?[A-Za-z][^>]*>/;
-const URL=/https?:\/\/[^\s<>"'()[\]{}]+/gi;
+const URL_PATTERN=/https?:\/\/[^\s<>"'()[\]{}]+/gi;
 
 const SEMANTICS=Object.freeze({
   deterministic:true as const,
@@ -286,7 +286,7 @@ export function assertAuthorityOutreachDraftGenerationRequestIntegrity(
 
 function urls(text:string):readonly string[]{
   return Object.freeze(
-    [...text.matchAll(URL)].map(match=>
+    [...text.matchAll(URL_PATTERN)].map(match=>
       match[0].replace(/[.,;:!?]+$/,""),
     ),
   );
