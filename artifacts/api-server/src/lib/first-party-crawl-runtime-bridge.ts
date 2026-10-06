@@ -1393,6 +1393,251 @@ async function executeIncrementalUrl(input: {
   }
 }
 
+type AttributedRecoveryUrlReceipt = {
+  canonicalUrl: string;
+  attempts: number;
+  outcome: AttributedCrawlUrlOutcome;
+};
+
+async function executeRecoveryUrl(input: {
+  siteId: string;
+  plan: FullSiteCrawlExecutionPlan;
+  canonicalUrl: string;
+  options: ExecutableCrawlAdapters;
+  requestState: { pageRequestsStarted: number };
+}): Promise<AttributedRecoveryUrlReceipt> {
+  let attempt = 1;
+  while (true) {
+    const outcome = await executeCanonicalUrl({
+      siteId: input.siteId,
+      plan: input.plan,
+      canonicalUrl: input.canonicalUrl,
+      options: input.options,
+      requestState: input.requestState,
+    });
+    if (outcome.kind !== "failure") {
+      return { canonicalUrl: input.canonicalUrl, attempts: attempt, outcome };
+    }
+    const retry = classifyCrawlRetry(outcome.signal, attempt, input.plan.policy);
+    if (!retry.retryable) {
+      return { canonicalUrl: input.canonicalUrl, attempts: attempt, outcome };
+    }
+    await input.options.clock.sleep(retry.delayMs!);
+    attempt = retry.nextAttempt!;
+  }
+}
+
+export async function runTerminalFailureRecoveryBridge(
+  input: TerminalFailureRecoveryBridgeRunInput,
+  options: FirstPartyCrawlBridgeOptions = {},
+): Promise<TerminalFailureRecoveryBridgeResult> {
+  const runId = requireRunId(input.runId);
+  const observedAt = requireObservedAt(input.observedAt);
+  if (!input.siteId.trim() || input.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN) {
+    throw new Error("crawl_recovery_bridge_identity_invalid");
+  }
+  if (!HEX_64.test(input.executionPlanFingerprint)) {
+    throw new Error("crawl_recovery_bridge_execution_fingerprint_invalid");
+  }
+  assertRecoveryExecutable(options);
+
+  const accountingSnapshot = await options.persistence.loadLatestAccounting({
+    version: P12_2_CRAWL_BRIDGE_VERSION,
+    runId,
+    siteId: input.siteId,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    executionPlanFingerprint: input.executionPlanFingerprint,
+  });
+  if (!accountingSnapshot) throw new Error("crawl_recovery_accounting_snapshot_not_found");
+  assertFullSiteCrawlBridgeSnapshotIntegrity(accountingSnapshot);
+  if (
+    accountingSnapshot.runId !== runId ||
+    accountingSnapshot.siteId !== input.siteId ||
+    accountingSnapshot.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+    accountingSnapshot.executionPlan.fingerprint !== input.executionPlanFingerprint
+  ) throw new Error("crawl_recovery_accounting_snapshot_lineage_invalid");
+  if (accountingSnapshot.certification.certification.wholeSiteCertified) {
+    throw new Error("crawl_recovery_accounting_already_certified");
+  }
+  if (
+    accountingSnapshot.checkpoint.status !== "completed" ||
+    accountingSnapshot.checkpoint.counters.terminalFailures < 1
+  ) throw new Error("crawl_recovery_accounting_not_recoverable");
+
+  const unresolvedEvents = await options.persistence.loadUnresolvedTerminalFailures({
+    version: P12_2_CRAWL_BRIDGE_VERSION,
+    runId,
+    siteId: input.siteId,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    executionPlanFingerprint: input.executionPlanFingerprint,
+  });
+  const recoveryPlan = buildTerminalFailureRecoveryPlan({
+    runId,
+    observedAt,
+    siteId: input.siteId,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    executionPlan: accountingSnapshot.executionPlan,
+    checkpoint: accountingSnapshot.checkpoint,
+    unresolvedEvents,
+  });
+
+  const eventByUrl = new Map(unresolvedEvents.map((event) => [event.canonicalUrl, event]));
+  const requestState = { pageRequestsStarted: 0 };
+  const attributedReceipts: AttributedRecoveryUrlReceipt[] = [];
+  for (const evidence of recoveryPlan.evidence) {
+    attributedReceipts.push(await executeRecoveryUrl({
+      siteId: input.siteId,
+      plan: accountingSnapshot.executionPlan,
+      canonicalUrl: evidence.canonicalUrl,
+      options: {
+        robotsEvaluator: options.robotsEvaluator,
+        pageTransport: options.pageTransport,
+        clock: options.clock,
+      },
+      requestState,
+    }));
+  }
+
+  const recoveryOutcomes: TerminalFailureRecoveryOutcome[] = attributedReceipts.map((item) => ({
+    canonicalUrl: item.canonicalUrl,
+    attempts: item.attempts,
+    outcome: item.outcome,
+  }));
+  const resultCheckpoint = advanceCompletedCheckpointWithTerminalRecovery(
+    accountingSnapshot.executionPlan,
+    accountingSnapshot.checkpoint,
+    recoveryOutcomes,
+  );
+
+  const transitionEvents = attributedReceipts.map((item) => {
+    const source = eventByUrl.get(item.canonicalUrl);
+    if (!source) throw new Error("crawl_recovery_source_event_missing");
+    if (item.outcome.kind === "failure") {
+      const decision = classifyCrawlRetry(
+        item.outcome.signal,
+        item.attempts,
+        accountingSnapshot.executionPlan.policy,
+      );
+      if (decision.retryable) throw new Error("crawl_recovery_result_not_terminal");
+      return createTerminalFailureEvent({
+        eventType: "recovery_failure",
+        runId,
+        observedAt,
+        siteId: input.siteId,
+        canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+        executionPlanFingerprint: input.executionPlanFingerprint,
+        canonicalUrl: item.canonicalUrl,
+        checkpointRevision: resultCheckpoint.sequence,
+        checkpointFingerprint: resultCheckpoint.fingerprint,
+        batchId: source.batchId,
+        attempt: item.attempts,
+        sourceEventFingerprint: source.fingerprint,
+        outcome: item.outcome,
+        decisionReason: decision.reason,
+        ...(item.outcome.robotsPolicyRejectionReason
+          ? { robotsPolicyRejectionReason: item.outcome.robotsPolicyRejectionReason }
+          : {}),
+        ...(item.outcome.otherPolicyRejectionReason
+          ? { otherPolicyRejectionReason: item.outcome.otherPolicyRejectionReason }
+          : {}),
+      });
+    }
+    return createTerminalFailureEvent({
+      eventType: "recovery_resolved",
+      runId,
+      observedAt,
+      siteId: input.siteId,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      executionPlanFingerprint: input.executionPlanFingerprint,
+      canonicalUrl: item.canonicalUrl,
+      checkpointRevision: resultCheckpoint.sequence,
+      checkpointFingerprint: resultCheckpoint.fingerprint,
+      batchId: source.batchId,
+      attempt: item.attempts,
+      sourceEventFingerprint: source.fingerprint,
+      outcome: item.outcome,
+      decisionReason: "resolved",
+    });
+  });
+
+  const certification = buildFullSiteCrawlCertification({
+    crawlPlan: accountingSnapshot.crawlPlan,
+    inventory: accountingSnapshot.inventory,
+    executionPlan: accountingSnapshot.executionPlan,
+    checkpoint: resultCheckpoint,
+  });
+  assertFullSiteCrawlCertificationIntegrity(certification);
+
+  const withoutSnapshotFingerprint: Omit<FullSiteCrawlBridgeSnapshot, "fingerprint"> = {
+    version: P12_2_CRAWL_BRIDGE_VERSION,
+    runId,
+    observedAt,
+    siteId: input.siteId,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    rootSitemapUrl: accountingSnapshot.rootSitemapUrl,
+    crawlPlan: accountingSnapshot.crawlPlan,
+    inventory: accountingSnapshot.inventory,
+    executionPlan: accountingSnapshot.executionPlan,
+    checkpoint: resultCheckpoint,
+    certification,
+    comparisonToPrevious: null,
+    persistence: {
+      rawResponseBodyPersisted: false,
+      rawSitemapXmlPersisted: false,
+      pageContentPersisted: false,
+    },
+  };
+  const recoveredAccountingSnapshot: FullSiteCrawlBridgeSnapshot = {
+    ...withoutSnapshotFingerprint,
+    fingerprint: fingerprint(withoutSnapshotFingerprint),
+  };
+  assertFullSiteCrawlBridgeSnapshotIntegrity(recoveredAccountingSnapshot);
+
+  const completedRunPersisted = certification.certification.wholeSiteCertified;
+  const urlReceipts: TerminalFailureRecoveryUrlReceipt[] = attributedReceipts.map((item) => {
+    const source = eventByUrl.get(item.canonicalUrl);
+    if (!source) throw new Error("crawl_recovery_source_event_missing");
+    return {
+      canonicalUrl: item.canonicalUrl,
+      sourceEventFingerprint: source.fingerprint,
+      attempts: item.attempts,
+      outcome: item.outcome,
+    };
+  });
+  const recoveryReceipt = buildTerminalFailureRecoveryReceipt({
+    plan: recoveryPlan,
+    resultCheckpoint,
+    accountingSnapshotFingerprint: recoveredAccountingSnapshot.fingerprint,
+    wholeSiteCertified: certification.certification.wholeSiteCertified,
+    completedRunPersisted,
+    blockers: certification.certification.blockers,
+    urlReceipts,
+  });
+
+  await options.persistence.saveRecoveryTransition({
+    version: P12_2_CRAWL_BRIDGE_VERSION,
+    sourceCheckpointFingerprint: accountingSnapshot.checkpoint.fingerprint,
+    checkpointRecord: checkpointRecord({
+      runId,
+      observedAt,
+      siteId: input.siteId,
+      plan: accountingSnapshot.executionPlan,
+      checkpoint: resultCheckpoint,
+      terminalFailureEvents: transitionEvents,
+    }),
+    accountingSnapshot: recoveredAccountingSnapshot,
+    recoveryReceipt,
+    completedRunPersisted,
+  });
+
+  return {
+    recoveryPlan,
+    recoveryReceipt,
+    accountingSnapshot: recoveredAccountingSnapshot,
+    completedRunPersisted,
+  };
+}
+
 function incrementalSummary(receipts: IncrementalCrawlUrlReceipt[]): IncrementalCrawlBridgeReceipt["summary"] {
   const summary = { fetchedSuccessful: 0, noindex: 0, redirects: 0, robotsExcluded: 0, failures: 0 };
   for (const receipt of receipts) {
