@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import {
   executeP12_2BoundedPilotCrawl,
-  executeP12_2FullCrawl,
+  executeP12_2FullCrawlAccountingAware,
   executeP12_2FullCrawlUntilCheckpoint,
   executeP12_2IncrementalCrawl,
   P12_2_EXECUTION_CONFIRMATION,
@@ -86,14 +86,14 @@ export function assertP122L3OperatorEnvelopeIntegrity(envelope: P122L3OperatorEn
 
 export type P122L3ExecutionAdapter = {
   boundedPilotCrawl: typeof executeP12_2BoundedPilotCrawl;
-  fullCrawl: typeof executeP12_2FullCrawl;
+  fullCrawl: typeof executeP12_2FullCrawlAccountingAware;
   fullCrawlUntilCheckpoint: typeof executeP12_2FullCrawlUntilCheckpoint;
   incrementalCrawl: typeof executeP12_2IncrementalCrawl;
 };
 
 const DEFAULT_EXECUTION_ADAPTER: P122L3ExecutionAdapter = {
   boundedPilotCrawl: executeP12_2BoundedPilotCrawl,
-  fullCrawl: executeP12_2FullCrawl,
+  fullCrawl: executeP12_2FullCrawlAccountingAware,
   fullCrawlUntilCheckpoint: executeP12_2FullCrawlUntilCheckpoint,
   incrementalCrawl: executeP12_2IncrementalCrawl,
 };
@@ -128,6 +128,16 @@ export class P122L3LiveExecutor implements P122L2InjectedExecutor {
       const result = await this.adapter.fullCrawl({
         config, dependencies, runId: packet.runId, observedAt: packet.observedAt, compareToPrevious: false,
       });
+      if ("status" in result && result.status === "accounting_complete_uncertified") {
+        return {
+          status: "accounting_complete_uncertified",
+          checkpointRevision: result.checkpointRevision,
+          checkpointFingerprint: result.checkpointFingerprint,
+          accountingSnapshotFingerprint: result.accountingSnapshotFingerprint,
+          terminalFailures: result.terminalFailures,
+          receiptFingerprint: result.fingerprint,
+        };
+      }
       return { status: "completed", receiptFingerprint: result.fingerprint };
     }
 
@@ -135,6 +145,16 @@ export class P122L3LiveExecutor implements P122L2InjectedExecutor {
       const result = await this.adapter.fullCrawl({
         config, dependencies, runId: packet.runId, observedAt: packet.observedAt, compareToPrevious: true,
       });
+      if ("status" in result && result.status === "accounting_complete_uncertified") {
+        return {
+          status: "accounting_complete_uncertified",
+          checkpointRevision: result.checkpointRevision,
+          checkpointFingerprint: result.checkpointFingerprint,
+          accountingSnapshotFingerprint: result.accountingSnapshotFingerprint,
+          terminalFailures: result.terminalFailures,
+          receiptFingerprint: result.fingerprint,
+        };
+      }
       return { status: "completed", receiptFingerprint: result.fingerprint };
     }
 
@@ -167,6 +187,16 @@ export class P122L3LiveExecutor implements P122L2InjectedExecutor {
         config, dependencies, runId: packet.runId, observedAt: packet.observedAt,
         resumeCheckpoint: checkpoint, compareToPrevious: false,
       });
+      if ("status" in result && result.status === "accounting_complete_uncertified") {
+        return {
+          status: "accounting_complete_uncertified",
+          checkpointRevision: result.checkpointRevision,
+          checkpointFingerprint: result.checkpointFingerprint,
+          accountingSnapshotFingerprint: result.accountingSnapshotFingerprint,
+          terminalFailures: result.terminalFailures,
+          receiptFingerprint: result.fingerprint,
+        };
+      }
       return { status: "completed", receiptFingerprint: result.fingerprint };
     }
 

@@ -129,6 +129,12 @@ export type SuppliedCrawlBatchAttempt = {
   outcomes: SuppliedCrawlUrlOutcome[];
 };
 
+export type TerminalFailureRecoveryOutcome = {
+  canonicalUrl: string;
+  attempts: number;
+  outcome: SuppliedCrawlUrlOutcome;
+};
+
 export type CrawlCheckpointCounters = {
   attemptsRecorded: number;
   fetchedSuccessful: number;
@@ -842,6 +848,88 @@ export function advanceCrawlCheckpoint(
     nextAttempt: nextBatch ? 1 : null,
     pendingCanonicalUrls: nextBatch ? [...nextBatch.canonicalUrls] : [],
     completedBatchIds,
+    counters,
+  });
+}
+
+export function advanceCompletedCheckpointWithTerminalRecovery(
+  plan: FullSiteCrawlExecutionPlan,
+  checkpoint: FullSiteCrawlCheckpoint,
+  recoveryOutcomes: TerminalFailureRecoveryOutcome[],
+): FullSiteCrawlCheckpoint {
+  assertFullSiteCrawlCheckpointIntegrity(plan, checkpoint);
+  if (checkpoint.status !== "completed") throw new Error("crawl_recovery_checkpoint_not_completed");
+  if (checkpoint.counters.terminalFailures < 1) throw new Error("crawl_recovery_terminal_failures_absent");
+  if (
+    !Array.isArray(recoveryOutcomes) ||
+    recoveryOutcomes.length < 1 ||
+    recoveryOutcomes.length > checkpoint.counters.terminalFailures
+  ) throw new Error("crawl_recovery_outcome_count_invalid");
+
+  const inventoryUrls = new Set(plan.batches.flatMap((batch) => batch.canonicalUrls));
+  const seen = new Set<string>();
+  const counters: CrawlCheckpointCounters = { ...checkpoint.counters };
+
+  for (const item of recoveryOutcomes) {
+    if (!Number.isInteger(item.attempts) || item.attempts < 1 || item.attempts > plan.policy.maxAttemptsPerUrl) {
+      throw new Error("crawl_recovery_attempt_count_invalid");
+    }
+    if (!inventoryUrls.has(item.canonicalUrl) || seen.has(item.canonicalUrl)) {
+      throw new Error("crawl_recovery_url_invalid");
+    }
+    seen.add(item.canonicalUrl);
+    if (item.outcome.canonicalUrl !== item.canonicalUrl) {
+      throw new Error("crawl_recovery_outcome_identity_mismatch");
+    }
+
+    counters.attemptsRecorded += item.attempts;
+    counters.retryScheduled += item.attempts;
+
+    if (item.outcome.kind === "success") {
+      counters.fetchedSuccessful += 1;
+      counters.terminalFailures -= 1;
+      continue;
+    }
+    if (item.outcome.kind === "noindex") {
+      counters.fetchedSuccessful += 1;
+      counters.noindex += 1;
+      counters.terminalFailures -= 1;
+      continue;
+    }
+    if (item.outcome.kind === "robots_excluded") {
+      counters.robotsExcluded += 1;
+      counters.terminalFailures -= 1;
+      continue;
+    }
+    if (item.outcome.kind === "redirect") {
+      if (
+        !Number.isInteger(item.outcome.redirectCount) ||
+        item.outcome.redirectCount < 1 ||
+        item.outcome.redirectCount > plan.policy.maxRedirectsPerRequest
+      ) throw new Error("crawl_recovery_redirect_count_invalid");
+      const redirect = evaluateFullSiteExecutionUrl(item.outcome.redirectTarget, plan.canonicalOrigin, plan.policy);
+      if (!redirect.safe || redirect.normalizedUrl !== item.outcome.redirectTarget) {
+        throw new Error("crawl_recovery_redirect_target_invalid");
+      }
+      counters.redirects += 1;
+      counters.terminalFailures -= 1;
+      continue;
+    }
+
+    const decision = classifyCrawlRetry(item.outcome.signal, item.attempts, plan.policy);
+    if (decision.retryable) throw new Error("crawl_recovery_failure_not_terminal");
+  }
+
+  if (counters.terminalFailures < 0) throw new Error("crawl_recovery_terminal_failure_underflow");
+
+  return buildCheckpoint(plan, {
+    sequence: checkpoint.sequence + 1,
+    status: "completed",
+    activeBatchIndex: null,
+    activeBatchId: null,
+    nextAttempt: null,
+    pendingCanonicalUrls: [],
+    completedBatchIds: [...checkpoint.completedBatchIds],
     counters,
   });
 }

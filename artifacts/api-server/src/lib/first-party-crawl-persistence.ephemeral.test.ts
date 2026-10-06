@@ -188,6 +188,7 @@ test("P12.2 PostgreSQL persistence is revision-safe and replay-idempotent on ded
     canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     executionPlanFingerprint: second.executionPlan.fingerprint,
     checkpoint: staleCheckpoint,
+    terminalFailureEvents: [],
     rawResponseBodyPersisted: false,
     rawSitemapXmlPersisted: false,
   };

@@ -7,6 +7,7 @@ import {
   type SuppliedSitemapDocument,
 } from "./sitemap-inventory.js";
 import {
+  advanceCompletedCheckpointWithTerminalRecovery,
   advanceCrawlCheckpoint,
   assertFullSiteCrawlCheckpointIntegrity,
   assertFullSiteCrawlExecutionPlanIntegrity,
@@ -22,6 +23,7 @@ import {
   type FullSiteCrawlExecutionPlan,
   type FullSiteExecutionPolicy,
   type SuppliedCrawlUrlOutcome,
+  type TerminalFailureRecoveryOutcome,
 } from "./full-site-crawl-control.js";
 import {
   assertFullSiteCrawlCertificationIntegrity,
@@ -38,6 +40,15 @@ import {
   assertIncrementalRecrawlPlanIntegrity,
   type IncrementalRecrawlPlan,
 } from "./incremental-recrawl-planner.js";
+import {
+  buildTerminalFailureRecoveryPlan,
+  buildTerminalFailureRecoveryReceipt,
+  createTerminalFailureEvent,
+  type TerminalFailureEvent,
+  type TerminalFailureRecoveryPlan,
+  type TerminalFailureRecoveryReceipt,
+  type TerminalFailureRecoveryUrlReceipt,
+} from "./first-party-crawl-terminal-recovery.js";
 
 export const P12_2_CRAWL_BRIDGE_VERSION = "p12-2-first-party-crawl-bridge-v1" as const;
 export const DIAMOND_SHELF_CANONICAL_ORIGIN = "https://diamondshelf.us" as const;
@@ -150,6 +161,7 @@ export type CrawlCheckpointPersistenceRecord = {
   canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
   executionPlanFingerprint: string;
   checkpoint: FullSiteCrawlCheckpoint;
+  terminalFailureEvents: TerminalFailureEvent[];
   rawResponseBodyPersisted: false;
   rawSitemapXmlPersisted: false;
 };
@@ -173,6 +185,51 @@ export type FullSiteCrawlBridgeSnapshot = {
     pageContentPersisted: false;
   };
   fingerprint: string;
+};
+
+export type FullSiteCrawlAccountingReceipt = {
+  version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+  status: "accounting_complete_uncertified";
+  runId: string;
+  observedAt: string;
+  siteId: string;
+  canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+  executionPlanFingerprint: string;
+  checkpointRevision: number;
+  checkpointFingerprint: string;
+  accountingSnapshotFingerprint: string;
+  terminalFailures: number;
+  blockers: string[];
+  persistence: {
+    checkpointPersisted: true;
+    accountingSnapshotPersisted: true;
+    completedRunPersisted: false;
+    terminalFailureEvidencePersisted: true;
+    rawResponseBodyPersisted: false;
+    rawSitemapXmlPersisted: false;
+    pageContentPersisted: false;
+  };
+  fingerprint: string;
+};
+
+export type FullSiteCrawlAccountingAwareResult =
+  | FullSiteCrawlBridgeSnapshot
+  | FullSiteCrawlAccountingReceipt;
+
+export type TerminalFailureRecoveryPersistenceTransition = {
+  version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+  sourceCheckpointFingerprint: string;
+  checkpointRecord: CrawlCheckpointPersistenceRecord;
+  accountingSnapshot: FullSiteCrawlBridgeSnapshot;
+  recoveryReceipt: TerminalFailureRecoveryReceipt;
+  completedRunPersisted: boolean;
+};
+
+export type TerminalFailureRecoveryBridgeResult = {
+  recoveryPlan: TerminalFailureRecoveryPlan;
+  recoveryReceipt: TerminalFailureRecoveryReceipt;
+  accountingSnapshot: FullSiteCrawlBridgeSnapshot;
+  completedRunPersisted: boolean;
 };
 
 export type BoundedPilotFailureAttribution = {
@@ -289,7 +346,24 @@ export interface FirstPartyCrawlPersistence {
     siteId: string;
     canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
   }): Promise<FullSiteCrawlBridgeSnapshot | null>;
+  loadLatestAccounting(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    runId: string;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+    executionPlanFingerprint: string;
+  }): Promise<FullSiteCrawlBridgeSnapshot | null>;
+  loadUnresolvedTerminalFailures(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    runId: string;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+    executionPlanFingerprint: string;
+  }): Promise<TerminalFailureEvent[]>;
+  saveAccountingRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void>;
   saveCompletedRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void>;
+  saveRecoveryReceipt(receipt: TerminalFailureRecoveryReceipt): Promise<void>;
+  saveRecoveryTransition(transition: TerminalFailureRecoveryPersistenceTransition): Promise<void>;
   saveIncrementalRun(receipt: IncrementalCrawlBridgeReceipt): Promise<void>;
 }
 
@@ -339,6 +413,14 @@ export type FullSiteCrawlBridgeRunInput = {
   executionPolicy: FullSiteExecutionPolicy;
   resumeCheckpoint?: FullSiteCrawlCheckpoint | null;
   compareToPrevious?: boolean;
+};
+
+export type TerminalFailureRecoveryBridgeRunInput = {
+  runId: string;
+  observedAt: string;
+  siteId: string;
+  canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+  executionPlanFingerprint: string;
 };
 
 export type IncrementalCrawlBridgeRunInput = {
@@ -469,6 +551,24 @@ function assertExecutable(options: FirstPartyCrawlBridgeOptions): asserts option
   if (!readiness.liveExecutionAuthorized) throw new Error("crawl_bridge_execution_not_authorized");
   if (!readiness.persistenceReady) throw new Error("crawl_bridge_persistence_not_ready");
   if (!readiness.persistenceAuthorized) throw new Error("crawl_bridge_persistence_not_authorized");
+}
+
+function assertRecoveryExecutable(options: FirstPartyCrawlBridgeOptions): asserts options is FirstPartyCrawlBridgeOptions & {
+  robotsEvaluator: FirstPartyRobotsEvaluator;
+  pageTransport: FirstPartyPageTransport;
+  clock: FirstPartyCrawlClock;
+  persistence: FirstPartyCrawlPersistence;
+} {
+  if (
+    !options.robotsEvaluator ||
+    !options.pageTransport ||
+    !options.clock ||
+    !options.persistence
+  ) throw new Error("crawl_recovery_bridge_unconfigured");
+  if (options.networkReady !== true) throw new Error("crawl_recovery_bridge_network_not_ready");
+  if (options.liveExecutionAuthorized !== true) throw new Error("crawl_recovery_bridge_execution_not_authorized");
+  if (options.persistenceReady !== true) throw new Error("crawl_recovery_bridge_persistence_not_ready");
+  if (options.persistenceAuthorized !== true) throw new Error("crawl_recovery_bridge_persistence_not_authorized");
 }
 
 function retryDelayForAttempt(
@@ -672,6 +772,7 @@ function checkpointRecord(input: {
   siteId: string;
   plan: FullSiteCrawlExecutionPlan;
   checkpoint: FullSiteCrawlCheckpoint;
+  terminalFailureEvents?: TerminalFailureEvent[];
 }): CrawlCheckpointPersistenceRecord {
   return {
     version: P12_2_CRAWL_BRIDGE_VERSION,
@@ -681,9 +782,63 @@ function checkpointRecord(input: {
     canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     executionPlanFingerprint: input.plan.fingerprint,
     checkpoint: input.checkpoint,
+    terminalFailureEvents: input.terminalFailureEvents ?? [],
     rawResponseBodyPersisted: false,
     rawSitemapXmlPersisted: false,
   };
+}
+
+function terminalFailureEventsForAttempt(input: {
+  runId: string;
+  observedAt: string;
+  siteId: string;
+  plan: FullSiteCrawlExecutionPlan;
+  sourceCheckpoint: FullSiteCrawlCheckpoint;
+  resultCheckpoint: FullSiteCrawlCheckpoint;
+  outcomes: AttributedCrawlUrlOutcome[];
+}): TerminalFailureEvent[] {
+  if (
+    input.sourceCheckpoint.status !== "pending" ||
+    input.sourceCheckpoint.activeBatchId === null ||
+    input.sourceCheckpoint.nextAttempt === null
+  ) throw new Error("crawl_bridge_terminal_failure_source_checkpoint_invalid");
+
+  const events: TerminalFailureEvent[] = [];
+  for (const outcome of input.outcomes) {
+    if (outcome.kind !== "failure") continue;
+    const decision = classifyCrawlRetry(
+      outcome.signal,
+      input.sourceCheckpoint.nextAttempt,
+      input.plan.policy,
+    );
+    if (decision.retryable) continue;
+    if (!["permanent_http", "policy_rejection", "attempts_exhausted"].includes(decision.reason)) {
+      throw new Error("crawl_bridge_terminal_failure_reason_invalid");
+    }
+    events.push(createTerminalFailureEvent({
+      eventType: "terminal_failure",
+      runId: input.runId,
+      observedAt: input.observedAt,
+      siteId: input.siteId,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      executionPlanFingerprint: input.plan.fingerprint,
+      canonicalUrl: outcome.canonicalUrl,
+      checkpointRevision: input.resultCheckpoint.sequence,
+      checkpointFingerprint: input.resultCheckpoint.fingerprint,
+      batchId: input.sourceCheckpoint.activeBatchId,
+      attempt: input.sourceCheckpoint.nextAttempt,
+      sourceEventFingerprint: null,
+      outcome,
+      decisionReason: decision.reason,
+      ...(outcome.robotsPolicyRejectionReason
+        ? { robotsPolicyRejectionReason: outcome.robotsPolicyRejectionReason }
+        : {}),
+      ...(outcome.otherPolicyRejectionReason
+        ? { otherPolicyRejectionReason: outcome.otherPolicyRejectionReason }
+        : {}),
+    }));
+  }
+  return events;
 }
 
 type MutableBoundedPilotFailureAttribution = {
@@ -835,8 +990,14 @@ async function runFullSiteCrawlBridgeInternal(
   control: {
     stopAfterCheckpointRevision?: number | null;
     scope?: "full_site" | "bounded_pilot";
+    durableAccounting?: boolean;
   } = {},
-): Promise<FullSiteCrawlBridgeSnapshot | FullSiteCrawlInterruptionReceipt | BoundedPilotCrawlBridgeReceipt> {
+): Promise<
+  FullSiteCrawlBridgeSnapshot |
+  FullSiteCrawlAccountingReceipt |
+  FullSiteCrawlInterruptionReceipt |
+  BoundedPilotCrawlBridgeReceipt
+> {
   const runId = requireRunId(input.runId);
   const observedAt = requireObservedAt(input.observedAt);
   const binding = normalizeBinding(input.binding);
@@ -973,18 +1134,30 @@ async function runFullSiteCrawlBridgeInternal(
         attribution: boundedFailureAttribution,
       });
     }
-    checkpoint = advanceCrawlCheckpoint(executionPlan, checkpoint, {
-      expectedCheckpointFingerprint: checkpoint.fingerprint,
-      batchId: checkpoint.activeBatchId!,
-      attempt: checkpoint.nextAttempt!,
+    const sourceCheckpoint = checkpoint;
+    const resultCheckpoint = advanceCrawlCheckpoint(executionPlan, sourceCheckpoint, {
+      expectedCheckpointFingerprint: sourceCheckpoint.fingerprint,
+      batchId: sourceCheckpoint.activeBatchId!,
+      attempt: sourceCheckpoint.nextAttempt!,
       outcomes,
     });
+    const terminalFailureEvents = terminalFailureEventsForAttempt({
+      runId,
+      observedAt,
+      siteId: binding.siteId,
+      plan: executionPlan,
+      sourceCheckpoint,
+      resultCheckpoint,
+      outcomes,
+    });
+    checkpoint = resultCheckpoint;
     await options.persistence.saveCheckpoint(checkpointRecord({
       runId,
       observedAt,
       siteId: binding.siteId,
       plan: executionPlan,
       checkpoint,
+      terminalFailureEvents,
     }));
     if (stopAfterCheckpointRevision !== null) {
       if (checkpoint.sequence === stopAfterCheckpointRevision) return interruptionReceipt();
@@ -1086,6 +1259,43 @@ async function runFullSiteCrawlBridgeInternal(
     fingerprint: fingerprint(withoutFingerprint),
   };
   assertFullSiteCrawlBridgeSnapshotIntegrity(snapshot);
+
+  if (control.durableAccounting === true) {
+    await options.persistence.saveAccountingRun(snapshot);
+    if (!snapshot.certification.certification.wholeSiteCertified) {
+      if (snapshot.checkpoint.counters.terminalFailures < 1) {
+        throw new Error("crawl_bridge_accounting_uncertified_without_terminal_failure");
+      }
+      const withoutAccountingFingerprint: Omit<FullSiteCrawlAccountingReceipt, "fingerprint"> = {
+        version: P12_2_CRAWL_BRIDGE_VERSION,
+        status: "accounting_complete_uncertified",
+        runId,
+        observedAt,
+        siteId: binding.siteId,
+        canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+        executionPlanFingerprint: executionPlan.fingerprint,
+        checkpointRevision: checkpoint.sequence,
+        checkpointFingerprint: checkpoint.fingerprint,
+        accountingSnapshotFingerprint: snapshot.fingerprint,
+        terminalFailures: checkpoint.counters.terminalFailures,
+        blockers: [...snapshot.certification.certification.blockers],
+        persistence: {
+          checkpointPersisted: true,
+          accountingSnapshotPersisted: true,
+          completedRunPersisted: false,
+          terminalFailureEvidencePersisted: true,
+          rawResponseBodyPersisted: false,
+          rawSitemapXmlPersisted: false,
+          pageContentPersisted: false,
+        },
+      };
+      return {
+        ...withoutAccountingFingerprint,
+        fingerprint: fingerprint(withoutAccountingFingerprint),
+      };
+    }
+  }
+
   await options.persistence.saveCompletedRun(snapshot);
   return snapshot;
 }
@@ -1099,6 +1309,20 @@ export async function runFullSiteCrawlBridge(
     if (result.status === "intentional_interruption") {
       throw new Error("crawl_bridge_unexpected_interruption");
     }
+  }
+  return result as FullSiteCrawlBridgeSnapshot;
+}
+
+export async function runFullSiteCrawlBridgeAccountingAware(
+  input: FullSiteCrawlBridgeRunInput,
+  options: FirstPartyCrawlBridgeOptions = {},
+): Promise<FullSiteCrawlAccountingAwareResult> {
+  const result = await runFullSiteCrawlBridgeInternal(input, options, { durableAccounting: true });
+  if ("status" in result) {
+    if (result.status === "intentional_interruption" || result.status === "bounded_pilot_completed") {
+      throw new Error("crawl_bridge_accounting_unexpected_non_full_site_result");
+    }
+    if (result.status === "accounting_complete_uncertified") return result;
   }
   return result as FullSiteCrawlBridgeSnapshot;
 }
@@ -1166,6 +1390,251 @@ async function executeIncrementalUrl(input: {
     await input.options.clock.sleep(retry.delayMs!);
     attempt = retry.nextAttempt!;
   }
+}
+
+type AttributedRecoveryUrlReceipt = {
+  canonicalUrl: string;
+  attempts: number;
+  outcome: AttributedCrawlUrlOutcome;
+};
+
+async function executeRecoveryUrl(input: {
+  siteId: string;
+  plan: FullSiteCrawlExecutionPlan;
+  canonicalUrl: string;
+  options: ExecutableCrawlAdapters;
+  requestState: { pageRequestsStarted: number };
+}): Promise<AttributedRecoveryUrlReceipt> {
+  let attempt = 1;
+  while (true) {
+    const outcome = await executeCanonicalUrl({
+      siteId: input.siteId,
+      plan: input.plan,
+      canonicalUrl: input.canonicalUrl,
+      options: input.options,
+      requestState: input.requestState,
+    });
+    if (outcome.kind !== "failure") {
+      return { canonicalUrl: input.canonicalUrl, attempts: attempt, outcome };
+    }
+    const retry = classifyCrawlRetry(outcome.signal, attempt, input.plan.policy);
+    if (!retry.retryable) {
+      return { canonicalUrl: input.canonicalUrl, attempts: attempt, outcome };
+    }
+    await input.options.clock.sleep(retry.delayMs!);
+    attempt = retry.nextAttempt!;
+  }
+}
+
+export async function runTerminalFailureRecoveryBridge(
+  input: TerminalFailureRecoveryBridgeRunInput,
+  options: FirstPartyCrawlBridgeOptions = {},
+): Promise<TerminalFailureRecoveryBridgeResult> {
+  const runId = requireRunId(input.runId);
+  const observedAt = requireObservedAt(input.observedAt);
+  if (!input.siteId.trim() || input.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN) {
+    throw new Error("crawl_recovery_bridge_identity_invalid");
+  }
+  if (!HEX_64.test(input.executionPlanFingerprint)) {
+    throw new Error("crawl_recovery_bridge_execution_fingerprint_invalid");
+  }
+  assertRecoveryExecutable(options);
+
+  const accountingSnapshot = await options.persistence.loadLatestAccounting({
+    version: P12_2_CRAWL_BRIDGE_VERSION,
+    runId,
+    siteId: input.siteId,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    executionPlanFingerprint: input.executionPlanFingerprint,
+  });
+  if (!accountingSnapshot) throw new Error("crawl_recovery_accounting_snapshot_not_found");
+  assertFullSiteCrawlBridgeSnapshotIntegrity(accountingSnapshot);
+  if (
+    accountingSnapshot.runId !== runId ||
+    accountingSnapshot.siteId !== input.siteId ||
+    accountingSnapshot.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+    accountingSnapshot.executionPlan.fingerprint !== input.executionPlanFingerprint
+  ) throw new Error("crawl_recovery_accounting_snapshot_lineage_invalid");
+  if (accountingSnapshot.certification.certification.wholeSiteCertified) {
+    throw new Error("crawl_recovery_accounting_already_certified");
+  }
+  if (
+    accountingSnapshot.checkpoint.status !== "completed" ||
+    accountingSnapshot.checkpoint.counters.terminalFailures < 1
+  ) throw new Error("crawl_recovery_accounting_not_recoverable");
+
+  const unresolvedEvents = await options.persistence.loadUnresolvedTerminalFailures({
+    version: P12_2_CRAWL_BRIDGE_VERSION,
+    runId,
+    siteId: input.siteId,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    executionPlanFingerprint: input.executionPlanFingerprint,
+  });
+  const recoveryPlan = buildTerminalFailureRecoveryPlan({
+    runId,
+    observedAt,
+    siteId: input.siteId,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    executionPlan: accountingSnapshot.executionPlan,
+    checkpoint: accountingSnapshot.checkpoint,
+    unresolvedEvents,
+  });
+
+  const eventByUrl = new Map(unresolvedEvents.map((event) => [event.canonicalUrl, event]));
+  const requestState = { pageRequestsStarted: 0 };
+  const attributedReceipts: AttributedRecoveryUrlReceipt[] = [];
+  for (const evidence of recoveryPlan.evidence) {
+    attributedReceipts.push(await executeRecoveryUrl({
+      siteId: input.siteId,
+      plan: accountingSnapshot.executionPlan,
+      canonicalUrl: evidence.canonicalUrl,
+      options: {
+        robotsEvaluator: options.robotsEvaluator,
+        pageTransport: options.pageTransport,
+        clock: options.clock,
+      },
+      requestState,
+    }));
+  }
+
+  const recoveryOutcomes: TerminalFailureRecoveryOutcome[] = attributedReceipts.map((item) => ({
+    canonicalUrl: item.canonicalUrl,
+    attempts: item.attempts,
+    outcome: item.outcome,
+  }));
+  const resultCheckpoint = advanceCompletedCheckpointWithTerminalRecovery(
+    accountingSnapshot.executionPlan,
+    accountingSnapshot.checkpoint,
+    recoveryOutcomes,
+  );
+
+  const transitionEvents = attributedReceipts.map((item) => {
+    const source = eventByUrl.get(item.canonicalUrl);
+    if (!source) throw new Error("crawl_recovery_source_event_missing");
+    if (item.outcome.kind === "failure") {
+      const decision = classifyCrawlRetry(
+        item.outcome.signal,
+        item.attempts,
+        accountingSnapshot.executionPlan.policy,
+      );
+      if (decision.retryable) throw new Error("crawl_recovery_result_not_terminal");
+      return createTerminalFailureEvent({
+        eventType: "recovery_failure",
+        runId,
+        observedAt,
+        siteId: input.siteId,
+        canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+        executionPlanFingerprint: input.executionPlanFingerprint,
+        canonicalUrl: item.canonicalUrl,
+        checkpointRevision: resultCheckpoint.sequence,
+        checkpointFingerprint: resultCheckpoint.fingerprint,
+        batchId: source.batchId,
+        attempt: item.attempts,
+        sourceEventFingerprint: source.fingerprint,
+        outcome: item.outcome,
+        decisionReason: decision.reason,
+        ...(item.outcome.robotsPolicyRejectionReason
+          ? { robotsPolicyRejectionReason: item.outcome.robotsPolicyRejectionReason }
+          : {}),
+        ...(item.outcome.otherPolicyRejectionReason
+          ? { otherPolicyRejectionReason: item.outcome.otherPolicyRejectionReason }
+          : {}),
+      });
+    }
+    return createTerminalFailureEvent({
+      eventType: "recovery_resolved",
+      runId,
+      observedAt,
+      siteId: input.siteId,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      executionPlanFingerprint: input.executionPlanFingerprint,
+      canonicalUrl: item.canonicalUrl,
+      checkpointRevision: resultCheckpoint.sequence,
+      checkpointFingerprint: resultCheckpoint.fingerprint,
+      batchId: source.batchId,
+      attempt: item.attempts,
+      sourceEventFingerprint: source.fingerprint,
+      outcome: item.outcome,
+      decisionReason: "resolved",
+    });
+  });
+
+  const certification = buildFullSiteCrawlCertification({
+    crawlPlan: accountingSnapshot.crawlPlan,
+    inventory: accountingSnapshot.inventory,
+    executionPlan: accountingSnapshot.executionPlan,
+    checkpoint: resultCheckpoint,
+  });
+  assertFullSiteCrawlCertificationIntegrity(certification);
+
+  const withoutSnapshotFingerprint: Omit<FullSiteCrawlBridgeSnapshot, "fingerprint"> = {
+    version: P12_2_CRAWL_BRIDGE_VERSION,
+    runId,
+    observedAt,
+    siteId: input.siteId,
+    canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+    rootSitemapUrl: accountingSnapshot.rootSitemapUrl,
+    crawlPlan: accountingSnapshot.crawlPlan,
+    inventory: accountingSnapshot.inventory,
+    executionPlan: accountingSnapshot.executionPlan,
+    checkpoint: resultCheckpoint,
+    certification,
+    comparisonToPrevious: null,
+    persistence: {
+      rawResponseBodyPersisted: false,
+      rawSitemapXmlPersisted: false,
+      pageContentPersisted: false,
+    },
+  };
+  const recoveredAccountingSnapshot: FullSiteCrawlBridgeSnapshot = {
+    ...withoutSnapshotFingerprint,
+    fingerprint: fingerprint(withoutSnapshotFingerprint),
+  };
+  assertFullSiteCrawlBridgeSnapshotIntegrity(recoveredAccountingSnapshot);
+
+  const completedRunPersisted = certification.certification.wholeSiteCertified;
+  const urlReceipts: TerminalFailureRecoveryUrlReceipt[] = attributedReceipts.map((item) => {
+    const source = eventByUrl.get(item.canonicalUrl);
+    if (!source) throw new Error("crawl_recovery_source_event_missing");
+    return {
+      canonicalUrl: item.canonicalUrl,
+      sourceEventFingerprint: source.fingerprint,
+      attempts: item.attempts,
+      outcome: item.outcome,
+    };
+  });
+  const recoveryReceipt = buildTerminalFailureRecoveryReceipt({
+    plan: recoveryPlan,
+    resultCheckpoint,
+    accountingSnapshotFingerprint: recoveredAccountingSnapshot.fingerprint,
+    wholeSiteCertified: certification.certification.wholeSiteCertified,
+    completedRunPersisted,
+    blockers: certification.certification.blockers,
+    urlReceipts,
+  });
+
+  await options.persistence.saveRecoveryTransition({
+    version: P12_2_CRAWL_BRIDGE_VERSION,
+    sourceCheckpointFingerprint: accountingSnapshot.checkpoint.fingerprint,
+    checkpointRecord: checkpointRecord({
+      runId,
+      observedAt,
+      siteId: input.siteId,
+      plan: accountingSnapshot.executionPlan,
+      checkpoint: resultCheckpoint,
+      terminalFailureEvents: transitionEvents,
+    }),
+    accountingSnapshot: recoveredAccountingSnapshot,
+    recoveryReceipt,
+    completedRunPersisted,
+  });
+
+  return {
+    recoveryPlan,
+    recoveryReceipt,
+    accountingSnapshot: recoveredAccountingSnapshot,
+    completedRunPersisted,
+  };
 }
 
 function incrementalSummary(receipts: IncrementalCrawlUrlReceipt[]): IncrementalCrawlBridgeReceipt["summary"] {

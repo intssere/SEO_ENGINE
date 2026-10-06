@@ -2,6 +2,7 @@ import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
   runBoundedPilotCrawlBridge,
   runFullSiteCrawlBridge,
+  runFullSiteCrawlBridgeAccountingAware,
   runFullSiteCrawlBridgeUntilCheckpoint,
   runIncrementalCrawlBridge,
   type FullSiteCrawlBridgeRunInput,
@@ -268,6 +269,33 @@ export async function executeP12_2FullCrawl(input: {
   const { config } = input;
   const options = compose(config, input.dependencies);
   return runFullSiteCrawlBridge({
+    runId: input.runId,
+    observedAt: input.observedAt,
+    binding: {
+      siteId: DIAMOND_SHELF_SITE_ID,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      rootSitemapUrl: validateRootSitemap(config.rootSitemapUrl),
+    },
+    hardPageLimit: config.limits.hardPageLimit,
+    absolutePageCeiling: config.limits.absolutePageCeiling,
+    sitemapPolicy: config.limits.sitemapPolicy,
+    executionPolicy: config.limits.executionPolicy,
+    resumeCheckpoint: input.resumeCheckpoint,
+    compareToPrevious: input.compareToPrevious,
+  }, options);
+}
+
+export async function executeP12_2FullCrawlAccountingAware(input: {
+  config: P12_2ManualConfig;
+  dependencies: P12_2ManualDependencies;
+  runId: string;
+  observedAt: string;
+  resumeCheckpoint?: FullSiteCrawlBridgeRunInput["resumeCheckpoint"];
+  compareToPrevious?: boolean;
+}) {
+  const { config } = input;
+  const options = compose(config, input.dependencies);
+  return runFullSiteCrawlBridgeAccountingAware({
     runId: input.runId,
     observedAt: input.observedAt,
     binding: {

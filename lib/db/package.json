@@ -18,7 +18,8 @@
     "test:p12-2-l9-1": "tsx --test src/p12-2-l9-1-bounded-pilot-phase-migration.test.ts",
     "test:p8-8-w04": "tsx --test src/p8-8-w04-reservation-migration.test.ts",
     "test:p8-8-w05": "tsx --test src/p8-8-w05-mutation-control-migration.test.ts",
-    "test:p8-8-w07": "tsx --test src/p8-8-w07-policy-dispatch-migration.test.ts"
+    "test:p8-8-w07": "tsx --test src/p8-8-w07-policy-dispatch-migration.test.ts",
+    "test:p12-2-l10-13b": "tsx --test src/p12-2-l10-13b-terminal-failure-recovery-migration.test.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",

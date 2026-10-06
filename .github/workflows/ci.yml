@@ -133,6 +133,16 @@ jobs:
           pnpm --filter @workspace/api-server test:p12-2-l6-durable-ephemeral
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM first_party_crawl_l2_invocations" | grep -q '^1$'
 
+      - name: Test P12.2-L10.13B terminal failure recovery persistence
+        env:
+          P12_2_L10_13B_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
+        run: |
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 44
+          pnpm --filter @workspace/db test:p12-2-l10-13b
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 47
+          pnpm --filter @workspace/api-server test:p12-2-l10-13b-persistence-ephemeral
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 47
+
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
 

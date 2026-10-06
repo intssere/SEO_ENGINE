@@ -421,3 +421,88 @@ test("L6.3 packet integrity accepts exact packets and rejects post-build tamperi
     /p12_2_l2_packet_fingerprint_mismatch/,
   );
 });
+
+
+test("L10.13B durable one-shot completes the L2 receipt for accounting-complete uncertified full resume", async () => {
+  const packet = buildP122L2Packet({
+    phase: "full_resume",
+    runId: "p12-2-l10-13b-accounting-state",
+    observedAt: "2026-10-06T07:30:00.000Z",
+    config: executableConfig(),
+    resume: {
+      checkpointRevision: 307,
+      checkpointFingerprint: HEX_A,
+      executionPlanFingerprint: HEX_B,
+    },
+  });
+  let claimed = false;
+  let completed = false;
+  const receipt = await executeP122L2OneShotDurable({
+    packet,
+    authorizationLiteral: p122L2AuthorizationLiteral(packet),
+    receiptStore: {
+      async claim() {
+        assert.equal(claimed, false);
+        claimed = true;
+      },
+      async complete(_packet, value) {
+        assert.equal(claimed, true);
+        assert.equal(value.result.status, "accounting_complete_uncertified");
+        completed = true;
+      },
+    },
+    executor: {
+      async execute() {
+        return {
+          status: "accounting_complete_uncertified" as const,
+          checkpointRevision: 308,
+          checkpointFingerprint: HEX_A,
+          accountingSnapshotFingerprint: HEX_B,
+          terminalFailures: 1,
+          receiptFingerprint: HEX_C,
+        };
+      },
+    },
+  });
+
+  assert.equal(claimed, true);
+  assert.equal(completed, true);
+  assert.equal(receipt.result.status, "accounting_complete_uncertified");
+  if (receipt.result.status !== "accounting_complete_uncertified") throw new Error("unexpected_result");
+  assert.equal(receipt.result.terminalFailures, 1);
+  assert.equal(receipt.invocationAttempt, 1);
+  assert.equal(receipt.automaticRetryPerformed, false);
+});
+
+test("L10.13B rejects accounting-complete uncertified executor state for non-full-site phases", async () => {
+  const packet = buildP122L2Packet({
+    phase: "incremental",
+    runId: "p12-2-l10-13b-invalid-accounting-phase",
+    observedAt: "2026-10-06T07:31:00.000Z",
+    config: executableConfig(),
+    incremental: {
+      incrementalPlanFingerprint: HEX_A,
+      executionPlanFingerprint: HEX_B,
+    },
+  });
+
+  await assert.rejects(
+    executeP122L2OneShot({
+      packet,
+      authorizationLiteral: p122L2AuthorizationLiteral(packet),
+      executor: {
+        async execute() {
+          return {
+            status: "accounting_complete_uncertified" as const,
+            checkpointRevision: 1,
+            checkpointFingerprint: HEX_A,
+            accountingSnapshotFingerprint: HEX_B,
+            terminalFailures: 1,
+            receiptFingerprint: HEX_C,
+          };
+        },
+      },
+    }),
+    /p12_2_l2_accounting_state_phase_mismatch/,
+  );
+});

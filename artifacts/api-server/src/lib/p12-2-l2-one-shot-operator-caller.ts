@@ -82,6 +82,14 @@ export type P122L2ExecutionResult =
       checkpointFingerprint: string;
       executionPlanFingerprint: string;
       receiptFingerprint: string;
+    }
+  | {
+      status: "accounting_complete_uncertified";
+      checkpointRevision: number;
+      checkpointFingerprint: string;
+      accountingSnapshotFingerprint: string;
+      terminalFailures: number;
+      receiptFingerprint: string;
     };
 
 export type P122L2Receipt = {
@@ -275,6 +283,18 @@ function assertResult(packet: P122L2Packet, result: P122L2ExecutionResult): void
     ) throw new Error("p12_2_l2_interruption_revision_mismatch");
     requireFingerprint(result.checkpointFingerprint, "p12_2_l2_interruption_checkpoint_fingerprint_invalid");
     requireFingerprint(result.executionPlanFingerprint, "p12_2_l2_interruption_execution_fingerprint_invalid");
+  } else if (result.status === "accounting_complete_uncertified") {
+    if (!["full_initial", "full_reconciliation", "full_resume"].includes(packet.phase)) {
+      throw new Error("p12_2_l2_accounting_state_phase_mismatch");
+    }
+    if (
+      !Number.isInteger(result.checkpointRevision) ||
+      result.checkpointRevision < 1 ||
+      !Number.isInteger(result.terminalFailures) ||
+      result.terminalFailures < 1
+    ) throw new Error("p12_2_l2_accounting_state_invalid");
+    requireFingerprint(result.checkpointFingerprint, "p12_2_l2_accounting_checkpoint_fingerprint_invalid");
+    requireFingerprint(result.accountingSnapshotFingerprint, "p12_2_l2_accounting_snapshot_fingerprint_invalid");
   } else if (result.status !== "completed") {
     throw new Error("p12_2_l2_unexpected_interruption");
   }
