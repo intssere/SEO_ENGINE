@@ -1,0 +1,108 @@
+name: P12.2 L10.16 Packet 014 preflight certification image release
+
+on:
+  workflow_dispatch:
+    inputs:
+      authorization:
+        description: Exact P12.2 L10.16 Packet 014 preflight certification image release authorization literal
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: p12-2-l10-16-packet-014-preflight-image-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      IMAGE: ghcr.io/intssere/seo-engine-p12-2-l10-16-packet-014-preflight
+
+    steps:
+      - name: Verify dispatch boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_RUN_ATTEMPT" = "1"
+
+      - name: Checkout exact canonical source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify source identity and authorization
+        id: identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE_SHA="$(git rev-parse HEAD)"
+          SOURCE_TREE="$(git rev-parse 'HEAD^{tree}')"
+          test "$SOURCE_SHA" = "$GITHUB_SHA"
+          test "$(git status --porcelain=v1 | wc -l)" -eq 0
+          EXPECTED_AUTH="AUTHORIZE:P12_2_L10_16_PACKET_014_PREFLIGHT_IMAGE_RELEASE:${SOURCE_SHA}:${SOURCE_TREE}"
+          test "${{ inputs.authorization }}" = "$EXPECTED_AUTH"
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          echo "source_tree=$SOURCE_TREE" >> "$GITHUB_OUTPUT"
+          echo "authorization=$EXPECTED_AUTH" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e
+
+      - name: Build and push immutable preflight image
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
+        with:
+          context: .
+          file: Dockerfile.p12-2-l10-16-packet-014-preflight
+          platforms: linux/amd64
+          push: true
+          provenance: mode=max
+          sbom: true
+          build-args: |
+            EXPECTED_CANONICAL_COMMIT=${{ steps.identity.outputs.source_sha }}
+            EXPECTED_CANONICAL_TREE=${{ steps.identity.outputs.source_tree }}
+            EXPECTED_SOURCE_BRANCH=main
+          tags: ghcr.io/intssere/seo-engine-p12-2-l10-16-packet-014-preflight:sha-${{ steps.identity.outputs.source_sha }}
+
+      - name: Attest exact pushed digest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-name: ghcr.io/intssere/seo-engine-p12-2-l10-16-packet-014-preflight
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      - name: Verify registry digest and emit release receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="$IMAGE:sha-${{ steps.identity.outputs.source_sha }}"
+          DIGEST="$(docker buildx imagetools inspect "$TAG" --format '{{json .Manifest.Digest}}' | tr -d '"')"
+          test -n "$DIGEST"
+          test "$DIGEST" = "${{ steps.build.outputs.digest }}"
+          printf '%s\n' \
+            "source_sha=${{ steps.identity.outputs.source_sha }}" \
+            "source_tree=${{ steps.identity.outputs.source_tree }}" \
+            "image=$IMAGE@$DIGEST" \
+            "tag=$TAG" \
+            "platform=linux/amd64" \
+            "provenance=mode=max" \
+            "sbom=true" \
+            "attestation=published" \
+            "authorization=${{ steps.identity.outputs.authorization }}"
