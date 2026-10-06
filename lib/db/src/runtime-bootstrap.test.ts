@@ -14,6 +14,9 @@ import {
   EXPECTED_P8_8_W05_TABLE_COUNT,
   EXPECTED_P8_8_W07_DISPATCH_TABLE_COUNT,
   EXPECTED_P8_8_W07_TABLE_COUNT,
+  EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT,
+  EXPECTED_P12_2_L10_13B_RECOVERY_TABLE_COUNT,
+  EXPECTED_P12_2_L10_13B_TABLE_COUNT,
   planRuntimeBootstrap,
 } from "./runtime-bootstrap.js";
 
@@ -79,6 +82,17 @@ test("current P3.6, P12.2, W04, W05, and W07 schemas are recognized without auto
   assert.equal(w07.applyCoreMigration, false);
   assert.equal(w07.applyAuthMigration, false);
   assert.equal(w07.upsertDiamondShelf, true);
+
+  const durable = planRuntimeBootstrap(EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT);
+  assert.equal(durable.schemaState, "p8_8_w07_ready");
+  assert.equal(durable.blocked, false);
+
+  const recovery = planRuntimeBootstrap(EXPECTED_P12_2_L10_13B_TABLE_COUNT);
+  assert.equal(recovery.schemaState, "p12_2_l10_13b_ready");
+  assert.equal(recovery.blocked, false);
+  assert.equal(recovery.applyCoreMigration, false);
+  assert.equal(recovery.applyAuthMigration, false);
+  assert.equal(recovery.upsertDiamondShelf, true);
 });
 
 test("unrecognized partial or unsupported future schema states fail closed", () => {
@@ -90,7 +104,6 @@ test("unrecognized partial or unsupported future schema states fail closed", () 
     EXPECTED_P12_2_TABLE_COUNT + 2,
     EXPECTED_P8_8_W04_TABLE_COUNT + 1,
     EXPECTED_P8_8_W05_TABLE_COUNT + 1,
-    EXPECTED_P8_8_W07_TABLE_COUNT + 1,
   ]) {
     const plan = planRuntimeBootstrap(count);
     assert.equal(plan.schemaState, "partial");
@@ -158,5 +171,16 @@ test("P8.8 W07 future schema count adds exactly two policy dispatch tables", () 
   assert.equal(
     EXPECTED_P8_8_W07_TABLE_COUNT,
     EXPECTED_P8_8_W05_TABLE_COUNT + EXPECTED_P8_8_W07_DISPATCH_TABLE_COUNT,
+  );
+});
+
+
+test("P12.2-L10.13B schema count adds durable L2 plus exactly three recovery tables", () => {
+  assert.equal(EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT, 44);
+  assert.equal(EXPECTED_P12_2_L10_13B_RECOVERY_TABLE_COUNT, 3);
+  assert.equal(EXPECTED_P12_2_L10_13B_TABLE_COUNT, 47);
+  assert.equal(
+    EXPECTED_P12_2_L10_13B_TABLE_COUNT,
+    EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT + EXPECTED_P12_2_L10_13B_RECOVERY_TABLE_COUNT,
   );
 });
