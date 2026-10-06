@@ -44,6 +44,8 @@ export type RuntimeSchemaState =
   | "p8_8_w04_ready"
   | "p8_8_w05_ready"
   | "p8_8_w07_ready"
+  | "p12_2_l2_production_ready"
+  | "p12_2_l10_13b_production_ready"
   | "p12_2_l10_13b_ready"
   | "partial";
 
@@ -66,7 +68,62 @@ export interface BootstrapResult {
   organizationId?: string;
   siteId?: string;
   domain?: string;
+  schemaState?: RuntimeSchemaState;
   reason?: string;
+}
+
+export interface RuntimeIdentitySchemaShape {
+  policyReservationTable: boolean;
+  policyControlTableCount: number;
+  policyDispatchTableCount: number;
+  l2InvocationTable: boolean;
+  recoveryTableCount: number;
+}
+
+export function classifyRuntimeIdentitySchema(
+  tableCount: number,
+  shape: RuntimeIdentitySchemaShape,
+): RuntimeSchemaState {
+  if (tableCount === EXPECTED_CURRENT_TABLE_COUNT) return "ready";
+  if (tableCount === EXPECTED_P12_2_TABLE_COUNT) return "p12_2_ready";
+  if (tableCount === 38) {
+    if (
+      shape.l2InvocationTable &&
+      !shape.policyReservationTable &&
+      shape.policyControlTableCount === 0 &&
+      shape.policyDispatchTableCount === 0 &&
+      shape.recoveryTableCount === 0
+    ) return "p12_2_l2_production_ready";
+    if (
+      !shape.l2InvocationTable &&
+      shape.policyReservationTable &&
+      shape.policyControlTableCount === 0 &&
+      shape.policyDispatchTableCount === 0 &&
+      shape.recoveryTableCount === 0
+    ) return "p8_8_w04_ready";
+    return "partial";
+  }
+  if (tableCount === 41) {
+    if (
+      shape.l2InvocationTable &&
+      !shape.policyReservationTable &&
+      shape.policyControlTableCount === 0 &&
+      shape.policyDispatchTableCount === 0 &&
+      shape.recoveryTableCount === 3
+    ) return "p12_2_l10_13b_production_ready";
+    if (
+      !shape.l2InvocationTable &&
+      shape.policyReservationTable &&
+      shape.policyControlTableCount === 3 &&
+      shape.policyDispatchTableCount === 0 &&
+      shape.recoveryTableCount === 0
+    ) return "p8_8_w05_ready";
+    return "partial";
+  }
+  if (tableCount === EXPECTED_P8_8_W07_TABLE_COUNT) return "p8_8_w07_ready";
+  if (tableCount === EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT) return "p8_8_w07_ready";
+  if (tableCount === EXPECTED_P12_2_L10_13B_TABLE_COUNT) return "p12_2_l10_13b_ready";
+  return "partial";
 }
 
 export function planRuntimeBootstrap(tableCount: number): BootstrapPlan {
@@ -204,6 +261,42 @@ async function publicTableCount(sql: postgres.Sql): Promise<number> {
     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
   `;
   return Number(rows[0]?.count ?? 0);
+}
+
+async function runtimeIdentitySchemaShape(sql: postgres.Sql): Promise<RuntimeIdentitySchemaShape> {
+  const rows = await sql<{
+    policy_reservation_table: boolean;
+    policy_control_table_count: number;
+    policy_dispatch_table_count: number;
+    l2_invocation_table: boolean;
+    recovery_table_count: number;
+  }[]>`
+    SELECT
+      to_regclass('public.policy_mutation_reservations') IS NOT NULL AS policy_reservation_table,
+      (
+        (to_regclass('public.policy_mutation_control_state') IS NOT NULL)::int +
+        (to_regclass('public.policy_mutation_control_events') IS NOT NULL)::int +
+        (to_regclass('public.policy_mutation_claims') IS NOT NULL)::int
+      ) AS policy_control_table_count,
+      (
+        (to_regclass('public.policy_mutation_dispatches') IS NOT NULL)::int +
+        (to_regclass('public.policy_mutation_dispatch_events') IS NOT NULL)::int
+      ) AS policy_dispatch_table_count,
+      to_regclass('public.first_party_crawl_l2_invocations') IS NOT NULL AS l2_invocation_table,
+      (
+        (to_regclass('public.first_party_crawl_terminal_failure_events') IS NOT NULL)::int +
+        (to_regclass('public.first_party_crawl_accounting_snapshots') IS NOT NULL)::int +
+        (to_regclass('public.first_party_crawl_terminal_failure_recovery_receipts') IS NOT NULL)::int
+      ) AS recovery_table_count
+  `;
+  const row = rows[0];
+  return {
+    policyReservationTable: row?.policy_reservation_table ?? false,
+    policyControlTableCount: Number(row?.policy_control_table_count ?? 0),
+    policyDispatchTableCount: Number(row?.policy_dispatch_table_count ?? 0),
+    l2InvocationTable: row?.l2_invocation_table ?? false,
+    recoveryTableCount: Number(row?.recovery_table_count ?? 0),
+  };
 }
 
 async function applyMigration(
@@ -373,19 +466,16 @@ export async function ensureDiamondShelfIdentity(
   });
   try {
     const tableCount = await publicTableCount(sql);
-    if (
-      tableCount !== EXPECTED_CURRENT_TABLE_COUNT &&
-      tableCount !== EXPECTED_P12_2_TABLE_COUNT &&
-      tableCount !== EXPECTED_P8_8_W04_TABLE_COUNT &&
-      tableCount !== EXPECTED_P8_8_W05_TABLE_COUNT &&
-      tableCount !== EXPECTED_P8_8_W07_TABLE_COUNT &&
-      tableCount !== EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT &&
-      tableCount !== EXPECTED_P12_2_L10_13B_TABLE_COUNT
-    ) {
+    const schemaState = classifyRuntimeIdentitySchema(
+      tableCount,
+      await runtimeIdentitySchemaShape(sql),
+    );
+    if (schemaState === "partial") {
       return {
         status: "blocked",
         migrationApplied: false,
         tableCount,
+        schemaState,
         reason:
           tableCount === 0
             ? "Public schema is empty; apply runtime migrations explicitly."
@@ -420,6 +510,7 @@ export async function ensureDiamondShelfIdentity(
       status: "ready",
       migrationApplied: false,
       tableCount,
+      schemaState,
       organizationId: identity.organization_id,
       siteId: identity.site_id,
       domain: DIAMOND_SHELF_SITE.domain,
