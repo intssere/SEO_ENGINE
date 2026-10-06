@@ -12,9 +12,22 @@ L10.13C packages migration `0010_first_party_crawl_terminal_failure_recovery.sql
 
 The apply image also verifies the migration SHA-256 at build time and again at runtime.
 
+## Required application compatibility prerequisite
+
+The currently deployed Production application source predates L10.13B and recognizes the 44-table schema but not the 47-table schema. Current L10.13B source recognizes both states.
+
+Before any migration-0010 pre-cert/apply sequence is authorized:
+
+1. release an immutable current application image from canonical source;
+2. transition only `seo-engine-shadow` to that image while the database is still at 44 tables;
+3. certify application health/readiness against the unchanged 44-table Production database;
+4. preserve that exact compatible image through migration apply and post-certification.
+
+This prevents migration 0010 from placing an older running application into an unrecognized 47-table schema state.
+
 ## Sequenced boundaries
 
-The Production path is intentionally split into six separately authorized boundaries:
+After the compatible application-image prerequisite is satisfied, the migration path is intentionally split into six separately authorized boundaries:
 
 1. release the L10.13C-A pre-certification image;
 2. execute the L10.13C-A SELECT-only pre-apply certification once;
@@ -72,4 +85,4 @@ The post-certification surface is read-only and requires:
 
 This lane does not backfill packet 013 failure evidence. It does not authorize a blind retry or recovery crawl. It does not change `seo-engine-shadow`, scheduler/worker state, provider writes, or public-site writes.
 
-Only after migration 0010 is independently post-certified should a new application image containing L10.13B be considered for any future crawl/recovery execution.
+The compatible current application image must already be active before migration 0010. Only after migration 0010 is independently post-certified should any new crawl/recovery execution be considered.
