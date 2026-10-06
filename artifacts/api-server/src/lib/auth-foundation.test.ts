@@ -65,6 +65,7 @@ test("role hierarchy and route requirements are deterministic", () => {
   assert.equal(roleAllows("viewer", "operator"), false);
   assert.equal(requiredRoleForApiRequest("GET", "/dashboard"), "viewer");
   assert.equal(requiredRoleForApiRequest("POST", "/approvals/abc/decision"), "operator");
+  assert.equal(requiredRoleForApiRequest("POST", "/authority/outreach/reviews"), "operator");
   assert.equal(requiredRoleForApiRequest("POST", "/execution/abc/task54/preflight"), "operator");
   assert.equal(requiredRoleForApiRequest("POST", "/execution/abc/task54/apply"), "admin");
 });

@@ -89,6 +89,7 @@ export type AuthorityOutreachPreparedReviewDecision = Readonly<{
 
 const HEX64 = /^[0-9a-f]{64}$/;
 const EXACT_ID = /^[A-Za-z0-9][A-Za-z0-9._:@+\/-]{0,511}$/;
+const REVIEWER_ID = /^[A-Za-z0-9_.:@-]{1,120}$/;
 
 const EVENT_SEMANTICS = Object.freeze({
   humanDecision: true as const,
@@ -160,7 +161,58 @@ function exactId(value: unknown, code: string): string {
 }
 
 function reviewerId(value: unknown): string {
-  return exactId(value, "ugp_outreach_review_invalid_reviewer");
+  if (
+    typeof value !== "string" ||
+    value.trim() !== value ||
+    !REVIEWER_ID.test(value)
+  ) {
+    throw new Error("ugp_outreach_review_invalid_reviewer");
+  }
+  return value;
+}
+
+export function authorityOutreachReviewRequestFingerprint(
+  request: AuthorityOutreachReviewMutationRequest,
+  actorId: string,
+): string {
+  const normalizedReviewerId = reviewerId(actorId);
+  fingerprint(
+    request.workspaceFingerprint,
+    "ugp_outreach_review_workspace_invalid",
+  );
+  exactId(
+    request.workspaceItemId,
+    "ugp_outreach_review_workspace_item_id_invalid",
+  );
+  fingerprint(
+    request.workspaceItemFingerprint,
+    "ugp_outreach_review_workspace_item_invalid",
+  );
+  fingerprint(
+    request.qualificationFingerprint,
+    "ugp_outreach_review_qualification_invalid",
+  );
+  fingerprint(
+    request.prospectFingerprint,
+    "ugp_outreach_review_prospect_invalid",
+  );
+  nullableFingerprint(
+    request.expectedLatestReviewFingerprint,
+    "ugp_outreach_review_expected_latest_invalid",
+  );
+  return hash({
+    purpose: "ugp_authority_outreach_review_request",
+    version: UGP_AUTHORITY_OUTREACH_REVIEW_PERSISTENCE_CONTRACT_VERSION,
+    workspaceFingerprint: request.workspaceFingerprint,
+    workspaceItemId: request.workspaceItemId,
+    workspaceItemFingerprint: request.workspaceItemFingerprint,
+    qualificationFingerprint: request.qualificationFingerprint,
+    prospectFingerprint: request.prospectFingerprint,
+    expectedLatestReviewFingerprint: request.expectedLatestReviewFingerprint,
+    decision: request.decision,
+    reasonCode: request.reasonCode,
+    reviewerId: normalizedReviewerId,
+  });
 }
 
 function canonicalTimestamp(value: unknown): string {
@@ -389,19 +441,10 @@ export function prepareAuthorityOutreachReviewDecision(input: Readonly<{
   const sequence = auditEvents.length + 1;
   const previousEventFingerprint =
     auditEvents.at(-1)?.eventFingerprint ?? null;
-  const requestFingerprint = hash({
-    purpose: "ugp_authority_outreach_review_request",
-    version: UGP_AUTHORITY_OUTREACH_REVIEW_PERSISTENCE_CONTRACT_VERSION,
-    workspaceFingerprint: request.workspaceFingerprint,
-    workspaceItemId: request.workspaceItemId,
-    workspaceItemFingerprint: request.workspaceItemFingerprint,
-    qualificationFingerprint: request.qualificationFingerprint,
-    prospectFingerprint: request.prospectFingerprint,
-    expectedLatestReviewFingerprint: request.expectedLatestReviewFingerprint,
-    decision: request.decision,
-    reasonCode: request.reasonCode,
-    reviewerId: review.reviewerId,
-  });
+  const requestFingerprint = authorityOutreachReviewRequestFingerprint(
+    request,
+    review.reviewerId,
+  );
   const eventBase = Object.freeze({
     version: UGP_AUTHORITY_OUTREACH_REVIEW_PERSISTENCE_CONTRACT_VERSION,
     sequence,
