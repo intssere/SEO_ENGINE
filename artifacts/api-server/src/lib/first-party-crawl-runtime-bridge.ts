@@ -746,6 +746,59 @@ function checkpointRecord(input: {
   };
 }
 
+function terminalFailureEventsForAttempt(input: {
+  runId: string;
+  observedAt: string;
+  siteId: string;
+  plan: FullSiteCrawlExecutionPlan;
+  sourceCheckpoint: FullSiteCrawlCheckpoint;
+  resultCheckpoint: FullSiteCrawlCheckpoint;
+  outcomes: AttributedCrawlUrlOutcome[];
+}): TerminalFailureEvent[] {
+  if (
+    input.sourceCheckpoint.status !== "pending" ||
+    input.sourceCheckpoint.activeBatchId === null ||
+    input.sourceCheckpoint.nextAttempt === null
+  ) throw new Error("crawl_bridge_terminal_failure_source_checkpoint_invalid");
+
+  const events: TerminalFailureEvent[] = [];
+  for (const outcome of input.outcomes) {
+    if (outcome.kind !== "failure") continue;
+    const decision = classifyCrawlRetry(
+      outcome.signal,
+      input.sourceCheckpoint.nextAttempt,
+      input.plan.policy,
+    );
+    if (decision.retryable) continue;
+    if (!["permanent_http", "policy_rejection", "attempts_exhausted"].includes(decision.reason)) {
+      throw new Error("crawl_bridge_terminal_failure_reason_invalid");
+    }
+    events.push(createTerminalFailureEvent({
+      eventType: "terminal_failure",
+      runId: input.runId,
+      observedAt: input.observedAt,
+      siteId: input.siteId,
+      canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+      executionPlanFingerprint: input.plan.fingerprint,
+      canonicalUrl: outcome.canonicalUrl,
+      checkpointRevision: input.resultCheckpoint.sequence,
+      checkpointFingerprint: input.resultCheckpoint.fingerprint,
+      batchId: input.sourceCheckpoint.activeBatchId,
+      attempt: input.sourceCheckpoint.nextAttempt,
+      sourceEventFingerprint: null,
+      outcome,
+      decisionReason: decision.reason,
+      ...(outcome.robotsPolicyRejectionReason
+        ? { robotsPolicyRejectionReason: outcome.robotsPolicyRejectionReason }
+        : {}),
+      ...(outcome.otherPolicyRejectionReason
+        ? { otherPolicyRejectionReason: outcome.otherPolicyRejectionReason }
+        : {}),
+    }));
+  }
+  return events;
+}
+
 type MutableBoundedPilotFailureAttribution = {
   policyRejections: number;
   robotsPolicyRejections: Map<RobotsPolicyRejectionReason, number>;
