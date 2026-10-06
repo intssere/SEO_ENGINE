@@ -25,6 +25,12 @@ import {
 
 export const P12_2_L10_15_VERSION =
   "p12-2-l10-15-post-0010-packet-014-full-initial-v1" as const;
+export const P12_2_L10_15_PROJECT_ID =
+  "52265e29-921b-4652-ac0d-9da4e5e69936" as const;
+export const P12_2_L10_15_ENVIRONMENT_ID =
+  "7f8d920f-f6c6-44f0-b9fe-252cb4f32298" as const;
+export const P12_2_L10_15_POSTGRES_SERVICE_ID =
+  "b69e0633-7ab9-40ab-85f3-c9edd6acb031" as const;
 
 export const P12_2_L10_15_RUN_ID =
   "p12-2-diamond-shelf-post-0010-full-014" as const;
@@ -141,6 +147,9 @@ export function p122L1015Capability() {
     phase: "full_initial",
     runId: P12_2_L10_15_RUN_ID,
     observedAt: P12_2_L10_15_OBSERVED_AT,
+    projectId: P12_2_L10_15_PROJECT_ID,
+    environmentId: P12_2_L10_15_ENVIRONMENT_ID,
+    postgresServiceId: P12_2_L10_15_POSTGRES_SERVICE_ID,
     hardPageLimit: 5_000,
     maxInventoryUrls: 5_000,
     batchSize: 10,
