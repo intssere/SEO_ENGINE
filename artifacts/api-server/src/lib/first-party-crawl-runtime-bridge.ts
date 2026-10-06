@@ -7,6 +7,7 @@ import {
   type SuppliedSitemapDocument,
 } from "./sitemap-inventory.js";
 import {
+  advanceCompletedCheckpointWithTerminalRecovery,
   advanceCrawlCheckpoint,
   assertFullSiteCrawlCheckpointIntegrity,
   assertFullSiteCrawlExecutionPlanIntegrity,
@@ -22,6 +23,7 @@ import {
   type FullSiteCrawlExecutionPlan,
   type FullSiteExecutionPolicy,
   type SuppliedCrawlUrlOutcome,
+  type TerminalFailureRecoveryOutcome,
 } from "./full-site-crawl-control.js";
 import {
   assertFullSiteCrawlCertificationIntegrity,
@@ -38,6 +40,16 @@ import {
   assertIncrementalRecrawlPlanIntegrity,
   type IncrementalRecrawlPlan,
 } from "./incremental-recrawl-planner.js";
+import {
+  assertTerminalFailureEventIntegrity,
+  buildTerminalFailureRecoveryPlan,
+  buildTerminalFailureRecoveryReceipt,
+  createTerminalFailureEvent,
+  type TerminalFailureEvent,
+  type TerminalFailureRecoveryPlan,
+  type TerminalFailureRecoveryReceipt,
+  type TerminalFailureRecoveryUrlReceipt,
+} from "./first-party-crawl-terminal-recovery.js";
 
 export const P12_2_CRAWL_BRIDGE_VERSION = "p12-2-first-party-crawl-bridge-v1" as const;
 export const DIAMOND_SHELF_CANONICAL_ORIGIN = "https://diamondshelf.us" as const;
