@@ -162,6 +162,7 @@ export type CrawlCheckpointPersistenceRecord = {
   canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
   executionPlanFingerprint: string;
   checkpoint: FullSiteCrawlCheckpoint;
+  terminalFailureEvents: TerminalFailureEvent[];
   rawResponseBodyPersisted: false;
   rawSitemapXmlPersisted: false;
 };
@@ -186,6 +187,35 @@ export type FullSiteCrawlBridgeSnapshot = {
   };
   fingerprint: string;
 };
+
+export type FullSiteCrawlAccountingReceipt = {
+  version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+  status: "accounting_complete_uncertified";
+  runId: string;
+  observedAt: string;
+  siteId: string;
+  canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+  executionPlanFingerprint: string;
+  checkpointRevision: number;
+  checkpointFingerprint: string;
+  accountingSnapshotFingerprint: string;
+  terminalFailures: number;
+  blockers: string[];
+  persistence: {
+    checkpointPersisted: true;
+    accountingSnapshotPersisted: true;
+    completedRunPersisted: false;
+    terminalFailureEvidencePersisted: true;
+    rawResponseBodyPersisted: false;
+    rawSitemapXmlPersisted: false;
+    pageContentPersisted: false;
+  };
+  fingerprint: string;
+};
+
+export type FullSiteCrawlAccountingAwareResult =
+  | FullSiteCrawlBridgeSnapshot
+  | FullSiteCrawlAccountingReceipt;
 
 export type BoundedPilotFailureAttribution = {
   terminalFailures: number;
