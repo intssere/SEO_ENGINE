@@ -948,8 +948,14 @@ async function runFullSiteCrawlBridgeInternal(
   control: {
     stopAfterCheckpointRevision?: number | null;
     scope?: "full_site" | "bounded_pilot";
+    durableAccounting?: boolean;
   } = {},
-): Promise<FullSiteCrawlBridgeSnapshot | FullSiteCrawlInterruptionReceipt | BoundedPilotCrawlBridgeReceipt> {
+): Promise<
+  FullSiteCrawlBridgeSnapshot |
+  FullSiteCrawlAccountingReceipt |
+  FullSiteCrawlInterruptionReceipt |
+  BoundedPilotCrawlBridgeReceipt
+> {
   const runId = requireRunId(input.runId);
   const observedAt = requireObservedAt(input.observedAt);
   const binding = normalizeBinding(input.binding);
@@ -1211,6 +1217,43 @@ async function runFullSiteCrawlBridgeInternal(
     fingerprint: fingerprint(withoutFingerprint),
   };
   assertFullSiteCrawlBridgeSnapshotIntegrity(snapshot);
+
+  if (control.durableAccounting === true) {
+    await options.persistence.saveAccountingRun(snapshot);
+    if (!snapshot.certification.certification.wholeSiteCertified) {
+      if (snapshot.checkpoint.counters.terminalFailures < 1) {
+        throw new Error("crawl_bridge_accounting_uncertified_without_terminal_failure");
+      }
+      const withoutAccountingFingerprint: Omit<FullSiteCrawlAccountingReceipt, "fingerprint"> = {
+        version: P12_2_CRAWL_BRIDGE_VERSION,
+        status: "accounting_complete_uncertified",
+        runId,
+        observedAt,
+        siteId: binding.siteId,
+        canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+        executionPlanFingerprint: executionPlan.fingerprint,
+        checkpointRevision: checkpoint.sequence,
+        checkpointFingerprint: checkpoint.fingerprint,
+        accountingSnapshotFingerprint: snapshot.fingerprint,
+        terminalFailures: checkpoint.counters.terminalFailures,
+        blockers: [...snapshot.certification.certification.blockers],
+        persistence: {
+          checkpointPersisted: true,
+          accountingSnapshotPersisted: true,
+          completedRunPersisted: false,
+          terminalFailureEvidencePersisted: true,
+          rawResponseBodyPersisted: false,
+          rawSitemapXmlPersisted: false,
+          pageContentPersisted: false,
+        },
+      };
+      return {
+        ...withoutAccountingFingerprint,
+        fingerprint: fingerprint(withoutAccountingFingerprint),
+      };
+    }
+  }
+
   await options.persistence.saveCompletedRun(snapshot);
   return snapshot;
 }
@@ -1224,6 +1267,20 @@ export async function runFullSiteCrawlBridge(
     if (result.status === "intentional_interruption") {
       throw new Error("crawl_bridge_unexpected_interruption");
     }
+  }
+  return result as FullSiteCrawlBridgeSnapshot;
+}
+
+export async function runFullSiteCrawlBridgeAccountingAware(
+  input: FullSiteCrawlBridgeRunInput,
+  options: FirstPartyCrawlBridgeOptions = {},
+): Promise<FullSiteCrawlAccountingAwareResult> {
+  const result = await runFullSiteCrawlBridgeInternal(input, options, { durableAccounting: true });
+  if ("status" in result) {
+    if (result.status === "intentional_interruption" || result.status === "bounded_pilot_completed") {
+      throw new Error("crawl_bridge_accounting_unexpected_non_full_site_result");
+    }
+    if (result.status === "accounting_complete_uncertified") return result;
   }
   return result as FullSiteCrawlBridgeSnapshot;
 }
