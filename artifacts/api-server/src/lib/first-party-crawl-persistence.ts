@@ -14,11 +14,17 @@ import {
   assertFullSiteCrawlCheckpointFingerprintIntegrity,
   type FullSiteCrawlCheckpoint,
 } from "./full-site-crawl-control.js";
+import {
+  assertTerminalFailureEventIntegrity,
+  type TerminalFailureEvent,
+  type TerminalFailureRecoveryReceipt,
+} from "./first-party-crawl-terminal-recovery.js";
 import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
 
 export const P12_2_CRAWL_PERSISTENCE_VERSION = "p12-2-crawl-persistence-v1" as const;
 export const P12_2_TABLE_COUNT = 37;
 export const P12_2_L2_DURABLE_TABLE_COUNT = 38;
+export const P12_2_L10_13B_TABLE_COUNT = 47;
 export const P12_2_RECOGNIZED_TABLE_COUNTS = Object.freeze([
   37, // P12.2 execution-state baseline
   38, // + durable L2 receipts OR P8.8 W04
@@ -27,6 +33,7 @@ export const P12_2_RECOGNIZED_TABLE_COUNTS = Object.freeze([
   42, // P8.8 W05 + durable L2 receipts
   43, // P8.8 W07
   44, // P8.8 W07 + durable L2 receipts
+  P12_2_L10_13B_TABLE_COUNT, // + terminal failure/accounting/recovery durability
 ] as const);
 
 type Sql = ReturnType<typeof postgres>;
@@ -74,6 +81,54 @@ const EXPECTED_COLUMNS: Record<string, readonly string[]> = Object.freeze({
     "canonical_origin",
     "incremental_plan_fingerprint",
     "execution_plan_fingerprint",
+    "observed_at",
+    "receipt_payload",
+  ]),
+});
+
+const L10_13B_EXPECTED_COLUMNS: Record<string, readonly string[]> = Object.freeze({
+  first_party_crawl_terminal_failure_events: Object.freeze([
+    "event_id",
+    "site_id",
+    "run_id",
+    "canonical_origin",
+    "execution_plan_fingerprint",
+    "canonical_url",
+    "event_type",
+    "source_event_fingerprint",
+    "checkpoint_fingerprint",
+    "checkpoint_revision",
+    "observed_at",
+    "event_fingerprint",
+    "event_payload",
+  ]),
+  first_party_crawl_accounting_snapshots: Object.freeze([
+    "accounting_snapshot_id",
+    "site_id",
+    "run_id",
+    "canonical_origin",
+    "execution_plan_fingerprint",
+    "checkpoint_fingerprint",
+    "checkpoint_revision",
+    "snapshot_fingerprint",
+    "whole_site_certified",
+    "terminal_failure_count",
+    "observed_at",
+    "snapshot_payload",
+  ]),
+  first_party_crawl_terminal_failure_recovery_receipts: Object.freeze([
+    "recovery_receipt_id",
+    "site_id",
+    "run_id",
+    "canonical_origin",
+    "execution_plan_fingerprint",
+    "source_checkpoint_fingerprint",
+    "source_checkpoint_revision",
+    "result_checkpoint_fingerprint",
+    "result_checkpoint_revision",
+    "recovery_plan_fingerprint",
+    "receipt_fingerprint",
+    "status",
     "observed_at",
     "receipt_payload",
   ]),
