@@ -36,7 +36,7 @@ export type AuthorityOutreachDeliveryPreparationRequest = Readonly<{
     readonly AuthorityOutreachDeliveryChannelType[];
 }>;
 
-type AuthorityOutreachHumanSendReviewIntegrityInput =
+export type AuthorityOutreachHumanSendReviewIntegrityInput =
   Parameters<typeof assertAuthorityOutreachHumanSendReviewIntegrity>[1];
 
 export type AuthorityOutreachDeliveryPreparationContract = Readonly<{
