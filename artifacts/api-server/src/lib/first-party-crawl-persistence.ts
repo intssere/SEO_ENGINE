@@ -26,7 +26,8 @@ import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
 export const P12_2_CRAWL_PERSISTENCE_VERSION = "p12-2-crawl-persistence-v1" as const;
 export const P12_2_TABLE_COUNT = 37;
 export const P12_2_L2_DURABLE_TABLE_COUNT = 38;
-export const P12_2_L10_13B_TABLE_COUNT = 47;
+export const P12_2_L10_13B_TABLE_COUNT = 41;
+export const P12_2_L10_13B_ENGINEERING_TABLE_COUNT = 47;
 export const P12_2_RECOGNIZED_TABLE_COUNTS = Object.freeze([
   37, // P12.2 execution-state baseline
   38, // + durable L2 receipts OR P8.8 W04
@@ -35,7 +36,8 @@ export const P12_2_RECOGNIZED_TABLE_COUNTS = Object.freeze([
   42, // P8.8 W05 + durable L2 receipts
   43, // P8.8 W07
   44, // P8.8 W07 + durable L2 receipts
-  P12_2_L10_13B_TABLE_COUNT, // + terminal failure/accounting/recovery durability
+  P12_2_L10_13B_TABLE_COUNT, // Production: durable L2 + terminal failure/accounting/recovery durability
+  P12_2_L10_13B_ENGINEERING_TABLE_COUNT, // engineering chain with P8.8 tables also present
 ] as const);
 
 type Sql = ReturnType<typeof postgres>;
@@ -330,7 +332,6 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
       throw new Error("p12_2_persistence_schema_table_count_mismatch");
     }
 
-    const includeRecoverySchema = tableCount === P12_2_L10_13B_TABLE_COUNT;
     const columns = await sql<{ table_name: string; column_name: string }[]>`
       SELECT table_name, column_name
       FROM information_schema.columns
@@ -345,7 +346,9 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
         )
       ORDER BY table_name, ordinal_position
     `;
-    const expectedTables = includeRecoverySchema
+    const recoveryTablesPresent = Object.keys(L10_13B_EXPECTED_COLUMNS)
+      .every((table) => columns.some((row) => row.table_name === table));
+    const expectedTables = recoveryTablesPresent
       ? { ...EXPECTED_COLUMNS, ...L10_13B_EXPECTED_COLUMNS }
       : EXPECTED_COLUMNS;
     for (const [table, expected] of Object.entries(expectedTables)) {
