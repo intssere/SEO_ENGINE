@@ -133,15 +133,31 @@ jobs:
           pnpm --filter @workspace/api-server test:p12-2-l6-durable-ephemeral
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM first_party_crawl_l2_invocations" | grep -q '^1$'
 
-      - name: Test P12.2-L10.13B terminal failure recovery persistence
+      - name: Prepare P12.2 Production-lineage ephemeral database
         env:
-          P12_2_L10_13B_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_p12_2_prod_lineage_test
         run: |
-          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 44
+          createdb -h 127.0.0.1 -U postgres seo_engine_p12_2_prod_lineage_test
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
+          pnpm db:bootstrap
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0003_observation_evidence_schema.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0004_first_party_crawl_execution_state.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0008_first_party_crawl_l2_invocations.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0009_first_party_crawl_l2_bounded_pilot_phase.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 38
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('policy_mutation_reservations','policy_mutation_control_state','policy_mutation_control_events','policy_mutation_claims','policy_mutation_dispatches','policy_mutation_dispatch_events')" | grep -Fxq 0
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT pg_get_constraintdef(con.oid,true) FROM pg_catalog.pg_constraint con JOIN pg_catalog.pg_class c ON c.oid=con.conrelid JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname='first_party_crawl_l2_invocations' AND con.conname='first_party_crawl_l2_invocations_phase_check'" | grep -q bounded_pilot
+
+      - name: Test P12.2-L10.13B Production-lineage terminal failure recovery persistence
+        env:
+          P12_2_L10_13B_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_p12_2_prod_lineage_test
+        run: |
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 38
           pnpm --filter @workspace/db test:p12-2-l10-13b
-          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 47
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 41
           pnpm --filter @workspace/api-server test:p12-2-l10-13b-persistence-ephemeral
-          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 47
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 41
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('policy_mutation_reservations','policy_mutation_control_state','policy_mutation_control_events','policy_mutation_claims','policy_mutation_dispatches','policy_mutation_dispatch_events')" | grep -Fxq 0
 
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
