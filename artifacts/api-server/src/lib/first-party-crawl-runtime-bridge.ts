@@ -416,6 +416,14 @@ export type FullSiteCrawlBridgeRunInput = {
   compareToPrevious?: boolean;
 };
 
+export type TerminalFailureRecoveryBridgeRunInput = {
+  runId: string;
+  observedAt: string;
+  siteId: string;
+  canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+  executionPlanFingerprint: string;
+};
+
 export type IncrementalCrawlBridgeRunInput = {
   runId: string;
   observedAt: string;
@@ -544,6 +552,24 @@ function assertExecutable(options: FirstPartyCrawlBridgeOptions): asserts option
   if (!readiness.liveExecutionAuthorized) throw new Error("crawl_bridge_execution_not_authorized");
   if (!readiness.persistenceReady) throw new Error("crawl_bridge_persistence_not_ready");
   if (!readiness.persistenceAuthorized) throw new Error("crawl_bridge_persistence_not_authorized");
+}
+
+function assertRecoveryExecutable(options: FirstPartyCrawlBridgeOptions): asserts options is FirstPartyCrawlBridgeOptions & {
+  robotsEvaluator: FirstPartyRobotsEvaluator;
+  pageTransport: FirstPartyPageTransport;
+  clock: FirstPartyCrawlClock;
+  persistence: FirstPartyCrawlPersistence;
+} {
+  if (
+    !options.robotsEvaluator ||
+    !options.pageTransport ||
+    !options.clock ||
+    !options.persistence
+  ) throw new Error("crawl_recovery_bridge_unconfigured");
+  if (options.networkReady !== true) throw new Error("crawl_recovery_bridge_network_not_ready");
+  if (options.liveExecutionAuthorized !== true) throw new Error("crawl_recovery_bridge_execution_not_authorized");
+  if (options.persistenceReady !== true) throw new Error("crawl_recovery_bridge_persistence_not_ready");
+  if (options.persistenceAuthorized !== true) throw new Error("crawl_recovery_bridge_persistence_not_authorized");
 }
 
 function retryDelayForAttempt(
