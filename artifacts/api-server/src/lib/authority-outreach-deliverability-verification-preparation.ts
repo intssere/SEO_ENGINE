@@ -2,8 +2,10 @@ import { createHash } from "node:crypto";
 import {
   assertAuthorityOutreachHumanPolicyConsentDecisionIntegrity,
   type AuthorityOutreachHumanPolicyConsentDecisionRecord,
-  type AuthorityOutreachPolicyConsentReviewContactPoint,
 } from "./authority-outreach-human-policy-consent-decision.js";
+import type {
+  AuthorityOutreachPolicyConsentReviewContactPoint,
+} from "./authority-outreach-policy-consent-review-specification.js";
 
 export const UGP_AUTHORITY_OUTREACH_DELIVERABILITY_VERIFICATION_PREPARATION_VERSION =
   "ugp-10-19-deliverability-verification-preparation-v1" as const;
