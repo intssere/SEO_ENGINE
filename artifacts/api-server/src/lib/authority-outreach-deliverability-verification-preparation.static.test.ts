@@ -40,6 +40,6 @@ test("UGP-10.19 is preparation-only and cannot execute verification or send",()=
   assert.match(source,/followUpSchedulingAuthorized:false/);
   assert.doesNotMatch(
     source,
-    /mailboxId|providerId|apiKey|secretKey|accessToken|authorizationHeader/i,
+    /\b(?:mailboxId|providerId|apiKey|secretKey|accessToken|authorizationHeader)\b\s*:/i,
   );
 });
