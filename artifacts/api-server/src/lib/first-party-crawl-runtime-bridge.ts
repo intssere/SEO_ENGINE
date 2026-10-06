@@ -1086,18 +1086,30 @@ async function runFullSiteCrawlBridgeInternal(
         attribution: boundedFailureAttribution,
       });
     }
-    checkpoint = advanceCrawlCheckpoint(executionPlan, checkpoint, {
-      expectedCheckpointFingerprint: checkpoint.fingerprint,
-      batchId: checkpoint.activeBatchId!,
-      attempt: checkpoint.nextAttempt!,
+    const sourceCheckpoint = checkpoint;
+    const resultCheckpoint = advanceCrawlCheckpoint(executionPlan, sourceCheckpoint, {
+      expectedCheckpointFingerprint: sourceCheckpoint.fingerprint,
+      batchId: sourceCheckpoint.activeBatchId!,
+      attempt: sourceCheckpoint.nextAttempt!,
       outcomes,
     });
+    const terminalFailureEvents = terminalFailureEventsForAttempt({
+      runId,
+      observedAt,
+      siteId: binding.siteId,
+      plan: executionPlan,
+      sourceCheckpoint,
+      resultCheckpoint,
+      outcomes,
+    });
+    checkpoint = resultCheckpoint;
     await options.persistence.saveCheckpoint(checkpointRecord({
       runId,
       observedAt,
       siteId: binding.siteId,
       plan: executionPlan,
       checkpoint,
+      terminalFailureEvents,
     }));
     if (stopAfterCheckpointRevision !== null) {
       if (checkpoint.sequence === stopAfterCheckpointRevision) return interruptionReceipt();
