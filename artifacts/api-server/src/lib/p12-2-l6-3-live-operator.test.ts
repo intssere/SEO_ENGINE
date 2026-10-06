@@ -310,3 +310,36 @@ test("L6.3 envelope preflight rejects phase-incompatible material and bounded er
   assert.equal(bounded.includes("pass"), false);
   assert.equal(p122L2AuthorizationLiteral(packet).startsWith("AUTHORIZE:P12_2_L2_ONE_SHOT:"), true);
 });
+
+
+test("L10.13B maps accounting-complete uncertified full-site result into a durable L2 execution result", async () => {
+  const packet = buildP122L2Packet({
+    phase: "full_initial",
+    runId: "l6-3-l10-13b-accounting-state",
+    observedAt: "2026-10-06T07:32:00.000Z",
+    config: config(),
+  });
+  const e = envelope(packet);
+  const a = adapter({
+    async fullCrawl() {
+      return {
+        status: "accounting_complete_uncertified",
+        checkpointRevision: 307,
+        checkpointFingerprint: HEX_A,
+        accountingSnapshotFingerprint: HEX_B,
+        terminalFailures: 1,
+        fingerprint: HEX_C,
+      } as never;
+    },
+  });
+
+  const result = await new P122L3LiveExecutor(e, "postgres://unused", a).execute(packet);
+  assert.deepEqual(result, {
+    status: "accounting_complete_uncertified",
+    checkpointRevision: 307,
+    checkpointFingerprint: HEX_A,
+    accountingSnapshotFingerprint: HEX_B,
+    terminalFailures: 1,
+    receiptFingerprint: HEX_C,
+  });
+});
