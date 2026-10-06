@@ -256,6 +256,10 @@ export type TerminalFailureRecoveryReceipt = {
   resultCheckpointFingerprint: string;
   terminalFailuresBefore: number;
   terminalFailuresAfter: number;
+  accountingSnapshotFingerprint: string;
+  wholeSiteCertified: boolean;
+  completedRunPersisted: boolean;
+  blockers: string[];
   urlReceipts: TerminalFailureRecoveryUrlReceipt[];
   fingerprint: string;
 };
@@ -263,6 +267,10 @@ export type TerminalFailureRecoveryReceipt = {
 export function buildTerminalFailureRecoveryReceipt(input: {
   plan: TerminalFailureRecoveryPlan;
   resultCheckpoint: FullSiteCrawlCheckpoint;
+  accountingSnapshotFingerprint: string;
+  wholeSiteCertified: boolean;
+  completedRunPersisted: boolean;
+  blockers: string[];
   urlReceipts: TerminalFailureRecoveryUrlReceipt[];
 }): TerminalFailureRecoveryReceipt {
   if (input.resultCheckpoint.sequence !== input.plan.sourceCheckpointRevision + 1) {
@@ -300,6 +308,10 @@ export function buildTerminalFailureRecoveryReceipt(input: {
     resultCheckpointFingerprint: input.resultCheckpoint.fingerprint,
     terminalFailuresBefore: input.plan.sourceTerminalFailureCount,
     terminalFailuresAfter: input.resultCheckpoint.counters.terminalFailures,
+    accountingSnapshotFingerprint: input.accountingSnapshotFingerprint,
+    wholeSiteCertified: input.wholeSiteCertified,
+    completedRunPersisted: input.completedRunPersisted,
+    blockers: [...input.blockers].sort(),
     urlReceipts: [...input.urlReceipts].sort((a, b) => a.canonicalUrl.localeCompare(b.canonicalUrl)),
   };
   const receipt = {
@@ -324,6 +336,7 @@ export function assertTerminalFailureRecoveryReceiptIntegrity(
     !HEX64.test(receipt.recoveryPlanFingerprint) ||
     !HEX64.test(receipt.sourceCheckpointFingerprint) ||
     !HEX64.test(receipt.resultCheckpointFingerprint) ||
+    !HEX64.test(receipt.accountingSnapshotFingerprint) ||
     !HEX64.test(receipt.fingerprint)
   ) throw new Error("crawl_recovery_receipt_identity_invalid");
   requireObservedAt(receipt.observedAt);
@@ -345,6 +358,12 @@ export function assertTerminalFailureRecoveryReceiptIntegrity(
       ? receipt.terminalFailuresAfter !== 0
       : receipt.terminalFailuresAfter === 0
   ) throw new Error("crawl_recovery_receipt_status_mismatch");
+  if (
+    receipt.completedRunPersisted !== receipt.wholeSiteCertified ||
+    (receipt.wholeSiteCertified && receipt.status !== "resolved") ||
+    (receipt.completedRunPersisted && receipt.blockers.length !== 0)
+  ) throw new Error("crawl_recovery_receipt_certification_state_invalid");
+
   const urls = new Set<string>();
   for (const item of receipt.urlReceipts) {
     requireCanonicalUrl(item.canonicalUrl);
