@@ -17,6 +17,7 @@ import {
   EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT,
   EXPECTED_P12_2_L10_13B_RECOVERY_TABLE_COUNT,
   EXPECTED_P12_2_L10_13B_TABLE_COUNT,
+  classifyRuntimeIdentitySchema,
   planRuntimeBootstrap,
 } from "./runtime-bootstrap.js";
 
@@ -183,4 +184,47 @@ test("P12.2-L10.13B schema count adds durable L2 plus exactly three recovery tab
     EXPECTED_P12_2_L10_13B_TABLE_COUNT,
     EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT + EXPECTED_P12_2_L10_13B_RECOVERY_TABLE_COUNT,
   );
+});
+
+
+test("runtime identity recognition distinguishes Production L2/recovery from equal-count P8.8 engineering schemas", () => {
+  assert.equal(classifyRuntimeIdentitySchema(38, {
+    policyReservationTable: false,
+    policyControlTableCount: 0,
+    policyDispatchTableCount: 0,
+    l2InvocationTable: true,
+    recoveryTableCount: 0,
+  }), "p12_2_l2_production_ready");
+
+  assert.equal(classifyRuntimeIdentitySchema(38, {
+    policyReservationTable: true,
+    policyControlTableCount: 0,
+    policyDispatchTableCount: 0,
+    l2InvocationTable: false,
+    recoveryTableCount: 0,
+  }), "p8_8_w04_ready");
+
+  assert.equal(classifyRuntimeIdentitySchema(41, {
+    policyReservationTable: false,
+    policyControlTableCount: 0,
+    policyDispatchTableCount: 0,
+    l2InvocationTable: true,
+    recoveryTableCount: 3,
+  }), "p12_2_l10_13b_production_ready");
+
+  assert.equal(classifyRuntimeIdentitySchema(41, {
+    policyReservationTable: true,
+    policyControlTableCount: 3,
+    policyDispatchTableCount: 0,
+    l2InvocationTable: false,
+    recoveryTableCount: 0,
+  }), "p8_8_w05_ready");
+
+  assert.equal(classifyRuntimeIdentitySchema(41, {
+    policyReservationTable: true,
+    policyControlTableCount: 3,
+    policyDispatchTableCount: 0,
+    l2InvocationTable: true,
+    recoveryTableCount: 3,
+  }), "partial");
 });

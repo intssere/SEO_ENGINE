@@ -2,7 +2,7 @@
 
 ## Completed Production compatibility transition
 
-L10.13E transitioned only `seo-engine-shadow` from the previous immutable image to the fixture-proven 44/47-compatible image.
+L10.13E transitioned only `seo-engine-shadow` from the previous immutable image to the fixture-proven schema-compatible image.
 
 - authorized transition fingerprint: `970db42c4ead3751365706cb9693484f686e6a83fa367ae71f29e6937f3e5a0b`
 - staged/committed patch: `fe96638e-8cf4-473e-872e-5fb4e3dc5703`
@@ -46,6 +46,6 @@ The application compatibility prerequisite is now satisfied. The next sequence r
 4. apply migration `0010` once under its separate authorization;
 5. release and execute L10.13C-C post-apply read-only certification.
 
-The L10.13C-A pre-certification still requires the Production database to be in the exact 44-table pre-state, with the three L10.13B tables absent and packet-013 durable checkpoint/invocation evidence unchanged.
+A subsequent first authorized L10.13C-A pre-certification attempt proved that the 44-table assumption was incorrect for Production: the deployed application independently reported `tableCount=38`, and the certification failed closed at its pre-state guard with one attempt, zero retries, and no write. The repaired L10.13C-A boundary therefore requires the exact 38-table Production lineage, with migrations `0005–0007` absent, durable L2/migration-0009 shape present, the three L10.13B tables absent, and packet-013 durable checkpoint/invocation evidence unchanged.
 
 This L10.13F milestone does not release any migration image and performs no Production database query.

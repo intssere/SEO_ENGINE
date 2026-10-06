@@ -8,6 +8,7 @@ import {
   FirstPartyCrawlPersistence,
   P12_2_L2_DURABLE_TABLE_COUNT,
   P12_2_L10_13B_TABLE_COUNT,
+  P12_2_L10_13B_ENGINEERING_TABLE_COUNT,
   P12_2_RECOGNIZED_TABLE_COUNTS,
   P12_2_TABLE_COUNT,
   assertFirstPartyCrawlUrlPolicy,
@@ -28,7 +29,8 @@ test("P12.2 persistence capability is lazy and default-off", () => {
   ]);
   assert.equal(P12_2_TABLE_COUNT, 37);
   assert.equal(P12_2_L2_DURABLE_TABLE_COUNT, 38);
-  assert.equal(P12_2_L10_13B_TABLE_COUNT, 47);
+  assert.equal(P12_2_L10_13B_TABLE_COUNT, 41);
+  assert.equal(P12_2_L10_13B_ENGINEERING_TABLE_COUNT, 47);
   assert.equal(capability.terminalFailureEventsAppendOnly, true);
   assert.equal(capability.accountingSnapshotsAppendOnly, true);
   assert.equal(capability.terminalFailureRecoveryReceiptsAppendOnly, true);

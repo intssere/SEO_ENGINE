@@ -39,17 +39,17 @@ test("L10.13C migration 0010 contracts pin the exact immutable migration identit
   assert.equal(P12_2_L10_13C_A_MIGRATION_SHA256,SHA256);
   assert.equal(P12_2_L10_13C_B_MIGRATION_SHA256,SHA256);
   assert.equal(P12_2_L10_13C_C_MIGRATION_SHA256,SHA256);
-  assert.equal(P12_2_L10_13C_A_EXPECTED_TABLE_COUNT,44);
-  assert.equal(P12_2_L10_13C_B_EXPECTED_PRE_TABLE_COUNT,44);
-  assert.equal(P12_2_L10_13C_B_EXPECTED_POST_TABLE_COUNT,47);
-  assert.equal(P12_2_L10_13C_C_EXPECTED_TABLE_COUNT,47);
+  assert.equal(P12_2_L10_13C_A_EXPECTED_TABLE_COUNT,38);
+  assert.equal(P12_2_L10_13C_B_EXPECTED_PRE_TABLE_COUNT,38);
+  assert.equal(P12_2_L10_13C_B_EXPECTED_POST_TABLE_COUNT,41);
+  assert.equal(P12_2_L10_13C_C_EXPECTED_TABLE_COUNT,41);
 });
 
 test("L10.13C pre/post certification contracts are SELECT-only and deterministic",()=>{
   assert.doesNotThrow(()=>assertP122L1013CAQueryContract());
   assert.doesNotThrow(()=>assertP122L1013CCQueryContract());
-  assert.equal(P12_2_L10_13C_A_QUERIES.length,6);
-  assert.equal(P12_2_L10_13C_C_QUERIES.length,6);
+  assert.equal(P12_2_L10_13C_A_QUERIES.length,8);
+  assert.equal(P12_2_L10_13C_C_QUERIES.length,9);
   for(const query of [...P12_2_L10_13C_A_QUERIES,...P12_2_L10_13C_C_QUERIES]){
     assert.match(query.sql.trim(),/^SELECT\b/i);
     assert.equal(query.sql.includes(";"),false);
@@ -75,7 +75,15 @@ test("L10.13C pre/post guards preserve packet 013 durable state and target-table
   assert.match(pre,/6c13e3bde165f5349f94f8139c35fd878631dc9e3a21a31c91e0936bd5eb4a99/);
   assert.match(pre,/terminalFailures/);
   assert.match(pre,/first_party_crawl_terminal_failure_events/);
+  assert.match(pre,/first_party_crawl_l2_invocations/);
+  assert.match(pre,/bounded_pilot/);
+  assert.match(pre,/policy_mutation_reservations/);
+  assert.match(pre,/policy_mutation_dispatch_events/);
   assert.match(post,/6c13e3bde165f5349f94f8139c35fd878631dc9e3a21a31c91e0936bd5eb4a99/);
   assert.match(post,/first_party_crawl_terminal_failure_events\)=0/);
   assert.match(post,/trg_first_party_crawl_accounting_snapshots_immutable/);
+  assert.match(post,/first_party_crawl_l2_invocations/);
+  assert.match(post,/bounded_pilot/);
+  assert.match(post,/policy_mutation_reservations/);
+  assert.match(post,/packet_013_invocation_guard/);
 });

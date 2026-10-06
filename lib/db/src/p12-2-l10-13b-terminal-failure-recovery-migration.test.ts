@@ -23,7 +23,7 @@ function dedicatedEphemeralUrl(): string | null {
   if (!["127.0.0.1", "localhost"].includes(parsed.hostname)) {
     throw new Error("p12_2_l10_13b_ephemeral_database_must_be_localhost");
   }
-  if (parsed.pathname.replace(/^\//, "") !== "seo_engine_test") {
+  if (parsed.pathname.replace(/^\//, "") !== "seo_engine_p12_2_prod_lineage_test") {
     throw new Error("p12_2_l10_13b_ephemeral_database_name_invalid");
   }
   return raw;
@@ -70,7 +70,38 @@ test("P12.2-L10.13B migration adds exactly three empty tables and rejects UPDATE
     FROM information_schema.tables
     WHERE table_schema='public' AND table_type='BASE TABLE'
   `;
-  assert.equal(Number(before[0]?.count ?? 0), 44);
+  assert.equal(Number(before[0]?.count ?? 0), 38);
+
+  const lineage = await sql<{ l2_present: boolean; bounded_pilot_present: boolean; policy_table_count: number }[]>`
+    SELECT
+      to_regclass('public.first_party_crawl_l2_invocations') IS NOT NULL AS l2_present,
+      EXISTS (
+        SELECT 1
+        FROM pg_catalog.pg_constraint con
+        JOIN pg_catalog.pg_class c ON c.oid=con.conrelid
+        JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public'
+          AND c.relname='first_party_crawl_l2_invocations'
+          AND con.conname='first_party_crawl_l2_invocations_phase_check'
+          AND pg_get_constraintdef(con.oid,true) ILIKE '%bounded_pilot%'
+      ) AS bounded_pilot_present,
+      (
+        SELECT COUNT(*)::int
+        FROM information_schema.tables
+        WHERE table_schema='public'
+          AND table_name IN (
+            'policy_mutation_reservations',
+            'policy_mutation_control_state',
+            'policy_mutation_control_events',
+            'policy_mutation_claims',
+            'policy_mutation_dispatches',
+            'policy_mutation_dispatch_events'
+          )
+      ) AS policy_table_count
+  `;
+  assert.equal(lineage[0]?.l2_present, true);
+  assert.equal(lineage[0]?.bounded_pilot_present, true);
+  assert.equal(lineage[0]?.policy_table_count, 0);
 
   const beforeTargets = await sql<{ table_name: string }[]>`
     SELECT table_name
@@ -91,7 +122,22 @@ test("P12.2-L10.13B migration adds exactly three empty tables and rejects UPDATE
     FROM information_schema.tables
     WHERE table_schema='public' AND table_type='BASE TABLE'
   `;
-  assert.equal(Number(after[0]?.count ?? 0), 47);
+  assert.equal(Number(after[0]?.count ?? 0), 41);
+
+  const policyAfter = await sql<{ count: number }[]>`
+    SELECT COUNT(*)::int AS count
+    FROM information_schema.tables
+    WHERE table_schema='public'
+      AND table_name IN (
+        'policy_mutation_reservations',
+        'policy_mutation_control_state',
+        'policy_mutation_control_events',
+        'policy_mutation_claims',
+        'policy_mutation_dispatches',
+        'policy_mutation_dispatch_events'
+      )
+  `;
+  assert.equal(Number(policyAfter[0]?.count ?? -1), 0);
 
   const counts = await sql<{ table_name: string; count: number }[]>`
     SELECT 'first_party_crawl_terminal_failure_events' AS table_name, COUNT(*)::int AS count
