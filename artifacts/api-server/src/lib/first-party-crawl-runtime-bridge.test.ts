@@ -9,15 +9,22 @@ import {
   RobotsPolicyEvaluationError,
   runBoundedPilotCrawlBridge,
   runFullSiteCrawlBridge,
+  runFullSiteCrawlBridgeAccountingAware,
   runFullSiteCrawlBridgeUntilCheckpoint,
   runIncrementalCrawlBridge,
+  runTerminalFailureRecoveryBridge,
   type CrawlCheckpointPersistenceRecord,
   type FirstPartyCrawlBridgeOptions,
   type FullSiteCrawlBridgeSnapshot,
   type IncrementalCrawlBridgeReceipt,
   type PageTransportResult,
+  type TerminalFailureRecoveryPersistenceTransition,
 } from "./first-party-crawl-runtime-bridge.js";
 import type { FullSiteCrawlCheckpoint, FullSiteExecutionPolicy } from "./full-site-crawl-control.js";
+import type {
+  TerminalFailureEvent,
+  TerminalFailureRecoveryReceipt,
+} from "./first-party-crawl-terminal-recovery.js";
 import type { SitemapInventoryPolicy, SuppliedSitemapDocument } from "./sitemap-inventory.js";
 
 const OBSERVED_AT = "2026-09-22T00:00:00.000Z";
@@ -57,6 +64,9 @@ function urlset(entries: Array<{ path: string; lastmod?: string }>): string {
 class MemoryPersistence {
   checkpoints = new Map<string, FullSiteCrawlCheckpoint>();
   completed: FullSiteCrawlBridgeSnapshot[] = [];
+  accounting: FullSiteCrawlBridgeSnapshot[] = [];
+  terminalEvents: TerminalFailureEvent[] = [];
+  recoveryReceipts: TerminalFailureRecoveryReceipt[] = [];
   incremental: IncrementalCrawlBridgeReceipt[] = [];
   checkpointWrites: CrawlCheckpointPersistenceRecord[] = [];
 
@@ -67,14 +77,112 @@ class MemoryPersistence {
   async saveCheckpoint(record: CrawlCheckpointPersistenceRecord) {
     this.checkpointWrites.push(structuredClone(record));
     this.checkpoints.set(record.runId, structuredClone(record.checkpoint));
+    for (const event of record.terminalFailureEvents) {
+      const existing = this.terminalEvents.find((item) => item.fingerprint === event.fingerprint);
+      if (existing) {
+        assert.deepEqual(existing, event);
+        continue;
+      }
+      if (
+        event.sourceEventFingerprint &&
+        this.terminalEvents.some((item) => item.sourceEventFingerprint === event.sourceEventFingerprint)
+      ) {
+        throw new Error("p12_2_persistence_terminal_failure_source_consumed");
+      }
+      this.terminalEvents.push(structuredClone(event));
+    }
   }
 
   async loadLatestCompleted() {
     return this.completed.at(-1) ? structuredClone(this.completed.at(-1)!) : null;
   }
 
+  async loadLatestAccounting(input: { runId: string; executionPlanFingerprint: string }) {
+    const found = [...this.accounting].reverse().find((item) =>
+      item.runId === input.runId &&
+      item.executionPlan.fingerprint === input.executionPlanFingerprint
+    );
+    return found ? structuredClone(found) : null;
+  }
+
+  async loadUnresolvedTerminalFailures(input: { runId: string; executionPlanFingerprint: string }) {
+    const consumed = new Set(
+      this.terminalEvents
+        .map((event) => event.sourceEventFingerprint)
+        .filter((value): value is string => typeof value === "string"),
+    );
+    return this.terminalEvents
+      .filter((event) =>
+        event.runId === input.runId &&
+        event.executionPlanFingerprint === input.executionPlanFingerprint &&
+        ["terminal_failure", "recovery_failure"].includes(event.eventType) &&
+        !consumed.has(event.fingerprint)
+      )
+      .sort((a, b) => a.canonicalUrl.localeCompare(b.canonicalUrl))
+      .map((event) => structuredClone(event));
+  }
+
+  async saveAccountingRun(snapshot: FullSiteCrawlBridgeSnapshot) {
+    const existing = this.accounting.find((item) =>
+      item.runId === snapshot.runId &&
+      item.executionPlan.fingerprint === snapshot.executionPlan.fingerprint &&
+      item.checkpoint.fingerprint === snapshot.checkpoint.fingerprint
+    );
+    if (existing) {
+      assert.deepEqual(existing, snapshot);
+      return;
+    }
+    this.accounting.push(structuredClone(snapshot));
+  }
+
   async saveCompletedRun(snapshot: FullSiteCrawlBridgeSnapshot) {
     this.completed.push(structuredClone(snapshot));
+  }
+
+  async saveRecoveryReceipt(receipt: TerminalFailureRecoveryReceipt) {
+    const existing = this.recoveryReceipts.find(
+      (item) => item.recoveryPlanFingerprint === receipt.recoveryPlanFingerprint,
+    );
+    if (existing) {
+      assert.deepEqual(existing, receipt);
+      return;
+    }
+    this.recoveryReceipts.push(structuredClone(receipt));
+  }
+
+  async saveRecoveryTransition(transition: TerminalFailureRecoveryPersistenceTransition) {
+    const current = this.checkpoints.get(transition.checkpointRecord.runId);
+    if (!current || current.fingerprint !== transition.sourceCheckpointFingerprint) {
+      throw new Error("p12_2_persistence_recovery_source_checkpoint_stale");
+    }
+    const stagedEvents = structuredClone(transition.checkpointRecord.terminalFailureEvents);
+    for (const event of stagedEvents) {
+      if (
+        event.sourceEventFingerprint &&
+        this.terminalEvents.some((item) => item.sourceEventFingerprint === event.sourceEventFingerprint)
+      ) {
+        throw new Error("p12_2_persistence_terminal_failure_source_consumed");
+      }
+      const source = event.sourceEventFingerprint
+        ? this.terminalEvents.find((item) => item.fingerprint === event.sourceEventFingerprint)
+        : null;
+      if (event.sourceEventFingerprint && (!source || source.canonicalUrl !== event.canonicalUrl)) {
+        throw new Error("p12_2_persistence_terminal_failure_source_missing");
+      }
+    }
+
+    this.checkpointWrites.push(structuredClone(transition.checkpointRecord));
+    this.checkpoints.set(
+      transition.checkpointRecord.runId,
+      structuredClone(transition.checkpointRecord.checkpoint),
+    );
+    this.terminalEvents.push(...stagedEvents);
+
+    await this.saveAccountingRun(transition.accountingSnapshot);
+    if (transition.completedRunPersisted) {
+      this.completed.push(structuredClone(transition.accountingSnapshot));
+    }
+    await this.saveRecoveryReceipt(transition.recoveryReceipt);
   }
 
   async saveIncrementalRun(receipt: IncrementalCrawlBridgeReceipt) {
