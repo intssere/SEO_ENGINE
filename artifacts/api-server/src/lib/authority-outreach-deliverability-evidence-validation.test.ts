@@ -63,6 +63,13 @@ import {
   buildAuthorityOutreachDeliverabilityVerificationPreparation,
   type AuthorityOutreachDeliverabilityVerificationPreparationRequest,
 } from "./authority-outreach-deliverability-verification-preparation.js";
+import {
+  assertAuthorityOutreachDeliverabilityEvidenceIntegrity,
+  buildAuthorityOutreachDeliverabilityEvidenceContract,
+  type AuthorityOutreachDeliverabilityEvidenceObservationOutcome,
+  type AuthorityOutreachDeliverabilityEvidenceRequest,
+  type AuthorityOutreachSuppliedDeliverabilityEvidenceObservation,
+} from "./authority-outreach-deliverability-evidence-validation.js";
 
 const FP=(c:string)=>c.repeat(64);
 
