@@ -235,7 +235,6 @@ jobs:
 
       - name: Build
         run: pnpm build
-
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
 
