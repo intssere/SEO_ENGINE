@@ -312,6 +312,26 @@ function checkRecord(
   });
 }
 
+export function authorityOutreachDraftCandidateFingerprint(input:Readonly<{
+  requestFingerprint:string;
+  subject:string;
+  body:string;
+}>):string{
+  const requestFingerprint=exactFingerprint(
+    input.requestFingerprint,
+    "candidate_request_fingerprint",
+  );
+  const subject=exactText(input.subject,"subject",120);
+  const body=exactText(input.body,"body",3000);
+  return hash({
+    purpose:"ugp_authority_outreach_draft_candidate",
+    version:UGP_AUTHORITY_OUTREACH_DRAFT_CANDIDATE_VALIDATION_VERSION,
+    requestFingerprint,
+    subject,
+    body,
+  });
+}
+
 export function validateAuthorityOutreachDraftCandidate(input:Readonly<{
   request:AuthorityOutreachDraftGenerationRequest;
   candidate:AuthorityOutreachDraftCandidate;
@@ -391,15 +411,10 @@ export function validateAuthorityOutreachDraftCandidate(input:Readonly<{
       .map(check=>check.checkId+":"+check.summary)
       .sort(),
   );
-  const candidateBase={
+  const candidateFingerprint=authorityOutreachDraftCandidateFingerprint({
     requestFingerprint:input.request.requestFingerprint,
     subject,
     body,
-  };
-  const candidateFingerprint=hash({
-    purpose:"ugp_authority_outreach_draft_candidate",
-    version:UGP_AUTHORITY_OUTREACH_DRAFT_CANDIDATE_VALIDATION_VERSION,
-    ...candidateBase,
   });
   const status=blockingReasons.length===0
     ?"candidate_valid" as const
