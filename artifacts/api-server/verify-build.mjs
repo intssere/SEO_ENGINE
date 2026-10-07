@@ -25,6 +25,14 @@ const p122L1018RepairBundle = await readFile(path.join(distDir, "p12-2-l10-18-pa
 const p122L1018RepairSourceMap = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-finalization-repair.mjs.map"), "utf8");
 const p122L1018PostRepairBundle = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-post-repair-cert.mjs"), "utf8");
 const p122L1018PostRepairSourceMap = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-post-repair-cert.mjs.map"), "utf8");
+const p122L1019ApplyBundle = await readFile(path.join(distDir, "p12-2-l10-19-a-0011-apply.mjs"), "utf8");
+const p122L1019ApplySourceMap = await readFile(path.join(distDir, "p12-2-l10-19-a-0011-apply.mjs.map"), "utf8");
+const p122L1019PostMigrationBundle = await readFile(path.join(distDir, "p12-2-l10-19-b-0011-post-cert.mjs"), "utf8");
+const p122L1019PostMigrationSourceMap = await readFile(path.join(distDir, "p12-2-l10-19-b-0011-post-cert.mjs.map"), "utf8");
+const p122L1019DispositionBundle = await readFile(path.join(distDir, "p12-2-l10-19-packet-014-expected-absence-disposition.mjs"), "utf8");
+const p122L1019DispositionSourceMap = await readFile(path.join(distDir, "p12-2-l10-19-packet-014-expected-absence-disposition.mjs.map"), "utf8");
+const p122L1019PostDispositionBundle = await readFile(path.join(distDir, "p12-2-l10-19-c-post-disposition-cert.mjs"), "utf8");
+const p122L1019PostDispositionSourceMap = await readFile(path.join(distDir, "p12-2-l10-19-c-post-disposition-cert.mjs.map"), "utf8");
 const provenanceRaw = await readFile(path.join(distDir, "build-provenance.json"), "utf8");
 const provenance = JSON.parse(provenanceRaw);
 function git(args) {
@@ -310,6 +318,80 @@ const requiredP122L1018PostRepairSourceMarkers = [
   "lib/p12-2-l1a-e9-runtime-transport.ts",
 ];
 
+const requiredP122L1019ApplyBundleMarkers = [
+  "p12-2-l10-19-a-0011-expected-absence-schema-apply-v1",
+  "0011_first_party_crawl_expected_absence_disposition.sql",
+  "8749184f481474a4a085eaacf3ff154e8ebfe903",
+  "07a0ad844d34b401a8972a70a4bf767cf0c8853679ce5203c8a9f1b35bb9a700",
+  "AUTHORIZE:P12_2_L10_19_0011_APPLY:",
+  "P12_2_L10_19_A_AUTHORIZATION_LITERAL",
+  "first_party_crawl_terminal_failure_dispositions",
+  "first_party_crawl_terminal_failure_reconciliation_receipts",
+];
+
+const requiredP122L1019ApplySourceMarkers = [
+  "src/p12-2-l10-19-a-0011-apply-cli.ts",
+  "lib/p12-2-l10-19-a-0011-apply-contract.ts",
+  "lib/p12-2-l1a-e9-runtime-transport.ts",
+];
+
+const requiredP122L1019PostMigrationBundleMarkers = [
+  "p12-2-l10-19-b-0011-post-apply-readonly-cert-v1",
+  "AUTHORIZE:P12_2_L10_19_0011_POST_APPLY_READ_ONLY:",
+  "P12_2_L10_19_B_AUTHORIZATION_LITERAL",
+  "P12_2_L10_19_A_APPLY_DEPLOYMENT_ID",
+  "default_transaction_read_only=on",
+  "terminal_guard",
+];
+
+const requiredP122L1019PostMigrationSourceMarkers = [
+  "src/p12-2-l10-19-b-0011-post-cert-cli.ts",
+  "lib/p12-2-l10-19-b-0011-post-certification.ts",
+  "lib/p12-2-l1a-e9-runtime-transport.ts",
+];
+
+const requiredP122L1019DispositionBundleMarkers = [
+  "p12-2-l10-19-packet-014-expected-absence-disposition-v1",
+  "https://diamondshelf.us/blogs/news",
+  "2ad7b75d87a05d4c49090afef13278b96a635b881391bd835ae3388e8d989693",
+  "stale_inventory_absence",
+  "sitemap_orphan_absence",
+  "certified_with_expected_absence",
+  "AUTHORIZE:P12_2_L10_19_PACKET_014_EXPECTED_ABSENCE_DISPOSITION:",
+  "P12_2_L10_19_AUTHORIZATION_LITERAL",
+  "P12_2_L10_19_VERIFIER_IMAGE",
+  "RAILWAY_DEPLOYMENT_ID",
+  "currentUrlReadMethod",
+  "freshSitemapReadOnly",
+  "crawlReplayPerformed",
+  "recoveryExecutionPerformed",
+];
+
+const requiredP122L1019DispositionSourceMarkers = [
+  "src/p12-2-l10-19-packet-014-expected-absence-disposition-cli.ts",
+  "lib/p12-2-l10-19-packet-014-expected-absence-disposition.ts",
+  "lib/first-party-live-adapters.ts",
+  "lib/sitemap-inventory.ts",
+];
+
+const requiredP122L1019PostDispositionBundleMarkers = [
+  "p12-2-l10-19-c-packet-014-post-disposition-readonly-cert-v1",
+  "AUTHORIZE:P12_2_L10_19_PACKET_014_POST_DISPOSITION_READ_ONLY:",
+  "P12_2_L10_19_C_AUTHORIZATION_LITERAL",
+  "P12_2_L10_19_DISPOSITION_DEPLOYMENT_ID",
+  "P12_2_L10_19_DISPOSITION_IMAGE",
+  "default_transaction_read_only=on",
+  "certified_with_expected_absence",
+  "invalid_or_partial_disposition",
+  "terminal_guard",
+];
+
+const requiredP122L1019PostDispositionSourceMarkers = [
+  "src/p12-2-l10-19-c-post-disposition-cert-cli.ts",
+  "lib/p12-2-l10-19-c-post-disposition-certification.ts",
+  "lib/p12-2-l1a-e9-runtime-transport.ts",
+];
+
 const requiredSourceMarkers = [
   "routes/execution.ts",
   "routes/connections.ts",
@@ -349,6 +431,14 @@ const missingP122L1018RepairBundleMarkers = requiredP122L1018RepairBundleMarkers
 const missingP122L1018RepairSourceMarkers = requiredP122L1018RepairSourceMarkers.filter((marker) => !p122L1018RepairSourceMap.includes(marker));
 const missingP122L1018PostRepairBundleMarkers = requiredP122L1018PostRepairBundleMarkers.filter((marker) => !p122L1018PostRepairBundle.includes(marker));
 const missingP122L1018PostRepairSourceMarkers = requiredP122L1018PostRepairSourceMarkers.filter((marker) => !p122L1018PostRepairSourceMap.includes(marker));
+const missingP122L1019ApplyBundleMarkers = requiredP122L1019ApplyBundleMarkers.filter((marker) => !p122L1019ApplyBundle.includes(marker));
+const missingP122L1019ApplySourceMarkers = requiredP122L1019ApplySourceMarkers.filter((marker) => !p122L1019ApplySourceMap.includes(marker));
+const missingP122L1019PostMigrationBundleMarkers = requiredP122L1019PostMigrationBundleMarkers.filter((marker) => !p122L1019PostMigrationBundle.includes(marker));
+const missingP122L1019PostMigrationSourceMarkers = requiredP122L1019PostMigrationSourceMarkers.filter((marker) => !p122L1019PostMigrationSourceMap.includes(marker));
+const missingP122L1019DispositionBundleMarkers = requiredP122L1019DispositionBundleMarkers.filter((marker) => !p122L1019DispositionBundle.includes(marker));
+const missingP122L1019DispositionSourceMarkers = requiredP122L1019DispositionSourceMarkers.filter((marker) => !p122L1019DispositionSourceMap.includes(marker));
+const missingP122L1019PostDispositionBundleMarkers = requiredP122L1019PostDispositionBundleMarkers.filter((marker) => !p122L1019PostDispositionBundle.includes(marker));
+const missingP122L1019PostDispositionSourceMarkers = requiredP122L1019PostDispositionSourceMarkers.filter((marker) => !p122L1019PostDispositionSourceMap.includes(marker));
 
 if (
   missingBundleMarkers.length > 0 ||
@@ -368,7 +458,15 @@ if (
   missingP122L1018RepairBundleMarkers.length > 0 ||
   missingP122L1018RepairSourceMarkers.length > 0 ||
   missingP122L1018PostRepairBundleMarkers.length > 0 ||
-  missingP122L1018PostRepairSourceMarkers.length > 0
+  missingP122L1018PostRepairSourceMarkers.length > 0 ||
+  missingP122L1019ApplyBundleMarkers.length > 0 ||
+  missingP122L1019ApplySourceMarkers.length > 0 ||
+  missingP122L1019PostMigrationBundleMarkers.length > 0 ||
+  missingP122L1019PostMigrationSourceMarkers.length > 0 ||
+  missingP122L1019DispositionBundleMarkers.length > 0 ||
+  missingP122L1019DispositionSourceMarkers.length > 0 ||
+  missingP122L1019PostDispositionBundleMarkers.length > 0 ||
+  missingP122L1019PostDispositionSourceMarkers.length > 0
 ) {
   const details = [
     missingBundleMarkers.length > 0 ? `bundle markers: ${missingBundleMarkers.join(", ")}` : null,
@@ -389,9 +487,17 @@ if (
     missingP122L1018RepairSourceMarkers.length > 0 ? `P12.2 L10.18 repair source-map markers: ${missingP122L1018RepairSourceMarkers.join(", ")}` : null,
     missingP122L1018PostRepairBundleMarkers.length > 0 ? `P12.2 L10.18 post-repair bundle markers: ${missingP122L1018PostRepairBundleMarkers.join(", ")}` : null,
     missingP122L1018PostRepairSourceMarkers.length > 0 ? `P12.2 L10.18 post-repair source-map markers: ${missingP122L1018PostRepairSourceMarkers.join(", ")}` : null,
+    missingP122L1019ApplyBundleMarkers.length > 0 ? `P12.2 L10.19 migration apply bundle markers: ${missingP122L1019ApplyBundleMarkers.join(", ")}` : null,
+    missingP122L1019ApplySourceMarkers.length > 0 ? `P12.2 L10.19 migration apply source-map markers: ${missingP122L1019ApplySourceMarkers.join(", ")}` : null,
+    missingP122L1019PostMigrationBundleMarkers.length > 0 ? `P12.2 L10.19 post-migration bundle markers: ${missingP122L1019PostMigrationBundleMarkers.join(", ")}` : null,
+    missingP122L1019PostMigrationSourceMarkers.length > 0 ? `P12.2 L10.19 post-migration source-map markers: ${missingP122L1019PostMigrationSourceMarkers.join(", ")}` : null,
+    missingP122L1019DispositionBundleMarkers.length > 0 ? `P12.2 L10.19 disposition bundle markers: ${missingP122L1019DispositionBundleMarkers.join(", ")}` : null,
+    missingP122L1019DispositionSourceMarkers.length > 0 ? `P12.2 L10.19 disposition source-map markers: ${missingP122L1019DispositionSourceMarkers.join(", ")}` : null,
+    missingP122L1019PostDispositionBundleMarkers.length > 0 ? `P12.2 L10.19 post-disposition bundle markers: ${missingP122L1019PostDispositionBundleMarkers.join(", ")}` : null,
+    missingP122L1019PostDispositionSourceMarkers.length > 0 ? `P12.2 L10.19 post-disposition source-map markers: ${missingP122L1019PostDispositionSourceMarkers.join(", ")}` : null,
   ].filter(Boolean).join("; ");
 
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, the default-off P12.2 manual crawl entrypoint, the bounded P12.2 L2 one-shot operator artifact, the explicit fail-closed P12.2 live one-shot operator executable, the exact-bound L10.15 packet-014 executable, the SELECT-only L10.16 packet-014 preflight executable, the SELECT-only L10.17 Packet-014 post-run durable-outcome certification executable, the bounded no-recrawl L10.18 Packet-014 finalization repair executable, and its SELECT-only post-repair certification executable are present.");
+console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, P12.2 manual/live execution surfaces through L10.18, and the L10.19 migration-0011 apply, post-migration read-only cert, expected-absence disposition, and post-disposition read-only cert executables are present.");
