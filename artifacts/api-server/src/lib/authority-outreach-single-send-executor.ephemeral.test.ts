@@ -102,7 +102,7 @@ test("UGP-10.32 PostgreSQL executor is one-attempt, replay-safe, uncertainty-fen
   assert.ok(siteId);
 
   await t.test("full-chain accepted execution calls mock adapter exactly once and replay calls it zero times",async()=>{
-    const fixture=buildUgp1031AuthorizationFixture("email_address");
+    const fixture=buildUgp1031AuthorizationFixture("email_address",undefined,undefined,"f");
     const safetyIntentInput={
       deliveryBindingAuthorizationDecision:
         fixture.deliveryBindingAuthorizationDecision,
