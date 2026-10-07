@@ -845,7 +845,7 @@ function bindingReview(
   };
 }
 
-function decisionRequest(
+function bindingDecisionRequest(
   f:ReturnType<typeof bindingReview>,
   decision:AuthorityOutreachHumanDeliveryBindingEvidenceDecisionRequest["decision"],
   reasonCode:AuthorityOutreachHumanDeliveryBindingEvidenceDecisionRequest["reasonCode"],
@@ -890,7 +890,7 @@ function decisionRequest(
 
 test("supporting email evidence approval records eligibility only without binding authority",()=>{
   const f=bindingReview("email_address");
-  const request=decisionRequest(
+  const request=bindingDecisionRequest(
     f,
     "approve_for_delivery_binding_authorization_preparation",
     "evidence_sufficient_for_binding_authorization_preparation",
@@ -961,7 +961,7 @@ test("supporting email evidence approval records eligibility only without bindin
 
 test("supporting web-contact-form approval preserves channel and still grants eligibility only",()=>{
   const f=bindingReview("web_contact_form");
-  const request=decisionRequest(
+  const request=bindingDecisionRequest(
     f,
     "approve_for_delivery_binding_authorization_preparation",
     "evidence_sufficient_for_binding_authorization_preparation",
@@ -1014,7 +1014,7 @@ test("contradictory and inconclusive reviews cannot approve and produce bounded 
         contradictory.deliveryBindingEvidenceReviewSpecification,
       deliveryBindingEvidenceReviewSpecificationInput:
         contradictory.deliveryBindingEvidenceReviewSpecificationInput,
-      decisionRequest:decisionRequest(
+      decisionRequest:bindingDecisionRequest(
         contradictory,
         "approve_for_delivery_binding_authorization_preparation",
         "evidence_sufficient_for_binding_authorization_preparation",
@@ -1031,7 +1031,7 @@ test("contradictory and inconclusive reviews cannot approve and produce bounded 
         contradictory.deliveryBindingEvidenceReviewSpecification,
       deliveryBindingEvidenceReviewSpecificationInput:
         contradictory.deliveryBindingEvidenceReviewSpecificationInput,
-      decisionRequest:decisionRequest(
+      decisionRequest:bindingDecisionRequest(
         contradictory,
         "reject_delivery_binding_evidence",
         "contradictory_binding_evidence",
@@ -1059,7 +1059,7 @@ test("contradictory and inconclusive reviews cannot approve and produce bounded 
         inconclusive.deliveryBindingEvidenceReviewSpecification,
       deliveryBindingEvidenceReviewSpecificationInput:
         inconclusive.deliveryBindingEvidenceReviewSpecificationInput,
-      decisionRequest:decisionRequest(
+      decisionRequest:bindingDecisionRequest(
         inconclusive,
         "defer_delivery_binding_evidence_review",
         "evidence_needs_refresh",
@@ -1073,7 +1073,7 @@ test("contradictory and inconclusive reviews cannot approve and produce bounded 
 
 test("UGP-10.26 requires exact explicit confirmation and exact UGP-10.25 through draft lineage",()=>{
   const f=bindingReview();
-  const valid=decisionRequest(
+  const valid=bindingDecisionRequest(
     f,
     "approve_for_delivery_binding_authorization_preparation",
     "evidence_sufficient_for_binding_authorization_preparation",
@@ -1106,7 +1106,7 @@ test("UGP-10.26 requires exact explicit confirmation and exact UGP-10.25 through
           f.deliveryBindingEvidenceReviewSpecification,
         deliveryBindingEvidenceReviewSpecificationInput:
           f.deliveryBindingEvidenceReviewSpecificationInput,
-        decisionRequest:decisionRequest(
+        decisionRequest:bindingDecisionRequest(
           f,
           "approve_for_delivery_binding_authorization_preparation",
           "evidence_sufficient_for_binding_authorization_preparation",
@@ -1128,7 +1128,7 @@ test("UGP-10.26 enforces decision-specific reason codes",()=>{
         supporting.deliveryBindingEvidenceReviewSpecification,
       deliveryBindingEvidenceReviewSpecificationInput:
         supporting.deliveryBindingEvidenceReviewSpecificationInput,
-      decisionRequest:decisionRequest(
+      decisionRequest:bindingDecisionRequest(
         supporting,
         "approve_for_delivery_binding_authorization_preparation",
         "binding_context_unclear",
@@ -1145,7 +1145,7 @@ test("UGP-10.26 enforces decision-specific reason codes",()=>{
         supporting.deliveryBindingEvidenceReviewSpecification,
       deliveryBindingEvidenceReviewSpecificationInput:
         supporting.deliveryBindingEvidenceReviewSpecificationInput,
-      decisionRequest:decisionRequest(
+      decisionRequest:bindingDecisionRequest(
         supporting,
         "reject_delivery_binding_evidence",
         "evidence_needs_refresh",
@@ -1159,7 +1159,7 @@ test("UGP-10.26 enforces decision-specific reason codes",()=>{
 
 test("human delivery-binding evidence decision is deterministic and tamper-evident",()=>{
   const f=bindingReview();
-  const request=decisionRequest(
+  const request=bindingDecisionRequest(
     f,
     "approve_for_delivery_binding_authorization_preparation",
     "evidence_sufficient_for_binding_authorization_preparation",
