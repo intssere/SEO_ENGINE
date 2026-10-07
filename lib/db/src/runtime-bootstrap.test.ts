@@ -17,6 +17,8 @@ import {
   EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT,
   EXPECTED_P12_2_L10_13B_RECOVERY_TABLE_COUNT,
   EXPECTED_P12_2_L10_13B_TABLE_COUNT,
+  EXPECTED_P12_2_L10_19_DISPOSITION_TABLE_COUNT,
+  EXPECTED_P12_2_L10_19_TABLE_COUNT,
   classifyRuntimeIdentitySchema,
   planRuntimeBootstrap,
 } from "./runtime-bootstrap.js";
@@ -94,6 +96,13 @@ test("current P3.6, P12.2, W04, W05, and W07 schemas are recognized without auto
   assert.equal(recovery.applyCoreMigration, false);
   assert.equal(recovery.applyAuthMigration, false);
   assert.equal(recovery.upsertDiamondShelf, true);
+
+  const disposition = planRuntimeBootstrap(EXPECTED_P12_2_L10_19_TABLE_COUNT);
+  assert.equal(disposition.schemaState, "p12_2_l10_19_ready");
+  assert.equal(disposition.blocked, false);
+  assert.equal(disposition.applyCoreMigration, false);
+  assert.equal(disposition.applyAuthMigration, false);
+  assert.equal(disposition.upsertDiamondShelf, true);
 });
 
 test("unrecognized partial or unsupported future schema states fail closed", () => {
@@ -187,13 +196,23 @@ test("P12.2-L10.13B schema count adds durable L2 plus exactly three recovery tab
 });
 
 
-test("runtime identity recognition distinguishes Production L2/recovery from equal-count P8.8 engineering schemas", () => {
+test("P12.2-L10.19 schema count adds exactly two immutable disposition/reconciliation tables", () => {
+  assert.equal(EXPECTED_P12_2_L10_19_DISPOSITION_TABLE_COUNT, 2);
+  assert.equal(EXPECTED_P12_2_L10_19_TABLE_COUNT, 49);
+  assert.equal(
+    EXPECTED_P12_2_L10_19_TABLE_COUNT,
+    EXPECTED_P12_2_L10_13B_TABLE_COUNT + EXPECTED_P12_2_L10_19_DISPOSITION_TABLE_COUNT,
+  );
+});
+
+test("runtime identity recognition distinguishes selective Production lineages from equal-count P8.8 engineering schemas", () => {
   assert.equal(classifyRuntimeIdentitySchema(38, {
     policyReservationTable: false,
     policyControlTableCount: 0,
     policyDispatchTableCount: 0,
     l2InvocationTable: true,
     recoveryTableCount: 0,
+    dispositionTableCount: 0,
   }), "p12_2_l2_production_ready");
 
   assert.equal(classifyRuntimeIdentitySchema(38, {
@@ -202,6 +221,7 @@ test("runtime identity recognition distinguishes Production L2/recovery from equ
     policyDispatchTableCount: 0,
     l2InvocationTable: false,
     recoveryTableCount: 0,
+    dispositionTableCount: 0,
   }), "p8_8_w04_ready");
 
   assert.equal(classifyRuntimeIdentitySchema(41, {
@@ -210,6 +230,7 @@ test("runtime identity recognition distinguishes Production L2/recovery from equ
     policyDispatchTableCount: 0,
     l2InvocationTable: true,
     recoveryTableCount: 3,
+    dispositionTableCount: 0,
   }), "p12_2_l10_13b_production_ready");
 
   assert.equal(classifyRuntimeIdentitySchema(41, {
@@ -218,7 +239,35 @@ test("runtime identity recognition distinguishes Production L2/recovery from equ
     policyDispatchTableCount: 0,
     l2InvocationTable: false,
     recoveryTableCount: 0,
+    dispositionTableCount: 0,
   }), "p8_8_w05_ready");
+
+  assert.equal(classifyRuntimeIdentitySchema(43, {
+    policyReservationTable: false,
+    policyControlTableCount: 0,
+    policyDispatchTableCount: 0,
+    l2InvocationTable: true,
+    recoveryTableCount: 3,
+    dispositionTableCount: 2,
+  }), "p12_2_l10_19_production_ready");
+
+  assert.equal(classifyRuntimeIdentitySchema(43, {
+    policyReservationTable: true,
+    policyControlTableCount: 3,
+    policyDispatchTableCount: 2,
+    l2InvocationTable: false,
+    recoveryTableCount: 0,
+    dispositionTableCount: 0,
+  }), "p8_8_w07_ready");
+
+  assert.equal(classifyRuntimeIdentitySchema(43, {
+    policyReservationTable: true,
+    policyControlTableCount: 3,
+    policyDispatchTableCount: 2,
+    l2InvocationTable: true,
+    recoveryTableCount: 3,
+    dispositionTableCount: 2,
+  }), "partial");
 
   assert.equal(classifyRuntimeIdentitySchema(41, {
     policyReservationTable: true,
@@ -226,5 +275,6 @@ test("runtime identity recognition distinguishes Production L2/recovery from equ
     policyDispatchTableCount: 0,
     l2InvocationTable: true,
     recoveryTableCount: 3,
+    dispositionTableCount: 0,
   }), "partial");
 });
