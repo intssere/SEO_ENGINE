@@ -73,6 +73,8 @@ export function p122L1019AMigrationAuthorizationFingerprint(): string {
     checkpointRevision: P12_2_L10_19_A_CHECKPOINT_REVISION,
     failureUrl: P12_2_L10_19_A_FAILURE_URL,
     failureEventFingerprint: P12_2_L10_19_A_FAILURE_EVENT_FINGERPRINT,
+    acceptedHistoricalHttpStatuses: [404, 410],
+    historicalDecisionReason: "permanent_http",
     accountingSnapshotFingerprint: P12_2_L10_19_A_ACCOUNTING_SNAPSHOT_FINGERPRINT,
     l2ReceiptFingerprint: P12_2_L10_19_A_L2_RECEIPT_FINGERPRINT,
     completedRunCount: 0,
