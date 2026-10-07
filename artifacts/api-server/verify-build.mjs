@@ -21,6 +21,10 @@ const p122L1016Bundle = await readFile(path.join(distDir, "p12-2-l10-16-packet-0
 const p122L1016SourceMap = await readFile(path.join(distDir, "p12-2-l10-16-packet-014-preflight.mjs.map"), "utf8");
 const p122L1017Bundle = await readFile(path.join(distDir, "p12-2-l10-17-packet-014-post-run-cert.mjs"), "utf8");
 const p122L1017SourceMap = await readFile(path.join(distDir, "p12-2-l10-17-packet-014-post-run-cert.mjs.map"), "utf8");
+const p122L1018RepairBundle = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-finalization-repair.mjs"), "utf8");
+const p122L1018RepairSourceMap = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-finalization-repair.mjs.map"), "utf8");
+const p122L1018PostRepairBundle = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-post-repair-cert.mjs"), "utf8");
+const p122L1018PostRepairSourceMap = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-post-repair-cert.mjs.map"), "utf8");
 const provenanceRaw = await readFile(path.join(distDir, "build-provenance.json"), "utf8");
 const provenance = JSON.parse(provenanceRaw);
 function git(args) {
@@ -262,6 +266,50 @@ const requiredP122L1017SourceMarkers = [
   "lib/p12-2-l1a-e9-runtime-transport.ts",
 ];
 
+const requiredP122L1018RepairBundleMarkers = [
+  "p12-2-l10-18-packet-014-bounded-durable-finalization-v1",
+  "p12-2-diamond-shelf-post-0010-full-014",
+  "b853dcc4d1cbc383e5f9a1185085b6bc77ac42394a33db9c1380a6e511e7a560",
+  "62022df7bea241b7f86a5286271686c9aa4d0f62bead39a626d1914845e5760b",
+  "f1aee026cc2227f9d72642e25b7ed4935fdfa94bcdc508e4eda7344a2d2b608f",
+  "https://diamondshelf.us/blogs/news",
+  "2ad7b75d87a05d4c49090afef13278b96a635b881391bd835ae3388e8d989693",
+  "AUTHORIZE:P12_2_L10_18_PACKET_014_FINALIZATION_REPAIR:",
+  "P12_2_L10_18_AUTHORIZATION_LITERAL",
+  "P12_2_L10_18_POSTGRES_SERVICE_ID",
+  "packet_014_compact_accounting_finalization",
+  "accounting_complete_uncertified",
+  "first_party_crawl_accounting_snapshots",
+  "first_party_crawl_l2_invocations",
+  "noNetworkRefetch",
+  "noCrawlReplay",
+];
+
+const requiredP122L1018RepairSourceMarkers = [
+  "src/p12-2-l10-18-packet-014-finalization-repair-cli.ts",
+  "lib/p12-2-l10-18-packet-014-finalization-repair.ts",
+  "lib/p12-2-l2-one-shot-operator-caller.ts",
+  "lib/p12-2-l10-15-packet-014-full-initial.ts",
+];
+
+const requiredP122L1018PostRepairBundleMarkers = [
+  "p12-2-l10-18-packet-014-post-repair-readonly-cert-v1",
+  "AUTHORIZE:P12_2_L10_18_PACKET_014_POST_REPAIR_READ_ONLY:",
+  "P12_2_L10_18_POST_REPAIR_AUTHORIZATION_LITERAL",
+  "P12_2_L10_18_REPAIR_DEPLOYMENT_ID",
+  "default_transaction_read_only=on",
+  "accounting_complete_uncertified_compact_finalized",
+  "invalid_or_partial_repair",
+  "packet_014_compact_accounting_finalization",
+  "terminal_outcome_guard",
+];
+
+const requiredP122L1018PostRepairSourceMarkers = [
+  "src/p12-2-l10-18-packet-014-post-repair-cert-cli.ts",
+  "lib/p12-2-l10-18-packet-014-post-repair-certification.ts",
+  "lib/p12-2-l1a-e9-runtime-transport.ts",
+];
+
 const requiredSourceMarkers = [
   "routes/execution.ts",
   "routes/connections.ts",
@@ -297,6 +345,10 @@ const missingP122L1016BundleMarkers = requiredP122L1016BundleMarkers.filter((mar
 const missingP122L1016SourceMarkers = requiredP122L1016SourceMarkers.filter((marker) => !p122L1016SourceMap.includes(marker));
 const missingP122L1017BundleMarkers = requiredP122L1017BundleMarkers.filter((marker) => !p122L1017Bundle.includes(marker));
 const missingP122L1017SourceMarkers = requiredP122L1017SourceMarkers.filter((marker) => !p122L1017SourceMap.includes(marker));
+const missingP122L1018RepairBundleMarkers = requiredP122L1018RepairBundleMarkers.filter((marker) => !p122L1018RepairBundle.includes(marker));
+const missingP122L1018RepairSourceMarkers = requiredP122L1018RepairSourceMarkers.filter((marker) => !p122L1018RepairSourceMap.includes(marker));
+const missingP122L1018PostRepairBundleMarkers = requiredP122L1018PostRepairBundleMarkers.filter((marker) => !p122L1018PostRepairBundle.includes(marker));
+const missingP122L1018PostRepairSourceMarkers = requiredP122L1018PostRepairSourceMarkers.filter((marker) => !p122L1018PostRepairSourceMap.includes(marker));
 
 if (
   missingBundleMarkers.length > 0 ||
@@ -312,7 +364,11 @@ if (
   missingP122L1016BundleMarkers.length > 0 ||
   missingP122L1016SourceMarkers.length > 0 ||
   missingP122L1017BundleMarkers.length > 0 ||
-  missingP122L1017SourceMarkers.length > 0
+  missingP122L1017SourceMarkers.length > 0 ||
+  missingP122L1018RepairBundleMarkers.length > 0 ||
+  missingP122L1018RepairSourceMarkers.length > 0 ||
+  missingP122L1018PostRepairBundleMarkers.length > 0 ||
+  missingP122L1018PostRepairSourceMarkers.length > 0
 ) {
   const details = [
     missingBundleMarkers.length > 0 ? `bundle markers: ${missingBundleMarkers.join(", ")}` : null,
@@ -329,9 +385,13 @@ if (
     missingP122L1016SourceMarkers.length > 0 ? `P12.2 L10.16 preflight source-map markers: ${missingP122L1016SourceMarkers.join(", ")}` : null,
     missingP122L1017BundleMarkers.length > 0 ? `P12.2 L10.17 post-run bundle markers: ${missingP122L1017BundleMarkers.join(", ")}` : null,
     missingP122L1017SourceMarkers.length > 0 ? `P12.2 L10.17 post-run source-map markers: ${missingP122L1017SourceMarkers.join(", ")}` : null,
+    missingP122L1018RepairBundleMarkers.length > 0 ? `P12.2 L10.18 repair bundle markers: ${missingP122L1018RepairBundleMarkers.join(", ")}` : null,
+    missingP122L1018RepairSourceMarkers.length > 0 ? `P12.2 L10.18 repair source-map markers: ${missingP122L1018RepairSourceMarkers.join(", ")}` : null,
+    missingP122L1018PostRepairBundleMarkers.length > 0 ? `P12.2 L10.18 post-repair bundle markers: ${missingP122L1018PostRepairBundleMarkers.join(", ")}` : null,
+    missingP122L1018PostRepairSourceMarkers.length > 0 ? `P12.2 L10.18 post-repair source-map markers: ${missingP122L1018PostRepairSourceMarkers.join(", ")}` : null,
   ].filter(Boolean).join("; ");
 
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, the default-off P12.2 manual crawl entrypoint, the bounded P12.2 L2 one-shot operator artifact, the explicit fail-closed P12.2 live one-shot operator executable, the exact-bound L10.15 packet-014 executable, the SELECT-only L10.16 packet-014 preflight executable, and the SELECT-only L10.17 Packet-014 post-run durable-outcome certification executable are present.");
+console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, the default-off P12.2 manual crawl entrypoint, the bounded P12.2 L2 one-shot operator artifact, the explicit fail-closed P12.2 live one-shot operator executable, the exact-bound L10.15 packet-014 executable, the SELECT-only L10.16 packet-014 preflight executable, the SELECT-only L10.17 Packet-014 post-run durable-outcome certification executable, the bounded no-recrawl L10.18 Packet-014 finalization repair executable, and its SELECT-only post-repair certification executable are present.");
