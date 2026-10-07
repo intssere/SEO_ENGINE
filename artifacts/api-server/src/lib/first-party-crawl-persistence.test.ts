@@ -12,6 +12,7 @@ import {
   P12_2_RECOGNIZED_TABLE_COUNTS,
   P12_2_TABLE_COUNT,
   assertFirstPartyCrawlUrlPolicy,
+  assertFirstPartySitemapProvenanceUrlPolicy,
   assertNoForbiddenContent,
   firstPartyCrawlPersistenceCapability,
 } from "./first-party-crawl-persistence.js";
@@ -69,6 +70,44 @@ test("persistence URL policy is exact-origin HTTPS and rejects query, fragments 
   ]) {
     assert.throws(() => assertFirstPartyCrawlUrlPolicy(bad), /p12_2_persistence_url_policy_rejected/);
   }
+});
+
+test("sitemap provenance URL policy permits same-origin query strings but rejects unsafe variants", () => {
+  assert.equal(
+    assertFirstPartySitemapProvenanceUrlPolicy(
+      "https://diamondshelf.us/sitemap_products_1.xml?from=1&to=250",
+    ),
+    "https://diamondshelf.us/sitemap_products_1.xml?from=1&to=250",
+  );
+  assert.doesNotThrow(() => assertNoForbiddenContent({
+    sourceSitemap: "https://diamondshelf.us/sitemap_products_1.xml?from=1&to=250",
+    sourceSitemaps: [
+      "https://diamondshelf.us/sitemap_products_1.xml?from=1&to=250",
+      "https://diamondshelf.us/sitemap_pages_1.xml?from=251&to=500",
+    ],
+    missingSupplied: [
+      "https://diamondshelf.us/sitemap_blogs_1.xml?from=501&to=750",
+    ],
+  }));
+
+  for (const bad of [
+    "http://diamondshelf.us/sitemap.xml?x=1",
+    "https://example.com/sitemap.xml?x=1",
+    "https://user:pass@diamondshelf.us/sitemap.xml?x=1",
+    "https://diamondshelf.us/sitemap.xml?x=1#frag",
+  ]) {
+    assert.throws(
+      () => assertFirstPartySitemapProvenanceUrlPolicy(bad),
+      /p12_2_persistence_url_policy_rejected/,
+    );
+  }
+
+  assert.throws(
+    () => assertNoForbiddenContent({
+      canonicalUrl: "https://diamondshelf.us/products/a?variant=1",
+    }),
+    /p12_2_persistence_url_policy_rejected/,
+  );
 });
 
 test("deep payload guard allows explicit non-persistence markers and rejects content smuggling", () => {
