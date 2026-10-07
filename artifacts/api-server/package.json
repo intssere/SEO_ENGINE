@@ -18,6 +18,7 @@
     "p12-2:live-operator": "node --enable-source-maps ./dist/p12-2-live-operator.mjs",
     "p12-2:l10-15-packet-014": "node --enable-source-maps ./dist/p12-2-l10-15-packet-014-live.mjs",
     "p12-2:l10-16-packet-014-preflight": "node --enable-source-maps ./dist/p12-2-l10-16-packet-014-preflight.mjs",
+    "p12-2:l10-17-packet-014-post-run-cert": "node --enable-source-maps ./dist/p12-2-l10-17-packet-014-post-run-cert.mjs",
     "test:p8-8-w04-persistence-ephemeral": "tsx --test src/lib/p8-8-reservation-store.ephemeral.test.ts",
     "test:p8-8-w05-persistence-ephemeral": "tsx --test src/lib/p8-8-mutation-control-store.ephemeral.test.ts",
     "test:p8-8-w06-persistence-ephemeral": "tsx --test src/lib/p8-8-policy-preflight-store.ephemeral.test.ts",
