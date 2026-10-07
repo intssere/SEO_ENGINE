@@ -4,7 +4,7 @@ CREATE TABLE authority_outreach_suppressions (
  suppression_version text NOT NULL CHECK (suppression_version='ugp-10-31-outbound-suppression-v1'),
  suppression_fingerprint char(64) NOT NULL UNIQUE CHECK (suppression_fingerprint ~ '^[0-9a-f]{64}$'),
  site_id uuid NOT NULL REFERENCES sites(id) ON DELETE RESTRICT,
- target_domain text NOT NULL CHECK (target_domain=lower(target_domain) AND length(target_domain) BETWEEN 1 AND 253),
+ recipient_domain text NOT NULL CHECK (recipient_domain=lower(recipient_domain) AND length(recipient_domain) BETWEEN 1 AND 253),
  contact_point_fingerprint char(64) NOT NULL CHECK (contact_point_fingerprint ~ '^[0-9a-f]{64}$'),
  reason_code text NOT NULL CHECK (reason_code IN ('explicit_opt_out','manual_suppression','compliance_hold','reputation_risk')),
  suppressed_by text NOT NULL CHECK (suppressed_by ~ '^[A-Za-z0-9_.:@-]{1,120}$'),
@@ -14,8 +14,8 @@ CREATE TABLE authority_outreach_suppressions (
  CHECK (suppression_id ~ '^uaos-[0-9a-f]{24}$'),
  CHECK (substring(suppression_id from 6)=substring(suppression_fingerprint from 1 for 24))
 );
-CREATE INDEX idx_authority_outreach_suppressions_domain_history
- ON authority_outreach_suppressions(site_id,target_domain,suppressed_at DESC,suppression_id DESC);
+CREATE INDEX idx_authority_outreach_suppressions_recipient_domain_history
+ ON authority_outreach_suppressions(site_id,recipient_domain,suppressed_at DESC,suppression_id DESC);
 
 CREATE TABLE authority_outreach_send_reservations (
  reservation_id text PRIMARY KEY,
@@ -32,7 +32,7 @@ CREATE TABLE authority_outreach_send_reservations (
  selected_contact_point_fingerprint char(64) NOT NULL CHECK (selected_contact_point_fingerprint ~ '^[0-9a-f]{64}$'),
  send_review_fingerprint char(64) NOT NULL CHECK (send_review_fingerprint ~ '^[0-9a-f]{64}$'),
  quality_gate_fingerprint char(64) NOT NULL CHECK (quality_gate_fingerprint ~ '^[0-9a-f]{64}$'),
- target_domain text NOT NULL CHECK (target_domain=lower(target_domain) AND length(target_domain) BETWEEN 1 AND 253),
+ recipient_domain text NOT NULL CHECK (recipient_domain=lower(recipient_domain) AND length(recipient_domain) BETWEEN 1 AND 253),
  status text NOT NULL CHECK (status IN ('reserved','released','consumed','uncertain')),
  reserved_at timestamptz NOT NULL,
  expires_at timestamptz NOT NULL CHECK (expires_at>reserved_at),
@@ -49,8 +49,8 @@ CREATE UNIQUE INDEX ux_authority_outreach_send_reservations_active_contact
  WHERE status IN ('reserved','uncertain');
 CREATE INDEX idx_authority_outreach_send_reservations_contact_rate
  ON authority_outreach_send_reservations(site_id,selected_contact_point_fingerprint,reserved_at DESC,reservation_id DESC);
-CREATE INDEX idx_authority_outreach_send_reservations_domain_rate
- ON authority_outreach_send_reservations(site_id,target_domain,reserved_at DESC,reservation_id DESC);
+CREATE INDEX idx_authority_outreach_send_reservations_recipient_domain_rate
+ ON authority_outreach_send_reservations(site_id,recipient_domain,reserved_at DESC,reservation_id DESC);
 CREATE INDEX idx_authority_outreach_send_reservations_prospect_history
  ON authority_outreach_send_reservations(site_id,prospect_fingerprint,reserved_at DESC,reservation_id DESC);
 
