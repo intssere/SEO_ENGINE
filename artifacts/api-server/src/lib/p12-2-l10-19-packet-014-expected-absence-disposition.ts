@@ -169,24 +169,35 @@ export type P122L1019ReconciliationReceipt = {
   fingerprint: string;
 };
 
-export function historicalAbsenceStatus(event: TerminalFailureEvent): 404 | 410 {
+export function classifyPermanentExpectedAbsenceEvent(
+  event: TerminalFailureEvent,
+): 404 | 410 {
   assertTerminalFailureEventIntegrity(event);
   if (
     event.eventType !== "terminal_failure" ||
-    event.runId !== P12_2_L10_15_RUN_ID ||
-    event.siteId !== DIAMOND_SHELF_SITE_ID ||
-    event.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
-    event.executionPlanFingerprint !== P12_2_L10_18_EXECUTION_PLAN_FINGERPRINT ||
-    event.canonicalUrl !== P12_2_L10_19_FAILURE_URL ||
-    event.fingerprint !== P12_2_L10_19_SOURCE_EVENT_FINGERPRINT ||
     event.decisionReason !== "permanent_http" ||
     event.outcome.kind !== "failure" ||
     event.outcome.signal.kind !== "http_status" ||
     !acceptedAbsenceStatus(event.outcome.signal.httpStatus)
   ) {
-    throw new Error("p12_2_l10_19_historical_absence_evidence_invalid");
+    throw new Error("p12_2_l10_19_expected_absence_event_invalid");
   }
   return event.outcome.signal.httpStatus;
+}
+
+export function historicalAbsenceStatus(event: TerminalFailureEvent): 404 | 410 {
+  const status = classifyPermanentExpectedAbsenceEvent(event);
+  if (
+    event.runId !== P12_2_L10_15_RUN_ID ||
+    event.siteId !== DIAMOND_SHELF_SITE_ID ||
+    event.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+    event.executionPlanFingerprint !== P12_2_L10_18_EXECUTION_PLAN_FINGERPRINT ||
+    event.canonicalUrl !== P12_2_L10_19_FAILURE_URL ||
+    event.fingerprint !== P12_2_L10_19_SOURCE_EVENT_FINGERPRINT
+  ) {
+    throw new Error("p12_2_l10_19_historical_absence_evidence_invalid");
+  }
+  return status;
 }
 
 export function currentAbsenceStatus(outcome: PageTransportResult): 404 | 410 {
@@ -198,6 +209,25 @@ export function currentAbsenceStatus(outcome: PageTransportResult): 404 | 410 {
     throw new Error("p12_2_l10_19_current_absence_not_proven");
   }
   return outcome.signal.httpStatus;
+}
+
+export function classifyExpectedAbsenceInventory(
+  entries: readonly { canonicalUrl: string; sourceSitemaps: readonly string[] }[],
+  canonicalUrl: string,
+): {
+  presentInFreshInventory: boolean;
+  sourceSitemaps: string[];
+  dispositionType: P122L1019DispositionType;
+} {
+  const entry = entries.find((item) => item.canonicalUrl === canonicalUrl);
+  const presentInFreshInventory = Boolean(entry);
+  return {
+    presentInFreshInventory,
+    sourceSitemaps: entry ? [...entry.sourceSitemaps].sort() : [],
+    dispositionType: presentInFreshInventory
+      ? "sitemap_orphan_absence"
+      : "stale_inventory_absence",
+  };
 }
 
 export function buildP122L1019Disposition(input: {
@@ -223,14 +253,14 @@ export function buildP122L1019Disposition(input: {
     throw new Error("p12_2_l10_19_fresh_inventory_invalid");
   }
 
-  const entry = input.freshInventory.inventory.entries.find(
-    (item) => item.canonicalUrl === P12_2_L10_19_FAILURE_URL,
+  const {
+    presentInFreshInventory,
+    sourceSitemaps,
+    dispositionType,
+  } = classifyExpectedAbsenceInventory(
+    input.freshInventory.inventory.entries,
+    P12_2_L10_19_FAILURE_URL,
   );
-  const presentInFreshInventory = Boolean(entry);
-  const sourceSitemaps = entry ? [...entry.sourceSitemaps].sort() : [];
-  const dispositionType: P122L1019DispositionType = presentInFreshInventory
-    ? "sitemap_orphan_absence"
-    : "stale_inventory_absence";
 
   const withoutFingerprint: Omit<P122L1019Disposition, "fingerprint"> = {
     version: P12_2_L10_19_VERSION,
