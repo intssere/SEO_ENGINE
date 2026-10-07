@@ -196,10 +196,16 @@ test("UGP-10.31 PostgreSQL outbound safety store fails closed under replay, unce
       "SELECT event_type,event_reason FROM authority_outreach_send_safety_events WHERE reservation_id=$1 ORDER BY sequence",
       [reservationId],
     );
-    assert.deepEqual(events, [
-      { event_type: "reserved", event_reason: "safety_preflight_passed" },
-      { event_type: "released", event_reason: "reservation_expired" },
-    ]);
+    assert.deepEqual(
+      Array.from(events, (row) => ({
+        event_type: row.event_type,
+        event_reason: row.event_reason,
+      })),
+      [
+        { event_type: "reserved", event_reason: "safety_preflight_passed" },
+        { event_type: "released", event_reason: "reservation_expired" },
+      ],
+    );
 
     await admin.unsafe(
       "UPDATE authority_outreach_send_reservations SET reserved_at=transaction_timestamp()-interval '8 days',expires_at=transaction_timestamp()-interval '7 days' WHERE reservation_id=$1",
