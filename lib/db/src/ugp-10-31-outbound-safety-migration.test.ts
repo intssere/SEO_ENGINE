@@ -190,7 +190,7 @@ test("UGP-10.31 migration applies only to localhost UGP-10.3 baseline and immuta
       ["suppression_delete", "DELETE FROM authority_outreach_suppressions"],
       ["suppression_truncate", "TRUNCATE authority_outreach_suppressions"],
       ["reservation_delete", "DELETE FROM authority_outreach_send_reservations"],
-      ["reservation_truncate", "TRUNCATE authority_outreach_send_reservations"],
+      ["reservation_truncate", "TRUNCATE authority_outreach_send_reservations CASCADE"],
       ["event_update", "UPDATE authority_outreach_send_safety_events SET event_reason='operator_release'"],
       ["event_delete", "DELETE FROM authority_outreach_send_safety_events"],
       ["event_truncate", "TRUNCATE authority_outreach_send_safety_events"],
