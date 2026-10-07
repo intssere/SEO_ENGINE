@@ -356,22 +356,22 @@ export class AuthorityOutreachSingleSendExecutionStore{
           throw new Error("ugp10_32_reservation_expired");
         }
 
-        const suppressed=await tx.unsafe<{suppression_id:string}[]>(
+        const suppressed=await tx.unsafe(
           "SELECT suppression_id FROM authority_outreach_suppressions"
             +" WHERE site_id=$1::uuid AND contact_point_fingerprint=$2 LIMIT 1",
           [reservation.site_id,intent.selectedContactPointFingerprint],
-        );
+        ) as {suppression_id:string}[];
         if(suppressed[0]) throw new Error("ugp10_32_contact_suppressed");
 
         const contactStart=new Date(
           now.getTime()-UGP_10_31_CONTACT_RATE_LIMIT.windowSeconds*1000,
         ).toISOString();
-        const contactCounts=await tx.unsafe<{count:number}[]>(
+        const contactCounts=await tx.unsafe(
           "SELECT COUNT(*)::int AS count FROM authority_outreach_send_reservations"
             +" WHERE site_id=$1::uuid AND selected_contact_point_fingerprint=$2"
             +" AND reserved_at>$3::timestamptz",
           [reservation.site_id,intent.selectedContactPointFingerprint,contactStart],
-        );
+        ) as {count:number}[];
         if(Number(contactCounts[0]?.count??0)>UGP_10_31_CONTACT_RATE_LIMIT.maximumReservations){
           throw new Error("ugp10_32_contact_rate_state_invalid");
         }
@@ -379,12 +379,12 @@ export class AuthorityOutreachSingleSendExecutionStore{
         const domainStart=new Date(
           now.getTime()-UGP_10_31_DOMAIN_RATE_LIMIT.windowSeconds*1000,
         ).toISOString();
-        const domainCounts=await tx.unsafe<{count:number}[]>(
+        const domainCounts=await tx.unsafe(
           "SELECT COUNT(*)::int AS count FROM authority_outreach_send_reservations"
             +" WHERE site_id=$1::uuid AND recipient_domain=$2"
             +" AND reserved_at>$3::timestamptz",
           [reservation.site_id,intent.recipientDomain,domainStart],
-        );
+        ) as {count:number}[];
         if(Number(domainCounts[0]?.count??0)>UGP_10_31_DOMAIN_RATE_LIMIT.maximumReservations){
           throw new Error("ugp10_32_domain_rate_state_invalid");
         }
@@ -466,12 +466,12 @@ export class AuthorityOutreachSingleSendExecutionStore{
             current.state===input.state
             &&current.adapter_receipt_fingerprint===input.adapterReceiptFingerprint
           ){
-            const events=await tx.unsafe<{event_fingerprint:string}[]>(
+            const events=await tx.unsafe(
               "SELECT event_fingerprint FROM authority_outreach_single_send_execution_events"
                 +" WHERE execution_id=$1 AND event_type=$2"
                 +" ORDER BY sequence DESC LIMIT 1",
               [current.execution_id,input.state],
-            );
+            ) as {event_fingerprint:string}[];
             if(!events[0]) throw new Error("ugp10_32_terminal_event_missing");
             return Object.freeze({
               status:"idempotent" as const,
