@@ -385,6 +385,27 @@ function assertResult(packet: P122L2Packet, result: P122L2ExecutionResult): void
   }
 }
 
+export function buildP122L2Receipt(
+  packet: P122L2Packet,
+  result: P122L2ExecutionResult,
+): P122L2Receipt {
+  assertP122L2PacketIntegrity(packet);
+  assertResult(packet, result);
+  const withoutFingerprint: Omit<P122L2Receipt, "fingerprint"> = {
+    version: P12_2_L2_VERSION,
+    packetFingerprint: packet.fingerprint,
+    phase: packet.phase,
+    runId: packet.runId,
+    invocationAttempt: 1,
+    automaticRetryPerformed: false,
+    result,
+  };
+  return Object.freeze({
+    ...withoutFingerprint,
+    fingerprint: sha256(withoutFingerprint),
+  });
+}
+
 export async function executeP122L2OneShot(input: {
   packet: P122L2Packet;
   authorizationLiteral: string;
@@ -402,21 +423,7 @@ export async function executeP122L2OneShot(input: {
   }
 
   const result = await input.executor.execute(input.packet);
-  assertResult(input.packet, result);
-
-  const withoutFingerprint: Omit<P122L2Receipt, "fingerprint"> = {
-    version: P12_2_L2_VERSION,
-    packetFingerprint: input.packet.fingerprint,
-    phase: input.packet.phase,
-    runId: input.packet.runId,
-    invocationAttempt: 1,
-    automaticRetryPerformed: false,
-    result,
-  };
-  return Object.freeze({
-    ...withoutFingerprint,
-    fingerprint: sha256(withoutFingerprint),
-  });
+  return buildP122L2Receipt(input.packet, result);
 }
 
 export async function executeP122L2OneShotDurable(input: {

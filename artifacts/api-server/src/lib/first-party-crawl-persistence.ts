@@ -175,7 +175,7 @@ function requireBinding(siteId: string, canonicalOrigin: string): void {
   }
 }
 
-export function assertFirstPartyCrawlUrlPolicy(value: string): string {
+function assertFirstPartyUrlPolicy(value: string, queryAllowed: boolean): string {
   let parsed: URL;
   try {
     parsed = new URL(value);
@@ -187,12 +187,20 @@ export function assertFirstPartyCrawlUrlPolicy(value: string): string {
     parsed.origin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
     parsed.username ||
     parsed.password ||
-    parsed.search ||
+    (!queryAllowed && parsed.search) ||
     parsed.hash
   ) {
     throw new Error("p12_2_persistence_url_policy_rejected");
   }
   return parsed.toString();
+}
+
+export function assertFirstPartyCrawlUrlPolicy(value: string): string {
+  return assertFirstPartyUrlPolicy(value, false);
+}
+
+export function assertFirstPartySitemapProvenanceUrlPolicy(value: string): string {
+  return assertFirstPartyUrlPolicy(value, true);
 }
 
 function isPersistedStatusKey(key: string): boolean {
@@ -213,11 +221,15 @@ function validatePotentialUrl(key: string, value: unknown): void {
     "canonicalurl",
     "rootsitemapurl",
     "redirecttarget",
-    "sourcesitemap",
   ]);
   const urlArray = new Set([
     "urls",
     "canonicalurls",
+  ]);
+  const sitemapProvenanceSingleUrl = new Set([
+    "sourcesitemap",
+  ]);
+  const sitemapProvenanceUrlArray = new Set([
     "sourcesitemaps",
     "missingsupplied",
   ]);
@@ -228,6 +240,13 @@ function validatePotentialUrl(key: string, value: unknown): void {
     for (const item of value) {
       if (typeof item !== "string") throw new Error("p12_2_persistence_url_array_invalid");
       assertFirstPartyCrawlUrlPolicy(item);
+    }
+  } else if (sitemapProvenanceSingleUrl.has(normalized) && typeof value === "string") {
+    assertFirstPartySitemapProvenanceUrlPolicy(value);
+  } else if (sitemapProvenanceUrlArray.has(normalized) && Array.isArray(value)) {
+    for (const item of value) {
+      if (typeof item !== "string") throw new Error("p12_2_persistence_url_array_invalid");
+      assertFirstPartySitemapProvenanceUrlPolicy(item);
     }
   }
 }
@@ -581,6 +600,7 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
           AND run_id = ${runId}
           AND canonical_origin = ${DIAMOND_SHELF_CANONICAL_ORIGIN}
           AND execution_plan_fingerprint = ${input.executionPlanFingerprint}
+          AND snapshot_payload->>'version' = ${P12_2_CRAWL_BRIDGE_VERSION}
         ORDER BY checkpoint_revision DESC, accounting_snapshot_id DESC
         LIMIT 1
       `;
