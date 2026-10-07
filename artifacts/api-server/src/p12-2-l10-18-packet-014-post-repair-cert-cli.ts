@@ -4,13 +4,15 @@ import { spawn } from "node:child_process";
 import {
   P12_2_L10_18_POST_REPAIR_CERT_VERSION,
   P12_2_L10_18_POST_REPAIR_QUERIES,
-  P12_2_L10_18_POSTGRES_SERVICE_ID,
-  P12_2_L10_18_PROJECT_ID,
-  P12_2_L10_18_ENVIRONMENT_ID,
   assertP122L1018PostRepairQueryContract,
   p122L1018PostRepairAuthorizationLiteral,
   p122L1018PostRepairQuerySetFingerprint,
 } from "./lib/p12-2-l10-18-packet-014-post-repair-certification.js";
+import {
+  P12_2_L10_18_ENVIRONMENT_ID,
+  P12_2_L10_18_POSTGRES_SERVICE_ID,
+  P12_2_L10_18_PROJECT_ID,
+} from "./lib/p12-2-l10-18-packet-014-finalization-repair.js";
 import {
   P12_2_L10_15_EXPECTED_PACKET_FINGERPRINT,
   P12_2_L10_15_RUN_ID,
