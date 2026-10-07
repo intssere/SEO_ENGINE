@@ -389,7 +389,8 @@ export async function ensureDiamondShelfIdentity(
       tableCount !== EXPECTED_P8_8_W04_TABLE_COUNT &&
       tableCount !== EXPECTED_P8_8_W05_TABLE_COUNT &&
       tableCount !== EXPECTED_P8_8_W07_TABLE_COUNT &&
-      tableCount !== EXPECTED_UGP_10_3_TABLE_COUNT
+      tableCount !== EXPECTED_UGP_10_3_TABLE_COUNT &&
+      tableCount !== EXPECTED_UGP_10_31_TABLE_COUNT
     ) {
       return {
         status: "blocked",
@@ -398,7 +399,7 @@ export async function ensureDiamondShelfIdentity(
         reason:
           tableCount === 0
             ? "Public schema is empty; apply runtime migrations explicitly."
-            : `Public schema is not a recognized current/future engineering state (${tableCount} tables; expected ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, ${EXPECTED_P8_8_W04_TABLE_COUNT}, or ${EXPECTED_P8_8_W05_TABLE_COUNT}, or ${EXPECTED_P8_8_W07_TABLE_COUNT}, or ${EXPECTED_UGP_10_3_TABLE_COUNT}).`,
+            : `Public schema is not a recognized current/future engineering state (${tableCount} tables; expected ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, ${EXPECTED_P8_8_W04_TABLE_COUNT}, or ${EXPECTED_P8_8_W05_TABLE_COUNT}, or ${EXPECTED_P8_8_W07_TABLE_COUNT}, or ${EXPECTED_UGP_10_3_TABLE_COUNT}, or ${EXPECTED_UGP_10_31_TABLE_COUNT}).`,
       };
     }
     const identities = await sql<
