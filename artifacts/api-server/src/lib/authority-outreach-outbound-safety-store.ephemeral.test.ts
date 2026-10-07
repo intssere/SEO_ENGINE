@@ -212,7 +212,7 @@ test("UGP-10.31 PostgreSQL outbound safety store fails closed under replay, unce
       "SELECT transaction_timestamp() AS now",
     );
     const now = nowRows[0]!.now;
-    for (const [index, c] of ["6", "7", "8", "9"].entries()) {
+    for (const [index, c] of ["6", "7", "8", "9", "b"].entries()) {
       const reservationFingerprint = FP(c);
       const reservationId =
         "uaosr-" + reservationFingerprint.slice(0, 24);
