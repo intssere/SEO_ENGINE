@@ -33,7 +33,7 @@ export function createAuthorityOutreachMockSingleSendAdapter(
   return Object.freeze({
     adapterClass:"mock",
     networkOperationCapable:false,
-    async send(intent){
+    async send(intent:AuthorityOutreachSingleSendExecutionIntent){
       const receiptFingerprint=authorityOutreachSingleSendStableHash({
         purpose:"ugp10_32_mock_adapter_receipt",
         executionFingerprint:intent.executionFingerprint,
