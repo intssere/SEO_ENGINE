@@ -116,9 +116,9 @@ test("UGP-10.31 migration applies only to localhost UGP-10.3 baseline and immuta
   assert.deepEqual(
     triggers.map((row) => row.table_name + ":" + row.tgname),
     [
-      "authority_outreach_send_safety_events:authority_outreach_send_safety_events_reject_truncate",
       "authority_outreach_send_reservations:authority_outreach_send_reservations_reject_delete",
       "authority_outreach_send_reservations:authority_outreach_send_reservations_reject_truncate",
+      "authority_outreach_send_safety_events:authority_outreach_send_safety_events_reject_truncate",
       "authority_outreach_send_safety_events:authority_outreach_send_safety_events_reject_update_delete",
       "authority_outreach_suppressions:authority_outreach_suppressions_reject_truncate",
       "authority_outreach_suppressions:authority_outreach_suppressions_reject_update_delete",
