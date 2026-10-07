@@ -241,7 +241,7 @@ async function appendEvent(
     occurredAt:occurredAt.toISOString(),
   });
   const eventId="uaosxe-"+eventFingerprint.slice(0,24);
-  const inserted=await tx.unsafe<{event_fingerprint:string}[]>(
+  const inserted=await tx.unsafe(
     "INSERT INTO authority_outreach_single_send_execution_events"
       +"(event_id,event_version,event_fingerprint,execution_id,execution_fingerprint,"
       +"reservation_id,site_id,sequence,previous_event_fingerprint,event_type,"
@@ -264,7 +264,7 @@ async function appendEvent(
       actorId,
       occurredAt.toISOString(),
     ],
-  );
+  ) as {event_fingerprint:string}[];
   if(inserted[0]?.event_fingerprint!==eventFingerprint){
     throw new Error("ugp10_32_execution_event_write_verification_failed");
   }
