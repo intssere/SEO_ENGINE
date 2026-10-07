@@ -25,14 +25,16 @@ const p122L1018RepairBundle = await readFile(path.join(distDir, "p12-2-l10-18-pa
 const p122L1018RepairSourceMap = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-finalization-repair.mjs.map"), "utf8");
 const p122L1018PostRepairBundle = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-post-repair-cert.mjs"), "utf8");
 const p122L1018PostRepairSourceMap = await readFile(path.join(distDir, "p12-2-l10-18-packet-014-post-repair-cert.mjs.map"), "utf8");
+const p122L1019PreflightBundle = await readFile(path.join(distDir, "p12-2-l10-19-packet-014-preflight.mjs"), "utf8");
+const p122L1019PreflightSourceMap = await readFile(path.join(distDir, "p12-2-l10-19-packet-014-preflight.mjs.map"), "utf8");
 const p122L1019ApplyBundle = await readFile(path.join(distDir, "p12-2-l10-19-a-0011-apply.mjs"), "utf8");
 const p122L1019ApplySourceMap = await readFile(path.join(distDir, "p12-2-l10-19-a-0011-apply.mjs.map"), "utf8");
 const p122L1019PostMigrationBundle = await readFile(path.join(distDir, "p12-2-l10-19-b-0011-post-cert.mjs"), "utf8");
 const p122L1019PostMigrationSourceMap = await readFile(path.join(distDir, "p12-2-l10-19-b-0011-post-cert.mjs.map"), "utf8");
 const p122L1019DispositionBundle = await readFile(path.join(distDir, "p12-2-l10-19-packet-014-expected-absence-disposition.mjs"), "utf8");
 const p122L1019DispositionSourceMap = await readFile(path.join(distDir, "p12-2-l10-19-packet-014-expected-absence-disposition.mjs.map"), "utf8");
-const p122L1019PostDispositionBundle = await readFile(path.join(distDir, "p12-2-l10-19-c-post-disposition-cert.mjs"), "utf8");
-const p122L1019PostDispositionSourceMap = await readFile(path.join(distDir, "p12-2-l10-19-c-post-disposition-cert.mjs.map"), "utf8");
+const p122L1019PostDispositionBundle = await readFile(path.join(distDir, "p12-2-l10-19-c-packet-014-post-disposition-cert.mjs"), "utf8");
+const p122L1019PostDispositionSourceMap = await readFile(path.join(distDir, "p12-2-l10-19-c-packet-014-post-disposition-cert.mjs.map"), "utf8");
 const provenanceRaw = await readFile(path.join(distDir, "build-provenance.json"), "utf8");
 const provenance = JSON.parse(provenanceRaw);
 function git(args) {
@@ -318,6 +320,24 @@ const requiredP122L1018PostRepairSourceMarkers = [
   "lib/p12-2-l1a-e9-runtime-transport.ts",
 ];
 
+const requiredP122L1019PreflightBundleMarkers = [
+  "p12-2-l10-19-packet-014-expected-absence-preflight-v1",
+  "AUTHORIZE:P12_2_L10_19_PACKET_014_PRE_EXEC_READ_ONLY:",
+  "P12_2_L10_19_PREFLIGHT_AUTHORIZATION_LITERAL",
+  "P12_2_L10_19_PREFLIGHT_POSTGRES_SERVICE_ID",
+  "default_transaction_read_only=on",
+  "historical_absence_http_status",
+  "permanent_http",
+  "http_status",
+  "terminal_guard",
+];
+
+const requiredP122L1019PreflightSourceMarkers = [
+  "src/p12-2-l10-19-packet-014-preflight-cli.ts",
+  "lib/p12-2-l10-19-packet-014-preflight.ts",
+  "lib/p12-2-l1a-e9-runtime-transport.ts",
+];
+
 const requiredP122L1019ApplyBundleMarkers = [
   "p12-2-l10-19-a-0011-expected-absence-schema-apply-v1",
   "0011_first_party_crawl_expected_absence_disposition.sql",
@@ -325,6 +345,8 @@ const requiredP122L1019ApplyBundleMarkers = [
   "07a0ad844d34b401a8972a70a4bf767cf0c8853679ce5203c8a9f1b35bb9a700",
   "AUTHORIZE:P12_2_L10_19_0011_APPLY:",
   "P12_2_L10_19_A_AUTHORIZATION_LITERAL",
+  "permanent_http",
+  "httpStatus",
   "first_party_crawl_terminal_failure_dispositions",
   "first_party_crawl_terminal_failure_reconciliation_receipts",
 ];
@@ -379,7 +401,7 @@ const requiredP122L1019PostDispositionBundleMarkers = [
   "AUTHORIZE:P12_2_L10_19_PACKET_014_POST_DISPOSITION_READ_ONLY:",
   "P12_2_L10_19_C_AUTHORIZATION_LITERAL",
   "P12_2_L10_19_DISPOSITION_DEPLOYMENT_ID",
-  "P12_2_L10_19_DISPOSITION_IMAGE",
+  "P12_2_L10_19_VERIFIER_IMAGE",
   "default_transaction_read_only=on",
   "certified_with_expected_absence",
   "invalid_or_partial_disposition",
@@ -387,8 +409,8 @@ const requiredP122L1019PostDispositionBundleMarkers = [
 ];
 
 const requiredP122L1019PostDispositionSourceMarkers = [
-  "src/p12-2-l10-19-c-post-disposition-cert-cli.ts",
-  "lib/p12-2-l10-19-c-post-disposition-certification.ts",
+  "src/p12-2-l10-19-c-packet-014-post-disposition-cert-cli.ts",
+  "lib/p12-2-l10-19-c-packet-014-post-disposition-certification.ts",
   "lib/p12-2-l1a-e9-runtime-transport.ts",
 ];
 
@@ -431,6 +453,8 @@ const missingP122L1018RepairBundleMarkers = requiredP122L1018RepairBundleMarkers
 const missingP122L1018RepairSourceMarkers = requiredP122L1018RepairSourceMarkers.filter((marker) => !p122L1018RepairSourceMap.includes(marker));
 const missingP122L1018PostRepairBundleMarkers = requiredP122L1018PostRepairBundleMarkers.filter((marker) => !p122L1018PostRepairBundle.includes(marker));
 const missingP122L1018PostRepairSourceMarkers = requiredP122L1018PostRepairSourceMarkers.filter((marker) => !p122L1018PostRepairSourceMap.includes(marker));
+const missingP122L1019PreflightBundleMarkers = requiredP122L1019PreflightBundleMarkers.filter((marker) => !p122L1019PreflightBundle.includes(marker));
+const missingP122L1019PreflightSourceMarkers = requiredP122L1019PreflightSourceMarkers.filter((marker) => !p122L1019PreflightSourceMap.includes(marker));
 const missingP122L1019ApplyBundleMarkers = requiredP122L1019ApplyBundleMarkers.filter((marker) => !p122L1019ApplyBundle.includes(marker));
 const missingP122L1019ApplySourceMarkers = requiredP122L1019ApplySourceMarkers.filter((marker) => !p122L1019ApplySourceMap.includes(marker));
 const missingP122L1019PostMigrationBundleMarkers = requiredP122L1019PostMigrationBundleMarkers.filter((marker) => !p122L1019PostMigrationBundle.includes(marker));
@@ -459,6 +483,8 @@ if (
   missingP122L1018RepairSourceMarkers.length > 0 ||
   missingP122L1018PostRepairBundleMarkers.length > 0 ||
   missingP122L1018PostRepairSourceMarkers.length > 0 ||
+  missingP122L1019PreflightBundleMarkers.length > 0 ||
+  missingP122L1019PreflightSourceMarkers.length > 0 ||
   missingP122L1019ApplyBundleMarkers.length > 0 ||
   missingP122L1019ApplySourceMarkers.length > 0 ||
   missingP122L1019PostMigrationBundleMarkers.length > 0 ||
@@ -487,6 +513,8 @@ if (
     missingP122L1018RepairSourceMarkers.length > 0 ? `P12.2 L10.18 repair source-map markers: ${missingP122L1018RepairSourceMarkers.join(", ")}` : null,
     missingP122L1018PostRepairBundleMarkers.length > 0 ? `P12.2 L10.18 post-repair bundle markers: ${missingP122L1018PostRepairBundleMarkers.join(", ")}` : null,
     missingP122L1018PostRepairSourceMarkers.length > 0 ? `P12.2 L10.18 post-repair source-map markers: ${missingP122L1018PostRepairSourceMarkers.join(", ")}` : null,
+    missingP122L1019PreflightBundleMarkers.length > 0 ? `P12.2 L10.19 preflight bundle markers: ${missingP122L1019PreflightBundleMarkers.join(", ")}` : null,
+    missingP122L1019PreflightSourceMarkers.length > 0 ? `P12.2 L10.19 preflight source-map markers: ${missingP122L1019PreflightSourceMarkers.join(", ")}` : null,
     missingP122L1019ApplyBundleMarkers.length > 0 ? `P12.2 L10.19 migration apply bundle markers: ${missingP122L1019ApplyBundleMarkers.join(", ")}` : null,
     missingP122L1019ApplySourceMarkers.length > 0 ? `P12.2 L10.19 migration apply source-map markers: ${missingP122L1019ApplySourceMarkers.join(", ")}` : null,
     missingP122L1019PostMigrationBundleMarkers.length > 0 ? `P12.2 L10.19 post-migration bundle markers: ${missingP122L1019PostMigrationBundleMarkers.join(", ")}` : null,
@@ -500,4 +528,4 @@ if (
   throw new Error(`Production API bundle verification failed; stale or incomplete build detected (${details}).`);
 }
 
-console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, P12.2 manual/live execution surfaces through L10.18, and the L10.19 migration-0011 apply, post-migration read-only cert, expected-absence disposition, and post-disposition read-only cert executables are present.");
+console.log("Production API bundle verification passed: source provenance identity/fingerprint, Tasks #51–#54 execution safety foundations, Task #55 authentication/RBAC/CSRF security foundation, P12.2 manual/live execution surfaces through L10.18, and the complete L10.19 historical-absence preflight, migration-0011 apply, post-migration read-only cert, expected-absence disposition, and post-disposition read-only cert executables are present.");
