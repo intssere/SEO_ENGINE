@@ -20,7 +20,8 @@
     "test:p8-8-w07-persistence-ephemeral": "tsx --test src/lib/p8-8-policy-single-action-store.ephemeral.test.ts",
     "test:p8-8-w09b-evidence-ephemeral": "tsx --test src/lib/p8-8-w09b-readonly-acquisition.ephemeral.test.ts",
     "ugp:4.6l-r:attest": "tsx ./src/lib/webflow-captured-evidence-cli.ts",
-    "test:ugp-10-3-persistence-ephemeral": "tsx --test src/lib/authority-outreach-review-store.ephemeral.test.ts"
+    "test:ugp-10-3-persistence-ephemeral": "tsx --test src/lib/authority-outreach-review-store.ephemeral.test.ts",
+    "test:ugp-10-31-persistence-ephemeral": "tsx --test src/lib/authority-outreach-outbound-safety-store.ephemeral.test.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
