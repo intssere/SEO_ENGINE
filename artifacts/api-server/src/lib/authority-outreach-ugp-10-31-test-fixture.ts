@@ -499,6 +499,10 @@ function fixture(
     );
 
   return {
+    request:ready.request,
+    candidate,
+    contactPointType:contactKind,
+    contactPointValue,
     policyConsentDecision,
     policyConsentDecisionInput,
   };
