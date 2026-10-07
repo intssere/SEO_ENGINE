@@ -34,7 +34,7 @@ test("UGP-10.31 migration source is additive, transactional, bounded, and contai
   assert.match(source, /COMMIT;\s*$/);
   assert.equal((source.match(/\bCREATE\s+TABLE\s+/gi) ?? []).length, 3);
   assert.equal((source.match(/\bCREATE\s+(?:UNIQUE\s+)?INDEX\s+/gi) ?? []).length, 6);
-  assert.equal((source.match(/\bCREATE\s+TRIGGER\s+/gi) ?? []).length, 4);
+  assert.equal((source.match(/\bCREATE\s+TRIGGER\s+/gi) ?? []).length, 6);
   assert.equal((source.match(/\bCREATE\s+FUNCTION\s+/gi) ?? []).length, 1);
   assert.match(source, /CREATE TABLE authority_outreach_suppressions/);
   assert.match(source, /CREATE TABLE authority_outreach_send_reservations/);
@@ -111,12 +111,14 @@ test("UGP-10.31 migration applies only to localhost UGP-10.3 baseline and immuta
   );
 
   const triggers = await sql.unsafe<{ table_name: string; tgname: string }[]>(
-    "SELECT c.relname AS table_name,t.tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid WHERE NOT t.tgisinternal AND c.relname IN ('authority_outreach_suppressions','authority_outreach_send_safety_events') ORDER BY c.relname,t.tgname",
+    "SELECT c.relname AS table_name,t.tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid WHERE NOT t.tgisinternal AND c.relname IN ('authority_outreach_suppressions','authority_outreach_send_reservations','authority_outreach_send_safety_events') ORDER BY c.relname,t.tgname",
   );
   assert.deepEqual(
     triggers.map((row) => row.table_name + ":" + row.tgname),
     [
       "authority_outreach_send_safety_events:authority_outreach_send_safety_events_reject_truncate",
+      "authority_outreach_send_reservations:authority_outreach_send_reservations_reject_delete",
+      "authority_outreach_send_reservations:authority_outreach_send_reservations_reject_truncate",
       "authority_outreach_send_safety_events:authority_outreach_send_safety_events_reject_update_delete",
       "authority_outreach_suppressions:authority_outreach_suppressions_reject_truncate",
       "authority_outreach_suppressions:authority_outreach_suppressions_reject_update_delete",
@@ -187,6 +189,8 @@ test("UGP-10.31 migration applies only to localhost UGP-10.3 baseline and immuta
       ["suppression_update", "UPDATE authority_outreach_suppressions SET reason_code='compliance_hold'"],
       ["suppression_delete", "DELETE FROM authority_outreach_suppressions"],
       ["suppression_truncate", "TRUNCATE authority_outreach_suppressions"],
+      ["reservation_delete", "DELETE FROM authority_outreach_send_reservations"],
+      ["reservation_truncate", "TRUNCATE authority_outreach_send_reservations"],
       ["event_update", "UPDATE authority_outreach_send_safety_events SET event_reason='operator_release'"],
       ["event_delete", "DELETE FROM authority_outreach_send_safety_events"],
       ["event_truncate", "TRUNCATE authority_outreach_send_safety_events"],
