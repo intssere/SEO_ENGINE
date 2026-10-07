@@ -31,11 +31,7 @@
     "test:p8-8-w06-persistence-ephemeral": "tsx --test src/lib/p8-8-policy-preflight-store.ephemeral.test.ts",
     "test:p8-8-w07-persistence-ephemeral": "tsx --test src/lib/p8-8-policy-single-action-store.ephemeral.test.ts",
     "test:p8-8-w09b-evidence-ephemeral": "tsx --test src/lib/p8-8-w09b-readonly-acquisition.ephemeral.test.ts",
-    "test:p12-2-l10-13b-persistence-ephemeral": "tsx --test src/lib/first-party-crawl-terminal-recovery.ephemeral.test.ts",
-    "p12-2:l10-19-a-0011-apply": "node --enable-source-maps ./dist/p12-2-l10-19-a-0011-apply.mjs",
-    "p12-2:l10-19-b-0011-post-cert": "node --enable-source-maps ./dist/p12-2-l10-19-b-0011-post-cert.mjs",
-    "p12-2:l10-19-expected-absence-disposition": "node --enable-source-maps ./dist/p12-2-l10-19-packet-014-expected-absence-disposition.mjs",
-    "p12-2:l10-19-c-post-disposition-cert": "node --enable-source-maps ./dist/p12-2-l10-19-c-post-disposition-cert.mjs"
+    "test:p12-2-l10-13b-persistence-ephemeral": "tsx --test src/lib/first-party-crawl-terminal-recovery.ephemeral.test.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
