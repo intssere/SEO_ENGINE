@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { buildBacklinkEvidenceDataset } from "./backlink-evidence-contract.js";
 import { discoverAuthorityOpportunities } from "./authority-opportunity-discovery.js";
 import { qualifyAuthorityProspects } from "./authority-prospect-qualification.js";
