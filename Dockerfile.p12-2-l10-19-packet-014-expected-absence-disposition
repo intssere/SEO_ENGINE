@@ -1,0 +1,24 @@
+FROM node:24.19.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS build
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+WORKDIR /app
+ARG EXPECTED_CANONICAL_COMMIT
+ARG EXPECTED_CANONICAL_TREE
+ARG EXPECTED_SOURCE_BRANCH
+ENV EXPECTED_CANONICAL_COMMIT=$EXPECTED_CANONICAL_COMMIT
+ENV EXPECTED_CANONICAL_TREE=$EXPECTED_CANONICAL_TREE
+ENV EXPECTED_SOURCE_BRANCH=$EXPECTED_SOURCE_BRANCH
+RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
+COPY . .
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @workspace/api-server run build:production
+RUN test -s /app/artifacts/api-server/dist/p12-2-l10-19-packet-014-expected-absence-disposition.mjs
+RUN test -s /app/artifacts/api-server/dist/p12-2-l10-19-packet-014-expected-absence-disposition.mjs.map
+
+FROM node:24.19.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=build --chown=node:node /app/artifacts/api-server/dist/p12-2-l10-19-packet-014-expected-absence-disposition.mjs ./p12-2-l10-19-packet-014-expected-absence-disposition.mjs
+COPY --from=build --chown=node:node /app/artifacts/api-server/dist/p12-2-l10-19-packet-014-expected-absence-disposition.mjs.map ./p12-2-l10-19-packet-014-expected-absence-disposition.mjs.map
+USER node
+CMD ["node","--enable-source-maps","/app/p12-2-l10-19-packet-014-expected-absence-disposition.mjs"]

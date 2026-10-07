@@ -25,6 +25,9 @@ export const EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT = EXPECTED_P8_8_W07_TABLE_COU
 export const EXPECTED_P12_2_L10_13B_RECOVERY_TABLE_COUNT = 3;
 export const EXPECTED_P12_2_L10_13B_TABLE_COUNT =
   EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT + EXPECTED_P12_2_L10_13B_RECOVERY_TABLE_COUNT;
+export const EXPECTED_P12_2_L10_19_DISPOSITION_TABLE_COUNT = 2;
+export const EXPECTED_P12_2_L10_19_TABLE_COUNT =
+  EXPECTED_P12_2_L10_13B_TABLE_COUNT + EXPECTED_P12_2_L10_19_DISPOSITION_TABLE_COUNT;
 export const DIAMOND_SHELF_SITE = {
   organizationName: "Diamond Shelf Trading LLC",
   organizationSlug: "diamond-shelf-trading",
@@ -46,7 +49,9 @@ export type RuntimeSchemaState =
   | "p8_8_w07_ready"
   | "p12_2_l2_production_ready"
   | "p12_2_l10_13b_production_ready"
+  | "p12_2_l10_19_production_ready"
   | "p12_2_l10_13b_ready"
+  | "p12_2_l10_19_ready"
   | "partial";
 
 export interface BootstrapPlan {
@@ -78,6 +83,7 @@ export interface RuntimeIdentitySchemaShape {
   policyDispatchTableCount: number;
   l2InvocationTable: boolean;
   recoveryTableCount: number;
+  dispositionTableCount: number;
 }
 
 export function classifyRuntimeIdentitySchema(
@@ -109,20 +115,41 @@ export function classifyRuntimeIdentitySchema(
       !shape.policyReservationTable &&
       shape.policyControlTableCount === 0 &&
       shape.policyDispatchTableCount === 0 &&
-      shape.recoveryTableCount === 3
+      shape.recoveryTableCount === 3 &&
+      shape.dispositionTableCount === 0
     ) return "p12_2_l10_13b_production_ready";
     if (
       !shape.l2InvocationTable &&
       shape.policyReservationTable &&
       shape.policyControlTableCount === 3 &&
       shape.policyDispatchTableCount === 0 &&
-      shape.recoveryTableCount === 0
+      shape.recoveryTableCount === 0 &&
+      shape.dispositionTableCount === 0
     ) return "p8_8_w05_ready";
     return "partial";
   }
-  if (tableCount === EXPECTED_P8_8_W07_TABLE_COUNT) return "p8_8_w07_ready";
+  if (tableCount === 43) {
+    if (
+      shape.l2InvocationTable &&
+      !shape.policyReservationTable &&
+      shape.policyControlTableCount === 0 &&
+      shape.policyDispatchTableCount === 0 &&
+      shape.recoveryTableCount === 3 &&
+      shape.dispositionTableCount === 2
+    ) return "p12_2_l10_19_production_ready";
+    if (
+      !shape.l2InvocationTable &&
+      shape.policyReservationTable &&
+      shape.policyControlTableCount === 3 &&
+      shape.policyDispatchTableCount === 2 &&
+      shape.recoveryTableCount === 0 &&
+      shape.dispositionTableCount === 0
+    ) return "p8_8_w07_ready";
+    return "partial";
+  }
   if (tableCount === EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT) return "p8_8_w07_ready";
   if (tableCount === EXPECTED_P12_2_L10_13B_TABLE_COUNT) return "p12_2_l10_13b_ready";
+  if (tableCount === EXPECTED_P12_2_L10_19_TABLE_COUNT) return "p12_2_l10_19_ready";
   return "partial";
 }
 
@@ -228,12 +255,15 @@ export function planRuntimeBootstrap(tableCount: number): BootstrapPlan {
 
   if (
     tableCount === EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT ||
-    tableCount === EXPECTED_P12_2_L10_13B_TABLE_COUNT
+    tableCount === EXPECTED_P12_2_L10_13B_TABLE_COUNT ||
+    tableCount === EXPECTED_P12_2_L10_19_TABLE_COUNT
   ) {
     return {
-      schemaState: tableCount === EXPECTED_P12_2_L10_13B_TABLE_COUNT
-        ? "p12_2_l10_13b_ready"
-        : "p8_8_w07_ready",
+      schemaState: tableCount === EXPECTED_P12_2_L10_19_TABLE_COUNT
+        ? "p12_2_l10_19_ready"
+        : tableCount === EXPECTED_P12_2_L10_13B_TABLE_COUNT
+          ? "p12_2_l10_13b_ready"
+          : "p8_8_w07_ready",
       tableCount,
       applyCoreMigration: false,
       applyAuthMigration: false,
@@ -250,7 +280,7 @@ export function planRuntimeBootstrap(tableCount: number): BootstrapPlan {
     applyAuthMigration: false,
     upsertDiamondShelf: false,
     blocked: true,
-    reason: `Refusing automatic migration because public schema is not a recognized state (${tableCount} tables; expected 0, ${EXPECTED_CORE_TABLE_COUNT}, ${EXPECTED_RUNTIME_TABLE_COUNT}, ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, ${EXPECTED_P8_8_W04_TABLE_COUNT}, or ${EXPECTED_P8_8_W05_TABLE_COUNT}, ${EXPECTED_P8_8_W07_TABLE_COUNT}, ${EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT}, or ${EXPECTED_P12_2_L10_13B_TABLE_COUNT}).`,
+    reason: `Refusing automatic migration because public schema is not a recognized state (${tableCount} tables; expected 0, ${EXPECTED_CORE_TABLE_COUNT}, ${EXPECTED_RUNTIME_TABLE_COUNT}, ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, ${EXPECTED_P8_8_W04_TABLE_COUNT}, or ${EXPECTED_P8_8_W05_TABLE_COUNT}, ${EXPECTED_P8_8_W07_TABLE_COUNT}, ${EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT}, or ${EXPECTED_P12_2_L10_13B_TABLE_COUNT}, or ${EXPECTED_P12_2_L10_19_TABLE_COUNT}).`,
   };
 }
 
@@ -270,6 +300,7 @@ async function runtimeIdentitySchemaShape(sql: postgres.Sql): Promise<RuntimeIde
     policy_dispatch_table_count: number;
     l2_invocation_table: boolean;
     recovery_table_count: number;
+    disposition_table_count: number;
   }[]>`
     SELECT
       to_regclass('public.policy_mutation_reservations') IS NOT NULL AS policy_reservation_table,
@@ -287,7 +318,11 @@ async function runtimeIdentitySchemaShape(sql: postgres.Sql): Promise<RuntimeIde
         (to_regclass('public.first_party_crawl_terminal_failure_events') IS NOT NULL)::int +
         (to_regclass('public.first_party_crawl_accounting_snapshots') IS NOT NULL)::int +
         (to_regclass('public.first_party_crawl_terminal_failure_recovery_receipts') IS NOT NULL)::int
-      ) AS recovery_table_count
+      ) AS recovery_table_count,
+      (
+        (to_regclass('public.first_party_crawl_terminal_failure_dispositions') IS NOT NULL)::int +
+        (to_regclass('public.first_party_crawl_terminal_failure_reconciliation_receipts') IS NOT NULL)::int
+      ) AS disposition_table_count
   `;
   const row = rows[0];
   return {
@@ -296,6 +331,7 @@ async function runtimeIdentitySchemaShape(sql: postgres.Sql): Promise<RuntimeIde
     policyDispatchTableCount: Number(row?.policy_dispatch_table_count ?? 0),
     l2InvocationTable: row?.l2_invocation_table ?? false,
     recoveryTableCount: Number(row?.recovery_table_count ?? 0),
+    dispositionTableCount: Number(row?.disposition_table_count ?? 0),
   };
 }
 
@@ -479,7 +515,7 @@ export async function ensureDiamondShelfIdentity(
         reason:
           tableCount === 0
             ? "Public schema is empty; apply runtime migrations explicitly."
-            : `Public schema is not a recognized current/future engineering state (${tableCount} tables; expected ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, ${EXPECTED_P8_8_W04_TABLE_COUNT}, or ${EXPECTED_P8_8_W05_TABLE_COUNT}, ${EXPECTED_P8_8_W07_TABLE_COUNT}, ${EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT}, or ${EXPECTED_P12_2_L10_13B_TABLE_COUNT}).`,
+            : `Public schema is not a recognized current/future engineering state (${tableCount} tables; expected ${EXPECTED_CURRENT_TABLE_COUNT}, ${EXPECTED_P12_2_TABLE_COUNT}, ${EXPECTED_P8_8_W04_TABLE_COUNT}, or ${EXPECTED_P8_8_W05_TABLE_COUNT}, ${EXPECTED_P8_8_W07_TABLE_COUNT}, ${EXPECTED_P12_2_L2_DURABLE_TABLE_COUNT}, or ${EXPECTED_P12_2_L10_13B_TABLE_COUNT}, or ${EXPECTED_P12_2_L10_19_TABLE_COUNT}).`,
       };
     }
     const identities = await sql<
