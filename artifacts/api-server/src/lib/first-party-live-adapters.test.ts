@@ -13,10 +13,12 @@ import {
 import {
   DIAMOND_SHELF_SITE_ID,
   P12_2_DEFAULT_TRANSIENT_PAGE_BYTES,
+  FirstPartySitemapHttpStatusError,
   createFirstPartyPageTransport,
   createFirstPartyRobotsEvaluator,
   createFirstPartySitemapAcquirer,
   firstPartyLiveAdapterCapability,
+  firstPartyLiveFailureDiagnostics,
   parseRobotsPolicy,
   robotsAllows,
 } from "./first-party-live-adapters.js";
@@ -123,6 +125,30 @@ test("sitemap acquisition recursively follows exact-origin indexes without netwo
     DIAMOND_SHELF_CANONICAL_ORIGIN + "/products.xml?from=100&to=200",
   ]);
   assert.deepEqual(documents.map((item) => item.url), calls);
+});
+
+test("sitemap acquisition preserves exact same-origin URL and HTTP status in bounded diagnostics", async () => {
+  const fetchImpl: typeof fetch = async () => new Response("", { status: 503 });
+
+  let caught: unknown;
+  try {
+    await createFirstPartySitemapAcquirer({
+      maxTransientPageBytes: P12_2_DEFAULT_TRANSIENT_PAGE_BYTES,
+      fetchImpl,
+    }).load(sitemapRequest());
+    assert.fail("expected sitemap HTTP status failure");
+  } catch (error) {
+    caught = error;
+  }
+
+  assert.ok(caught instanceof FirstPartySitemapHttpStatusError);
+  assert.equal(caught.message, "p12_2_live_sitemap_http_status");
+  assert.equal(caught.sitemapUrl, DIAMOND_SHELF_CANONICAL_ORIGIN + "/sitemap.xml");
+  assert.equal(caught.httpStatus, 503);
+  assert.deepEqual(firstPartyLiveFailureDiagnostics(caught), {
+    sitemapUrl: DIAMOND_SHELF_CANONICAL_ORIGIN + "/sitemap.xml",
+    sitemapHttpStatus: 503,
+  });
 });
 
 test("sitemap acquisition fails closed on cross-origin redirect, depth and response byte limits", async () => {
