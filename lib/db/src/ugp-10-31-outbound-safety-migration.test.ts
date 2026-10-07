@@ -132,7 +132,7 @@ test("UGP-10.31 migration applies only to localhost UGP-10.3 baseline and immuta
   await sql.unsafe("BEGIN");
   try {
     await sql.unsafe(
-      "INSERT INTO authority_outreach_suppressions(suppression_id,suppression_version,suppression_fingerprint,site_id,target_domain,contact_point_fingerprint,reason_code,suppressed_by,suppressed_at) VALUES($1,$2,$3,$4::uuid,$5,$6,$7,$8,$9::timestamptz)",
+      "INSERT INTO authority_outreach_suppressions(suppression_id,suppression_version,suppression_fingerprint,site_id,recipient_domain,contact_point_fingerprint,reason_code,suppressed_by,suppressed_at) VALUES($1,$2,$3,$4::uuid,$5,$6,$7,$8,$9::timestamptz)",
       [
         "uaos-" + "a".repeat(24),
         "ugp-10-31-outbound-suppression-v1",
@@ -147,7 +147,7 @@ test("UGP-10.31 migration applies only to localhost UGP-10.3 baseline and immuta
     );
 
     await sql.unsafe(
-      "INSERT INTO authority_outreach_send_reservations(reservation_id,reservation_version,reservation_fingerprint,logical_send_key,site_id,delivery_binding_authorization_decision_fingerprint,delivery_binding_authorization_review_spec_fingerprint,prospect_fingerprint,opportunity_fingerprint,candidate_fingerprint,selected_role_candidate_fingerprint,selected_contact_point_fingerprint,send_review_fingerprint,quality_gate_fingerprint,target_domain,status,reserved_at,expires_at) VALUES($1,$2,$3,$4,$5::uuid,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'reserved',$16::timestamptz,$17::timestamptz)",
+      "INSERT INTO authority_outreach_send_reservations(reservation_id,reservation_version,reservation_fingerprint,logical_send_key,site_id,delivery_binding_authorization_decision_fingerprint,delivery_binding_authorization_review_spec_fingerprint,prospect_fingerprint,opportunity_fingerprint,candidate_fingerprint,selected_role_candidate_fingerprint,selected_contact_point_fingerprint,send_review_fingerprint,quality_gate_fingerprint,recipient_domain,status,reserved_at,expires_at) VALUES($1,$2,$3,$4,$5::uuid,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'reserved',$16::timestamptz,$17::timestamptz)",
       [
         "uaosr-" + "c".repeat(24),
         "ugp-10-31-outbound-safety-reservation-v1",
