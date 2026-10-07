@@ -85,6 +85,12 @@ function wrapperSql(): string {
           AND event_type='terminal_failure'
           AND source_event_fingerprint IS NULL
           AND event_fingerprint='${P12_2_L10_19_A_FAILURE_EVENT_FINGERPRINT}'
+          AND event_payload->>'fingerprint'=event_fingerprint
+          AND event_payload->>'eventType'='terminal_failure'
+          AND event_payload->>'decisionReason'='permanent_http'
+          AND event_payload->'outcome'->>'kind'='failure'
+          AND event_payload->'outcome'->'signal'->>'kind'='http_status'
+          AND (event_payload->'outcome'->'signal'->>'httpStatus')::integer IN (404,410)
       )
       AND EXISTS (
         SELECT 1 FROM first_party_crawl_accounting_snapshots
@@ -158,6 +164,12 @@ function wrapperSql(): string {
         SELECT 1 FROM first_party_crawl_terminal_failure_events
         WHERE event_fingerprint='${P12_2_L10_19_A_FAILURE_EVENT_FINGERPRINT}'
           AND canonical_url='${P12_2_L10_19_A_FAILURE_URL}'
+          AND event_payload->>'fingerprint'=event_fingerprint
+          AND event_payload->>'eventType'='terminal_failure'
+          AND event_payload->>'decisionReason'='permanent_http'
+          AND event_payload->'outcome'->>'kind'='failure'
+          AND event_payload->'outcome'->'signal'->>'kind'='http_status'
+          AND (event_payload->'outcome'->'signal'->>'httpStatus')::integer IN (404,410)
       )
       AND EXISTS (
         SELECT 1 FROM first_party_crawl_accounting_snapshots
