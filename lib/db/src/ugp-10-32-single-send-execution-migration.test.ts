@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -8,6 +9,10 @@ import {
   EXPECTED_UGP_10_32_TABLE_COUNT,
   ensureDiamondShelfIdentity,
 } from "./runtime-bootstrap.js";
+
+function H(value:string):string{
+  return createHash("sha256").update(value).digest("hex");
+}
 
 function migrationPath():string{
   return fileURLToPath(
@@ -89,32 +94,41 @@ test("UGP-10.32 migration applies only to localhost 47-table baseline and preser
 
   await sql.unsafe("BEGIN");
   try{
-    const reservationFp="9".repeat(64);
+    const reservationFp=H("ugp10-32-migration-reservation");
     const reservationId="uaosr-"+reservationFp.slice(0,24);
     await sql.unsafe(
       "INSERT INTO authority_outreach_send_reservations(reservation_id,reservation_version,reservation_fingerprint,logical_send_key,site_id,delivery_binding_authorization_decision_fingerprint,delivery_binding_authorization_review_spec_fingerprint,prospect_fingerprint,opportunity_fingerprint,candidate_fingerprint,selected_role_candidate_fingerprint,selected_contact_point_fingerprint,send_review_fingerprint,quality_gate_fingerprint,recipient_domain,status,reserved_at,expires_at) VALUES($1,'ugp-10-31-outbound-safety-reservation-v1',$2,$3,$4::uuid,$5,$6,$7,$8,$9,$10,$11,$12,$13,'publisher.example.org','reserved',transaction_timestamp(),transaction_timestamp()+interval '15 minutes')",
       [
-        reservationId,reservationFp,"8".repeat(64),site[0].id,
-        "1".repeat(64),"2".repeat(64),"3".repeat(64),"4".repeat(64),
-        "5".repeat(64),"6".repeat(64),"7".repeat(64),"a".repeat(64),
-        "b".repeat(64),
+        reservationId,
+        reservationFp,
+        H("ugp10-32-migration-logical-send"),
+        site[0].id,
+        H("ugp10-32-migration-authorization-decision"),
+        H("ugp10-32-migration-authorization-review"),
+        H("ugp10-32-migration-prospect"),
+        H("ugp10-32-migration-opportunity"),
+        H("ugp10-32-migration-candidate"),
+        H("ugp10-32-migration-role"),
+        H("ugp10-32-migration-contact"),
+        H("ugp10-32-migration-send-review"),
+        H("ugp10-32-migration-quality-gate"),
       ],
     );
     const reservation=[{
       reservation_id:reservationId,
       reservation_fingerprint:reservationFp,
     }];
-    const executionFp="c".repeat(64);
+    const executionFp=H("ugp10-32-migration-execution");
     const executionId="uaosx-"+executionFp.slice(0,24);
     await sql.unsafe(
       "INSERT INTO authority_outreach_single_send_executions(execution_id,execution_version,execution_fingerprint,reservation_id,reservation_fingerprint,site_id,selected_contact_point_fingerprint,candidate_fingerprint,payload_fingerprint,adapter_class,state,attempt_count,claimed_at) VALUES($1,'ugp-10-32-single-send-execution-v1',$2,$3,$4,$5::uuid,$6,$7,$8,'mock','claimed',1,transaction_timestamp())",
       [
         executionId,executionFp,reservation[0].reservation_id,
         reservation[0].reservation_fingerprint,site[0].id,
-        "b".repeat(64),"c".repeat(64),"d".repeat(64),
+        H("ugp10-32-migration-exec-contact"),H("ugp10-32-migration-exec-candidate"),H("ugp10-32-migration-exec-payload"),
       ],
     );
-    const eventFp="e".repeat(64);
+    const eventFp=H("ugp10-32-migration-event");
     await sql.unsafe(
       "INSERT INTO authority_outreach_single_send_execution_events(event_id,event_version,event_fingerprint,execution_id,execution_fingerprint,reservation_id,site_id,sequence,previous_event_fingerprint,event_type,event_reason,adapter_receipt_fingerprint,actor_id,occurred_at) VALUES($1,'ugp-10-32-single-send-execution-event-v1',$2,$3,$4,$5,$6::uuid,1,NULL,'claimed','execution_preflight_passed',NULL,'fixture:migration',transaction_timestamp())",
       [
@@ -143,7 +157,7 @@ test("UGP-10.32 migration applies only to localhost 47-table baseline and preser
 
     await sql.unsafe(
       "UPDATE authority_outreach_single_send_executions SET state='uncertain',completed_at=transaction_timestamp(),adapter_receipt_fingerprint=$2,terminal_reason='migration_test_uncertain',updated_at=transaction_timestamp() WHERE execution_id=$1",
-      [executionId,"f".repeat(64)],
+      [executionId,H("ugp10-32-migration-terminal-receipt")],
     );
     const state=await sql.unsafe<{state:string}[]>(
       "SELECT state FROM authority_outreach_single_send_executions WHERE execution_id=$1",
