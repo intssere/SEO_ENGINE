@@ -96,6 +96,12 @@ const VALID_STATE = `
       AND event_type='terminal_failure'
       AND source_event_fingerprint IS NULL
       AND event_fingerprint='${P12_2_L10_19_A_FAILURE_EVENT_FINGERPRINT}'
+      AND event_payload->>'fingerprint'=event_fingerprint
+      AND event_payload->>'eventType'='terminal_failure'
+      AND event_payload->>'decisionReason'='permanent_http'
+      AND event_payload->'outcome'->>'kind'='failure'
+      AND event_payload->'outcome'->'signal'->>'kind'='http_status'
+      AND (event_payload->'outcome'->'signal'->>'httpStatus')::integer IN (404,410)
   )
   AND EXISTS (
     SELECT 1 FROM first_party_crawl_accounting_snapshots
@@ -170,7 +176,10 @@ export const P12_2_L10_19_B_QUERIES: readonly P122L1019BQuery[] = Object.freeze(
   },
   {
     id: "failure_event_preserved",
-    sql: `SELECT canonical_url, event_type, source_event_fingerprint, event_fingerprint
+    sql: `SELECT canonical_url, event_type, source_event_fingerprint, event_fingerprint,
+      event_payload->>'decisionReason' AS decision_reason,
+      event_payload->'outcome'->'signal'->>'kind' AS signal_kind,
+      event_payload->'outcome'->'signal'->>'httpStatus' AS http_status
       FROM first_party_crawl_terminal_failure_events
       WHERE site_id='${P12_2_L10_19_A_SITE_ID}'::uuid
         AND run_id='${P12_2_L10_19_A_RUN_ID}'
