@@ -27,6 +27,31 @@ export const P12_2_DEFAULT_TRANSIENT_PAGE_BYTES = 262_144;
 export const P12_2_ROBOTS_MAX_BYTES = 1_000_000;
 export const P12_2_SITEMAP_REDIRECT_LIMIT = 3;
 
+export class FirstPartySitemapHttpStatusError extends Error {
+  readonly sitemapUrl: string;
+  readonly httpStatus: number;
+
+  constructor(sitemapUrl: string, httpStatus: number) {
+    super("p12_2_live_sitemap_http_status");
+    this.name = "FirstPartySitemapHttpStatusError";
+    this.sitemapUrl = sitemapUrl;
+    this.httpStatus = httpStatus;
+  }
+}
+
+export function firstPartyLiveFailureDiagnostics(error: unknown): {
+  sitemapUrl?: string;
+  sitemapHttpStatus?: number;
+} {
+  if (error instanceof FirstPartySitemapHttpStatusError) {
+    return {
+      sitemapUrl: error.sitemapUrl,
+      sitemapHttpStatus: error.httpStatus,
+    };
+  }
+  return {};
+}
+
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const SECURITY_ERRORS = new Set([
   "non_public_network_target",
@@ -414,7 +439,9 @@ export function createFirstPartySitemapAcquirer(
           if (redirects > P12_2_SITEMAP_REDIRECT_LIMIT) throw new Error("p12_2_live_sitemap_redirect_limit_exceeded");
           currentUrl = redirect;
         }
-        if (response.status !== 200) throw new Error("p12_2_live_sitemap_http_status");
+        if (response.status !== 200) {
+          throw new FirstPartySitemapHttpStatusError(currentUrl, response.status);
+        }
         const xml = await readBoundedText(response, request.maxDocumentBytes, "p12_2_live_sitemap_document_oversize");
         const parsed = parseSitemapXml(xml);
         documents.push({ url: item.url, xml });
