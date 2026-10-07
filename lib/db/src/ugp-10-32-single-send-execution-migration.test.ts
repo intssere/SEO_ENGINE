@@ -89,14 +89,22 @@ test("UGP-10.32 migration applies only to localhost 47-table baseline and preser
 
   await sql.unsafe("BEGIN");
   try{
-    const executionFp="a".repeat(64);
-    const reservation=await sql.unsafe<{reservation_id:string;reservation_fingerprint:string}[]>(
-      "SELECT reservation_id,reservation_fingerprint FROM authority_outreach_send_reservations ORDER BY reserved_at DESC LIMIT 1",
+    const reservationFp="9".repeat(64);
+    const reservationId="uaosr-"+reservationFp.slice(0,24);
+    await sql.unsafe(
+      "INSERT INTO authority_outreach_send_reservations(reservation_id,reservation_version,reservation_fingerprint,logical_send_key,site_id,delivery_binding_authorization_decision_fingerprint,delivery_binding_authorization_review_spec_fingerprint,prospect_fingerprint,opportunity_fingerprint,candidate_fingerprint,selected_role_candidate_fingerprint,selected_contact_point_fingerprint,send_review_fingerprint,quality_gate_fingerprint,recipient_domain,status,reserved_at,expires_at) VALUES($1,'ugp-10-31-outbound-safety-reservation-v1',$2,$3,$4::uuid,$5,$6,$7,$8,$9,$10,$11,$12,$13,'publisher.example.org','reserved',transaction_timestamp(),transaction_timestamp()+interval '15 minutes')",
+      [
+        reservationId,reservationFp,"8".repeat(64),site[0].id,
+        "1".repeat(64),"2".repeat(64),"3".repeat(64),"4".repeat(64),
+        "5".repeat(64),"6".repeat(64),"7".repeat(64),"a".repeat(64),
+        "b".repeat(64),
+      ],
     );
-    if(!reservation[0]){
-      t.diagnostic("No UGP-10.31 reservation row exists after prior test rollback; structural migration checks remain authoritative.");
-      return;
-    }
+    const reservation=[{
+      reservation_id:reservationId,
+      reservation_fingerprint:reservationFp,
+    }];
+    const executionFp="c".repeat(64);
     const executionId="uaosx-"+executionFp.slice(0,24);
     await sql.unsafe(
       "INSERT INTO authority_outreach_single_send_executions(execution_id,execution_version,execution_fingerprint,reservation_id,reservation_fingerprint,site_id,selected_contact_point_fingerprint,candidate_fingerprint,payload_fingerprint,adapter_class,state,attempt_count,claimed_at) VALUES($1,'ugp-10-32-single-send-execution-v1',$2,$3,$4,$5::uuid,$6,$7,$8,'mock','claimed',1,transaction_timestamp())",
