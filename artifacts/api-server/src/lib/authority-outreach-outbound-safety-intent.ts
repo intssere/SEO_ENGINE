@@ -43,7 +43,8 @@ export type AuthorityOutreachOutboundSafetyIntent = Readonly<{
   selectedContactPointFingerprint: string;
   sendReviewFingerprint: string;
   qualityGateFingerprint: string;
-  targetDomain: string;
+  ownedSiteDomain: string;
+  recipientDomain: string;
   ratePolicy: Readonly<{
     contactMaximumReservations: 1;
     contactWindowSeconds: 604800;
@@ -154,7 +155,7 @@ export function buildAuthorityOutreachOutboundSafetyIntent(
     selectedContactPointFingerprint: decision.selectedContactPointFingerprint,
     sendReviewFingerprint: decision.sendReviewFingerprint,
     candidateFingerprint: decision.candidateFingerprint,
-    targetDomain: decision.targetDomain,
+    recipientDomain: decision.sourceDomain,
   });
 
   const ratePolicy = deepFreeze({
@@ -213,7 +214,8 @@ export function buildAuthorityOutreachOutboundSafetyIntent(
     selectedContactPointFingerprint: decision.selectedContactPointFingerprint,
     sendReviewFingerprint: decision.sendReviewFingerprint,
     qualityGateFingerprint: decision.qualityGateFingerprint,
-    targetDomain: decision.targetDomain,
+    ownedSiteDomain: decision.targetDomain,
+    recipientDomain: decision.sourceDomain,
     ratePolicy,
     semantics,
   };
