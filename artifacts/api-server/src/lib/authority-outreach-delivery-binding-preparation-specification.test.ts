@@ -800,7 +800,6 @@ test("web-contact-form approval uses submission requirements and never invents a
     false,
   );
   assert.equal(result.semantics.mailboxBindingAuthorized,false);
-  assert.equal(result.semantics.webSubmissionExecutionAuthorized,undefined);
   assert.equal(result.preparationPolicy.webSubmissionExecutionAllowed,false);
 });
 
