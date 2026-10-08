@@ -37,6 +37,14 @@ import {
   type CrawlHistorySource,
 } from "./crawl-history-comparison.js";
 import {
+  assertComparableCrawlHistorySourceIntegrity,
+  assertEffectiveComparableCrawlHistoryComparisonIntegrity,
+  buildComparableCrawlHistorySource,
+  compareComparableCrawlHistory,
+  type ComparableCrawlHistorySource,
+  type EffectiveComparableCrawlHistoryComparison,
+} from "./crawl-history-effective-baseline.js";
+import {
   assertIncrementalRecrawlPlanIntegrity,
   type IncrementalRecrawlPlan,
 } from "./incremental-recrawl-planner.js";
@@ -179,6 +187,7 @@ export type FullSiteCrawlBridgeSnapshot = {
   checkpoint: FullSiteCrawlCheckpoint;
   certification: FullSiteCrawlCertification;
   comparisonToPrevious: CrawlHistoryComparison | null;
+  comparableComparisonToPrevious?: EffectiveComparableCrawlHistoryComparison | null;
   persistence: {
     rawResponseBodyPersisted: false;
     rawSitemapXmlPersisted: false;
@@ -332,6 +341,14 @@ export type IncrementalCrawlBridgeReceipt = {
   fingerprint: string;
 };
 
+export type ComparableHistoryBaselinePersistenceRecord = {
+  version: "first_party_crawl_durable_comparable_baseline_v1";
+  snapshot: FullSiteCrawlBridgeSnapshot;
+  comparableSource: ComparableCrawlHistorySource;
+  mode: "raw_completed" | "expected_absence_effective";
+  reconciliationReceiptFingerprint: string | null;
+};
+
 export interface FirstPartyCrawlPersistence {
   loadCheckpoint(input: {
     version: typeof P12_2_CRAWL_BRIDGE_VERSION;
@@ -346,6 +363,11 @@ export interface FirstPartyCrawlPersistence {
     siteId: string;
     canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
   }): Promise<FullSiteCrawlBridgeSnapshot | null>;
+  loadLatestComparableHistoryBaseline(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+  }): Promise<ComparableHistoryBaselinePersistenceRecord | null>;
   loadLatestAccounting(input: {
     version: typeof P12_2_CRAWL_BRIDGE_VERSION;
     runId: string;
@@ -622,6 +644,20 @@ export function assertFullSiteCrawlBridgeSnapshotIntegrity(snapshot: FullSiteCra
       snapshot.comparisonToPrevious.siteId !== snapshot.siteId ||
       snapshot.comparisonToPrevious.canonicalOrigin !== snapshot.canonicalOrigin
     ) throw new Error("crawl_bridge_snapshot_comparison_identity_mismatch");
+  }
+  if (snapshot.comparableComparisonToPrevious) {
+    assertEffectiveComparableCrawlHistoryComparisonIntegrity(
+      snapshot.comparableComparisonToPrevious,
+    );
+    if (
+      !snapshot.comparisonToPrevious ||
+      snapshot.comparableComparisonToPrevious.siteId !== snapshot.siteId ||
+      snapshot.comparableComparisonToPrevious.canonicalOrigin !== snapshot.canonicalOrigin ||
+      snapshot.comparableComparisonToPrevious.rawComparison.fingerprint !==
+        snapshot.comparisonToPrevious.fingerprint
+    ) {
+      throw new Error("crawl_bridge_snapshot_comparable_comparison_lineage_mismatch");
+    }
   }
   if (!HEX_64.test(snapshot.fingerprint)) throw new Error("crawl_bridge_snapshot_fingerprint_invalid");
   const { fingerprint: actual, ...withoutFingerprint } = snapshot;
@@ -1216,22 +1252,53 @@ async function runFullSiteCrawlBridgeInternal(
   assertFullSiteCrawlCertificationIntegrity(certification);
 
   let comparisonToPrevious: CrawlHistoryComparison | null = null;
+  let comparableComparisonToPrevious:
+    | EffectiveComparableCrawlHistoryComparison
+    | null = null;
   if (input.compareToPrevious !== false) {
-    const previous = await options.persistence.loadLatestCompleted({
+    const previous = await options.persistence.loadLatestComparableHistoryBaseline({
       version: P12_2_CRAWL_BRIDGE_VERSION,
       siteId: binding.siteId,
       canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
     });
     if (previous) {
-      assertFullSiteCrawlBridgeSnapshotIntegrity(previous);
-      if (!previous.certification.certification.wholeSiteCertified) {
-        throw new Error("crawl_bridge_previous_snapshot_not_certified");
+      assertFullSiteCrawlBridgeSnapshotIntegrity(previous.snapshot);
+      assertComparableCrawlHistorySourceIntegrity(previous.comparableSource);
+      if (
+        previous.snapshot.siteId !== binding.siteId ||
+        previous.snapshot.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+        previous.comparableSource.source.inventory.fingerprint !==
+          previous.snapshot.inventory.fingerprint ||
+        previous.comparableSource.source.certification.fingerprint !==
+          previous.snapshot.certification.fingerprint
+      ) {
+        throw new Error("crawl_bridge_previous_comparable_baseline_lineage_mismatch");
       }
+
       comparisonToPrevious = compareFullSiteCrawlHistory({
-        before: historySource(previous),
+        before: historySource(previous.snapshot),
         after: { inventory, certification },
       });
       assertCrawlHistoryComparisonIntegrity(comparisonToPrevious);
+
+      if (certification.certification.wholeSiteCertified) {
+        const afterComparable = buildComparableCrawlHistorySource({
+          source: { inventory, certification },
+        });
+        comparableComparisonToPrevious = compareComparableCrawlHistory({
+          before: previous.comparableSource,
+          after: afterComparable,
+        });
+        assertEffectiveComparableCrawlHistoryComparisonIntegrity(
+          comparableComparisonToPrevious,
+        );
+        if (
+          comparableComparisonToPrevious.rawComparison.fingerprint !==
+          comparisonToPrevious.fingerprint
+        ) {
+          throw new Error("crawl_bridge_comparable_raw_comparison_mismatch");
+        }
+      }
     }
   }
 
@@ -1248,6 +1315,7 @@ async function runFullSiteCrawlBridgeInternal(
     checkpoint,
     certification,
     comparisonToPrevious,
+    comparableComparisonToPrevious,
     persistence: {
       rawResponseBodyPersisted: false,
       rawSitemapXmlPersisted: false,
