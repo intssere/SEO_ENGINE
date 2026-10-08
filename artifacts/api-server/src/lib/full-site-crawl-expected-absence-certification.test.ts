@@ -26,7 +26,7 @@ import {
 const target = {
   targetClass: "first_party" as const,
   siteId: "diamond-shelf",
-  canonicalOrigin: "https://diamondshelf.us",
+  canonicalOrigin: "https://diamondshelf.us" as const,
 };
 
 function hex(label: string): string {
@@ -309,10 +309,9 @@ test("L10.20 enforces 404/410 and stale-vs-orphan presence semantics", () => {
     /expected_absence_disposition_semantics_invalid/,
   );
 
-  const invalidStatus = disposition(source, event) as ExpectedAbsenceDispositionEvidence & {
-    currentAbsenceHttpStatus: number;
-  };
-  invalidStatus.currentAbsenceHttpStatus = 500;
+  const invalidStatus = disposition(source, event);
+  (invalidStatus as unknown as { currentAbsenceHttpStatus: number })
+    .currentAbsenceHttpStatus = 500;
   assert.throws(
     () => buildExpectedAbsenceEffectiveCertification({
       rawCertification: source.rawCertification,
