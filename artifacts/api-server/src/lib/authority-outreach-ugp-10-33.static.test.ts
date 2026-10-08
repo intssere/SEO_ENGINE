@@ -31,6 +31,18 @@ const receiver=readFileSync(
   ),
   "utf8",
 );
+const buildScript=readFileSync(
+  fileURLToPath(new URL("../../build.mjs",import.meta.url)),
+  "utf8",
+);
+const packageJson=readFileSync(
+  fileURLToPath(new URL("../../package.json",import.meta.url)),
+  "utf8",
+);
+const dockerfile=readFileSync(
+  fileURLToPath(new URL("../../../../Dockerfile",import.meta.url)),
+  "utf8",
+);
 
 test("UGP-10.33 real network primitive exists only behind exact certification authorization",()=>{
   assert.match(cert,/fetchImpl\(input\.plan\.receiverUrl/);
@@ -79,4 +91,17 @@ test("UGP-10.33 executor preserves no-retry uncertainty fencing",()=>{
   assert.match(executor,/post_network_state_transition_uncertain/);
   assert.match(executor,/controlled_https_cert_accepted/);
   assert.match(executor,/controlled_https_cert_uncertain/);
+});
+
+
+test("UGP-10.33 one-shot operational runners are compiled into the runtime image",()=>{
+  assert.match(buildScript,/ugp-10-33-print-plan/);
+  assert.match(buildScript,/ugp-10-33-db-prepare/);
+  assert.match(buildScript,/ugp-10-33-live-runner/);
+  assert.match(packageJson,/dist\/ugp-10-33-print-plan\.mjs/);
+  assert.match(packageJson,/dist\/ugp-10-33-db-prepare\.mjs/);
+  assert.match(packageJson,/dist\/ugp-10-33-live-runner\.mjs/);
+  assert.match(dockerfile,/\/app\/lib\/db\/migrations \.\/lib\/db\/migrations/);
+  assert.match(dbPrep,/process\.cwd\(\)/);
+  assert.match(dbPrep,/lib\/db\/migrations/);
 });
