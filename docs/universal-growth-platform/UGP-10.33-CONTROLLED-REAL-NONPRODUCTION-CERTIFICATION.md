@@ -262,7 +262,7 @@ The live certification must use disposable non-production resources.
 
 The existing SEO ENGINE `p12-2-fixture` environment is empty and no outbound mail credential exists, so the intended run is:
 
-1. create a disposable Railway project/environment for UGP-10.33;
+1. use the exact existing `SEO ENGINE` / `p12-2-fixture` environment and create only disposable UGP-10.33 resources inside it;
 2. create a disposable controlled receiver Function;
 3. generate its Railway HTTPS domain;
 4. compute the exact offline plan and authorization literal;
