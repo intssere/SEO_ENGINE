@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import postgres from "postgres";
-import { ensureDiamondShelfIdentity } from "@workspace/db";
+import { bootstrapRuntimeDatabase } from "@workspace/db";
 import { buildUgp1033ControlledCertificationFixture } from "./authority-outreach-ugp-10-33-fixture.js";
 
 if(process.env.NODE_ENV==="production"){
@@ -54,8 +54,12 @@ try{
     );
     await sql.unsafe(await readFile(migrationPath,"utf8"));
   }
-  const identity=await ensureDiamondShelfIdentity(databaseUrl);
-  if(identity.status!=="ready"||identity.tableCount!==49){
+  const identity=await bootstrapRuntimeDatabase(databaseUrl);
+  if(
+    identity.status!=="ready"
+    ||identity.tableCount!==49
+    ||identity.domain!=="diamondshelf.us"
+  ){
     throw new Error("ugp10_33_cert_database_identity_not_ready");
   }
   const reasons=await sql.unsafe<{definition:string}[]>(
