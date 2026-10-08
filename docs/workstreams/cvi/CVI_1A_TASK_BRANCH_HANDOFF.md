@@ -64,3 +64,11 @@ Deterministic evidence ordering; fingerprint drift; upstream defer; leave_alone;
 - This is disclosure and fail-closed integration guidance, not cryptographic attestation. Never treat `hasVerifiedBusinessTruth` and `hasVerifiedOriginalContribution` booleans as independently certified.
 - Future CVI-1B should provide a verified tenant-bound evidence context, immutable evidence lineage, authorization checks and content-purpose proof before any autonomous generation path consumes CVI recommendations.
 - PR #923 remains DRAFT; exact HEAD must receive fresh green CI, review, and separate merge authorization. No application caller integrated, no production mutation or deployment.
+
+## CVI-1A CI typecheck repair checkpoint — 2026-10-08
+- Code head `8c8aa459382c5e1ed37621a7f7dce33bed7eb311` **FAILED** GitHub validate run 37803635179, specifically Typecheck step 26. Workspace tests, schema/migration checks, load test, and browser tests completed successfully before that failure.
+- Exact TypeScript issue: TS2352 in `cvi-necessity-assessment-contract.test.ts` (line 21) from casting an incomplete synthetic opportunity to `ContentOpportunity`. This was an invalid fixture, not an established runtime test failure.
+- Repair committed to code branch: `2f5b90d331093e584b100ccfcec8f8deb055ecca`. Fixture now supplies all required typed `ContentOpportunity` fields, removing the unsafe partial cast.
+- New CI run 37804700304 was QUEUED when inspected. This new exact-head run must complete successfully before requesting approval.
+- CVI-1A remains DRAFT PR #923, based on UGP initiative `3e0e8c84cf6eae86a18c515413c2777e7d2ed3e5`. No merge or runtime change.
+- Maintain evidenceTrust independentlyCertified=false; next CVI-1B must certify evidence externally to the caller assertions and enforce tenant/site authority before any production integration.
