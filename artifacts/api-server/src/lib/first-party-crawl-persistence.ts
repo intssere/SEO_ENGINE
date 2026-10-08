@@ -141,6 +141,20 @@ const L10_13B_EXPECTED_COLUMNS: Record<string, readonly string[]> = Object.freez
     "receipt_payload",
   ]),
 });
+const L10_19_EXPECTED_COLUMNS: Record<string, readonly string[]> = Object.freeze({
+  first_party_crawl_terminal_failure_dispositions: Object.freeze([
+    "disposition_id","site_id","run_id","canonical_origin","execution_plan_fingerprint",
+    "source_event_fingerprint","canonical_url","disposition_type","absence_http_status",
+    "fresh_inventory_fingerprint","present_in_fresh_inventory","verifier_image",
+    "verifier_deployment_id","observed_at","disposition_fingerprint","disposition_payload",
+  ]),
+  first_party_crawl_terminal_failure_reconciliation_receipts: Object.freeze([
+    "reconciliation_receipt_id","site_id","run_id","canonical_origin","execution_plan_fingerprint",
+    "source_accounting_snapshot_fingerprint","disposition_fingerprint","raw_terminal_failure_count",
+    "expected_absence_count","effective_unresolved_terminal_failure_count","status","observed_at",
+    "receipt_fingerprint","receipt_payload",
+  ]),
+});
 
 function stableSerialize(value: unknown): string {
   if (value === undefined) return "null";
