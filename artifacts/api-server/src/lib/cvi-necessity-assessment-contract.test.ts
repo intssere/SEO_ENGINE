@@ -123,6 +123,30 @@ test("reject invalid binding, invalid evidence, missing opportunity or modified 
   }));
 });
 
+
+test("business and contribution assertions are bound to the report identity", () => {
+  const base = input();
+  const accepted = assessCviContentNecessity(base);
+  const unverifiedBusiness = assessCviContentNecessity({ ...base, hasVerifiedBusinessTruth: false });
+  const unverifiedContribution = assessCviContentNecessity({ ...base, hasVerifiedOriginalContribution: false });
+  assert.notEqual(accepted.assessmentFingerprint, unverifiedBusiness.assessmentFingerprint);
+  assert.notEqual(accepted.assessmentFingerprint, unverifiedContribution.assessmentFingerprint);
+  assert.equal(accepted.assessmentInputs.hasVerifiedBusinessTruth, true);
+  assert.equal(accepted.assessmentInputs.hasVerifiedOriginalContribution, true);
+  assert.equal(unverifiedBusiness.disposition, "REQUEST_EVIDENCE");
+});
+
+test("all dispositions remain advisory without network, provider or publication authority", () => {
+  for (const action of ["create_candidate", "refresh_candidate", "consolidate_candidate", "leave_alone", "defer_insufficient_evidence"] as const) {
+    const result = assessCviContentNecessity(input(action));
+    assert.equal(result.semantics.publicationAuthorized, false);
+    assert.equal(result.semantics.executionAuthorized, false);
+    assert.equal(result.semantics.requiresSeparateAuthorization, true);
+    assert.equal(result.semantics.performsNetworkOperation, false);
+    assert.equal(result.semantics.performsPersistence, false);
+  }
+});
+
 test("provider-free contract excludes IO, environment, timers and persistence", () => {
   const here = dirname(fileURLToPath(import.meta.url));
   const source = readFileSync(join(here, "cvi-necessity-assessment-contract.ts"), "utf8");
