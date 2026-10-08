@@ -126,6 +126,9 @@ function fixture(
     "approve_for_deliverability_verification_preparation",
   variant:"a"|"f"="a",
 ){
+  const sourceDomain=
+    variant==="a"?"publisher.example.org":"publisher-f.example.org";
+  const sourceOrigin="https://"+sourceDomain;
   const current=buildBacklinkEvidenceDataset({
     targetDomain:"diamondshelf.us",
     source:{
@@ -145,8 +148,8 @@ function fixture(
       responseFingerprint:FP("e"),
     },
     backlinks:[{
-      sourceUrl:"https://publisher.example.org/old-guide",
-      sourceDomain:"publisher.example.org",
+      sourceUrl:sourceOrigin+"/old-guide",
+      sourceDomain,
       targetUrl:"https://diamondshelf.us/guide",
       anchorText:"Guide",
       firstSeenAt:"2026-01-01T00:00:00Z",
@@ -198,7 +201,7 @@ function fixture(
     requestFingerprint:ready.request.requestFingerprint,
     subject:"A note about your older fragrance guide",
     body:[
-      "I noticed the older fragrance reference on publisher.example.org.",
+      "I noticed the older fragrance reference on "+sourceDomain+".",
       "Our current guide is available at https://diamondshelf.us/guide.",
       "If it is useful for your readers, please feel free to review it.",
     ].join("\n"),
@@ -302,7 +305,7 @@ function fixture(
       roleTitle:"Senior Editor",
       matchedRoleCriteria:["editorial_responsibility"],
       evidenceSourceClass:"source_domain_author_or_editor_page",
-      evidenceUrl:"https://publisher.example.org/team/alex-editor",
+      evidenceUrl:sourceOrigin+"/team/alex-editor",
       observedAt:"2026-10-06T10:00:00.000Z",
       evidenceFingerprint:FP("5"),
       publicBusinessIdentityAttested:true,
@@ -389,20 +392,16 @@ function fixture(
 
   const contactPointValue=
     contactKind==="email_address"
-      ?variant==="a"
-        ?"editor@publisher.example.org"
-        :"editor-f@publisher.example.org"
-      :variant==="a"
-        ?"https://publisher.example.org/contact/editorial"
-        :"https://publisher.example.org/contact/editorial-f";
+      ?"editor@"+sourceDomain
+      :sourceOrigin+"/contact/editorial";
   const evidenceSourceClass=
     contactKind==="email_address"
       ?"source_domain_staff_or_author_page" as const
       :"source_domain_contact_page" as const;
   const evidenceUrl=
     contactKind==="email_address"
-      ?"https://publisher.example.org/team/alex-editor"
-      :"https://publisher.example.org/contact";
+      ?sourceOrigin+"/team/alex-editor"
+      :sourceOrigin+"/contact";
   const contactPointFingerprint=
     authorityOutreachPublicContactPointFingerprint(
       contactKind,
