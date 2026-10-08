@@ -27,6 +27,10 @@ import {
   type ExpectedAbsenceDispositionEvidence,
   type ExpectedAbsenceEffectiveCertification,
 } from "./full-site-crawl-expected-absence-certification.js";
+import {
+  buildComparableCrawlHistorySource,
+  type ComparableCrawlHistorySource,
+} from "./crawl-history-effective-baseline.js";
 
 export const P12_2_CRAWL_PERSISTENCE_VERSION = "p12-2-crawl-persistence-v1" as const;
 export const P12_2_TABLE_COUNT = 37;
@@ -344,6 +348,16 @@ function requirePayloadBoolean(payload: Record<string, unknown>, key: string, co
   return value;
 }
 
+function requirePayloadInteger(
+  payload: Record<string, unknown>,
+  key: string,
+  code: string,
+): number {
+  const value = payload[key];
+  if (!Number.isInteger(value) || (value as number) < 0) throw new Error(code);
+  return value as number;
+}
+
 function requirePayloadAbsenceStatus(payload: Record<string, unknown>, key: string, code: string): 404 | 410 {
   const value = payload[key];
   if (value !== 404 && value !== 410) throw new Error(code);
@@ -367,6 +381,28 @@ export type ExpectedAbsenceDurableCertificationEvidence = {
   terminalFailureEvents: TerminalFailureEvent[];
   dispositions: ExpectedAbsenceDispositionEvidence[];
 };
+
+export type DurableComparableHistoryBaseline = {
+  version: "first_party_crawl_durable_comparable_baseline_v1";
+  snapshot: FullSiteCrawlBridgeSnapshot;
+  comparableSource: ComparableCrawlHistorySource;
+  mode: "raw_completed" | "expected_absence_effective";
+  reconciliationReceiptFingerprint: string | null;
+};
+
+type ExpectedAbsenceReconciledBaselineCandidate = {
+  snapshot: FullSiteCrawlBridgeSnapshot;
+  reconciliation: {
+    sourceAccountingSnapshotFingerprint: string;
+    dispositionFingerprint: string;
+    rawTerminalFailureCount: number;
+    expectedAbsenceCount: number;
+    effectiveUnresolvedTerminalFailureCount: number;
+    status: "certified_with_expected_absence";
+    receiptFingerprint: string;
+  };
+};
+
 export type FirstPartyCrawlPersistenceOptions = {
   databaseUrl?: string | null;
   sqlFactory?: ((databaseUrl: string) => Sql) | null;
@@ -872,6 +908,219 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
     const evidence = await this.loadExpectedAbsenceCertificationEvidence(input);
     return evidence ? buildExpectedAbsenceEffectiveCertification(evidence) : null;
   }
+  private async loadLatestExpectedAbsenceReconciledBaselineCandidate(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+  }): Promise<ExpectedAbsenceReconciledBaselineCandidate | null> {
+    if (input.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("p12_2_persistence_version_mismatch");
+    requireBinding(input.siteId, input.canonicalOrigin);
+
+    return this.withSql(async (sql) => {
+      const ready = await sql<{ dispositions: boolean; reconciliations: boolean }[]>`
+        SELECT
+          to_regclass('public.first_party_crawl_terminal_failure_dispositions') IS NOT NULL AS dispositions,
+          to_regclass('public.first_party_crawl_terminal_failure_reconciliation_receipts') IS NOT NULL AS reconciliations
+      `;
+      if (!ready[0]?.dispositions || !ready[0]?.reconciliations) return null;
+
+      const rows = await sql<{
+        run_id: string;
+        execution_plan_fingerprint: string;
+        source_accounting_snapshot_fingerprint: string;
+        disposition_fingerprint: string;
+        raw_terminal_failure_count: number;
+        expected_absence_count: number;
+        effective_unresolved_terminal_failure_count: number;
+        status: string;
+        receipt_fingerprint: string;
+        receipt_payload: unknown;
+        snapshot_fingerprint: string;
+        snapshot_payload: FullSiteCrawlBridgeSnapshot;
+      }[]>`
+        SELECT
+          r.run_id,
+          r.execution_plan_fingerprint,
+          r.source_accounting_snapshot_fingerprint,
+          r.disposition_fingerprint,
+          r.raw_terminal_failure_count::int AS raw_terminal_failure_count,
+          r.expected_absence_count::int AS expected_absence_count,
+          r.effective_unresolved_terminal_failure_count::int AS effective_unresolved_terminal_failure_count,
+          r.status,
+          r.receipt_fingerprint,
+          r.receipt_payload,
+          a.snapshot_fingerprint,
+          a.snapshot_payload
+        FROM first_party_crawl_terminal_failure_reconciliation_receipts r
+        JOIN first_party_crawl_accounting_snapshots a
+          ON a.site_id = r.site_id
+         AND a.run_id = r.run_id
+         AND a.canonical_origin = r.canonical_origin
+         AND a.execution_plan_fingerprint = r.execution_plan_fingerprint
+         AND a.snapshot_fingerprint = r.source_accounting_snapshot_fingerprint
+        WHERE r.site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+          AND r.canonical_origin = ${DIAMOND_SHELF_CANONICAL_ORIGIN}
+          AND r.status = 'certified_with_expected_absence'
+        ORDER BY a.observed_at DESC, a.accounting_snapshot_id DESC, r.observed_at DESC, r.reconciliation_receipt_id DESC
+        LIMIT 1
+      `;
+      const row = rows[0];
+      if (!row) return null;
+
+      const sourceAccountingSnapshotFingerprint = requireHex(
+        row.source_accounting_snapshot_fingerprint,
+        "p12_2_comparable_baseline_accounting_fingerprint_invalid",
+      );
+      const dispositionFingerprint = requireHex(
+        row.disposition_fingerprint,
+        "p12_2_comparable_baseline_disposition_fingerprint_invalid",
+      );
+      const receiptFingerprint = requireHex(
+        row.receipt_fingerprint,
+        "p12_2_comparable_baseline_reconciliation_fingerprint_invalid",
+      );
+      requireHex(
+        row.execution_plan_fingerprint,
+        "p12_2_comparable_baseline_execution_fingerprint_invalid",
+      );
+      const runId = requireRunId(row.run_id);
+
+      for (const value of [
+        row.raw_terminal_failure_count,
+        row.expected_absence_count,
+        row.effective_unresolved_terminal_failure_count,
+      ]) {
+        if (!Number.isInteger(value) || value < 0) {
+          throw new Error("p12_2_comparable_baseline_reconciliation_count_invalid");
+        }
+      }
+      if (
+        row.raw_terminal_failure_count < 1 ||
+        row.expected_absence_count < 1 ||
+        row.expected_absence_count > row.raw_terminal_failure_count ||
+        row.effective_unresolved_terminal_failure_count !== 0 ||
+        row.status !== "certified_with_expected_absence"
+      ) throw new Error("p12_2_comparable_baseline_reconciliation_status_invalid");
+
+      if (row.snapshot_fingerprint !== sourceAccountingSnapshotFingerprint) {
+        throw new Error("p12_2_comparable_baseline_accounting_storage_mismatch");
+      }
+      if (row.snapshot_payload.fingerprint !== row.snapshot_fingerprint) {
+        throw new Error("p12_2_comparable_baseline_accounting_storage_mismatch");
+      }
+      assertFullSiteCrawlBridgeSnapshotIntegrity(row.snapshot_payload);
+      assertNoForbiddenContent(row.snapshot_payload);
+      if (
+        row.snapshot_payload.runId !== runId ||
+        row.snapshot_payload.siteId !== DIAMOND_SHELF_SITE_ID ||
+        row.snapshot_payload.canonicalOrigin !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+        row.snapshot_payload.executionPlan.fingerprint !== row.execution_plan_fingerprint ||
+        row.snapshot_payload.certification.certification.wholeSiteCertified !== false ||
+        row.snapshot_payload.certification.ledger.failed !== row.raw_terminal_failure_count
+      ) throw new Error("p12_2_comparable_baseline_accounting_lineage_invalid");
+
+      const payload = requireRecord(
+        row.receipt_payload,
+        "p12_2_comparable_baseline_reconciliation_payload_invalid",
+      );
+      assertNoForbiddenContent(payload);
+      if (
+        requirePayloadString(payload, "runId", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== runId ||
+        requirePayloadString(payload, "siteId", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== DIAMOND_SHELF_SITE_ID ||
+        requirePayloadString(payload, "canonicalOrigin", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+        requirePayloadString(payload, "executionPlanFingerprint", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== row.execution_plan_fingerprint ||
+        requirePayloadString(payload, "sourceAccountingSnapshotFingerprint", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== sourceAccountingSnapshotFingerprint ||
+        requirePayloadString(payload, "dispositionFingerprint", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== dispositionFingerprint ||
+        requirePayloadInteger(payload, "rawTerminalFailureCount", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== row.raw_terminal_failure_count ||
+        requirePayloadInteger(payload, "expectedAbsenceCount", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== row.expected_absence_count ||
+        requirePayloadInteger(payload, "effectiveUnresolvedTerminalFailureCount", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== row.effective_unresolved_terminal_failure_count ||
+        requirePayloadString(payload, "status", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== row.status ||
+        requirePayloadBoolean(payload, "legacyWholeSiteCertified", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== false ||
+        requirePayloadString(payload, "fingerprint", "p12_2_comparable_baseline_reconciliation_payload_invalid") !== receiptFingerprint
+      ) throw new Error("p12_2_comparable_baseline_reconciliation_row_payload_mismatch");
+
+      return {
+        snapshot: row.snapshot_payload,
+        reconciliation: {
+          sourceAccountingSnapshotFingerprint,
+          dispositionFingerprint,
+          rawTerminalFailureCount: row.raw_terminal_failure_count,
+          expectedAbsenceCount: row.expected_absence_count,
+          effectiveUnresolvedTerminalFailureCount: row.effective_unresolved_terminal_failure_count,
+          status: "certified_with_expected_absence",
+          receiptFingerprint,
+        },
+      };
+    });
+  }
+
+  async loadLatestComparableHistoryBaseline(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+  }): Promise<DurableComparableHistoryBaseline | null> {
+    if (input.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("p12_2_persistence_version_mismatch");
+    requireBinding(input.siteId, input.canonicalOrigin);
+
+    const [completed, reconciled] = await Promise.all([
+      this.loadLatestCompleted(input),
+      this.loadLatestExpectedAbsenceReconciledBaselineCandidate(input),
+    ]);
+
+    const rawBaseline: DurableComparableHistoryBaseline | null = completed
+      ? {
+          version: "first_party_crawl_durable_comparable_baseline_v1",
+          snapshot: completed,
+          comparableSource: buildComparableCrawlHistorySource({
+            source: { inventory: completed.inventory, certification: completed.certification },
+          }),
+          mode: "raw_completed",
+          reconciliationReceiptFingerprint: null,
+        }
+      : null;
+
+    let effectiveBaseline: DurableComparableHistoryBaseline | null = null;
+    if (reconciled) {
+      const snapshot = reconciled.snapshot;
+      const effective = await this.loadExpectedAbsenceEffectiveCertification({
+        version: P12_2_CRAWL_BRIDGE_VERSION,
+        runId: snapshot.runId,
+        siteId: DIAMOND_SHELF_SITE_ID,
+        canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+        executionPlanFingerprint: snapshot.executionPlan.fingerprint,
+      });
+      if (!effective) throw new Error("p12_2_comparable_baseline_effective_certification_missing");
+      if (
+        effective.accounting.rawTerminalFailureCount !== reconciled.reconciliation.rawTerminalFailureCount ||
+        effective.accounting.expectedAbsenceCount !== reconciled.reconciliation.expectedAbsenceCount ||
+        effective.accounting.effectiveUnresolvedTerminalFailureCount !== reconciled.reconciliation.effectiveUnresolvedTerminalFailureCount ||
+        !effective.lineage.dispositionFingerprints.includes(reconciled.reconciliation.dispositionFingerprint)
+      ) throw new Error("p12_2_comparable_baseline_effective_reconciliation_mismatch");
+
+      effectiveBaseline = {
+        version: "first_party_crawl_durable_comparable_baseline_v1",
+        snapshot,
+        comparableSource: buildComparableCrawlHistorySource({
+          source: { inventory: snapshot.inventory, certification: snapshot.certification },
+          effectiveCertification: effective,
+        }),
+        mode: "expected_absence_effective",
+        reconciliationReceiptFingerprint: reconciled.reconciliation.receiptFingerprint,
+      };
+    }
+
+    if (!rawBaseline) return effectiveBaseline;
+    if (!effectiveBaseline) return rawBaseline;
+
+    const rawObserved = new Date(rawBaseline.snapshot.observedAt).getTime();
+    const effectiveObserved = new Date(effectiveBaseline.snapshot.observedAt).getTime();
+    if (rawObserved !== effectiveObserved) {
+      return rawObserved > effectiveObserved ? rawBaseline : effectiveBaseline;
+    }
+    return rawBaseline.snapshot.fingerprint >= effectiveBaseline.snapshot.fingerprint
+      ? rawBaseline
+      : effectiveBaseline;
+  }
   async saveAccountingRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void> {
     requireRunId(snapshot.runId);
     requireObservedAt(snapshot.observedAt);
@@ -1347,6 +1596,7 @@ export function firstPartyCrawlPersistenceCapability() {
     terminalFailureRecoveryReceiptsAppendOnly: true,
     expectedAbsenceDispositionsReadOnlyLoadable: true,
     expectedAbsenceEffectiveCertificationDeterministic: true,
+    latestComparableHistoryBaselineReadOnly: true,
     exactFailureEvidenceRequiredForRecovery: true,
     atomicRecoveryTransition: true,
     incrementalReceiptsIdempotent: true,
