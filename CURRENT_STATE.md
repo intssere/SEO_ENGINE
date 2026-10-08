@@ -1,5 +1,20 @@
 # SEO ENGINE — Current State Checkpoint
 
+## Verified P12.2 Packet 014 checkpoint — October 8, 2026
+
+The canonical source of truth is GitHub `main`, verified at merge commit `1ccfde1ee6d531ee5bb0273822dc9df5ed8d8213`.
+
+- P12.2 L10.26 / PR #929: comparable-baseline read-only preflight merged at `08ee1288fd7ceb12c24285c10a037145a38c5e96`; matching push-to-main CI run `37812837052` completed SUCCESS.
+- P12.2 L10.27 / PR #936: executable isolated PostgreSQL certification tests merged at `1ccfde1ee6d531ee5bb0273822dc9df5ed8d8213`; matching push-to-main CI run `37826727447` completed SUCCESS with successful `validate` job and no failed steps.
+- Historical Packet 014 had 3,044/3,044 finalized URLs, including one raw terminal failure at `https://diamondshelf.us/blogs/news`. The expected-absence disposition yields zero effective unresolved terminal failures; raw history remains intact, legacy `wholeSiteCertified=false`, and historical completed-run/recovery-receipt counts remain zero. Do not re-label the raw crawl as fully certified.
+- The L10.27 tests are restricted to the localhost Production-lineage **ephemeral** PostgreSQL test database and cover accepted fixture evidence and fail-closed cases. CI success does not certify a current Production database query or new live crawl.
+- **Production release policy remains unchanged:** GitHub merges do not deploy Railway. A future Production image, SQL inspection, database mutation, live crawl or provider action requires its separate exact bounded authorization and evidence gates. The historical F24 Railway image/deployment details below are retained as historical recorded state, not newly reverified live status.
+- P12.2 live Production/runtime certification and the broader P12.3–P12.10 program remain independently gated; continue only through safe repository work or explicit bounded live approvals.
+
+The sections below are preserved historical engineering/release checkpoints and may contain older canonical commit references; the verified GitHub checkpoint above supersedes them for the source SHA, but **does not** independently verify the currently deployed Railway image or runtime.
+
+---
+
 ## Active engineering checkpoint — F24 Production immutable-image transition closed; P12 certification remains
 
 Canonical GitHub `main` after F24 closeout: `17a63b9ab8b71ee571ae344f592fb5f888a77758`.
