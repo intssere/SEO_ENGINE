@@ -126,8 +126,10 @@ function fixture(
     "approve_for_deliverability_verification_preparation",
   variant:"a"|"f"="a",
 ){
-  const sourceDomain=
-    variant==="a"?"publisher.example.org":"publisher-f.example.org";
+  const configuredReceiverDomain=
+    process.env.UGP_10_33_CERT_RECEIVER_DOMAIN?.trim().toLowerCase();
+  const sourceDomain=configuredReceiverDomain
+    ||(variant==="a"?"publisher.example.org":"publisher-f.example.org");
   const sourceOrigin="https://"+sourceDomain;
   const current=buildBacklinkEvidenceDataset({
     targetDomain:"diamondshelf.us",
@@ -390,10 +392,12 @@ function fixture(
       contactVerificationSpecificationInput,
     );
 
+  const configuredReceiverUrl=
+    process.env.UGP_10_33_CERT_RECEIVER_URL?.trim();
   const contactPointValue=
     contactKind==="email_address"
       ?"editor@"+sourceDomain
-      :sourceOrigin+"/contact/editorial";
+      :(configuredReceiverUrl||sourceOrigin+"/contact/editorial");
   const evidenceSourceClass=
     contactKind==="email_address"
       ?"source_domain_staff_or_author_page" as const
