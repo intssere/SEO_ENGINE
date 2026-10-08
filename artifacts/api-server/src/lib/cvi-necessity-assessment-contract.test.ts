@@ -23,6 +23,8 @@ function model(action: ContentOpportunity["recommendedAction"], coverage: Conten
     opportunityFingerprint: fp(12),
     recommendedAction: action,
     existingCoverage: coverage,
+    limitations: [],
+    rationale: [],
   } as ContentOpportunity;
   const base = {
     version: UGP_CONTENT_OPPORTUNITY_MODEL_VERSION,
@@ -145,6 +147,20 @@ test("all dispositions remain advisory without network, provider or publication 
     assert.equal(result.semantics.performsNetworkOperation, false);
     assert.equal(result.semantics.performsPersistence, false);
   }
+});
+
+test("malformed upstream action never promotes to research", () => {
+  const base = input();
+  const altered = {
+    ...base.model,
+    opportunities: [{ ...base.model.opportunities[0], recommendedAction: "unsafe_action" as ContentOpportunity["recommendedAction"] }],
+  };
+  const { opportunityModelFingerprint: _previous, ...withoutFingerprint } = altered;
+  const forgedModel = {
+    ...withoutFingerprint,
+    opportunityModelFingerprint: stableEvidenceHash({ purpose: "ugp_content_opportunity_model_result", ...withoutFingerprint }),
+  };
+  assert.throws(() => assessCviContentNecessity({ ...base, model: forgedModel }), /cvi_invalid_upstream_action/);
 });
 
 test("provider-free contract excludes IO, environment, timers and persistence", () => {
