@@ -2,11 +2,13 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import postgres from "postgres";
 import { bootstrapRuntimeDatabase } from "@workspace/db";
+import { assertUgp1033RailwayFixtureEnvironment } from "./authority-outreach-ugp-10-33-certification.js";
 import { buildUgp1033ControlledCertificationFixture } from "./authority-outreach-ugp-10-33-fixture.js";
 
 if(process.env.NODE_ENV==="production"){
   throw new Error("ugp10_33_production_db_prepare_forbidden");
 }
+assertUgp1033RailwayFixtureEnvironment();
 if(process.env.UGP_10_33_CERT_DB_PREPARE_ENABLED?.trim().toLowerCase()!=="true"){
   throw new Error("ugp10_33_db_prepare_disabled");
 }
