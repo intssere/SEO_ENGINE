@@ -337,3 +337,31 @@ export function p122L1019CAuthorizationLiteral(
 ): string {
   return `AUTHORIZE:P12_2_L10_19_PACKET_014_POST_DISPOSITION_READ_ONLY:${p122L1019CAuthorizationFingerprint(dispositionDeploymentId, verifierImage)}`;
 }
+
+export function p122L1019CAuthorizationDiagnostics(
+  providedAuthorizationLiteral: string,
+  dispositionDeploymentId: string,
+  verifierImage: string,
+): {
+  dispositionDeploymentId: string;
+  verifierImage: string;
+  querySetFingerprint: string;
+  providedAuthorizationDigest: string;
+  expectedAuthorizationDigest: string;
+} {
+  const deploymentId = requireDeploymentId(dispositionDeploymentId);
+  const image = requireVerifierImage(verifierImage);
+  const expectedAuthorizationLiteral =
+    p122L1019CAuthorizationLiteral(deploymentId, image);
+  return Object.freeze({
+    dispositionDeploymentId: deploymentId,
+    verifierImage: image,
+    querySetFingerprint: p122L1019CQuerySetFingerprint(deploymentId, image),
+    providedAuthorizationDigest: createHash("sha256")
+      .update(providedAuthorizationLiteral)
+      .digest("hex"),
+    expectedAuthorizationDigest: createHash("sha256")
+      .update(expectedAuthorizationLiteral)
+      .digest("hex"),
+  });
+}
