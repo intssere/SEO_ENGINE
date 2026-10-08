@@ -34,7 +34,8 @@
     "test:p12-2-l10-13b-persistence-ephemeral": "tsx --test src/lib/first-party-crawl-terminal-recovery.ephemeral.test.ts",
     "test:p12-2-l10-21-persistence-ephemeral": "tsx --test src/lib/first-party-crawl-expected-absence-persistence.ephemeral.test.ts",
     "test:p12-2-l10-23-comparable-baseline-ephemeral": "tsx --test src/lib/first-party-crawl-comparable-baseline.ephemeral.test.ts",
-    "test:p12-2-l10-25-runtime-comparable-ephemeral": "tsx --test src/lib/first-party-crawl-comparable-baseline.ephemeral.test.ts"
+    "test:p12-2-l10-25-runtime-comparable-ephemeral": "tsx --test src/lib/first-party-crawl-comparable-baseline.ephemeral.test.ts",
+    "test:p12-2-l10-27-postgres-certification-ephemeral": "tsx --test src/lib/p12-2-l10-27-packet-014-postgres-certification.ephemeral.test.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",

@@ -186,6 +186,14 @@ jobs:
           pnpm --filter @workspace/api-server test:p12-2-l10-25-runtime-comparable-ephemeral
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 43
 
+      - name: Test P12.2-L10.27 Packet 014 executable PostgreSQL preflight
+        env:
+          P12_2_L10_27_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_p12_2_prod_lineage_test
+        run: |
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 43
+          pnpm --filter @workspace/api-server test:p12-2-l10-27-postgres-certification-ephemeral
+          psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 43
+
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
 
