@@ -47,5 +47,5 @@ test("tampered envelope and noncanonical time rejected",()=>{
   assert.throws(()=>prepareAdmittedJob({...envelope,jobClass:"outreach_send" as JobEnvelope["jobClass"]}),/unsupported_job_class/);
 });
 test("runtime capabilities permanently default off",()=>{
-  assert.deepEqual(Object.values(transportRuntimeCapability),Array(7).fill(false));
+  assert.deepEqual(Object.values(transportRuntimeCapability),Array(8).fill(false));
 });
