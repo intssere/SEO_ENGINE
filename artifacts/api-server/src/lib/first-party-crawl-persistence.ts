@@ -22,6 +22,11 @@ import {
   type TerminalFailureRecoveryReceipt,
 } from "./first-party-crawl-terminal-recovery.js";
 import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
+import {
+  buildExpectedAbsenceEffectiveCertification,
+  type ExpectedAbsenceDispositionEvidence,
+  type ExpectedAbsenceEffectiveCertification,
+} from "./full-site-crawl-expected-absence-certification.js";
 
 export const P12_2_CRAWL_PERSISTENCE_VERSION = "p12-2-crawl-persistence-v1" as const;
 export const P12_2_TABLE_COUNT = 37;
@@ -134,6 +139,20 @@ const L10_13B_EXPECTED_COLUMNS: Record<string, readonly string[]> = Object.freez
     "status",
     "observed_at",
     "receipt_payload",
+  ]),
+});
+const L10_19_EXPECTED_COLUMNS: Record<string, readonly string[]> = Object.freeze({
+  first_party_crawl_terminal_failure_dispositions: Object.freeze([
+    "disposition_id","site_id","run_id","canonical_origin","execution_plan_fingerprint",
+    "source_event_fingerprint","canonical_url","disposition_type","absence_http_status",
+    "fresh_inventory_fingerprint","present_in_fresh_inventory","verifier_image",
+    "verifier_deployment_id","observed_at","disposition_fingerprint","disposition_payload",
+  ]),
+  first_party_crawl_terminal_failure_reconciliation_receipts: Object.freeze([
+    "reconciliation_receipt_id","site_id","run_id","canonical_origin","execution_plan_fingerprint",
+    "source_accounting_snapshot_fingerprint","disposition_fingerprint","raw_terminal_failure_count",
+    "expected_absence_count","effective_unresolved_terminal_failure_count","status","observed_at",
+    "receipt_fingerprint","receipt_payload",
   ]),
 });
 
@@ -308,6 +327,46 @@ function assertCheckpointRecord(record: CrawlCheckpointPersistenceRecord): void 
   assertNoForbiddenContent(record);
 }
 
+function requireRecord(value: unknown, code: string): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(code);
+  return value as Record<string, unknown>;
+}
+
+function requirePayloadString(payload: Record<string, unknown>, key: string, code: string): string {
+  const value = payload[key];
+  if (typeof value !== "string" || !value) throw new Error(code);
+  return value;
+}
+
+function requirePayloadBoolean(payload: Record<string, unknown>, key: string, code: string): boolean {
+  const value = payload[key];
+  if (typeof value !== "boolean") throw new Error(code);
+  return value;
+}
+
+function requirePayloadAbsenceStatus(payload: Record<string, unknown>, key: string, code: string): 404 | 410 {
+  const value = payload[key];
+  if (value !== 404 && value !== 410) throw new Error(code);
+  return value;
+}
+
+function terminalEventAbsenceStatus(event: TerminalFailureEvent): 404 | 410 {
+  assertTerminalFailureEventIntegrity(event);
+  if (
+    event.eventType === "recovery_resolved" ||
+    event.outcome.kind !== "failure" ||
+    event.decisionReason !== "permanent_http" ||
+    event.outcome.signal.kind !== "http_status" ||
+    (event.outcome.signal.httpStatus !== 404 && event.outcome.signal.httpStatus !== 410)
+  ) throw new Error("p12_2_expected_absence_source_event_invalid");
+  return event.outcome.signal.httpStatus;
+}
+
+export type ExpectedAbsenceDurableCertificationEvidence = {
+  rawCertification: FullSiteCrawlBridgeSnapshot["certification"];
+  terminalFailureEvents: TerminalFailureEvent[];
+  dispositions: ExpectedAbsenceDispositionEvidence[];
+};
 export type FirstPartyCrawlPersistenceOptions = {
   databaseUrl?: string | null;
   sqlFactory?: ((databaseUrl: string) => Sql) | null;
@@ -360,14 +419,20 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
           'first_party_crawl_incremental_receipts',
           'first_party_crawl_terminal_failure_events',
           'first_party_crawl_accounting_snapshots',
-          'first_party_crawl_terminal_failure_recovery_receipts'
+          'first_party_crawl_terminal_failure_recovery_receipts',
+          'first_party_crawl_terminal_failure_dispositions',
+          'first_party_crawl_terminal_failure_reconciliation_receipts'
         )
       ORDER BY table_name, ordinal_position
     `;
     const recoveryTablesPresent = Object.keys(L10_13B_EXPECTED_COLUMNS)
       .every((table) => columns.some((row) => row.table_name === table));
+    const expectedAbsenceTablesPresent = Object.keys(L10_19_EXPECTED_COLUMNS)
+      .every((table) => columns.some((row) => row.table_name === table));
     const expectedTables = recoveryTablesPresent
-      ? { ...EXPECTED_COLUMNS, ...L10_13B_EXPECTED_COLUMNS }
+      ? expectedAbsenceTablesPresent
+        ? { ...EXPECTED_COLUMNS, ...L10_13B_EXPECTED_COLUMNS, ...L10_19_EXPECTED_COLUMNS }
+        : { ...EXPECTED_COLUMNS, ...L10_13B_EXPECTED_COLUMNS }
       : EXPECTED_COLUMNS;
     for (const [table, expected] of Object.entries(expectedTables)) {
       const actual = columns.filter((row) => row.table_name === table).map((row) => row.column_name);
@@ -661,6 +726,152 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
     });
   }
 
+  private async loadExpectedAbsenceDispositions(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    runId: string;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+    executionPlanFingerprint: string;
+  }, terminalFailureEvents: TerminalFailureEvent[]): Promise<ExpectedAbsenceDispositionEvidence[]> {
+    const runId = requireRunId(input.runId);
+    const eventByFingerprint = new Map(terminalFailureEvents.map((event) => [event.fingerprint, event]));
+    return this.withSql(async (sql) => {
+      const ready = await sql<{ dispositions: boolean; reconciliations: boolean }[]>`
+        SELECT
+          to_regclass('public.first_party_crawl_terminal_failure_dispositions') IS NOT NULL AS dispositions,
+          to_regclass('public.first_party_crawl_terminal_failure_reconciliation_receipts') IS NOT NULL AS reconciliations
+      `;
+      if (!ready[0]?.dispositions || !ready[0]?.reconciliations) {
+        throw new Error("p12_2_expected_absence_schema_not_ready");
+      }
+
+      const rows = await sql<{
+        source_event_fingerprint: string;
+        canonical_url: string;
+        disposition_type: string;
+        absence_http_status: number;
+        fresh_inventory_fingerprint: string;
+        present_in_fresh_inventory: boolean;
+        verifier_image: string;
+        verifier_deployment_id: string;
+        disposition_fingerprint: string;
+        disposition_payload: unknown;
+      }[]>`
+        SELECT
+          source_event_fingerprint, canonical_url, disposition_type, absence_http_status,
+          fresh_inventory_fingerprint, present_in_fresh_inventory, verifier_image,
+          verifier_deployment_id::text AS verifier_deployment_id, disposition_fingerprint,
+          disposition_payload
+        FROM first_party_crawl_terminal_failure_dispositions
+        WHERE site_id = ${DIAMOND_SHELF_SITE_ID}::uuid
+          AND run_id = ${runId}
+          AND canonical_origin = ${DIAMOND_SHELF_CANONICAL_ORIGIN}
+          AND execution_plan_fingerprint = ${input.executionPlanFingerprint}
+        ORDER BY canonical_url, observed_at, disposition_id
+      `;
+
+      const dispositions: ExpectedAbsenceDispositionEvidence[] = [];
+      const sources = new Set<string>();
+      const urls = new Set<string>();
+      for (const row of rows) {
+        requireHex(row.source_event_fingerprint, "p12_2_expected_absence_source_event_fingerprint_invalid");
+        requireHex(row.fresh_inventory_fingerprint, "p12_2_expected_absence_inventory_fingerprint_invalid");
+        requireHex(row.disposition_fingerprint, "p12_2_expected_absence_disposition_fingerprint_invalid");
+        const event = eventByFingerprint.get(row.source_event_fingerprint);
+        if (!event) throw new Error("p12_2_expected_absence_disposition_source_event_missing");
+        const historicalStatus = terminalEventAbsenceStatus(event);
+        const canonicalUrl = assertFirstPartyCrawlUrlPolicy(row.canonical_url);
+        const payload = requireRecord(row.disposition_payload, "p12_2_expected_absence_disposition_payload_invalid");
+        assertNoForbiddenContent(payload);
+
+        if (row.disposition_type !== "stale_inventory_absence" && row.disposition_type !== "sitemap_orphan_absence") {
+          throw new Error("p12_2_expected_absence_disposition_type_invalid");
+        }
+        if (row.absence_http_status !== 404 && row.absence_http_status !== 410) {
+          throw new Error("p12_2_expected_absence_disposition_http_status_invalid");
+        }
+        if (
+          (row.disposition_type === "stale_inventory_absence" && row.present_in_fresh_inventory !== false) ||
+          (row.disposition_type === "sitemap_orphan_absence" && row.present_in_fresh_inventory !== true)
+        ) throw new Error("p12_2_expected_absence_disposition_semantics_invalid");
+        if (sources.has(row.source_event_fingerprint) || urls.has(canonicalUrl)) {
+          throw new Error("p12_2_expected_absence_disposition_duplicate");
+        }
+
+        if (
+          requirePayloadString(payload, "runId", "p12_2_expected_absence_disposition_payload_invalid") !== runId ||
+          requirePayloadString(payload, "siteId", "p12_2_expected_absence_disposition_payload_invalid") !== DIAMOND_SHELF_SITE_ID ||
+          requirePayloadString(payload, "canonicalOrigin", "p12_2_expected_absence_disposition_payload_invalid") !== DIAMOND_SHELF_CANONICAL_ORIGIN ||
+          requirePayloadString(payload, "executionPlanFingerprint", "p12_2_expected_absence_disposition_payload_invalid") !== input.executionPlanFingerprint ||
+          requirePayloadString(payload, "sourceEventFingerprint", "p12_2_expected_absence_disposition_payload_invalid") !== row.source_event_fingerprint ||
+          requirePayloadString(payload, "canonicalUrl", "p12_2_expected_absence_disposition_payload_invalid") !== canonicalUrl ||
+          requirePayloadString(payload, "dispositionType", "p12_2_expected_absence_disposition_payload_invalid") !== row.disposition_type ||
+          requirePayloadAbsenceStatus(payload, "historicalAbsenceHttpStatus", "p12_2_expected_absence_disposition_payload_invalid") !== historicalStatus ||
+          requirePayloadAbsenceStatus(payload, "currentAbsenceHttpStatus", "p12_2_expected_absence_disposition_payload_invalid") !== row.absence_http_status ||
+          requirePayloadString(payload, "freshInventoryFingerprint", "p12_2_expected_absence_disposition_payload_invalid") !== row.fresh_inventory_fingerprint ||
+          requirePayloadBoolean(payload, "presentInFreshInventory", "p12_2_expected_absence_disposition_payload_invalid") !== row.present_in_fresh_inventory ||
+          requirePayloadString(payload, "verifierImage", "p12_2_expected_absence_disposition_payload_invalid") !== row.verifier_image ||
+          requirePayloadString(payload, "verifierDeploymentId", "p12_2_expected_absence_disposition_payload_invalid") !== row.verifier_deployment_id ||
+          requirePayloadString(payload, "fingerprint", "p12_2_expected_absence_disposition_payload_invalid") !== row.disposition_fingerprint
+        ) throw new Error("p12_2_expected_absence_disposition_row_payload_mismatch");
+
+        sources.add(row.source_event_fingerprint);
+        urls.add(canonicalUrl);
+        dispositions.push({
+          version: "first_party_expected_absence_disposition_evidence_v1",
+          runId,
+          siteId: DIAMOND_SHELF_SITE_ID,
+          canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
+          executionPlanFingerprint: input.executionPlanFingerprint,
+          sourceEventFingerprint: row.source_event_fingerprint,
+          canonicalUrl,
+          historicalAbsenceHttpStatus: historicalStatus,
+          currentAbsenceHttpStatus: row.absence_http_status,
+          freshInventoryFingerprint: row.fresh_inventory_fingerprint,
+          presentInFreshInventory: row.present_in_fresh_inventory,
+          dispositionType: row.disposition_type,
+          dispositionFingerprint: row.disposition_fingerprint,
+        });
+      }
+      return dispositions;
+    });
+  }
+
+  async loadExpectedAbsenceCertificationEvidence(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    runId: string;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+    executionPlanFingerprint: string;
+  }): Promise<ExpectedAbsenceDurableCertificationEvidence | null> {
+    if (input.version !== P12_2_CRAWL_BRIDGE_VERSION) throw new Error("p12_2_persistence_version_mismatch");
+    requireBinding(input.siteId, input.canonicalOrigin);
+    requireHex(input.executionPlanFingerprint, "p12_2_persistence_execution_fingerprint_invalid");
+    const terminalFailureEvents = await this.loadUnresolvedTerminalFailures(input);
+    const dispositions = await this.loadExpectedAbsenceDispositions(input, terminalFailureEvents);
+    if (dispositions.length === 0) return null;
+    const accounting = await this.loadLatestAccounting(input);
+    if (!accounting) throw new Error("p12_2_expected_absence_accounting_snapshot_missing");
+    if (accounting.runId !== input.runId || accounting.executionPlan.fingerprint !== input.executionPlanFingerprint) {
+      throw new Error("p12_2_expected_absence_accounting_lineage_mismatch");
+    }
+    return {
+      rawCertification: accounting.certification,
+      terminalFailureEvents,
+      dispositions,
+    };
+  }
+
+  async loadExpectedAbsenceEffectiveCertification(input: {
+    version: typeof P12_2_CRAWL_BRIDGE_VERSION;
+    runId: string;
+    siteId: string;
+    canonicalOrigin: typeof DIAMOND_SHELF_CANONICAL_ORIGIN;
+    executionPlanFingerprint: string;
+  }): Promise<ExpectedAbsenceEffectiveCertification | null> {
+    const evidence = await this.loadExpectedAbsenceCertificationEvidence(input);
+    return evidence ? buildExpectedAbsenceEffectiveCertification(evidence) : null;
+  }
   async saveAccountingRun(snapshot: FullSiteCrawlBridgeSnapshot): Promise<void> {
     requireRunId(snapshot.runId);
     requireObservedAt(snapshot.observedAt);
@@ -1134,6 +1345,8 @@ export function firstPartyCrawlPersistenceCapability() {
     terminalFailureEventsAppendOnly: true,
     accountingSnapshotsAppendOnly: true,
     terminalFailureRecoveryReceiptsAppendOnly: true,
+    expectedAbsenceDispositionsReadOnlyLoadable: true,
+    expectedAbsenceEffectiveCertificationDeterministic: true,
     exactFailureEvidenceRequiredForRecovery: true,
     atomicRecoveryTransition: true,
     incrementalReceiptsIdempotent: true,
