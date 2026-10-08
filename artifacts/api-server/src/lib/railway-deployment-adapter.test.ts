@@ -14,7 +14,10 @@ test("Railway container uses reproducible builds and a single production process
     dockerfile,
     /CMD \["node", "--enable-source-maps", "artifacts\/api-server\/dist\/index\.mjs"\]/,
   );
-  assert.doesNotMatch(dockerfile, /db:(?:push|bootstrap)|drizzle|migrat/i);
+  assert.doesNotMatch(
+    dockerfile,
+    /^(?:RUN|CMD|ENTRYPOINT)\b[^\n]*(?:db:(?:push|bootstrap)|drizzle|migrat|psql\s+[^\n]*\s-f\s+)/im,
+  );
 });
 
 test("CI enforces the same pinned package manager and frozen lockfile", async () => {

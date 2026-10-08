@@ -17,6 +17,10 @@ export const UGP_AUTHORITY_OUTREACH_SINGLE_SEND_EXECUTION_VERSION =
 export const UGP_AUTHORITY_OUTREACH_SINGLE_SEND_EXECUTION_EVENT_VERSION =
   "ugp-10-32-single-send-execution-event-v1" as const;
 
+export type AuthorityOutreachSingleSendAdapterClass=
+  |"mock"
+  |"controlled_https_cert";
+
 export type AuthorityOutreachSingleSendPayload = Readonly<{
   contactPointType: AuthorityOutreachContactPointType;
   contactPointValue: string;
@@ -37,7 +41,7 @@ export type AuthorityOutreachSingleSendExecutionIntent = Readonly<{
   candidateFingerprint: string;
   recipientDomain: string;
   payloadFingerprint: string;
-  adapterClass: "mock";
+  adapterClass: AuthorityOutreachSingleSendAdapterClass;
   payload: AuthorityOutreachSingleSendPayload;
   semantics: Readonly<{
     deterministic: true;
@@ -47,7 +51,8 @@ export type AuthorityOutreachSingleSendExecutionIntent = Readonly<{
     oneRecipientOnly: true;
     oneMessageOnly: true;
     providerNeutralContract: true;
-    mockAdapterOnly: true;
+    mockAdapterOnly: boolean;
+    controlledCertificationAdapter: boolean;
     rawPayloadProcessLocalOnly: true;
     rawPayloadPersistenceAuthorized: false;
     realProviderExecutionAuthorized: false;
@@ -116,10 +121,13 @@ function assertReservation(
   fingerprint(reservation.candidateFingerprint,"candidate_fingerprint");
 }
 
-export function buildAuthorityOutreachSingleSendExecutionIntent(input:Readonly<{
-  reservation:AuthorityOutreachOutboundSafetyReceipt;
-  payload:AuthorityOutreachSingleSendPayload;
-}>):AuthorityOutreachSingleSendExecutionIntent{
+export function buildAuthorityOutreachSingleSendExecutionIntentForAdapter(
+  input:Readonly<{
+    reservation:AuthorityOutreachOutboundSafetyReceipt;
+    payload:AuthorityOutreachSingleSendPayload;
+  }>,
+  adapterClass:AuthorityOutreachSingleSendAdapterClass,
+):AuthorityOutreachSingleSendExecutionIntent{
   assertReservation(input.reservation);
   if(!input.payload||typeof input.payload!=="object"||Array.isArray(input.payload)){
     throw new Error("ugp10_32_invalid_payload");
@@ -180,7 +188,7 @@ export function buildAuthorityOutreachSingleSendExecutionIntent(input:Readonly<{
     candidateFingerprint,
     recipientDomain:sourceDomain,
     payloadFingerprint,
-    adapterClass:"mock" as const,
+    adapterClass,
     payload,
     semantics:Object.freeze({
       deterministic:true as const,
@@ -190,7 +198,8 @@ export function buildAuthorityOutreachSingleSendExecutionIntent(input:Readonly<{
       oneRecipientOnly:true as const,
       oneMessageOnly:true as const,
       providerNeutralContract:true as const,
-      mockAdapterOnly:true as const,
+      mockAdapterOnly:adapterClass==="mock",
+      controlledCertificationAdapter:adapterClass==="controlled_https_cert",
       rawPayloadProcessLocalOnly:true as const,
       rawPayloadPersistenceAuthorized:false as const,
       realProviderExecutionAuthorized:false as const,
@@ -214,6 +223,13 @@ export function buildAuthorityOutreachSingleSendExecutionIntent(input:Readonly<{
   });
 }
 
+export function buildAuthorityOutreachSingleSendExecutionIntent(input:Readonly<{
+  reservation:AuthorityOutreachOutboundSafetyReceipt;
+  payload:AuthorityOutreachSingleSendPayload;
+}>):AuthorityOutreachSingleSendExecutionIntent{
+  return buildAuthorityOutreachSingleSendExecutionIntentForAdapter(input,"mock");
+}
+
 export function assertAuthorityOutreachSingleSendExecutionIntentIntegrity(
   intent:AuthorityOutreachSingleSendExecutionIntent,
   input:Parameters<typeof buildAuthorityOutreachSingleSendExecutionIntent>[0],
@@ -224,7 +240,10 @@ export function assertAuthorityOutreachSingleSendExecutionIntentIntegrity(
   ){
     throw new Error("ugp10_32_execution_intent_version_invalid");
   }
-  const expected=buildAuthorityOutreachSingleSendExecutionIntent(input);
+  const expected=buildAuthorityOutreachSingleSendExecutionIntentForAdapter(
+    input,
+    intent.adapterClass,
+  );
   if(stableJson(expected)!==stableJson(intent)){
     throw new Error("ugp10_32_execution_intent_integrity_mismatch");
   }

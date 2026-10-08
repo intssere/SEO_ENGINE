@@ -28,6 +28,7 @@ ENV NODE_ENV=production
 WORKDIR /app
 
 COPY --from=build --chown=node:node /app/artifacts/api-server/dist ./artifacts/api-server/dist
+COPY --from=build --chown=node:node /app/lib/db/migrations ./lib/db/migrations
 COPY --from=build --chown=node:node /app/artifacts/seo-engine/dist/public ./artifacts/seo-engine/dist/public
 
 USER node
