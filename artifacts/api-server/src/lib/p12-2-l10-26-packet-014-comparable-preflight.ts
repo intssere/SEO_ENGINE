@@ -77,7 +77,7 @@ export function assertP122L1026QueryContract(queries: readonly P122L1026Query[])
   if (queries.length !== ids.length) throw new Error("p12_2_l10_26_query_count_invalid");
   for (let i=0;i<ids.length;i++) {
     const query=queries[i];
-    if (!query || query.id!==ids[i] || !/^SELECT\\b/i.test(query.sql.trim()) || /;|\\b(INSERT|UPDATE|DELETE|ALTER|DROP|CREATE|TRUNCATE|GRANT|REVOKE|CALL|DO)\\b/i.test(query.sql)) throw new Error("p12_2_l10_26_non_select_or_order_invalid");
+    if (!query || query.id!==ids[i] || !/^SELECT\b/i.test(query.sql.trim()) || /;|\b(INSERT|UPDATE|DELETE|ALTER|DROP|CREATE|TRUNCATE|GRANT|REVOKE|CALL|DO)\b/i.test(query.sql)) throw new Error("p12_2_l10_26_non_select_or_order_invalid");
   }
   const expected=buildUncheckedQueries();
   if (queries.some((q,i)=>q.sql!==expected[i]!.sql)) throw new Error("p12_2_l10_26_query_content_mismatch");
