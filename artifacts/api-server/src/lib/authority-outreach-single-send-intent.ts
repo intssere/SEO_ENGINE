@@ -99,13 +99,13 @@ function assertReservation(
   if(
     !reservation
     ||reservation.version!=="ugp-10-31-outbound-safety-reservation-v1"
-    ||reservation.status!=="reserved"
+    ||!["reserved","released","consumed","uncertain"].includes(reservation.status)
     ||reservation.durable!==true
     ||reservation.providerDispatchAuthorized!==false
     ||reservation.messageTransmissionAuthorized!==false
     ||reservation.sendAuthorizationGranted!==false
   ){
-    throw new Error("ugp10_32_exact_reserved_ugp10_31_receipt_required");
+    throw new Error("ugp10_32_exact_ugp10_31_receipt_required");
   }
   fingerprint(reservation.reservationFingerprint,"reservation_fingerprint");
   fingerprint(reservation.logicalSendKey,"logical_send_key");
