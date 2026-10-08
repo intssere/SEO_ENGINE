@@ -80,3 +80,27 @@ test("UGP-10.32 execution intent binds exact selected contact and reviewed messa
     /ugp10_32_selected_contact_payload_mismatch/,
   );
 });
+
+
+test("UGP-10.32 terminal UGP-10.31 receipt states reconstruct the same execution identity for replay only",()=>{
+  const {fixture,reservation}=receipt();
+  const payload={
+    contactPointType:fixture.contactPointType,
+    contactPointValue:fixture.contactPointValue,
+    sourceDomain:fixture.deliveryBindingAuthorizationDecision.sourceDomain,
+    requestFingerprint:fixture.request.requestFingerprint,
+    subject:fixture.candidate.subject,
+    body:fixture.candidate.body,
+  };
+  const reserved=buildAuthorityOutreachSingleSendExecutionIntent({reservation,payload});
+  for(const status of ["released","consumed","uncertain"] as const){
+    const terminal={...reservation,status};
+    const replay=buildAuthorityOutreachSingleSendExecutionIntent({
+      reservation:terminal,
+      payload,
+    });
+    assert.equal(replay.executionId,reserved.executionId);
+    assert.equal(replay.executionFingerprint,reserved.executionFingerprint);
+    assert.equal(replay.payloadFingerprint,reserved.payloadFingerprint);
+  }
+});
