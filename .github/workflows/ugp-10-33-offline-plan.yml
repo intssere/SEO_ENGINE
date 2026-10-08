@@ -1,0 +1,33 @@
+name: UGP-10.33 Offline Plan Receipt
+
+on:
+  push:
+    branches:
+      - ugp-10-33-offline-plan-receipt
+
+permissions:
+  contents: read
+
+jobs:
+  print-plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      UGP_10_33_SOURCE_COMMIT_SHA: 3e0e8c84cf6eae86a18c515413c2777e7d2ed3e5
+      UGP_10_33_CERT_RECEIVER_URL: https://ugp-10-33-controlled-receiver-once-p12-2-fixture.up.railway.app/ugp-10-33/receive
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10.34.5
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Install dependencies without lifecycle scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Produce exact offline UGP-10.33 plan
+        run: pnpm --filter @workspace/api-server exec tsx ./src/lib/authority-outreach-ugp-10-33-print-plan.ts
