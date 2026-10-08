@@ -379,14 +379,20 @@ export class FirstPartyCrawlPersistence implements FirstPartyCrawlPersistenceCon
           'first_party_crawl_incremental_receipts',
           'first_party_crawl_terminal_failure_events',
           'first_party_crawl_accounting_snapshots',
-          'first_party_crawl_terminal_failure_recovery_receipts'
+          'first_party_crawl_terminal_failure_recovery_receipts',
+          'first_party_crawl_terminal_failure_dispositions',
+          'first_party_crawl_terminal_failure_reconciliation_receipts'
         )
       ORDER BY table_name, ordinal_position
     `;
     const recoveryTablesPresent = Object.keys(L10_13B_EXPECTED_COLUMNS)
       .every((table) => columns.some((row) => row.table_name === table));
+    const expectedAbsenceTablesPresent = Object.keys(L10_19_EXPECTED_COLUMNS)
+      .every((table) => columns.some((row) => row.table_name === table));
     const expectedTables = recoveryTablesPresent
-      ? { ...EXPECTED_COLUMNS, ...L10_13B_EXPECTED_COLUMNS }
+      ? expectedAbsenceTablesPresent
+        ? { ...EXPECTED_COLUMNS, ...L10_13B_EXPECTED_COLUMNS, ...L10_19_EXPECTED_COLUMNS }
+        : { ...EXPECTED_COLUMNS, ...L10_13B_EXPECTED_COLUMNS }
       : EXPECTED_COLUMNS;
     for (const [table, expected] of Object.entries(expectedTables)) {
       const actual = columns.filter((row) => row.table_name === table).map((row) => row.column_name);
