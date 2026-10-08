@@ -348,6 +348,16 @@ function requirePayloadBoolean(payload: Record<string, unknown>, key: string, co
   return value;
 }
 
+function requirePayloadInteger(
+  payload: Record<string, unknown>,
+  key: string,
+  code: string,
+): number {
+  const value = payload[key];
+  if (!Number.isInteger(value) || (value as number) < 0) throw new Error(code);
+  return value as number;
+}
+
 function requirePayloadAbsenceStatus(payload: Record<string, unknown>, key: string, code: string): 404 | 410 {
   const value = payload[key];
   if (value !== 404 && value !== 410) throw new Error(code);
@@ -371,6 +381,28 @@ export type ExpectedAbsenceDurableCertificationEvidence = {
   terminalFailureEvents: TerminalFailureEvent[];
   dispositions: ExpectedAbsenceDispositionEvidence[];
 };
+
+export type DurableComparableHistoryBaseline = {
+  version: "first_party_crawl_durable_comparable_baseline_v1";
+  snapshot: FullSiteCrawlBridgeSnapshot;
+  comparableSource: ComparableCrawlHistorySource;
+  mode: "raw_completed" | "expected_absence_effective";
+  reconciliationReceiptFingerprint: string | null;
+};
+
+type ExpectedAbsenceReconciledBaselineCandidate = {
+  snapshot: FullSiteCrawlBridgeSnapshot;
+  reconciliation: {
+    sourceAccountingSnapshotFingerprint: string;
+    dispositionFingerprint: string;
+    rawTerminalFailureCount: number;
+    expectedAbsenceCount: number;
+    effectiveUnresolvedTerminalFailureCount: number;
+    status: "certified_with_expected_absence";
+    receiptFingerprint: string;
+  };
+};
+
 export type FirstPartyCrawlPersistenceOptions = {
   databaseUrl?: string | null;
   sqlFactory?: ((databaseUrl: string) => Sql) | null;
