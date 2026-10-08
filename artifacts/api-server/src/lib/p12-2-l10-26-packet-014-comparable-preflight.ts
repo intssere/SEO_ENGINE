@@ -16,11 +16,11 @@ export const P12_2_L10_26_VERSION =
 export type P122L1026Query = { id: "packet_014_comparable_candidate" | "packet_014_raw_history_immutability" | "packet_014_comparable_guard"; sql: string };
 
 const sourcePredicate = [
-  "r.site_id=\x27" + DIAMOND_SHELF_SITE_ID + "\x27::uuid",
-  "r.run_id=\x27" + P12_2_L10_15_RUN_ID + "\x27",
-  "r.canonical_origin=\x27" + DIAMOND_SHELF_CANONICAL_ORIGIN + "\x27",
-  "r.execution_plan_fingerprint=\x27" + P12_2_L10_18_EXECUTION_PLAN_FINGERPRINT + "\x27",
-  "r.source_accounting_snapshot_fingerprint=\x27" + P12_2_L10_19_C_SOURCE_ACCOUNTING_SNAPSHOT_FINGERPRINT + "\x27",
+  "r.site_id='" + DIAMOND_SHELF_SITE_ID + "'::uuid",
+  "r.run_id='" + P12_2_L10_15_RUN_ID + "'",
+  "r.canonical_origin='" + DIAMOND_SHELF_CANONICAL_ORIGIN + "'",
+  "r.execution_plan_fingerprint='" + P12_2_L10_18_EXECUTION_PLAN_FINGERPRINT + "'",
+  "r.source_accounting_snapshot_fingerprint='" + P12_2_L10_19_C_SOURCE_ACCOUNTING_SNAPSHOT_FINGERPRINT + "'",
 ].join(" AND ");
 
 const candidate = `SELECT a.snapshot_fingerprint, a.observed_at, r.receipt_fingerprint,
@@ -33,27 +33,27 @@ const candidate = `SELECT a.snapshot_fingerprint, a.observed_at, r.receipt_finge
  AND a.execution_plan_fingerprint=r.execution_plan_fingerprint
  AND a.snapshot_fingerprint=r.source_accounting_snapshot_fingerprint
  WHERE ${sourcePredicate}
- AND r.status=\x27certified_with_expected_absence\x27
+ AND r.status='certified_with_expected_absence'
  AND r.raw_terminal_failure_count=1 AND r.expected_absence_count=1
  AND r.effective_unresolved_terminal_failure_count=0
  AND a.terminal_failure_count=1 AND a.whole_site_certified=false
- AND a.snapshot_payload->>\x27fingerprint\x27=a.snapshot_fingerprint
- AND a.snapshot_payload->\x27certification\x27->\x27certification\x27->>\x27wholeSiteCertified\x27=\x27false\x27
- AND r.receipt_payload->>\x27fingerprint\x27=r.receipt_fingerprint
- AND r.receipt_payload->>\x27sourceAccountingSnapshotFingerprint\x27=r.source_accounting_snapshot_fingerprint
- AND r.receipt_payload->>\x27dispositionFingerprint\x27=r.disposition_fingerprint
- AND r.receipt_payload->>\x27legacyWholeSiteCertified\x27=\x27false\x27
- AND r.receipt_payload->>\x27status\x27=\x27certified_with_expected_absence\x27
- AND (r.receipt_payload->>\x27rawTerminalFailureCount\x27)::int=1
- AND (r.receipt_payload->>\x27expectedAbsenceCount\x27)::int=1
- AND (r.receipt_payload->>\x27effectiveUnresolvedTerminalFailureCount\x27)::int=0
+ AND a.snapshot_payload->>'fingerprint'=a.snapshot_fingerprint
+ AND a.snapshot_payload->'certification'->'certification'->>'wholeSiteCertified'='false'
+ AND r.receipt_payload->>'fingerprint'=r.receipt_fingerprint
+ AND r.receipt_payload->>'sourceAccountingSnapshotFingerprint'=r.source_accounting_snapshot_fingerprint
+ AND r.receipt_payload->>'dispositionFingerprint'=r.disposition_fingerprint
+ AND r.receipt_payload->>'legacyWholeSiteCertified'='false'
+ AND r.receipt_payload->>'status'='certified_with_expected_absence'
+ AND (r.receipt_payload->>'rawTerminalFailureCount')::int=1
+ AND (r.receipt_payload->>'expectedAbsenceCount')::int=1
+ AND (r.receipt_payload->>'effectiveUnresolvedTerminalFailureCount')::int=0
  AND EXISTS (SELECT 1 FROM first_party_crawl_terminal_failure_dispositions d
  WHERE d.site_id=r.site_id AND d.run_id=r.run_id
  AND d.canonical_origin=r.canonical_origin
  AND d.execution_plan_fingerprint=r.execution_plan_fingerprint
  AND d.disposition_fingerprint=r.disposition_fingerprint
  AND d.absence_http_status IN (404,410)
- AND d.disposition_payload->>\x27fingerprint\x27=d.disposition_fingerprint)
+ AND d.disposition_payload->>'fingerprint'=d.disposition_fingerprint)
 `;
 
 export function buildP122L1026Queries(): readonly P122L1026Query[] {
