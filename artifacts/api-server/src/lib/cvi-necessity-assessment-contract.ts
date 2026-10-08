@@ -34,6 +34,7 @@ export type CviNecessityAssessment = Readonly<{
   sourceRecommendedAction: ContentOpportunity["recommendedAction"];
   scope: Readonly<{ tenantId: string; siteId: string; siteBindingEvidenceFingerprint: string }>;
   editorialEvidenceFingerprints: readonly string[];
+  assessmentInputs: Readonly<{ hasVerifiedOriginalContribution: boolean; hasVerifiedBusinessTruth: boolean; unresolvedConflicts: boolean }>;
   disposition: CviEditorialDisposition;
   reasonCodes: readonly string[];
   blockers: readonly string[];
@@ -133,6 +134,7 @@ export function assessCviContentNecessity(input: CviNecessityAssessmentInput): C
     sourceRecommendedAction: opportunity.recommendedAction,
     scope: { tenantId, siteId, siteBindingEvidenceFingerprint },
     editorialEvidenceFingerprints,
+    assessmentInputs: { hasVerifiedOriginalContribution: input.hasVerifiedOriginalContribution, hasVerifiedBusinessTruth: input.hasVerifiedBusinessTruth, unresolvedConflicts: input.unresolvedConflicts },
     disposition,
     reasonCodes,
     blockers,
