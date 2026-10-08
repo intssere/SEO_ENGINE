@@ -19,7 +19,8 @@
     "test:p8-8-w07": "tsx --test src/p8-8-w07-policy-dispatch-migration.test.ts",
     "test:ugp-10-3": "tsx --test src/ugp-10-3-authority-outreach-review-migration.test.ts",
     "test:ugp-10-31": "tsx --test src/ugp-10-31-outbound-safety-migration.test.ts",
-    "test:ugp-10-32": "tsx --test src/ugp-10-32-single-send-execution-migration.test.ts"
+    "test:ugp-10-32": "tsx --test src/ugp-10-32-single-send-execution-migration.test.ts",
+    "test:ugp-10-33": "tsx --test src/ugp-10-33-controlled-https-certification-migration.test.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
