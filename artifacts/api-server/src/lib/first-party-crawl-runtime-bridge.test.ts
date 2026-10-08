@@ -627,6 +627,115 @@ test("L10.11 resumes a pending checkpoint when only sitemap lastmod metadata cha
   );
 });
 
+test("L10.24 runtime admits a durable expected-absence baseline without rewriting raw history", async () => {
+  const failedUrl = `${DIAMOND_SHELF_CANONICAL_ORIGIN}/a`;
+  const pageResults = new Map<string, PageTransportResult[]>([
+    [failedUrl, [{
+      kind: "failure",
+      signal: { kind: "http_status", httpStatus: 404 },
+    }]],
+  ]);
+  const state = harness({ pageResults });
+
+  const accountingResult = await runFullSiteCrawlBridgeAccountingAware(
+    fullInput("l10-24-expected-baseline"),
+    state.options,
+  );
+  assert.equal(
+    "status" in accountingResult ? accountingResult.status : null,
+    "accounting_complete_uncertified",
+  );
+  const accounting = state.persistence.accounting.at(-1)!;
+  const event = state.persistence.terminalEvents.at(-1)!;
+  assert.equal(accounting.certification.certification.wholeSiteCertified, false);
+
+  const disposition: ExpectedAbsenceDispositionEvidence = {
+    version: "first_party_expected_absence_disposition_evidence_v1",
+    runId: event.runId,
+    siteId: event.siteId,
+    canonicalOrigin: event.canonicalOrigin,
+    executionPlanFingerprint: event.executionPlanFingerprint,
+    sourceEventFingerprint: event.fingerprint,
+    canonicalUrl: event.canonicalUrl,
+    historicalAbsenceHttpStatus: 404,
+    currentAbsenceHttpStatus: 404,
+    freshInventoryFingerprint: accounting.inventory.fingerprint,
+    presentInFreshInventory: true,
+    dispositionType: "sitemap_orphan_absence",
+    dispositionFingerprint: "d".repeat(64),
+  };
+  const effective = buildExpectedAbsenceEffectiveCertification({
+    rawCertification: accounting.certification,
+    terminalFailureEvents: [event],
+    dispositions: [disposition],
+  });
+  const comparableSource = buildComparableCrawlHistorySource({
+    source: {
+      inventory: accounting.inventory,
+      certification: accounting.certification,
+    },
+    effectiveCertification: effective,
+  });
+  state.persistence.comparableBaseline = {
+    version: "first_party_crawl_durable_comparable_baseline_v1",
+    snapshot: accounting,
+    comparableSource,
+    mode: "expected_absence_effective",
+    reconciliationReceiptFingerprint: "e".repeat(64),
+  };
+
+  const current = await runFullSiteCrawlBridge(
+    fullInput("l10-24-current-clean"),
+    state.options,
+  );
+
+  assert.ok(current.comparisonToPrevious);
+  assert.equal(
+    current.comparisonToPrevious!.certificationTransition.beforeCertified,
+    false,
+  );
+  assert.equal(
+    current.comparisonToPrevious!.certificationTransition.afterCertified,
+    true,
+  );
+  assert.equal(
+    current.comparisonToPrevious!.certificationTransition.changed,
+    true,
+  );
+
+  assert.ok(current.comparableComparisonToPrevious);
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition
+      .beforeCertified,
+    true,
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition
+      .afterCertified,
+    true,
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition
+      .changed,
+    false,
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition
+      .beforeMode,
+    "expected_absence_effective",
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition
+      .afterMode,
+    "raw_completed",
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.rawComparison.fingerprint,
+    current.comparisonToPrevious!.fingerprint,
+  );
+  assert.equal(accounting.certification.certification.wholeSiteCertified, false);
+});
+
 test("stored checkpoint is fail-closed when rebuilt inventory/execution lineage changes", async () => {
   const firstHarness = harness();
   const first = await runFullSiteCrawlBridge(fullInput("resume-source"), firstHarness.options);
