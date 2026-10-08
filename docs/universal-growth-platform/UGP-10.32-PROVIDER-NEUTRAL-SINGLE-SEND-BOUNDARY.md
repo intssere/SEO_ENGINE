@@ -20,9 +20,11 @@ Execution event:
 
 ## Exact upstream requirement
 
-UGP-10.32 requires an exact durable UGP-10.31 reservation in state:
+A **new UGP-10.32 execution claim** requires an exact durable UGP-10.31 reservation in state:
 
 `reserved`
+
+For exact replay only, the executor may reconstruct the same execution identity from a durable UGP-10.31 receipt already in `released`, `consumed`, or `uncertain` state. The execution store checks for an existing execution before its new-claim state gate, so these terminal states cannot create a new adapter attempt.
 
 The reservation remains bound to:
 
