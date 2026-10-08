@@ -4,6 +4,7 @@ import {
   p122L1019Capability,
   p122L1019DispositionAuthorizationLiteral,
 } from "./lib/p12-2-l10-19-packet-014-expected-absence-disposition.js";
+import { firstPartyLiveFailureDiagnostics } from "./lib/first-party-live-adapters.js";
 
 function required(name: string): string {
   const value = process.env[name]?.trim() ?? "";
@@ -73,6 +74,7 @@ main().catch((error) => {
   console.error(JSON.stringify({
     status: "failed",
     code: boundedErrorCode(error),
+    ...firstPartyLiveFailureDiagnostics(error),
     attempts: 1,
     retries: 0,
     crawlReplayPerformed: false,
