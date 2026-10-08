@@ -18,14 +18,35 @@ import { stableEvidenceHash } from "./keyword-serp-evidence-contract.js";
 const fp = (num: number) => num.toString(16).padStart(64, "0");
 
 function model(action: ContentOpportunity["recommendedAction"], coverage: ContentOpportunity["existingCoverage"] = "no_matching_topic_evidence_in_supplied_scope"): ContentOpportunityModelResult {
-  const opportunity = {
+  const opportunity: ContentOpportunity = {
     opportunityId: "opportunity-1",
     opportunityFingerprint: fp(12),
+    clusterFingerprint: fp(16),
+    representativeKeyword: "reliable research topic",
+    targetTopic: "reliable research topic",
+    searchIntent: "mixed",
+    recommendedContentType: "article_or_guide",
     recommendedAction: action,
     existingCoverage: coverage,
+    cannibalizationState: "no_matching_cluster_query_evidence",
+    businessRelevance: {
+      relevance: 0.8,
+      rationaleCode: "synthetic_business_relevance",
+      evidenceFingerprint: fp(17),
+    },
+    evidence: {
+      topicClusteringFingerprint: fp(18),
+      coverageAssessmentFingerprint: fp(19),
+      cannibalizationAssessmentFingerprint: fp(20),
+      businessRelevanceEvidenceFingerprint: fp(21),
+    },
+    expectedMeasurement: {
+      method: "ongoing_search_observation",
+      causalAttribution: false,
+    },
     limitations: [],
     rationale: [],
-  } as ContentOpportunity;
+  };
   const base = {
     version: UGP_CONTENT_OPPORTUNITY_MODEL_VERSION,
     market: {} as ContentOpportunityModelResult["market"],
