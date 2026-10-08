@@ -94,10 +94,23 @@ export function assessCviContentNecessity(input: CviNecessityAssessmentInput): C
   const editorialEvidenceFingerprints = [...new Set(
     input.editorialEvidenceFingerprints.map(value => validFingerprint(value, "editorial_evidence_fingerprint")),
   )].sort();
+  if (!Array.isArray(input.model.opportunities)) {
+    throw new Error("cvi_invalid_upstream_opportunities");
+  }
   const opportunity = input.model.opportunities.find(item => item.opportunityId === input.opportunityId);
   if (!opportunity) throw new Error("cvi_opportunity_not_in_verified_model");
   if (input.model.opportunities.filter(item => item.opportunityId === input.opportunityId).length !== 1) {
     throw new Error("cvi_ambiguous_opportunity_identity");
+  }
+  const acceptedActions = [
+    "create_candidate", "refresh_candidate", "consolidate_candidate",
+    "leave_alone", "defer_insufficient_evidence",
+  ] as const;
+  if (!acceptedActions.includes(opportunity.recommendedAction)) {
+    throw new Error("cvi_invalid_upstream_action");
+  }
+  if (!Array.isArray(opportunity.limitations) || !Array.isArray(opportunity.rationale)) {
+    throw new Error("cvi_invalid_upstream_opportunity");
   }
   for (const name of ["hasVerifiedOriginalContribution", "hasVerifiedBusinessTruth", "unresolvedConflicts"] as const) {
     if (typeof input[name] !== "boolean") throw new Error(`cvi_invalid_${name}`);
