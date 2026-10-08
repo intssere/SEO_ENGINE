@@ -178,12 +178,12 @@ jobs:
           pnpm --filter @workspace/api-server test:p12-2-l10-21-persistence-ephemeral
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 43
 
-      - name: Test P12.2-L10.23 durable comparable history baseline selector
+      - name: Test P12.2-L10.23/L10.25 durable selector and runtime comparable certification
         env:
           P12_2_L10_23_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_p12_2_prod_lineage_test
         run: |
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 43
-          pnpm --filter @workspace/api-server test:p12-2-l10-23-comparable-baseline-ephemeral
+          pnpm --filter @workspace/api-server test:p12-2-l10-25-runtime-comparable-ephemeral
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 43
 
       - name: Test all current workspace packages

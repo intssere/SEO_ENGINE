@@ -29,11 +29,15 @@ function hex(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function input(runId: string, observedAt: string) {
+function input(
+  runId: string,
+  observedAt: string,
+  compareToPrevious = false,
+) {
   return {
     runId,
     observedAt,
-    compareToPrevious: false,
+    compareToPrevious,
     binding: {
       siteId: DIAMOND_SHELF_SITE_ID,
       canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
@@ -208,7 +212,7 @@ async function insertDispositionAndReconciliation(
   `;
 }
 
-test("L10.23 selects newest durable comparable baseline and fails closed on tampered reconciliation", async (t) => {
+test("L10.23/L10.25 selects durable comparable baselines, drives runtime history, and fails closed on tampering", async (t) => {
   const url = databaseUrl();
   if (!url) {
     t.skip("P12_2_L10_23_EPHEMERAL_DATABASE_URL is not configured");
@@ -232,6 +236,71 @@ test("L10.23 selects newest durable comparable baseline and fails closed on tamp
   assert.equal(selectedEffective.comparableSource.certificationView.comparableCertified, true);
   assert.equal(selectedEffective.comparableSource.certificationView.rawWholeSiteCertified, false);
   assert.ok(selectedEffective.reconciliationReceiptFingerprint);
+
+  const currentRunId = "p12-2-l10-25-current-" + randomUUID();
+  const current = await runFullSiteCrawlBridge(
+    input(currentRunId, "2026-10-08T12:30:00.000Z", true),
+    options(
+      effectiveNewer.persistence,
+      ["/current-ok-" + randomUUID()],
+      {},
+    ),
+  );
+
+  assert.ok(current.comparisonToPrevious);
+  assert.equal(
+    current.comparisonToPrevious!.certificationTransition.beforeCertified,
+    false,
+  );
+  assert.equal(
+    current.comparisonToPrevious!.certificationTransition.afterCertified,
+    true,
+  );
+  assert.equal(
+    current.comparisonToPrevious!.certificationTransition.changed,
+    true,
+  );
+
+  assert.ok(current.comparableComparisonToPrevious);
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.beforeCertified,
+    true,
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.afterCertified,
+    true,
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.changed,
+    false,
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.beforeMode,
+    "expected_absence_effective",
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.afterMode,
+    "raw_completed",
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.rawComparison.fingerprint,
+    current.comparisonToPrevious!.fingerprint,
+  );
+  assert.equal(
+    effectiveNewer.accounting.certification.certification.wholeSiteCertified,
+    false,
+  );
+
+  const completedEvidence = await sql<{ run_id: string }[]>`
+    SELECT run_id
+    FROM first_party_crawl_completed_runs
+    WHERE run_id IN (${effectiveNewer.runId}, ${currentRunId})
+    ORDER BY run_id
+  `;
+  assert.deepEqual(
+    completedEvidence.map((row) => row.run_id),
+    [currentRunId],
+  );
 
   const rawNewest = await seedCompleted(url, "2026-10-08T13:00:00.000Z");
   const selectedRaw = await rawNewest.persistence.loadLatestComparableHistoryBaseline({
