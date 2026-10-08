@@ -110,6 +110,7 @@ export function requiredRoleForApiRequest(method: string, path: string): AppRole
   if (normalizedMethod === "GET" || normalizedMethod === "HEAD" || normalizedMethod === "OPTIONS") return "viewer";
   if (/^\/approvals\/[^/]+\/(decision|draft)$/.test(path)) return "operator";
   if (path === "/authority/outreach/reviews") return "operator";
+  if (path === "/authority/outreach/single-send/mock") return "operator";
   if (/^\/execution\/[^/]+\/task5[34]\/preflight$/.test(path)) return "operator";
   return "admin";
 }

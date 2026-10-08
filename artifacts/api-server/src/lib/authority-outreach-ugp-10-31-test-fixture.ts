@@ -124,13 +124,17 @@ function fixture(
   contactKind:ContactKind="email_address",
   policyDecision:PolicyDecision=
     "approve_for_deliverability_verification_preparation",
+  variant:"a"|"f"="a",
 ){
+  const sourceDomain=
+    variant==="a"?"publisher.example.org":"publisher-f.example.org";
+  const sourceOrigin="https://"+sourceDomain;
   const current=buildBacklinkEvidenceDataset({
     targetDomain:"diamondshelf.us",
     source:{
       providerKey:"dataforseo",
       providerDataset:"backlinks.backlinks.live",
-      sourceFingerprint:FP("a"),
+      sourceFingerprint:FP(variant),
       requestFingerprint:FP("b"),
       marketFingerprint:FP("c"),
       categoryFingerprint:FP("d"),
@@ -144,8 +148,8 @@ function fixture(
       responseFingerprint:FP("e"),
     },
     backlinks:[{
-      sourceUrl:"https://publisher.example.org/old-guide",
-      sourceDomain:"publisher.example.org",
+      sourceUrl:sourceOrigin+"/old-guide",
+      sourceDomain,
       targetUrl:"https://diamondshelf.us/guide",
       anchorText:"Guide",
       firstSeenAt:"2026-01-01T00:00:00Z",
@@ -197,7 +201,7 @@ function fixture(
     requestFingerprint:ready.request.requestFingerprint,
     subject:"A note about your older fragrance guide",
     body:[
-      "I noticed the older fragrance reference on publisher.example.org.",
+      "I noticed the older fragrance reference on "+sourceDomain+".",
       "Our current guide is available at https://diamondshelf.us/guide.",
       "If it is useful for your readers, please feel free to review it.",
     ].join("\n"),
@@ -301,7 +305,7 @@ function fixture(
       roleTitle:"Senior Editor",
       matchedRoleCriteria:["editorial_responsibility"],
       evidenceSourceClass:"source_domain_author_or_editor_page",
-      evidenceUrl:"https://publisher.example.org/team/alex-editor",
+      evidenceUrl:sourceOrigin+"/team/alex-editor",
       observedAt:"2026-10-06T10:00:00.000Z",
       evidenceFingerprint:FP("5"),
       publicBusinessIdentityAttested:true,
@@ -388,16 +392,16 @@ function fixture(
 
   const contactPointValue=
     contactKind==="email_address"
-      ?"editor@publisher.example.org"
-      :"https://publisher.example.org/contact/editorial";
+      ?"editor@"+sourceDomain
+      :sourceOrigin+"/contact/editorial";
   const evidenceSourceClass=
     contactKind==="email_address"
       ?"source_domain_staff_or_author_page" as const
       :"source_domain_contact_page" as const;
   const evidenceUrl=
     contactKind==="email_address"
-      ?"https://publisher.example.org/team/alex-editor"
-      :"https://publisher.example.org/contact";
+      ?sourceOrigin+"/team/alex-editor"
+      :sourceOrigin+"/contact";
   const contactPointFingerprint=
     authorityOutreachPublicContactPointFingerprint(
       contactKind,
@@ -499,6 +503,10 @@ function fixture(
     );
 
   return {
+    request:ready.request,
+    candidate,
+    contactPointType:contactKind,
+    contactPointValue,
     policyConsentDecision,
     policyConsentDecisionInput,
   };
@@ -520,8 +528,11 @@ function preparationRequest(
   };
 }
 
-function prepared(contactKind:ContactKind="email_address"){
-  const f=fixture(contactKind);
+function prepared(
+  contactKind:ContactKind="email_address",
+  variant:"a"|"f"="a",
+){
+  const f=fixture(contactKind,undefined,variant);
   const preparationRequestValue=preparationRequest(f);
   const deliverabilityPreparationInput={
     policyConsentDecision:f.policyConsentDecision,
@@ -584,8 +595,9 @@ function evidenceFixture(
     readonly AuthorityOutreachDeliverabilityEvidenceObservationOutcome[]
       =["supports_reachability","supports_reachability"],
   contactKind:ContactKind="email_address",
+  variant:"a"|"f"="a",
 ){
-  const f=prepared(contactKind);
+  const f=prepared(contactKind,variant);
   const evidenceRequestValue=evidenceRequest(f,{
     observations:suppliedObservations(f,outcomes),
   });
@@ -627,8 +639,9 @@ function reviewFixture(
     readonly AuthorityOutreachDeliverabilityEvidenceObservationOutcome[]
       =["supports_reachability","supports_reachability"],
   contactKind:ContactKind="email_address",
+  variant:"a"|"f"="a",
 ){
-  const f=evidenceFixture(outcomes,contactKind);
+  const f=evidenceFixture(outcomes,contactKind,variant);
   const reviewRequestValue=reviewRequest(f);
   const deliverabilityEvidenceReviewSpecificationInput={
     deliverabilityEvidence:f.deliverabilityEvidence,
@@ -690,10 +703,14 @@ function decisionRequest(
 }
 
 
-function approvedDecision(contactKind:ContactKind="email_address"){
+function approvedDecision(
+  contactKind:ContactKind="email_address",
+  variant:"a"|"f"="a",
+){
   const f=reviewFixture(
     ["supports_reachability","supports_reachability"],
     contactKind,
+    variant,
   );
   const request=decisionRequest(
     f,
@@ -744,8 +761,11 @@ function bindingRequest(
 }
 
 
-function bindingPreparation(contactKind:ContactKind="email_address"){
-  const f=approvedDecision(contactKind);
+function bindingPreparation(
+  contactKind:ContactKind="email_address",
+  variant:"a"|"f"="a",
+){
+  const f=approvedDecision(contactKind,variant);
   const deliveryBindingPreparationInput={
     deliverabilityEvidenceDecision:f.deliverabilityEvidenceDecision,
     deliverabilityEvidenceDecisionInput:
@@ -801,8 +821,9 @@ function bindingEvidenceRequest(
 function bindingEvidence(
   contactKind:ContactKind="email_address",
   outcomes?:readonly AuthorityOutreachDeliveryBindingEvidenceObservationOutcome[],
+  variant:"a"|"f"="a",
 ){
-  const f=bindingPreparation(contactKind);
+  const f=bindingPreparation(contactKind,variant);
   const deliveryBindingEvidenceInput={
     deliveryBindingPreparation:f.deliveryBindingPreparation,
     deliveryBindingPreparationInput:f.deliveryBindingPreparationInput,
@@ -842,8 +863,9 @@ function bindingReviewRequest(
 function authorizationBindingReview27(
   contactKind:ContactKind="email_address",
   outcomes?:readonly AuthorityOutreachDeliveryBindingEvidenceObservationOutcome[],
+  variant:"a"|"f"="a",
 ){
-  const f=bindingEvidence(contactKind,outcomes);
+  const f=bindingEvidence(contactKind,outcomes,variant);
   const deliveryBindingEvidenceReviewSpecificationInput={
     deliveryBindingEvidence:f.deliveryBindingEvidence,
     deliveryBindingEvidenceInput:f.deliveryBindingEvidenceInput,
@@ -909,8 +931,9 @@ function humanBindingDecision27(
   reasonCode:
     AuthorityOutreachHumanDeliveryBindingEvidenceDecisionRequest["reasonCode"]=
       "evidence_sufficient_for_binding_authorization_preparation",
+  variant:"a"|"f"="a",
 ){
-  const f=authorizationBindingReview27(contactKind);
+  const f=authorizationBindingReview27(contactKind,undefined,variant);
   const decisionRequest=authorizationDecisionRequest27(
     f,
     decision,
@@ -966,8 +989,9 @@ function authorizationPreparationRequest27(
 
 function authorizationPreparation28(
   contactKind:ContactKind="email_address",
+  variant:"a"|"f"="a",
 ){
-  const f=humanBindingDecision27(contactKind);
+  const f=humanBindingDecision27(contactKind,undefined,undefined,variant);
   const deliveryBindingAuthorizationPreparationSpecificationInput={
     deliveryBindingEvidenceDecision:f.deliveryBindingEvidenceDecision,
     deliveryBindingEvidenceDecisionInput:
@@ -1012,8 +1036,9 @@ function authorizationReviewRequest28(
 
 function authorizationReview29(
   contactKind:ContactKind="email_address",
+  variant:"a"|"f"="a",
 ){
-  const f=authorizationPreparation28(contactKind);
+  const f=authorizationPreparation28(contactKind,variant);
   const deliveryBindingAuthorizationReviewSpecificationInput={
     deliveryBindingAuthorizationPreparationSpecification:
       f.deliveryBindingAuthorizationPreparationSpecification,
@@ -1082,8 +1107,9 @@ export function buildUgp1031AuthorizationFixture(
     "approve_for_separate_delivery_binding_operational_authorization",
   reasonCode:AuthorityOutreachHumanDeliveryBindingAuthorizationDecisionRequest["reasonCode"]=
     "authorization_preparation_sufficient_for_separate_operational_authorization",
+  variant:"a"|"f"="a",
 ){
-  const f=authorizationReview29(contactKind);
+  const f=authorizationReview29(contactKind,variant);
   const decisionRequest=authorizationDecisionRequest29(
     f,
     decision,

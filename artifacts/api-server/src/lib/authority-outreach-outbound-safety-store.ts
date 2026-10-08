@@ -12,6 +12,7 @@ import {
 } from "./authority-outreach-outbound-safety-intent.js";
 
 export const UGP_10_31_EXPECTED_TABLE_COUNT = 47 as const;
+export const UGP_10_31_COMPATIBLE_TABLE_COUNTS = Object.freeze([47,49] as const);
 
 export type AuthorityOutreachSuppressionReason =
   | "explicit_opt_out"
@@ -312,7 +313,8 @@ async function assertSchema(sql: Sql): Promise<void> {
   const counts = await sql.unsafe<{ count: number }[]>(
     "SELECT COUNT(*)::int AS count FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'",
   );
-  if (Number(counts[0]?.count ?? 0) !== UGP_10_31_EXPECTED_TABLE_COUNT) {
+  const tableCount=Number(counts[0]?.count ?? 0);
+  if(!UGP_10_31_COMPATIBLE_TABLE_COUNTS.includes(tableCount as 47|49)){
     throw new Error("ugp10_31_schema_table_count_mismatch");
   }
   for (const table of [
@@ -479,6 +481,31 @@ export class AuthorityOutreachOutboundSafetyStore {
         connect_timeout: 8,
         idle_timeout: 2,
       }));
+  }
+
+  async readReservation(input:{
+    reservationId:string;
+    reservationFingerprint:string;
+  }):Promise<AuthorityOutreachOutboundSafetyReceipt>{
+    fingerprint(input.reservationFingerprint,"reservation_fingerprint");
+    const sql=this.sqlFactory(this.databaseUrl);
+    try{
+      await assertSchema(sql);
+      const rows=await sql.unsafe<ReservationRow[]>(
+        "SELECT "+RESERVATION_COLUMNS
+          +" FROM authority_outreach_send_reservations"
+          +" WHERE reservation_id=$1 LIMIT 1",
+        [input.reservationId],
+      );
+      const row=rows[0];
+      if(!row) throw new Error("ugp10_31_reservation_not_found");
+      if(row.reservation_fingerprint!==input.reservationFingerprint){
+        throw new Error("ugp10_31_reservation_identity_collision");
+      }
+      return projectReceipt(row);
+    }finally{
+      await sql.end({timeout:1}).catch(()=>undefined);
+    }
   }
 
   async suppress(input: {
@@ -893,6 +920,7 @@ export function authorityOutreachOutboundSafetyStoreCapability() {
   return deepFreeze({
     version: UGP_AUTHORITY_OUTREACH_OUTBOUND_SAFETY_RESERVATION_VERSION,
     expectedPublicTableCount: UGP_10_31_EXPECTED_TABLE_COUNT,
+    compatiblePublicTableCounts: UGP_10_31_COMPATIBLE_TABLE_COUNTS,
     explicitDatabaseUrlOnly: true,
     databaseTransactionClockAuthoritative: true,
     siteRowSerializesReservations: true,

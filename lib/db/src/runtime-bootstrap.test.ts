@@ -18,6 +18,8 @@ import {
   EXPECTED_UGP_10_3_TABLE_COUNT,
   EXPECTED_UGP_10_31_OUTBOUND_SAFETY_TABLE_COUNT,
   EXPECTED_UGP_10_31_TABLE_COUNT,
+  EXPECTED_UGP_10_32_SINGLE_SEND_EXECUTION_TABLE_COUNT,
+  EXPECTED_UGP_10_32_TABLE_COUNT,
   planRuntimeBootstrap,
 } from "./runtime-bootstrap.js";
 
@@ -48,7 +50,7 @@ test("fully initialized runtime schema skips migrations and allows idempotent si
   assert.equal(plan.blocked, false);
 });
 
-test("current P3.6, P12.2, W04, W05, W07, UGP-10.3, and UGP-10.31 schemas are recognized without automatic migration", () => {
+test("current P3.6, P12.2, W04, W05, W07, UGP-10.3, UGP-10.31, and UGP-10.32 schemas are recognized without automatic migration", () => {
   const current = planRuntimeBootstrap(EXPECTED_CURRENT_TABLE_COUNT);
   assert.equal(current.schemaState, "ready");
   assert.equal(current.blocked, false);
@@ -97,6 +99,13 @@ test("current P3.6, P12.2, W04, W05, W07, UGP-10.3, and UGP-10.31 schemas are re
   assert.equal(ugp1031.applyCoreMigration, false);
   assert.equal(ugp1031.applyAuthMigration, false);
   assert.equal(ugp1031.upsertDiamondShelf, true);
+
+  const ugp1032 = planRuntimeBootstrap(EXPECTED_UGP_10_32_TABLE_COUNT);
+  assert.equal(ugp1032.schemaState, "ugp_10_32_ready");
+  assert.equal(ugp1032.blocked, false);
+  assert.equal(ugp1032.applyCoreMigration, false);
+  assert.equal(ugp1032.applyAuthMigration, false);
+  assert.equal(ugp1032.upsertDiamondShelf, true);
 });
 
 test("unrecognized partial or unsupported future schema states fail closed", () => {
@@ -110,6 +119,7 @@ test("unrecognized partial or unsupported future schema states fail closed", () 
     EXPECTED_P8_8_W05_TABLE_COUNT + 1,
     EXPECTED_UGP_10_3_TABLE_COUNT + 1,
     EXPECTED_UGP_10_31_TABLE_COUNT + 1,
+    EXPECTED_UGP_10_32_TABLE_COUNT + 1,
   ]) {
     const plan = planRuntimeBootstrap(count);
     assert.equal(plan.schemaState, "partial");
@@ -197,5 +207,15 @@ test("UGP-10.31 future schema count adds exactly three outbound safety tables", 
   assert.equal(
     EXPECTED_UGP_10_31_TABLE_COUNT,
     EXPECTED_UGP_10_3_TABLE_COUNT + EXPECTED_UGP_10_31_OUTBOUND_SAFETY_TABLE_COUNT,
+  );
+});
+
+
+test("UGP-10.32 future schema count adds exactly two single-send execution tables", () => {
+  assert.equal(EXPECTED_UGP_10_32_SINGLE_SEND_EXECUTION_TABLE_COUNT, 2);
+  assert.equal(EXPECTED_UGP_10_32_TABLE_COUNT, 49);
+  assert.equal(
+    EXPECTED_UGP_10_32_TABLE_COUNT,
+    EXPECTED_UGP_10_31_TABLE_COUNT + EXPECTED_UGP_10_32_SINGLE_SEND_EXECUTION_TABLE_COUNT,
   );
 });

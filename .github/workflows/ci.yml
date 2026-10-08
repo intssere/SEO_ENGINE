@@ -142,6 +142,15 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^47$'
           pnpm --filter @workspace/api-server test:ugp-10-31-persistence-ephemeral
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^47$'
+      - name: Test UGP-10.32 single-send execution migration and mock boundary
+        env:
+          UGP_10_32_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
+        run: |
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^47$'
+          pnpm --filter @workspace/db test:ugp-10-32
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^49$'
+          pnpm --filter @workspace/api-server test:ugp-10-32-execution-ephemeral
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^49$'
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
 

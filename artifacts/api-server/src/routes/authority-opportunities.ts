@@ -9,6 +9,11 @@ import {
   parseAuthorityOutreachReviewMutationRequest,
 } from "../lib/authority-outreach-review-store.js";
 import { verifiedActorId } from "../middlewares/auth-security.js";
+import {
+  AuthorityOutreachSingleSendRuntimeError,
+  executeAuthorityOutreachMockSingleSendRequest,
+  parseAuthorityOutreachMockSingleSendRequest,
+} from "../lib/authority-outreach-single-send-runtime.js";
 
 const router:IRouter=Router();
 
@@ -23,6 +28,38 @@ router.get("/authority/qualification",async(_req,res)=>{
 
 router.get("/authority/outreach",async(_req,res)=>{
   res.json(await loadAuthorityOutreachData());
+});
+
+router.post("/authority/outreach/single-send/mock",async(req,res)=>{
+  if(!req.auth){
+    return res.status(401).json({error:"authentication_required"});
+  }
+  if(!isSameOriginRequest(req.get("origin"),req.get("host"))){
+    return res.status(403).json({error:"same_origin_single_send_required"});
+  }
+  let body;
+  try{
+    body=parseAuthorityOutreachMockSingleSendRequest(req.body);
+  }catch(error){
+    if(error instanceof AuthorityOutreachSingleSendRuntimeError){
+      return res.status(error.status).json({error:error.category});
+    }
+    return res.status(400).json({error:"invalid_single_send_request"});
+  }
+  try{
+    const actorId=verifiedActorId(req);
+    return res.json(
+      await executeAuthorityOutreachMockSingleSendRequest(body,actorId),
+    );
+  }catch(error){
+    if(error instanceof AuthorityOutreachSingleSendRuntimeError){
+      return res.status(error.status).json({error:error.category});
+    }
+    if(error instanceof Error&&error.message==="verified_actor_missing"){
+      return res.status(401).json({error:"authentication_required"});
+    }
+    return res.status(500).json({error:"single_send_execution_failed"});
+  }
 });
 
 router.post("/authority/outreach/reviews",async(req,res)=>{
