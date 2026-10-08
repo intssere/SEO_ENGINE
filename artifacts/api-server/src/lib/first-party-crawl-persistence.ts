@@ -27,6 +27,10 @@ import {
   type ExpectedAbsenceDispositionEvidence,
   type ExpectedAbsenceEffectiveCertification,
 } from "./full-site-crawl-expected-absence-certification.js";
+import {
+  buildComparableCrawlHistorySource,
+  type ComparableCrawlHistorySource,
+} from "./crawl-history-effective-baseline.js";
 
 export const P12_2_CRAWL_PERSISTENCE_VERSION = "p12-2-crawl-persistence-v1" as const;
 export const P12_2_TABLE_COUNT = 37;
