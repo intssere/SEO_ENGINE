@@ -35,6 +35,11 @@ export type CviNecessityAssessment = Readonly<{
   scope: Readonly<{ tenantId: string; siteId: string; siteBindingEvidenceFingerprint: string }>;
   editorialEvidenceFingerprints: readonly string[];
   assessmentInputs: Readonly<{ hasVerifiedOriginalContribution: boolean; hasVerifiedBusinessTruth: boolean; unresolvedConflicts: boolean }>;
+  evidenceTrust: Readonly<{
+    assertionProvenance: "caller_supplied_unverified";
+    independentlyCertified: false;
+    mustRevalidateBeforeGenerationOrPublication: true;
+  }>;
   disposition: CviEditorialDisposition;
   reasonCodes: readonly string[];
   blockers: readonly string[];
@@ -148,6 +153,11 @@ export function assessCviContentNecessity(input: CviNecessityAssessmentInput): C
     scope: { tenantId, siteId, siteBindingEvidenceFingerprint },
     editorialEvidenceFingerprints,
     assessmentInputs: { hasVerifiedOriginalContribution: input.hasVerifiedOriginalContribution, hasVerifiedBusinessTruth: input.hasVerifiedBusinessTruth, unresolvedConflicts: input.unresolvedConflicts },
+    evidenceTrust: {
+      assertionProvenance: "caller_supplied_unverified" as const,
+      independentlyCertified: false as const,
+      mustRevalidateBeforeGenerationOrPublication: true as const,
+    },
     disposition,
     reasonCodes,
     blockers,
