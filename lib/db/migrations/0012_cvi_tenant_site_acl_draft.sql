@@ -11,11 +11,11 @@ CREATE TABLE cvi_organization_memberships (
   status text NOT NULL DEFAULT 'revoked' CHECK (status IN ('active','suspended','revoked')),
   effective_at timestamptz NOT NULL,
   expires_at timestamptz,
-  revoked_at timestamptz,
+  revoked_at timestamptz DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT cvi_membership_interval CHECK (expires_at IS NULL OR expires_at > effective_at),
-  CONSTRAINT cvi_membership_revocation CHECK (status <> 'revoked' OR revoked_at IS NOT NULL),
+  CONSTRAINT cvi_membership_revocation CHECK ((status = 'revoked') = (revoked_at IS NOT NULL)),
   CONSTRAINT cvi_membership_subject_unique UNIQUE (organization_id, auth_subject),
   CONSTRAINT cvi_membership_org_identity UNIQUE (id, organization_id)
 );
@@ -34,7 +34,7 @@ CREATE TABLE cvi_site_read_grants (
   status text NOT NULL DEFAULT 'revoked' CHECK (status IN ('active','revoked')),
   effective_at timestamptz NOT NULL,
   expires_at timestamptz,
-  revoked_at timestamptz,
+  revoked_at timestamptz DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT cvi_site_grant_membership_fk
@@ -44,7 +44,7 @@ CREATE TABLE cvi_site_read_grants (
     FOREIGN KEY (site_id, organization_id)
     REFERENCES sites (id, organization_id) ON DELETE RESTRICT,
   CONSTRAINT cvi_site_grant_interval CHECK (expires_at IS NULL OR expires_at > effective_at),
-  CONSTRAINT cvi_site_grant_revocation CHECK (status <> 'revoked' OR revoked_at IS NOT NULL),
+  CONSTRAINT cvi_site_grant_revocation CHECK ((status = 'revoked') = (revoked_at IS NOT NULL)),
   CONSTRAINT cvi_site_grant_unique UNIQUE (organization_membership_id, site_id, permission)
 );
 
