@@ -213,7 +213,13 @@ export function buildExpectedAbsenceEffectiveCertification(input: {
   const eventsByFingerprint = new Map<string, TerminalFailureEvent>();
   const eventUrls = new Set<string>();
   for (const event of input.terminalFailureEvents) {
-    terminalEventAbsenceStatus(event);
+    assertTerminalFailureEventIntegrity(event);
+    if (
+      event.eventType === "recovery_resolved" ||
+      event.outcome.kind !== "failure"
+    ) {
+      throw new Error("expected_absence_terminal_event_unresolved_failure_required");
+    }
     if (
       event.siteId !== raw.siteId ||
       event.canonicalOrigin !== raw.canonicalOrigin ||
