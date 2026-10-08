@@ -59,6 +59,8 @@ test("UGP-10.33 operational CLIs fail closed for production and non-empty DB",()
   assert.match(dbPrep,/production_db_prepare_forbidden/);
   assert.match(dbPrep,/cert_database_must_be_empty/);
   assert.match(dbPrep,/exact_authorization_literal_required/);
+  assert.match(dbPrep,/bootstrapRuntimeDatabase/);
+  assert.doesNotMatch(dbPrep,/ensureDiamondShelfIdentity/);
   assert.match(runner,/production_live_certification_forbidden/);
   assert.match(runner,/real_certification_disabled/);
   assert.match(runner,/exact_authorization_literal_required/);
