@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 import postgres from "postgres";
 import { ensureDiamondShelfIdentity } from "@workspace/db";
 import { buildUgp1033ControlledCertificationFixture } from "./authority-outreach-ugp-10-33-fixture.js";
@@ -47,10 +47,12 @@ try{
     "0011_ugp_10_33_controlled_https_certification.sql",
   ];
   for(const name of migrations){
-    const path=fileURLToPath(
-      new URL("../../../../lib/db/migrations/"+name,import.meta.url),
+    const migrationPath=path.resolve(
+      process.cwd(),
+      "lib/db/migrations",
+      name,
     );
-    await sql.unsafe(await readFile(path,"utf8"));
+    await sql.unsafe(await readFile(migrationPath,"utf8"));
   }
   const identity=await ensureDiamondShelfIdentity(databaseUrl);
   if(identity.status!=="ready"||identity.tableCount!==49){
