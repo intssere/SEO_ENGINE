@@ -27,7 +27,7 @@ const route=readFileSync(
 );
 const receiver=readFileSync(
   fileURLToPath(
-    new URL("../../../../../ops/ugp-10-33-controlled-receiver.ts",import.meta.url),
+    new URL("../../../../ops/ugp-10-33-controlled-receiver.ts",import.meta.url),
   ),
   "utf8",
 );
