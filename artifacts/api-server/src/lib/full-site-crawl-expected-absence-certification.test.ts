@@ -227,6 +227,65 @@ test("L10.20 keeps every undisposed terminal failure blocking", () => {
   );
 });
 
+test("L10.21 permits mixed terminal failures while keeping undisposed non-absence failures blocking", () => {
+  const source = fixture(
+    [
+      "https://diamondshelf.us/missing",
+      "https://diamondshelf.us/server-error",
+    ],
+    [
+      {
+        canonicalUrl: "https://diamondshelf.us/missing",
+        kind: "failure",
+        signal: { kind: "http_status", httpStatus: 404 },
+      },
+      {
+        canonicalUrl: "https://diamondshelf.us/server-error",
+        kind: "failure",
+        signal: { kind: "http_status", httpStatus: 500 },
+      },
+    ],
+  );
+  const disposed = terminalEvent(source, "https://diamondshelf.us/missing", 404);
+  const unresolved = createTerminalFailureEvent({
+    eventType: "terminal_failure",
+    runId: "l10-20-test-run",
+    observedAt: "2026-10-08T10:00:00.000Z",
+    siteId: target.siteId,
+    canonicalOrigin: target.canonicalOrigin,
+    executionPlanFingerprint: source.executionPlan.fingerprint,
+    canonicalUrl: "https://diamondshelf.us/server-error",
+    checkpointRevision: source.completed.sequence,
+    checkpointFingerprint: source.completed.fingerprint,
+    batchId: source.initial.activeBatchId!,
+    attempt: source.initial.nextAttempt!,
+    sourceEventFingerprint: null,
+    outcome: {
+      canonicalUrl: "https://diamondshelf.us/server-error",
+      kind: "failure",
+      signal: { kind: "http_status", httpStatus: 500 },
+    },
+    decisionReason: "attempts_exhausted",
+  });
+
+  const effective = buildExpectedAbsenceEffectiveCertification({
+    rawCertification: source.rawCertification,
+    terminalFailureEvents: [disposed, unresolved],
+    dispositions: [disposition(source, disposed)],
+  });
+
+  assert.deepEqual(effective.accounting, {
+    rawTerminalFailureCount: 2,
+    expectedAbsenceCount: 1,
+    effectiveUnresolvedTerminalFailureCount: 1,
+  });
+  assert.equal(effective.certification.status, "blocked");
+  assert.deepEqual(
+    effective.certification.blockers,
+    ["terminal_failures_present"],
+  );
+});
+
 test("L10.20 rejects duplicate dispositions for one terminal event", () => {
   const source = fixture(
     ["https://diamondshelf.us/missing"],
