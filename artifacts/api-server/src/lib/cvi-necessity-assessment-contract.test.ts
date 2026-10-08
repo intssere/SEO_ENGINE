@@ -79,6 +79,9 @@ test("stable fingerprint ignores editorial evidence order and duplicates", () =>
   assert.equal(result.disposition, "PROCEED_TO_RESEARCH");
   assert.equal(result.semantics.publicationAuthorized, false);
   assert.equal(result.semantics.executionAuthorized, false);
+  assert.equal(result.evidenceTrust.assertionProvenance, "caller_supplied_unverified");
+  assert.equal(result.evidenceTrust.independentlyCertified, false);
+  assert.equal(result.evidenceTrust.mustRevalidateBeforeGenerationOrPublication, true);
 });
 
 test("evidence fingerprint mutation changes identity", () => {
@@ -144,6 +147,7 @@ test("all dispositions remain advisory without network, provider or publication 
     assert.equal(result.semantics.publicationAuthorized, false);
     assert.equal(result.semantics.executionAuthorized, false);
     assert.equal(result.semantics.requiresSeparateAuthorization, true);
+    assert.equal(result.evidenceTrust.independentlyCertified, false);
     assert.equal(result.semantics.performsNetworkOperation, false);
     assert.equal(result.semantics.performsPersistence, false);
   }
