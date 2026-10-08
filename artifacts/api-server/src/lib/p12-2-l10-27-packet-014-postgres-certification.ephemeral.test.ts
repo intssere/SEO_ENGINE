@@ -84,7 +84,7 @@ test("L10.27 accepts exact Packet 014 comparable evidence and rejects inconsiste
   const inventory = hex("c");
   const now = "2026-10-08T12:00:00.000Z";
 
-  async function scenario(change: "valid" | "missing_disposition" | "wrong_disposition" | "tampered_reconciliation" | "extra_raw" | "recovery") {
+  async function scenario(change: "valid" | "missing_disposition" | "missing_reconciliation" | "wrong_disposition" | "wrong_disposition_type" | "tampered_reconciliation" | "extra_raw" | "recovery") {
     const rollbackMarker = "p12_2_l10_27_rollback_" + change;
     await assert.rejects(sql.begin(async (tx) => {
       // Fixture inserts are permitted only inside this rollback-only localhost transaction.
@@ -139,14 +139,14 @@ test("L10.27 accepts exact Packet 014 comparable evidence and rejects inconsiste
             ${randomUUID()}::uuid, ${DIAMOND_SHELF_SITE_ID}::uuid, ${P12_2_L10_15_RUN_ID},
             ${DIAMOND_SHELF_CANONICAL_ORIGIN}, ${plan}, ${failure},
             ${change==="wrong_disposition" ? DIAMOND_SHELF_CANONICAL_ORIGIN+"/not-news" : failureUrl},
-            'sitemap_orphan_absence', 404, ${inventory}, true,
+            ${change==="wrong_disposition_type"?"stale_inventory_absence":"sitemap_orphan_absence"}, 404, ${inventory}, ${change!=="wrong_disposition_type"},
             ${"ghcr.io/intssere/seo-engine-test@sha256:"+hex("f")},
             ${randomUUID()}::uuid, ${now}::timestamptz,
             ${disposition}, ${tx.json({fingerprint:disposition})}
           )
         `;
       }
-      if (change !== "missing_disposition") {
+      if (change !== "missing_disposition" && change !== "missing_reconciliation") {
         await tx`
           INSERT INTO first_party_crawl_terminal_failure_reconciliation_receipts (
             reconciliation_receipt_id, site_id, run_id, canonical_origin, execution_plan_fingerprint,
@@ -211,8 +211,8 @@ test("L10.27 accepts exact Packet 014 comparable evidence and rejects inconsiste
     }), new RegExp(rollbackMarker));
   }
   for (const variant of [
-    "valid", "missing_disposition", "wrong_disposition",
-    "tampered_reconciliation", "extra_raw", "recovery",
+    "valid", "missing_disposition", "missing_reconciliation", "wrong_disposition",
+    "wrong_disposition_type", "tampered_reconciliation", "extra_raw", "recovery",
   ] as const) {
     await t.test(variant, async () => { await scenario(variant); });
   }
