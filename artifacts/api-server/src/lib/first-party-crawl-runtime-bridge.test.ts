@@ -3,6 +3,11 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { buildIncrementalRecrawlPlan } from "./incremental-recrawl-planner.js";
 import { compareFullSiteCrawlHistory } from "./crawl-history-comparison.js";
+import { buildComparableCrawlHistorySource } from "./crawl-history-effective-baseline.js";
+import {
+  buildExpectedAbsenceEffectiveCertification,
+  type ExpectedAbsenceDispositionEvidence,
+} from "./full-site-crawl-expected-absence-certification.js";
 import {
   DIAMOND_SHELF_CANONICAL_ORIGIN,
   firstPartyCrawlBridgeReadiness,
@@ -13,6 +18,7 @@ import {
   runFullSiteCrawlBridgeUntilCheckpoint,
   runIncrementalCrawlBridge,
   runTerminalFailureRecoveryBridge,
+  type ComparableHistoryBaselinePersistenceRecord,
   type CrawlCheckpointPersistenceRecord,
   type FirstPartyCrawlBridgeOptions,
   type FullSiteCrawlBridgeSnapshot,
@@ -63,6 +69,7 @@ function urlset(entries: Array<{ path: string; lastmod?: string }>): string {
 
 class MemoryPersistence {
   checkpoints = new Map<string, FullSiteCrawlCheckpoint>();
+  comparableBaseline: ComparableHistoryBaselinePersistenceRecord | null = null;
   completed: FullSiteCrawlBridgeSnapshot[] = [];
   accounting: FullSiteCrawlBridgeSnapshot[] = [];
   terminalEvents: TerminalFailureEvent[] = [];
@@ -95,6 +102,21 @@ class MemoryPersistence {
 
   async loadLatestCompleted() {
     return this.completed.at(-1) ? structuredClone(this.completed.at(-1)!) : null;
+  }
+
+  async loadLatestComparableHistoryBaseline() {
+    if (this.comparableBaseline) return structuredClone(this.comparableBaseline);
+    const latest = this.completed.at(-1);
+    if (!latest) return null;
+    return structuredClone({
+      version: "first_party_crawl_durable_comparable_baseline_v1" as const,
+      snapshot: latest,
+      comparableSource: buildComparableCrawlHistorySource({
+        source: { inventory: latest.inventory, certification: latest.certification },
+      }),
+      mode: "raw_completed" as const,
+      reconciliationReceiptFingerprint: null,
+    });
   }
 
   async loadLatestAccounting(input: { runId: string; executionPlanFingerprint: string }) {
