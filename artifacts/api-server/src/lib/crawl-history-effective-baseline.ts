@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import {
+  assertCrawlHistoryComparisonIntegrity,
   compareFullSiteCrawlHistory,
   type CrawlHistoryComparison,
   type CrawlHistorySource,
@@ -24,6 +25,7 @@ export type ComparableCertificationMode =
 export type ComparableCrawlHistorySource = {
   version: typeof CRAWL_HISTORY_COMPARABLE_SOURCE_VERSION;
   source: CrawlHistorySource;
+  effectiveCertification: ExpectedAbsenceEffectiveCertification | null;
   certificationView: {
     mode: ComparableCertificationMode;
     comparableCertified: true;
@@ -166,6 +168,7 @@ export function buildComparableCrawlHistorySource(input: {
   > = {
     version: CRAWL_HISTORY_COMPARABLE_SOURCE_VERSION,
     source: input.source,
+    effectiveCertification: input.effectiveCertification ?? null,
     certificationView,
   };
   return {
@@ -197,7 +200,8 @@ export function assertComparableCrawlHistorySourceIntegrity(
       comparable.source.certification.certification.wholeSiteCertified !== true ||
       comparable.certificationView.rawWholeSiteCertified !== true ||
       comparable.certificationView.effectiveCertificationFingerprint !== null ||
-      comparable.certificationView.effectiveStatus !== "raw_completed"
+      comparable.certificationView.effectiveStatus !== "raw_completed" ||
+      comparable.effectiveCertification !== null
     ) {
       throw new Error("crawl_history_comparable_raw_semantics_invalid");
     }
@@ -209,7 +213,8 @@ export function assertComparableCrawlHistorySourceIntegrity(
       comparable.certificationView.rawWholeSiteCertified !== false ||
       comparable.certificationView.effectiveStatus !==
         "certified_with_expected_absence" ||
-      !comparable.certificationView.effectiveCertificationFingerprint
+      !comparable.certificationView.effectiveCertificationFingerprint ||
+      !comparable.effectiveCertification
     ) {
       throw new Error("crawl_history_comparable_effective_semantics_invalid");
     }
@@ -217,6 +222,18 @@ export function assertComparableCrawlHistorySourceIntegrity(
       comparable.certificationView.effectiveCertificationFingerprint,
       "crawl_history_comparable_effective_fingerprint_invalid",
     );
+    assertEffectiveBinding(
+      comparable.source,
+      comparable.effectiveCertification,
+    );
+    if (
+      comparable.effectiveCertification.fingerprint !==
+      comparable.certificationView.effectiveCertificationFingerprint
+    ) {
+      throw new Error(
+        "crawl_history_comparable_effective_fingerprint_mismatch",
+      );
+    }
   } else {
     throw new Error("crawl_history_comparable_mode_invalid");
   }
@@ -302,6 +319,7 @@ export function assertEffectiveComparableCrawlHistoryComparisonIntegrity(
   ) {
     throw new Error("crawl_history_effective_comparison_version_invalid");
   }
+  assertCrawlHistoryComparisonIntegrity(comparison.rawComparison);
   requireSha256(
     comparison.source.beforeComparableFingerprint,
     "crawl_history_effective_comparison_source_fingerprint_invalid",
