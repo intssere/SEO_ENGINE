@@ -194,7 +194,7 @@ test("fingerprint invariant under claim ordering", () => {
 test("side-effect-free source contract", () => {
   const here = dirname(fileURLToPath(import.meta.url));
   const source = readFileSync(join(here, "cvi-claim-provenance-contract.ts"), "utf8");
-  assert.doesNotMatch(source, /\\bfetch\\s*\\(|XMLHttpRequest|WebSocket|EventSource/);
-  assert.doesNotMatch(source, /process\\.env|DATABASE_URL|postgres|drizzle/);
-  assert.doesNotMatch(source, /setTimeout|setInterval|queueMicrotask|Date\\.now|Math\\.random/);
+  assert.doesNotMatch(source, /\bfetch\s*\(|XMLHttpRequest|WebSocket|EventSource/);
+  assert.doesNotMatch(source, /process\.env|DATABASE_URL|postgres|drizzle/);
+  assert.doesNotMatch(source, /setTimeout|setInterval|queueMicrotask|Date\.now|Math\.random/);
 });
