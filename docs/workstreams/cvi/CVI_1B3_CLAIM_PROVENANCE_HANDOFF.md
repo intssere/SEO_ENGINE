@@ -27,3 +27,10 @@ Status: DRAFT STACKED PR; HEAD CI RUNNING; NO MERGE OR DEPLOY
 - A coherent but fabricated ledger remains a threat. Never grant autonomous generation/publish rights from this result.
 - Before approval: exact-head CI success; test fixture integrity; manual source-code review; no change in underlying PR bases; independent developer review of claimRefs/support tier semantics, unsupported factual claims, source rights and contradiction handling.
 - Recommended next work: CVI-1B.4 authenticated authority/context adapter specifications and provider-free trust-boundary tests. Separate implementation branch and governance review. Do not implicitly merge all stacked PRs.
+
+## CI failure and exact-head repair — 2026-10-08
+- PR #931 CVI-1B.2 exact HEAD `71bf13d412d8da1bd4ce64628cc85477904696e6`: `validate` COMPLETED/SUCCESS, run 37811406646.
+- PR #932 previous HEAD `5d783958febe890f5385522c4c04a6aa81cbd65d`: `validate` COMPLETED/FAILURE, run 37811919663. The `Test all current workspace packages` stage failed because `cvi-claim-provenance-contract.test.ts` would not load: SyntaxError from incorrectly double-escaped static safety test regex `/\\\\bfetch\\\\s*\\\\(/`. This was a test syntax error, not established behavior failure.
+- Corrected regex literals in the PR #932 code branch at HEAD `f3a5f09c6ebe84cb7cf81272133d38b77d6193a1`. Fresh CI run 37813543003 started via `ugp-cvi-1b3-ci-proof-20261008-r3` at that same exact SHA. Its outcome is pending at this handoff.
+- Added `CVI_1B4_AUTHORITY_BOUNDARY_AND_INTEGRATION_SPEC.md`, clarifying UGP site-ownership *search/crawl evidence* is not user authorization.
+- No merge, deployment, DB write, provider call, scheduler or public-site publication occurred. Recheck exact latest SHA and CI before requesting approval.
