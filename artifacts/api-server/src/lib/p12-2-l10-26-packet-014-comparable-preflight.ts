@@ -8,6 +8,7 @@ import {
 import {
   P12_2_L10_19_C_SOURCE_ACCOUNTING_SNAPSHOT_FINGERPRINT,
 } from "./p12-2-l10-19-c-packet-014-post-disposition-certification.js";
+import { P12_2_L10_18_FAILURE_URL, P12_2_L10_18_FAILURE_EVENT_FINGERPRINT } from "./p12-2-l10-18-packet-014-finalization-repair.js";
 import { DIAMOND_SHELF_SITE_ID } from "./first-party-live-adapters.js";
 import { DIAMOND_SHELF_CANONICAL_ORIGIN } from "./first-party-crawl-runtime-bridge.js";
 
@@ -52,6 +53,10 @@ const candidate = `SELECT a.snapshot_fingerprint, a.observed_at, r.receipt_finge
  AND d.canonical_origin=r.canonical_origin
  AND d.execution_plan_fingerprint=r.execution_plan_fingerprint
  AND d.disposition_fingerprint=r.disposition_fingerprint
+ AND d.canonical_url='${P12_2_L10_18_FAILURE_URL}'
+ AND d.source_event_fingerprint='${P12_2_L10_18_FAILURE_EVENT_FINGERPRINT}'
+ AND d.disposition_type='sitemap_orphan_absence'
+ AND d.present_in_fresh_inventory=true
  AND d.absence_http_status IN (404,410)
  AND d.disposition_payload->>'fingerprint'=d.disposition_fingerprint)
 `;
@@ -62,7 +67,7 @@ export function buildP122L1026Queries(): readonly P122L1026Query[] {
   (SELECT COUNT(*)::int FROM first_party_crawl_completed_runs WHERE site_id='${DIAMOND_SHELF_SITE_ID}'::uuid AND run_id='${P12_2_L10_15_RUN_ID}') AS completed_run_count,
   (SELECT COUNT(*)::int FROM first_party_crawl_terminal_failure_recovery_receipts WHERE site_id='${DIAMOND_SHELF_SITE_ID}'::uuid AND run_id='${P12_2_L10_15_RUN_ID}') AS recovery_receipt_count,
   (SELECT COUNT(*)::int FROM first_party_crawl_accounting_snapshots WHERE site_id='${DIAMOND_SHELF_SITE_ID}'::uuid AND run_id='${P12_2_L10_15_RUN_ID}' AND whole_site_certified=false AND terminal_failure_count=1) AS raw_uncertified_count`;
-  const guardSql = "SELECT 1 / CASE WHEN (SELECT COUNT(*) FROM (" + candidate + ") candidate)=1 AND (SELECT COUNT(*) FROM first_party_crawl_completed_runs WHERE site_id='" + DIAMOND_SHELF_SITE_ID + "'::uuid AND run_id='" + P12_2_L10_15_RUN_ID + "')=0 THEN 1 ELSE 0 END AS comparable_guard";
+  const guardSql = "SELECT 1 / CASE WHEN (SELECT COUNT(*) FROM (" + candidate + ") candidate)=1 AND (SELECT COUNT(*) FROM first_party_crawl_completed_runs WHERE site_id='" + DIAMOND_SHELF_SITE_ID + "'::uuid AND run_id='" + P12_2_L10_15_RUN_ID + "')=0 AND (SELECT COUNT(*) FROM first_party_crawl_terminal_failure_recovery_receipts WHERE site_id='" + DIAMOND_SHELF_SITE_ID + "'::uuid AND run_id='" + P12_2_L10_15_RUN_ID + "')=0 AND (SELECT COUNT(*) FROM first_party_crawl_accounting_snapshots WHERE site_id='" + DIAMOND_SHELF_SITE_ID + "'::uuid AND run_id='" + P12_2_L10_15_RUN_ID + "' AND whole_site_certified=false AND terminal_failure_count=1)=1 THEN 1 ELSE 0 END AS comparable_guard";
   const queries: P122L1026Query[] = [
     {id:"packet_014_comparable_candidate",sql:countSql},
     {id:"packet_014_raw_history_immutability",sql:rawSql},
@@ -89,7 +94,7 @@ function buildUncheckedQueries(): P122L1026Query[] {
   (SELECT COUNT(*)::int FROM first_party_crawl_completed_runs WHERE site_id='${DIAMOND_SHELF_SITE_ID}'::uuid AND run_id='${P12_2_L10_15_RUN_ID}') AS completed_run_count,
   (SELECT COUNT(*)::int FROM first_party_crawl_terminal_failure_recovery_receipts WHERE site_id='${DIAMOND_SHELF_SITE_ID}'::uuid AND run_id='${P12_2_L10_15_RUN_ID}') AS recovery_receipt_count,
   (SELECT COUNT(*)::int FROM first_party_crawl_accounting_snapshots WHERE site_id='${DIAMOND_SHELF_SITE_ID}'::uuid AND run_id='${P12_2_L10_15_RUN_ID}' AND whole_site_certified=false AND terminal_failure_count=1) AS raw_uncertified_count`;
-  const guardSql = "SELECT 1 / CASE WHEN (SELECT COUNT(*) FROM (" + candidate + ") candidate)=1 AND (SELECT COUNT(*) FROM first_party_crawl_completed_runs WHERE site_id='" + DIAMOND_SHELF_SITE_ID + "'::uuid AND run_id='" + P12_2_L10_15_RUN_ID + "')=0 THEN 1 ELSE 0 END AS comparable_guard";
+  const guardSql = "SELECT 1 / CASE WHEN (SELECT COUNT(*) FROM (" + candidate + ") candidate)=1 AND (SELECT COUNT(*) FROM first_party_crawl_completed_runs WHERE site_id='" + DIAMOND_SHELF_SITE_ID + "'::uuid AND run_id='" + P12_2_L10_15_RUN_ID + "')=0 AND (SELECT COUNT(*) FROM first_party_crawl_terminal_failure_recovery_receipts WHERE site_id='" + DIAMOND_SHELF_SITE_ID + "'::uuid AND run_id='" + P12_2_L10_15_RUN_ID + "')=0 AND (SELECT COUNT(*) FROM first_party_crawl_accounting_snapshots WHERE site_id='" + DIAMOND_SHELF_SITE_ID + "'::uuid AND run_id='" + P12_2_L10_15_RUN_ID + "' AND whole_site_certified=false AND terminal_failure_count=1)=1 THEN 1 ELSE 0 END AS comparable_guard";
   return [{id:"packet_014_comparable_candidate",sql:countSql},{id:"packet_014_raw_history_immutability",sql:rawSql},{id:"packet_014_comparable_guard",sql:guardSql}];
 }
 
