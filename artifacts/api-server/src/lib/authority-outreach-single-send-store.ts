@@ -212,7 +212,10 @@ async function appendEvent(
     |"mock_adapter_accepted"
     |"mock_adapter_rejected"
     |"mock_adapter_uncertain"
-    |"execution_recovery_uncertain",
+    |"execution_recovery_uncertain"
+    |"controlled_https_cert_accepted"
+    |"controlled_https_cert_rejected"
+    |"controlled_https_cert_uncertain",
   adapterReceiptFingerprint:string|null,
   actorId:string,
   occurredAt:Date,
@@ -436,7 +439,10 @@ export class AuthorityOutreachSingleSendExecutionStore{
       |"mock_adapter_accepted"
       |"mock_adapter_rejected"
       |"mock_adapter_uncertain"
-      |"execution_recovery_uncertain";
+      |"execution_recovery_uncertain"
+      |"controlled_https_cert_accepted"
+      |"controlled_https_cert_rejected"
+      |"controlled_https_cert_uncertain";
     actorId:string;
   }):Promise<Readonly<{
     status:"transitioned"|"idempotent";
