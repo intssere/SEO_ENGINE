@@ -6,12 +6,16 @@ import {
   executeUgp1033ControlledCertification,
 } from "./authority-outreach-ugp-10-33-executor.js";
 import {
+  assertUgp1033RailwayFixtureEnvironment,
+} from "./authority-outreach-ugp-10-33-certification.js";
+import {
   buildUgp1033ControlledCertificationFixture,
 } from "./authority-outreach-ugp-10-33-fixture.js";
 
 if(process.env.NODE_ENV==="production"){
   throw new Error("ugp10_33_production_live_certification_forbidden");
 }
+assertUgp1033RailwayFixtureEnvironment();
 if(process.env.UGP_10_33_REAL_CERT_ENABLED?.trim().toLowerCase()!=="true"){
   throw new Error("ugp10_33_real_certification_disabled");
 }
