@@ -29,11 +29,15 @@ function hex(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function input(runId: string, observedAt: string) {
+function input(
+  runId: string,
+  observedAt: string,
+  compareToPrevious = false,
+) {
   return {
     runId,
     observedAt,
-    compareToPrevious: false,
+    compareToPrevious,
     binding: {
       siteId: DIAMOND_SHELF_SITE_ID,
       canonicalOrigin: DIAMOND_SHELF_CANONICAL_ORIGIN,
@@ -208,7 +212,7 @@ async function insertDispositionAndReconciliation(
   `;
 }
 
-test("L10.23 selects newest durable comparable baseline and fails closed on tampered reconciliation", async (t) => {
+test("L10.23/L10.25 selects durable comparable baselines, drives runtime history, and fails closed on tampering", async (t) => {
   const url = databaseUrl();
   if (!url) {
     t.skip("P12_2_L10_23_EPHEMERAL_DATABASE_URL is not configured");
