@@ -200,6 +200,28 @@ test("L10.22 accepts expected-absence certification without rewriting raw certif
   );
 });
 
+test("L10.22 comparable integrity rejects substituted effective evidence", () => {
+  const source = expectedAbsenceFixture();
+  const other = expectedAbsenceFixture();
+  const comparable = buildComparableCrawlHistorySource({
+    source: source.source,
+    effectiveCertification: source.effective,
+  });
+  const tampered = structuredClone(comparable);
+  tampered.effectiveCertification = {
+    ...other.effective,
+    lineage: {
+      ...other.effective.lineage,
+      rawCertificationFingerprint: hex("wrong-raw-certification"),
+    },
+  };
+
+  assert.throws(
+    () => assertComparableCrawlHistorySourceIntegrity(tampered),
+    /expected_absence_effective_fingerprint_mismatch|crawl_history_effective_certification_lineage_mismatch/,
+  );
+});
+
 test("L10.22 rejects raw-uncertified history without effective certification", () => {
   const source = expectedAbsenceFixture();
 
