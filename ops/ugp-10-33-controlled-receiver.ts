@@ -10,6 +10,17 @@ type Payload={
 const HEX64=/^[0-9a-f]{64}$/;
 const VERSION="ugp-10-33-controlled-real-web-submission-certification-v1";
 const RECEIVER_VERSION="ugp-10-33-controlled-receiver-v1";
+const RAILWAY_PROJECT_ID="52265e29-921b-4652-ac0d-9da4e5e69936";
+const RAILWAY_ENVIRONMENT_ID="8b8e54ee-810a-4020-b89d-8397d1fa5ef1";
+const RAILWAY_ENVIRONMENT_NAME="p12-2-fixture";
+
+if(
+  Bun.env.RAILWAY_PROJECT_ID!==RAILWAY_PROJECT_ID
+  ||Bun.env.RAILWAY_ENVIRONMENT_ID!==RAILWAY_ENVIRONMENT_ID
+  ||Bun.env.RAILWAY_ENVIRONMENT_NAME!==RAILWAY_ENVIRONMENT_NAME
+){
+  throw new Error("ugp10_33_receiver_exact_nonproduction_environment_required");
+}
 
 function hash(value:string):string{
   const h=new Bun.CryptoHasher("sha256");
