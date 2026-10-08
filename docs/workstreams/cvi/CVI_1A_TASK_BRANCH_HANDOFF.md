@@ -38,3 +38,13 @@ Deterministic evidence ordering; fingerprint drift; upstream defer; leave_alone;
 - Upstream model authorization/read-only flags are checked, but tenant/site binding evidence is caller-supplied and not independently authenticated by this pure contract.
 - Verified-business-truth and verified-original-contribution fields are caller assertions that must be backed by independently verifiable signed/immutable evidence in later increments; until then integration must not trust arbitrary boolean input.
 - Need confirm CI outcomes and follow through with documentation updates.
+
+
+## Continuation checkpoint — 2026-10-08 (subsequent head)
+- PR #923 latest code HEAD: dc972ca9182725dddde2e9b51dcd69b105372894.
+- Earlier head 1cee24c69758f6e78bd8951acaa9c8d96787358e passed all listed workspace tests and browser tests while its workflow was still at Typecheck; no overall green certification was claimed.
+- Added tests to bind business-truth/original-contribution assertions to immutable assessment fingerprint and verify no-authority semantics across all five upstream actions.
+- Exact-head GitHub validate workflow on dc972... was queued at last inspection; **must wait for terminal success and investigate failure before merge review**.
+- Source contract still relies on caller-supplied verified-evidence assertions; never wire directly to production workflow without an independently authenticated evidence/trust context.
+- UGP base remained 3e0e8c84cf6eae86a18c515413c2777e7d2ed3e5 at inspection. Current main was not the PR base.
+- Preserve DRAFT status. No merge, deployment or CMS write authorized.
