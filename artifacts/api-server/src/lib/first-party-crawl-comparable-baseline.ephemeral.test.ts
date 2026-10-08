@@ -237,6 +237,71 @@ test("L10.23/L10.25 selects durable comparable baselines, drives runtime history
   assert.equal(selectedEffective.comparableSource.certificationView.rawWholeSiteCertified, false);
   assert.ok(selectedEffective.reconciliationReceiptFingerprint);
 
+  const currentRunId = "p12-2-l10-25-current-" + randomUUID();
+  const current = await runFullSiteCrawlBridge(
+    input(currentRunId, "2026-10-08T12:30:00.000Z", true),
+    options(
+      effectiveNewer.persistence,
+      ["/current-ok-" + randomUUID()],
+      {},
+    ),
+  );
+
+  assert.ok(current.comparisonToPrevious);
+  assert.equal(
+    current.comparisonToPrevious!.certificationTransition.beforeCertified,
+    false,
+  );
+  assert.equal(
+    current.comparisonToPrevious!.certificationTransition.afterCertified,
+    true,
+  );
+  assert.equal(
+    current.comparisonToPrevious!.certificationTransition.changed,
+    true,
+  );
+
+  assert.ok(current.comparableComparisonToPrevious);
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.beforeCertified,
+    true,
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.afterCertified,
+    true,
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.changed,
+    false,
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.beforeMode,
+    "expected_absence_effective",
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.comparableCertificationTransition.afterMode,
+    "raw_completed",
+  );
+  assert.equal(
+    current.comparableComparisonToPrevious!.rawComparison.fingerprint,
+    current.comparisonToPrevious!.fingerprint,
+  );
+  assert.equal(
+    effectiveNewer.accounting.certification.certification.wholeSiteCertified,
+    false,
+  );
+
+  const completedEvidence = await sql<{ run_id: string }[]>`
+    SELECT run_id
+    FROM first_party_crawl_completed_runs
+    WHERE run_id IN (${effectiveNewer.runId}, ${currentRunId})
+    ORDER BY run_id
+  `;
+  assert.deepEqual(
+    completedEvidence.map((row) => row.run_id),
+    [currentRunId],
+  );
+
   const rawNewest = await seedCompleted(url, "2026-10-08T13:00:00.000Z");
   const selectedRaw = await rawNewest.persistence.loadLatestComparableHistoryBaseline({
     version: P12_2_CRAWL_BRIDGE_VERSION,
