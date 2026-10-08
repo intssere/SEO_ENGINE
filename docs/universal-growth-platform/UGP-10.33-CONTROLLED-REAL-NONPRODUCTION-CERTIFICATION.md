@@ -111,6 +111,15 @@ Receiver URL constraints:
 - exact path:
   `/ugp-10-33/receive`
 
+## Exact Railway non-production binding
+
+The controlled certification is hard-bound to the existing empty SEO ENGINE fixture:
+
+- Railway project: `52265e29-921b-4652-ac0d-9da4e5e69936` (`SEO ENGINE`);
+- Railway environment: `8b8e54ee-810a-4020-b89d-8397d1fa5ef1` (`p12-2-fixture`).
+
+The project ID, environment ID, and environment name are included in the certification plan fingerprint. The DB preparer, live runner, and controlled receiver all fail closed outside that exact environment. `NODE_ENV` alone is not accepted as proof of non-production isolation.
+
 ## Authorization literal
 
 The real adapter cannot be constructed without the exact plan-derived literal:
