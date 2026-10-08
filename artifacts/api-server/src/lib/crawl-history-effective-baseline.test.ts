@@ -29,7 +29,7 @@ import {
 const target = {
   targetClass: "first_party" as const,
   siteId: "diamond-shelf",
-  canonicalOrigin: "https://diamondshelf.us",
+  canonicalOrigin: "https://diamondshelf.us" as const,
 };
 
 function hex(value: string): string {
