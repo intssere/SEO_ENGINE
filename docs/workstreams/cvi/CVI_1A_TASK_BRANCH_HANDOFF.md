@@ -57,3 +57,10 @@ Deterministic evidence ordering; fingerprint drift; upstream defer; leave_alone;
 - Latest-head GitHub validate run 37803141003 was IN PROGRESS at this checkpoint. Prior green does not certify current HEAD. Inspect latest exact-head CI before any approval.
 - Remaining integration blocker: caller-supplied booleans and site binding fingerprints do not constitute independently verified business truth, original contribution or tenant authorization. Do not connect to publishing or production autonomous generation.
 - No merge, deployment, database migration, provider call, public-site mutation or scheduler activation occurred.
+
+## Evidence trust-boundary hardening — 2026-10-08
+- The pre-hardening latest CI on `c773e1a7d54e20d9f9bea0aa4589a461b1af4e74` had reached browser tests; final outcome was not yet established when further work began. **Do not reuse its checks for a later HEAD.**
+- New CVI-1A code HEAD `8c8aa459382c5e1ed37621a7f7dce33bed7eb311` includes explicit immutable `evidenceTrust` metadata: `assertionProvenance=caller_supplied_unverified`, `independentlyCertified=false`, `mustRevalidateBeforeGenerationOrPublication=true`, with targeted regression assertions.
+- This is disclosure and fail-closed integration guidance, not cryptographic attestation. Never treat `hasVerifiedBusinessTruth` and `hasVerifiedOriginalContribution` booleans as independently certified.
+- Future CVI-1B should provide a verified tenant-bound evidence context, immutable evidence lineage, authorization checks and content-purpose proof before any autonomous generation path consumes CVI recommendations.
+- PR #923 remains DRAFT; exact HEAD must receive fresh green CI, review, and separate merge authorization. No application caller integrated, no production mutation or deployment.
