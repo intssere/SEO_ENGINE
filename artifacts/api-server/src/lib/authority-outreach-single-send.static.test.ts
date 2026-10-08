@@ -21,7 +21,8 @@ test("UGP-10.32 source contains no live provider/network/mail primitive",()=>{
 });
 
 test("UGP-10.32 explicitly freezes mock-only, one-attempt, no-retry behavior",()=>{
-  assert.match(source,/mockAdapterOnly:true/);
+  assert.match(source,/mockAdapterOnly:adapterClass==="mock"/);
+  assert.match(source,/controlledCertificationAdapter:adapterClass==="controlled_https_cert"/);
   assert.match(source,/realProviderExecutionAuthorized:false/);
   assert.match(source,/networkOperationAuthorized:false/);
   assert.match(source,/automaticRetryAuthorized:false/);
