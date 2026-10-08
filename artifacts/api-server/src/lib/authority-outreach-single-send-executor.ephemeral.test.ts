@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import test from "node:test";
 import postgres from "postgres";
 import {
@@ -22,6 +23,7 @@ import {
 import { buildUgp1031AuthorizationFixture } from "./authority-outreach-ugp-10-31-test-fixture.js";
 
 const FP=(c:string)=>c.repeat(64);
+const H=(value:string)=>createHash("sha256").update(value).digest("hex");
 
 function databaseUrl():string|null{
   const raw=process.env.UGP_10_32_EPHEMERAL_DATABASE_URL?.trim();
@@ -40,13 +42,13 @@ async function seedReservation(input:{
   sql:ReturnType<typeof postgres>;
   siteId:string;
   contactValue:string;
+  sourceDomain:string;
   requestFingerprint:string;
   subject:string;
   body:string;
-  reservationChar:string;
-  logicalChar:string;
+  namespace:string;
 }){
-  const sourceDomain="publisher.example.org";
+  const sourceDomain=input.sourceDomain;
   const contactPointFingerprint=authorityOutreachPublicContactPointFingerprint(
     "email_address",
     input.contactValue,
@@ -57,14 +59,22 @@ async function seedReservation(input:{
     subject:input.subject,
     body:input.body,
   });
-  const reservationFingerprint=FP(input.reservationChar);
+  const reservationFingerprint=H("ugp10-32-"+input.namespace+"-reservation");
   const reservationId="uaosr-"+reservationFingerprint.slice(0,24);
   await input.sql.unsafe(
     "INSERT INTO authority_outreach_send_reservations(reservation_id,reservation_version,reservation_fingerprint,logical_send_key,site_id,delivery_binding_authorization_decision_fingerprint,delivery_binding_authorization_review_spec_fingerprint,prospect_fingerprint,opportunity_fingerprint,candidate_fingerprint,selected_role_candidate_fingerprint,selected_contact_point_fingerprint,send_review_fingerprint,quality_gate_fingerprint,recipient_domain,status,reserved_at,expires_at) VALUES($1,'ugp-10-31-outbound-safety-reservation-v1',$2,$3,$4::uuid,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'reserved',transaction_timestamp(),transaction_timestamp()+interval '15 minutes')",
     [
-      reservationId,reservationFingerprint,FP(input.logicalChar),input.siteId,
-      FP("1"),FP("2"),FP("3"),FP("4"),candidateFingerprint,
-      FP("5"),contactPointFingerprint,FP("6"),FP("7"),sourceDomain,
+      reservationId,reservationFingerprint,H("ugp10-32-"+input.namespace+"-logical-send"),input.siteId,
+      H("ugp10-32-"+input.namespace+"-authorization-decision"),
+      H("ugp10-32-"+input.namespace+"-authorization-review"),
+      H("ugp10-32-"+input.namespace+"-prospect"),
+      H("ugp10-32-"+input.namespace+"-opportunity"),
+      candidateFingerprint,
+      H("ugp10-32-"+input.namespace+"-role"),
+      contactPointFingerprint,
+      H("ugp10-32-"+input.namespace+"-send-review"),
+      H("ugp10-32-"+input.namespace+"-quality-gate"),
+      sourceDomain,
     ],
   );
   return {
@@ -184,12 +194,12 @@ test("UGP-10.32 PostgreSQL executor is one-attempt, replay-safe, uncertainty-fen
   await t.test("uncertain mock result fences replay without a second adapter call",async()=>{
     const seeded=await seedReservation({
       sql:admin,siteId,
-      contactValue:"second@publisher.example.org",
-      requestFingerprint:FP("8"),
+      contactValue:"second@uncertain.publisher.example.org",
+      sourceDomain:"uncertain.publisher.example.org",
+      requestFingerprint:H("ugp10-32-uncertain-request"),
       subject:"Second reviewed message",
       body:"A separate reviewed outreach message.",
-      reservationChar:"8",
-      logicalChar:"9",
+      namespace:"uncertain",
     });
     const mock=createAuthorityOutreachMockSingleSendAdapter("uncertain");
     let calls=0;
@@ -230,17 +240,17 @@ test("UGP-10.32 PostgreSQL executor is one-attempt, replay-safe, uncertainty-fen
   await t.test("suppression added after reservation blocks claim before adapter invocation",async()=>{
     const seeded=await seedReservation({
       sql:admin,siteId,
-      contactValue:"third@publisher.example.org",
-      requestFingerprint:FP("a"),
+      contactValue:"third@suppressed.publisher.example.org",
+      sourceDomain:"suppressed.publisher.example.org",
+      requestFingerprint:H("ugp10-32-suppressed-request"),
       subject:"Third reviewed message",
       body:"A third reviewed outreach message.",
-      reservationChar:"b",
-      logicalChar:"c",
+      namespace:"suppressed",
     });
     const safetyStore=new AuthorityOutreachOutboundSafetyStore({databaseUrl:url});
     await safetyStore.suppress({
       ownedSiteDomain:"diamondshelf.us",
-      recipientDomain:"publisher.example.org",
+      recipientDomain:"suppressed.publisher.example.org",
       contactPointFingerprint:seeded.contactPointFingerprint,
       reasonCode:"explicit_opt_out",
       actorId:"operator@example.com",
