@@ -21,9 +21,16 @@ test("L10.26 Packet 014 comparable certification is deterministic, read-only and
   assert.ok(queries[0]!.sql.includes("whole_site_certified=false"));
   assert.ok(queries[0]!.sql.includes("effective_unresolved_terminal_failure_count=0"));
   assert.ok(queries[0]!.sql.includes("first_party_crawl_terminal_failure_dispositions"));
+  assert.ok(queries[0]!.sql.includes("d.source_event_fingerprint="));
+  assert.ok(queries[0]!.sql.includes("d.canonical_url="));
+  assert.ok(queries[0]!.sql.includes("d.disposition_type=\'sitemap_orphan_absence\'"));
+  assert.ok(queries[0]!.sql.includes("d.present_in_fresh_inventory=true"));
   assert.ok(queries[1]!.sql.includes("completed_run_count"));
   assert.ok(queries[1]!.sql.includes("recovery_receipt_count"));
   assert.ok(queries[2]!.sql.includes("SELECT 1 / CASE WHEN"));
+  assert.ok(queries[2]!.sql.includes("first_party_crawl_terminal_failure_recovery_receipts"));
+  assert.ok(queries[2]!.sql.includes("terminal_failure_count=1)=1"));
+  assert.ok(queries[2]!.sql.includes("first_party_crawl_completed_runs"));
   assert.doesNotThrow(()=>assertP122L1026QueryContract(queries));
   assert.match(p122L1026QuerySetFingerprint(),/^[0-9a-f]{64}$/);
   assert.equal(p122L1026QuerySetFingerprint(),p122L1026QuerySetFingerprint());
