@@ -38,3 +38,10 @@ Current head at handoff creation: `930066cd5078c15896e41bfc0d3154e0ed192b81`
 
 ## Next suggested increment
 CVI-1B.2: authoritative tenant/site binding + business truth registry/expiry contract. Prefer separate scoped task branch and independently authenticated existing site-owner records. No uncontrolled evidence authority upgrade from self-reported booleans or hashes.
+
+## GitHub validation trigger workaround — 2026-10-08
+- Workflow `.github/workflows/ci.yml` triggers on pull_request only for `main` or `initiative-universal-growth-platform`, and on push to `main`, `initiative-universal-growth-platform`, or `ugp-*`.
+- Stacked PR #928 targets `workstream/cvi-1a-necessity-contract-ugp-dependent`, so it did not automatically receive pull-request CI.
+- Created immutable-head validation branch `ugp-cvi-1b1-ci-proof-20261008` at `930066cd5078c15896e41bfc0d3154e0ed192b81` (exact PR #928 head) using the normal push trigger. No source changes on this branch.
+- This successfully queued GitHub CI run 37807923744; exact-head outcome pending at the point of writing.
+- This is CI verification only, NOT merge authorization or production certification. Keep both stacked PRs draft; if code head changes, repeat exact-head validation.
