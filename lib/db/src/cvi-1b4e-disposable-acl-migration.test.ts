@@ -114,3 +114,39 @@ test("CVI-1B.4E actual ACL foreign keys and revocation work in isolated disposab
     WHERE id=${defaultGrant[0]!.id}::uuid
   `, /check constraint/i);
 });
+
+
+test("CVI-1B.4F audit rows reject UPDATE, DELETE and TRUNCATE in disposable PostgreSQL", async t => {
+  const url = verifiedDatabaseUrl();
+  if (!url) { t.skip("explicit disposable CI database URL not configured"); return; }
+  const sql = postgres(url, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
+  t.after(async () => { await sql.end({ timeout: 1 }); });
+  const count = await sql<{ count: number }[]>`
+    SELECT COUNT(*)::int AS count FROM information_schema.tables
+    WHERE table_schema='public' AND table_type='BASE TABLE'
+  `;
+  assert.equal(count[0]?.count, 32, "base ACL certification must run first");
+  const path = fileURLToPath(new URL("../migrations/0013_cvi_acl_audit_immutability_draft.sql", import.meta.url));
+  await sql.unsafe(await readFile(path, "utf8"));
+  const inserted = await sql<{ id: string }[]>`
+    INSERT INTO cvi_tenant_authorization_audit
+      (auth_subject,event_kind,outcome,correlation_id,evidence_fingerprint,occurred_at)
+    VALUES ('cvi-subject-a','access_denied','denied','cvi-disposable-proof',${"a".repeat(64)},'2026-10-08T12:00:00Z')
+    RETURNING id
+  `;
+  const id = inserted[0]!.id;
+  await assert.rejects(sql`
+    UPDATE cvi_tenant_authorization_audit SET correlation_id='tampered'
+    WHERE id=${id}::uuid
+  `, /cvi_authorization_audit_is_immutable/);
+  await assert.rejects(sql`
+    DELETE FROM cvi_tenant_authorization_audit WHERE id=${id}::uuid
+  `, /cvi_authorization_audit_is_immutable/);
+  await assert.rejects(sql.unsafe("TRUNCATE cvi_tenant_authorization_audit"),
+    /cvi_authorization_audit_is_immutable/);
+  const retained = await sql<{ count: number }[]>`
+    SELECT COUNT(*)::int AS count FROM cvi_tenant_authorization_audit
+    WHERE id=${id}::uuid AND correlation_id='cvi-disposable-proof'
+  `;
+  assert.equal(retained[0]?.count, 1);
+});
