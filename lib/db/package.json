@@ -20,7 +20,8 @@
     "test:ugp-10-3": "tsx --test src/ugp-10-3-authority-outreach-review-migration.test.ts",
     "test:ugp-10-31": "tsx --test src/ugp-10-31-outbound-safety-migration.test.ts",
     "test:ugp-10-32": "tsx --test src/ugp-10-32-single-send-execution-migration.test.ts",
-    "test:ugp-10-33": "tsx --test src/ugp-10-33-controlled-https-certification-migration.test.ts"
+    "test:ugp-10-33": "tsx --test src/ugp-10-33-controlled-https-certification-migration.test.ts",
+    "test:cvi-1b4e": "tsx --test src/cvi-1b4e-disposable-acl-migration.test.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
