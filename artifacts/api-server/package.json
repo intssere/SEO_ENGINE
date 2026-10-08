@@ -24,9 +24,9 @@
     "test:ugp-10-31-persistence-ephemeral": "tsx --test src/lib/authority-outreach-outbound-safety-store.ephemeral.test.ts",
     "test:ugp-10-32-execution-ephemeral": "tsx --test src/lib/authority-outreach-single-send-executor.ephemeral.test.ts",
     "test:ugp-10-33-execution-ephemeral": "tsx --test src/lib/authority-outreach-ugp-10-33-executor.ephemeral.test.ts",
-    "ugp-10-33:print-plan": "tsx src/lib/authority-outreach-ugp-10-33-print-plan.ts",
-    "ugp-10-33:prepare-db": "tsx src/lib/authority-outreach-ugp-10-33-db-prepare.ts",
-    "ugp-10-33:run-live-cert": "tsx src/lib/authority-outreach-ugp-10-33-live-runner.ts"
+    "ugp-10-33:print-plan": "node --enable-source-maps ./dist/ugp-10-33-print-plan.mjs",
+    "ugp-10-33:prepare-db": "node --enable-source-maps ./dist/ugp-10-33-db-prepare.mjs",
+    "ugp-10-33:run-live-cert": "node --enable-source-maps ./dist/ugp-10-33-live-runner.mjs"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
