@@ -52,6 +52,9 @@ test("UGP-10.33 real network primitive exists only behind exact certification au
   assert.match(cert,/automaticRetry:false as const/);
   assert.match(cert,/\.up\.railway\.app/);
   assert.match(cert,/\/ugp-10-33\/receive/);
+  assert.match(cert,/52265e29-921b-4652-ac0d-9da4e5e69936/);
+  assert.match(cert,/8b8e54ee-810a-4020-b89d-8397d1fa5ef1/);
+  assert.match(cert,/p12-2-fixture/);
   assert.doesNotMatch(cert,/setInterval|setTimeout\s*\([^,]+,|Promise\.all\s*\(/);
 });
 
@@ -59,11 +62,13 @@ test("UGP-10.33 operational CLIs fail closed for production and non-empty DB",()
   assert.match(dbPrep,/production_db_prepare_forbidden/);
   assert.match(dbPrep,/cert_database_must_be_empty/);
   assert.match(dbPrep,/exact_authorization_literal_required/);
+  assert.match(dbPrep,/assertUgp1033RailwayFixtureEnvironment/);
   assert.match(dbPrep,/bootstrapRuntimeDatabase/);
   assert.doesNotMatch(dbPrep,/ensureDiamondShelfIdentity/);
   assert.match(runner,/production_live_certification_forbidden/);
   assert.match(runner,/real_certification_disabled/);
   assert.match(runner,/exact_authorization_literal_required/);
+  assert.match(runner,/assertUgp1033RailwayFixtureEnvironment/);
   assert.match(runner,/replayNetworkCalls/);
   assert.match(runner,/suppressionReplay/);
 });
@@ -76,6 +81,9 @@ test("UGP-10.33 public authority API still exposes no real-send endpoint",()=>{
 
 test("UGP-10.33 receiver is bounded and does not persist or log raw messages",()=>{
   assert.match(receiver,/\/ugp-10-33\/receive/);
+  assert.match(receiver,/52265e29-921b-4652-ac0d-9da4e5e69936/);
+  assert.match(receiver,/8b8e54ee-810a-4020-b89d-8397d1fa5ef1/);
+  assert.match(receiver,/p12-2-fixture/);
   assert.match(receiver,/payload\.subject\.length>120/);
   assert.match(receiver,/payload\.body\.length>3000/);
   assert.match(receiver,/subjectHash/);
