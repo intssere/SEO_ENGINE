@@ -11,6 +11,12 @@ export const UGP_10_33_CERTIFICATION_VERSION=
   "ugp-10-33-controlled-real-web-submission-certification-v1" as const;
 export const UGP_10_33_RECEIVER_VERSION=
   "ugp-10-33-controlled-receiver-v1" as const;
+export const UGP_10_33_RAILWAY_PROJECT_ID=
+  "52265e29-921b-4652-ac0d-9da4e5e69936" as const;
+export const UGP_10_33_RAILWAY_ENVIRONMENT_ID=
+  "8b8e54ee-810a-4020-b89d-8397d1fa5ef1" as const;
+export const UGP_10_33_RAILWAY_ENVIRONMENT_NAME=
+  "p12-2-fixture" as const;
 
 export type Ugp1033CertificationPlan=Readonly<{
   version:typeof UGP_10_33_CERTIFICATION_VERSION;
@@ -27,6 +33,9 @@ export type Ugp1033CertificationPlan=Readonly<{
   maxResponseBytes:16384;
   channel:"web_contact_form";
   providerClass:"controlled_https_cert";
+  railwayProjectId:typeof UGP_10_33_RAILWAY_PROJECT_ID;
+  railwayEnvironmentId:typeof UGP_10_33_RAILWAY_ENVIRONMENT_ID;
+  railwayEnvironmentName:typeof UGP_10_33_RAILWAY_ENVIRONMENT_NAME;
   productionAllowed:false;
   schedulerAllowed:false;
   workerAllowed:false;
@@ -107,6 +116,9 @@ export function buildUgp1033CertificationPlan(input:{
     maxResponseBytes:16384 as const,
     channel:"web_contact_form" as const,
     providerClass:"controlled_https_cert" as const,
+    railwayProjectId:UGP_10_33_RAILWAY_PROJECT_ID,
+    railwayEnvironmentId:UGP_10_33_RAILWAY_ENVIRONMENT_ID,
+    railwayEnvironmentName:UGP_10_33_RAILWAY_ENVIRONMENT_NAME,
     productionAllowed:false as const,
     schedulerAllowed:false as const,
     workerAllowed:false as const,
@@ -125,6 +137,19 @@ export function buildUgp1033CertificationPlan(input:{
       planFingerprint,
     ].join(":"),
   });
+}
+
+
+export function assertUgp1033RailwayFixtureEnvironment(
+  env:NodeJS.ProcessEnv=process.env,
+):void{
+  if(
+    env.RAILWAY_PROJECT_ID!==UGP_10_33_RAILWAY_PROJECT_ID
+    ||env.RAILWAY_ENVIRONMENT_ID!==UGP_10_33_RAILWAY_ENVIRONMENT_ID
+    ||env.RAILWAY_ENVIRONMENT_NAME!==UGP_10_33_RAILWAY_ENVIRONMENT_NAME
+  ){
+    throw new Error("ugp10_33_exact_nonproduction_railway_environment_required");
+  }
 }
 
 function responseReceipt(
