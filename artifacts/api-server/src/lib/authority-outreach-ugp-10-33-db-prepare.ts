@@ -71,7 +71,7 @@ try{
     version:"ugp-10-33-controlled-real-web-submission-certification-v1",
     databasePrepared:true,
     tableCount:identity.tableCount,
-    targetDomain:identity.targetDomain,
+    targetDomain:identity.domain,
     planFingerprint:built.plan.planFingerprint,
     providerCalls:0,
     networkSends:0,
