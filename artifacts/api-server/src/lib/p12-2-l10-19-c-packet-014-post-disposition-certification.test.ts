@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildP122L1019CQueries,
   assertP122L1019CQueryContract,
+  p122L1019CAuthorizationDiagnostics,
   p122L1019CAuthorizationFingerprint,
   p122L1019CAuthorizationLiteral,
   p122L1019CQuerySetFingerprint,
@@ -43,6 +44,29 @@ test("L10.19-C authorization binds exact disposition deployment and immutable im
   assert.equal(
     p122L1019CAuthorizationLiteral(DEPLOYMENT, IMAGE),
     "AUTHORIZE:P12_2_L10_19_PACKET_014_POST_DISPOSITION_READ_ONLY:" + base,
+  );
+});
+
+test("L10.19-C candidate authorization diagnostic is source-reproducible", () => {
+  const deployment =
+    "c3375bcc-4ca7-4b16-88b0-9ff01153e9f9";
+  const image =
+    "ghcr.io/intssere/seo-engine-p12-2-l10-19-packet-014-expected-absence-disposition@sha256:460bc11dfacc22f2656945a0b1e2826bfa4d41ec22c493843cfc4022a41d8168";
+  const provided =
+    "AUTHORIZE:P12_2_L10_19_PACKET_014_POST_DISPOSITION_READ_ONLY:d2af697eb75ef3c887044ecda8273f2f624f1cb8deae8d433d8c645b05048f07";
+  const diagnostic = p122L1019CAuthorizationDiagnostics(
+    provided,
+    deployment,
+    image,
+  );
+  console.log("P12_2_L10_19_C_AUTH_DIAGNOSTIC", JSON.stringify(diagnostic));
+  assert.equal(
+    diagnostic.providedAuthorizationDigest,
+    diagnostic.expectedAuthorizationDigest,
+  );
+  assert.equal(
+    diagnostic.querySetFingerprint,
+    "956784b124bf5a79fe7a70e3c898d7ea8d6bb941fa1adcd810967d936e80cd61",
   );
 });
 
