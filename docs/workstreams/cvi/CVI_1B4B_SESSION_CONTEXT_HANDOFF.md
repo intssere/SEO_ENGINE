@@ -37,3 +37,10 @@ Status: DRAFT STACKED PR; CI PENDING; NOT A TENANT RESOLVER
 
 ## Safety
 No production changes, migrations, access upgrades, worker activations, provider calls, or CMS mutations have occurred.
+
+## CVI-1B.4C schema source audit — 2026-10-08
+- New committed design: `docs/workstreams/cvi/CVI_1B4C_TENANT_SITE_ACCESS_SCHEMA_PROPOSAL.md` (CVI docs branch), specifying additive membership/site read grants and their governance.
+- Canonical core SQL `lib/db/migrations/0001_core.sql` already creates organizations, sites linked to organization_id, and connections linked to site_id. `0002_auth.sql` holds sessions/audit only. Neither defines principal membership to organization/site.
+- `artifacts/api-server/src/lib/oauth.ts` includes DiamondShelf-specific site lookup/connection access; it is NOT a tenant-scoped resolver.
+- No schema migration, membership backfill, persisted grant, trusted authorization resolver or production change was implemented. Before any access promotion to VERIFIED_READ, require separately governed migration, verified ACL and immutable audit/proof.
+- PR #937 exact HEAD `6b2438a22d030fc5874692b0214970d6e74126e4`: GitHub validate run 37822656300 still IN_PROGRESS at last observation. Check terminal status before accepting the increment.
