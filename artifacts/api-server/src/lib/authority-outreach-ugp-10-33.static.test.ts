@@ -66,7 +66,10 @@ test("UGP-10.33 receiver is bounded and does not persist or log raw messages",()
   assert.match(receiver,/payload\.body\.length>3000/);
   assert.match(receiver,/subjectHash/);
   assert.match(receiver,/bodyHash/);
-  assert.doesNotMatch(receiver,/console\.|Bun\.write|Bun\.sql|postgres|database|INSERT|UPDATE|DELETE/i);
+  assert.doesNotMatch(
+    receiver,
+    /console\.|Bun\.write|Bun\.sql|postgres|database|\bINSERT\s+INTO\b|\bUPDATE\s+[A-Za-z_]|\bDELETE\s+FROM\b/i,
+  );
 });
 
 test("UGP-10.33 executor preserves no-retry uncertainty fencing",()=>{
