@@ -327,6 +327,46 @@ function assertCheckpointRecord(record: CrawlCheckpointPersistenceRecord): void 
   assertNoForbiddenContent(record);
 }
 
+function requireRecord(value: unknown, code: string): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(code);
+  return value as Record<string, unknown>;
+}
+
+function requirePayloadString(payload: Record<string, unknown>, key: string, code: string): string {
+  const value = payload[key];
+  if (typeof value !== "string" || !value) throw new Error(code);
+  return value;
+}
+
+function requirePayloadBoolean(payload: Record<string, unknown>, key: string, code: string): boolean {
+  const value = payload[key];
+  if (typeof value !== "boolean") throw new Error(code);
+  return value;
+}
+
+function requirePayloadAbsenceStatus(payload: Record<string, unknown>, key: string, code: string): 404 | 410 {
+  const value = payload[key];
+  if (value !== 404 && value !== 410) throw new Error(code);
+  return value;
+}
+
+function terminalEventAbsenceStatus(event: TerminalFailureEvent): 404 | 410 {
+  assertTerminalFailureEventIntegrity(event);
+  if (
+    event.eventType === "recovery_resolved" ||
+    event.outcome.kind !== "failure" ||
+    event.decisionReason !== "permanent_http" ||
+    event.outcome.signal.kind !== "http_status" ||
+    (event.outcome.signal.httpStatus !== 404 && event.outcome.signal.httpStatus !== 410)
+  ) throw new Error("p12_2_expected_absence_source_event_invalid");
+  return event.outcome.signal.httpStatus;
+}
+
+export type ExpectedAbsenceDurableCertificationEvidence = {
+  rawCertification: FullSiteCrawlBridgeSnapshot["certification"];
+  terminalFailureEvents: TerminalFailureEvent[];
+  dispositions: ExpectedAbsenceDispositionEvidence[];
+};
 export type FirstPartyCrawlPersistenceOptions = {
   databaseUrl?: string | null;
   sqlFactory?: ((databaseUrl: string) => Sql) | null;
