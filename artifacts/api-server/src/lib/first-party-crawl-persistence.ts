@@ -1345,6 +1345,8 @@ export function firstPartyCrawlPersistenceCapability() {
     terminalFailureEventsAppendOnly: true,
     accountingSnapshotsAppendOnly: true,
     terminalFailureRecoveryReceiptsAppendOnly: true,
+    expectedAbsenceDispositionsReadOnlyLoadable: true,
+    expectedAbsenceEffectiveCertificationDeterministic: true,
     exactFailureEvidenceRequiredForRecovery: true,
     atomicRecoveryTransition: true,
     incrementalReceiptsIdempotent: true,
