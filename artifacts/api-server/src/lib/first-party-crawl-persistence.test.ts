@@ -37,6 +37,7 @@ test("P12.2 persistence capability is lazy and default-off", () => {
   assert.equal(capability.terminalFailureRecoveryReceiptsAppendOnly, true);
   assert.equal(capability.expectedAbsenceDispositionsReadOnlyLoadable, true);
   assert.equal(capability.expectedAbsenceEffectiveCertificationDeterministic, true);
+  assert.equal(capability.latestComparableHistoryBaselineReadOnly, true);
   assert.equal(capability.exactFailureEvidenceRequiredForRecovery, true);
   assert.equal(capability.atomicRecoveryTransition, true);
   assert.equal(capability.lazyDatabaseConnection, true);
