@@ -48,3 +48,12 @@ Deterministic evidence ordering; fingerprint drift; upstream defer; leave_alone;
 - Source contract still relies on caller-supplied verified-evidence assertions; never wire directly to production workflow without an independently authenticated evidence/trust context.
 - UGP base remained 3e0e8c84cf6eae86a18c515413c2777e7d2ed3e5 at inspection. Current main was not the PR base.
 - Preserve DRAFT status. No merge, deployment or CMS write authorized.
+
+## Security-review checkpoint — 2026-10-08
+- CI for prior PR HEAD dc972ca9182725dddde2e9b51dcd69b105372894: validate COMPLETED/SUCCESS (GitHub Actions run 37801323719).
+- During subsequent contract review, malformed upstream action values were found to be a potential fallthrough to PROCEED_TO_RESEARCH if an otherwise valid report fingerprint were supplied.
+- Added an explicit action allowlist and mandatory limitations/rationale arrays to the pure CVI contract; updated synthetic fixtures and regression coverage.
+- Current code PR HEAD: c773e1a7d54e20d9f9bea0aa4589a461b1af4e74, PR #923 still DRAFT.
+- Latest-head GitHub validate run 37803141003 was IN PROGRESS at this checkpoint. Prior green does not certify current HEAD. Inspect latest exact-head CI before any approval.
+- Remaining integration blocker: caller-supplied booleans and site binding fingerprints do not constitute independently verified business truth, original contribution or tenant authorization. Do not connect to publishing or production autonomous generation.
+- No merge, deployment, database migration, provider call, public-site mutation or scheduler activation occurred.
