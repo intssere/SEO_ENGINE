@@ -282,7 +282,18 @@ test("CVI-1B.4I executes exact bound SQL across authenticated tenant, grant, ses
 
   await sql`UPDATE connections SET scopes=ARRAY[]::text[] WHERE id=${connection}::uuid`;
   assert.equal((await query()).connection_ok, false, "empty read-scopes deny");
-  await sql`UPDATE connections SET scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=${connection}::uuid`;
+  await sql`UPDATE connections SET scopes=ARRAY['https://www.googleapis.com/auth/analytics.readonly'] WHERE id=${connection}::uuid`;
+  assert.equal((await query()).connection_ok, false, "GSC requires webmasters read scope, not unrelated analytics");
+  await sql`UPDATE connections SET scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly','write_products'] WHERE id=${connection}::uuid`;
+  assert.equal((await query()).connection_ok, false, "connected provider with write scope is not admitted");
+  await sql`UPDATE connections SET provider='unknown',scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=${connection}::uuid`;
+  assert.equal((await query()).connection_ok, false, "unknown provider is not admitted");
+  await sql`UPDATE connections SET provider='shopify', external_account_id='store.myshopify.com', scopes=ARRAY['read_content'] WHERE id=${connection}::uuid`;
+  assert.equal((await query()).connection_ok, true, "recognized Shopify content read scope qualifies for preflight only");
+  await sql`UPDATE connections SET external_account_id='wrong-domain.example.com' WHERE id=${connection}::uuid`;
+  assert.equal((await query()).connection_ok, false, "invalid Shopify permanent domain denies");
+  await sql`UPDATE connections SET provider='google',external_account_id='cvi-preflight',scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=${connection}::uuid`;
+  assert.equal((await query()).connection_ok, true, "restored GSC read-only scope meets preflight");
   await sql`UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=${grant}::uuid`;
   assert.equal((await query()).grant_ok, false, "revoked grant denies");
   await sql`UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=${grant}::uuid`;

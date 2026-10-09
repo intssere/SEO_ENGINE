@@ -81,7 +81,7 @@ export async function checkCviTrustedReadPreflight(input: Readonly<{
 /** Parameterized SQL read adapter. Require a server-managed, private SQL client;
  * do not expose this method as a user-submittable public route.
  * No tokens/secrets are retrieved. This checks *any* connected read-scoped
- * connection, not independently authenticated property control.
+ * connection with recognized read-only scopes, not independently authenticated property control.
  */
 export const CVI_TRUSTED_READ_PREFLIGHT_SQL = `
 SELECT
@@ -108,5 +108,17 @@ SELECT
       AND (g.expires_at IS NULL OR g.expires_at>$5::timestamptz)) AS grant_ok,
   EXISTS (SELECT 1 FROM connections c
     WHERE c.site_id=$4::uuid AND c.status='connected'
-    AND cardinality(c.scopes)>0) AS connection_ok
+      AND (
+        (c.provider='google'
+          AND 'https://www.googleapis.com/auth/webmasters.readonly'=ANY(c.scopes))
+        OR
+        (c.provider='shopify'
+          AND 'read_content'=ANY(c.scopes)
+          AND c.external_account_id ~ '^[a-z0-9][a-z0-9-]*[.]myshopify[.]com$')
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM unnest(c.scopes) AS requested_scope(scope)
+        WHERE requested_scope.scope ~* '(^write_|(^|[./])(write|edit|manage)([./]|$))'
+      )
+  ) AS connection_ok
 ` as const;
