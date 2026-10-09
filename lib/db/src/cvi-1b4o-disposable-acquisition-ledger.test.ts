@@ -292,3 +292,45 @@ test("CVI-1C.15 exact readback SQL reconciles one untrusted GSC acquisition with
   "historical tombstone remains readable after grant revocation; no access capability");
  await sql.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
 });
+
+
+test("CVI-1C.16 scoped readback SQL denies tenant/session mismatch and revoked grants",async t=>{
+ const url=disposableUrl();
+ if(!url){t.skip("explicit disposable localhost PostgreSQL required");return;}
+ const db=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+ t.after(async()=>{await db.end({timeout:1});});
+ const lib=new URL("../../../artifacts/api-server/src/lib/",import.meta.url);
+ const sqlSource=await readFile(fileURLToPath(new URL("cvi-gsc-scoped-ledger-readback.ts",lib)),"utf8");
+ const match=sqlSource.match(/export const CVI_GSC_SCOPED_READBACK_SQL = \[([\s\S]*?)\]\.join\(" "\);/);
+ assert.ok(match);
+ const expressions=match[1]!.split("\n").map(x=>x.trim()).filter(x=>x.startsWith("'"));
+ const readSql=expressions.map(x=>JSON.parse('"'+x.replace(/,$/,"").slice(1,-1).replace(/\\'/g,"'").replace(/"/g,'\\"')+'"') as string).join(" ");
+ assert.match(readSql,/LIMIT 2 FOR SHARE OF s,c,se,m,g/);
+ const org=(await db.unsafe<{id:string}[]>("SELECT id FROM organizations WHERE slug='cvi-nonce-proof'"))[0]!.id;
+ const site=(await db.unsafe<{id:string}[]>("SELECT id FROM sites WHERE domain='nonce.cvi.test'"))[0]!.id;
+ const connection=(await db.unsafe<{id:string}[]>("SELECT id FROM connections WHERE site_id=$1::uuid",[site]))[0]!.id;
+ const session=(await db.unsafe<{id:string}[]>("SELECT id FROM auth_sessions WHERE subject='cvi-nonce-subject'"))[0]!.id;
+ const membership=(await db.unsafe<{id:string}[]>(
+  "SELECT id FROM cvi_organization_memberships WHERE organization_id=$1::uuid AND auth_subject='cvi-nonce-subject'",[org]))[0]!.id;
+ const grant=(await db.unsafe<{id:string}[]>(
+  "SELECT id FROM cvi_site_read_grants WHERE organization_membership_id=$1::uuid AND permission='read_evidence'",[membership]))[0]!.id;
+ await db.unsafe("UPDATE connections SET status='connected',scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=$1::uuid",[connection]);
+ await db.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[membership]);
+ await db.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+ const args=["cvi-1c15-acq-1",org,site,connection,"cvi-nonce-subject",session];
+ const query=(values:readonly unknown[])=>db.unsafe<{acquisitionId:string;tenantId:string;requestNonce:string}[]>(readSql,values as unknown[]);
+ const authorized=await query(args);
+ assert.equal(authorized.length,1);
+ assert.equal(authorized[0]!.tenantId,org);
+ assert.equal(authorized[0]!.requestNonce,"cvi-1c15-nonce-1");
+ const alienTenant="ffffffff-ffff-4fff-8fff-ffffffffffff";
+ assert.equal((await query([args[0],alienTenant,...args.slice(2)])).length,0);
+ assert.equal((await query([...args.slice(0,5),"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"])).length,0);
+ assert.equal((await query([args[0],org,site,connection,"intruder",session])).length,0);
+ await db.unsafe("UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[grant]);
+ assert.equal((await query(args)).length,0,"revoked site grant forbids historical read");
+ await db.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+ await db.unsafe("UPDATE cvi_organization_memberships SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[membership]);
+ assert.equal((await query(args)).length,0,"revoked membership forbids historical read");
+ await db.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[membership]);
+});
