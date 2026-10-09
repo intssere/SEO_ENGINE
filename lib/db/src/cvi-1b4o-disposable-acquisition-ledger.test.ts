@@ -230,3 +230,65 @@ test("CVI-1C.10 concurrent membership/grant revocation serializes nonce admissio
     "SELECT COUNT(*)::int AS n FROM cvi_acquisition_nonce_ledger WHERE acquisition_id LIKE 'cvi-1c10-%'");
   assert.equal(rows[0]?.n,0,"all admission races denied and no replay tombstones forged");
 });
+
+
+test("CVI-1C.15 exact readback SQL reconciles one untrusted GSC acquisition without cross-tenant leakage",async t=>{
+ const url=disposableUrl();
+ if(!url){t.skip("explicit disposable localhost PostgreSQL required");return;}
+ const sql=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+ t.after(async()=>{await sql.end({timeout:1});});
+ const sourceDir=new URL("../../../artifacts/api-server/src/lib/",import.meta.url);
+ const source=await readFile(fileURLToPath(new URL("cvi-gsc-ledger-receipt-readback.ts",sourceDir)),"utf8");
+ const match=source.match(/export const CVI_GSC_LEDGER_READBACK_SQL = \[([\s\S]*?)\]\.join\(" "\);/);
+ assert.ok(match,"exact exported readback query must be present");
+ const fragments=match[1]!.split("\n").map(x=>x.trim()).filter(x=>x.startsWith('"'))
+   .map(x=>JSON.parse(x.replace(/,$/,"")) as string);
+ assert.equal(fragments.length,6);
+ const readSql=fragments.join(" ");
+ assert.match(readSql,/FROM cvi_acquisition_nonce_ledger WHERE acquisition_id=\$1 LIMIT 2/);
+ assert.doesNotMatch(readSql,/\b(?:INSERT|UPDATE|DELETE|TRUNCATE)\b/i);
+ const atomicSource=await readFile(fileURLToPath(new URL("cvi-receipt-nonce-admission.ts",sourceDir)),"utf8");
+ const insertMatch=atomicSource.match(/export const CVI_ATOMIC_RECEIPT_LEDGER_SQL = \[([\s\S]*?)\]\.join\(" "\) as string;/);
+ assert.ok(insertMatch,"exact acquisition insert contract must be present");
+ const insertSql=insertMatch[1]!.split("\n").map(x=>x.trim()).filter(x=>x.startsWith('"'))
+   .map(x=>JSON.parse(x.replace(/,$/,"")) as string).join(" ");
+ const org=(await sql.unsafe<{id:string}[]>("SELECT id FROM organizations WHERE slug='cvi-nonce-proof'"))[0]!.id;
+ const site=(await sql.unsafe<{id:string}[]>("SELECT id FROM sites WHERE domain='nonce.cvi.test'"))[0]!.id;
+ const conn=(await sql.unsafe<{id:string}[]>("SELECT id FROM connections WHERE site_id=$1::uuid",[site]))[0]!.id;
+ const session=(await sql.unsafe<{id:string}[]>("SELECT id FROM auth_sessions WHERE subject='cvi-nonce-subject'"))[0]!.id;
+ const membership=(await sql.unsafe<{id:string}[]>(
+   "SELECT id FROM cvi_organization_memberships WHERE organization_id=$1::uuid AND auth_subject='cvi-nonce-subject'",[org]))[0]!.id;
+ const grant=(await sql.unsafe<{id:string}[]>(
+   "SELECT id FROM cvi_site_read_grants WHERE organization_membership_id=$1::uuid AND permission='read_evidence'",[membership]))[0]!.id;
+ await sql.unsafe("UPDATE connections SET scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'],status='connected' WHERE id=$1::uuid",[conn]);
+ await sql.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[membership]);
+ await sql.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+ const receiptId="cvi-1c15-acq-1",nonce="cvi-1c15-nonce-1",resource="sc-domain:nonce.cvi.test",hash="e".repeat(64);
+ const inserted=await sql.unsafe<{acquisition_id:string}[]>(insertSql,[
+  receiptId,org,site,"cvi-nonce-subject",session,conn,nonce,resource,hash,
+  "2026-10-09T00:00:00Z","2026-10-09T00:00:01Z",
+ ]);
+ assert.equal(inserted.length,1,"one untrusted receipt is inserted");
+ const rows=await sql.unsafe<{
+  acquisitionId:string;tenantId:string;siteId:string;connectionId:string;
+  authSubject:string;authSessionId:string;requestNonce:string;
+  requestedResource:string;observationFingerprint:string;disposition:string;
+ }[]>(readSql,[receiptId]);
+ assert.equal(rows.length,1);
+ assert.deepEqual(rows[0],{
+  acquisitionId:receiptId,tenantId:org,siteId:site,connectionId:conn,
+  authSubject:"cvi-nonce-subject",authSessionId:session,
+  requestNonce:nonce,requestedResource:resource,
+  observationFingerprint:hash,disposition:"recorded_untrusted",
+ });
+ assert.equal((await sql.unsafe(readSql,["cvi-1c15-missing"])).length,0);
+ assert.equal((await sql.unsafe(readSql,["cvi-1c10-race-1"])).length,0);
+ // The query is a tombstone locator, NOT a tenant-scoped authorization check;
+ // a trusted server must independently check tenant/session/grants.
+ const forgedTenant="ffffffff-ffff-4fff-8fff-ffffffffffff";
+ assert.notEqual(rows[0]!.tenantId,forgedTenant);
+ await sql.unsafe("UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[grant]);
+ assert.equal((await sql.unsafe(readSql,[receiptId])).length,1,
+  "historical tombstone remains readable after grant revocation; no access capability");
+ await sql.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+});
