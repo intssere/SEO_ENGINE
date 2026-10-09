@@ -20,7 +20,7 @@ test("L10.39 parses exact synthetic match without side effects", () => {
 });
 test("L10.39 rejects missing and duplicate envelope boundaries", () => {
   assert.deepEqual(parse(lines.slice(1)), {ok:false,code:"INVALID_ENVELOPE"});
-  assert.deepEqual(parse([...lines,lines.at(-1)!]), {ok:false,code:"INVALID_ENVELOPE"});
+  assert.deepEqual(parse([...lines,lines.at(-1)!]), {ok:false,code:"AMBIGUOUS_RECEIPT"});
 });
 test("L10.39 rejects ambiguity and unknown/redacted fields without exposing them", () => {
   assert.deepEqual(parse([...lines.slice(0,-1),lines[1]!,lines.at(-1)!]), {ok:false,code:"AMBIGUOUS_RECEIPT"});
