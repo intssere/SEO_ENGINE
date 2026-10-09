@@ -116,3 +116,43 @@ test("CVI-1B.4P admission requires live tenant membership and site read grant", 
     "SELECT COUNT(*)::int AS n FROM cvi_acquisition_nonce_ledger WHERE acquisition_id LIKE 'fence-%'");
   assert.equal(records[0]?.n,1,"denied acquisition IDs and nonces were not admitted");
 });
+
+
+test("CVI-1C.8 actual exported atomic SQL rejects racing nonces and revoked membership", async t => {
+  const url=disposableUrl();
+  if(!url){t.skip("explicit disposable PostgreSQL required");return;}
+  const a=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+  const b=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+  t.after(async()=>{await a.end({timeout:1});await b.end({timeout:1});});
+  const source=fileURLToPath(new URL("../../../artifacts/api-server/src/lib/cvi-receipt-nonce-admission.ts",import.meta.url));
+  const code=await readFile(source,"utf8");
+  const match=code.match(/export const CVI_ATOMIC_RECEIPT_LEDGER_SQL = \[([\s\S]*?)\]\.join\(" "\) as string;/);
+  assert.ok(match,"extract exact exported SQL fragments for real certification");
+  const fragments=match[1]!.split("\n").map(x=>x.trim()).filter(x=>x.startsWith('"')).map(x=>JSON.parse(x.replace(/,$/,"")) as string);
+  assert.equal(fragments.length,5,"export must retain canonical parameterized SQL");
+  const sqlText=fragments.join(" ");
+  assert.match(sqlText,/ON CONFLICT DO NOTHING RETURNING acquisition_id/);
+  const org=(await a.unsafe<{id:string}[]>("SELECT id FROM organizations WHERE slug='cvi-nonce-proof'"))[0]!.id;
+  const site=(await a.unsafe<{id:string}[]>("SELECT id FROM sites WHERE domain='nonce.cvi.test'"))[0]!.id;
+  const conn=(await a.unsafe<{id:string}[]>("SELECT id FROM connections WHERE site_id=$1::uuid",[site]))[0]!.id;
+  const session=(await a.unsafe<{id:string}[]>("SELECT id FROM auth_sessions WHERE subject='cvi-nonce-subject'"))[0]!.id;
+  await a.unsafe("UPDATE connections SET scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=$1::uuid",[conn]);
+  const membership=(await a.unsafe<{id:string}[]>(
+    "SELECT id FROM cvi_organization_memberships WHERE organization_id=$1::uuid AND auth_subject='cvi-nonce-subject'",[org]))[0]!.id;
+  const insert=(db:typeof a,id:string,nonce:string)=>db.unsafe<{acquisition_id:string}[]>(sqlText,[
+    id,org,site,"cvi-nonce-subject",session,conn,nonce,"sc-domain:nonce.cvi.test",
+    "c".repeat(64),"2026-10-09T00:00:00Z","2026-10-09T00:00:01Z",
+  ]);
+  const replies=await Promise.all([
+    insert(a,"cvi-1c8-race-a","cvi-1c8-race-nonce"),
+    insert(b,"cvi-1c8-race-b","cvi-1c8-race-nonce"),
+  ]);
+  assert.deepEqual(replies.map(x=>x.length).sort(),[0,1],"atomic unique nonce means one winner");
+  assert.equal((await insert(a,"cvi-1c8-race-a","alternate-nonce")).length,0,"duplicate acquisition ID denied");
+  await a.unsafe("UPDATE cvi_organization_memberships SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[membership]);
+  await assert.rejects(insert(a,"cvi-1c8-denied","cvi-1c8-new-nonce"),
+    /cvi_acquisition_read_grant_invalid/,"revocation blocks insertion");
+  const rows=await a.unsafe<{n:number}[]>(
+    "SELECT COUNT(*)::int AS n FROM cvi_acquisition_nonce_ledger WHERE acquisition_id LIKE 'cvi-1c8-%'");
+  assert.equal(rows[0]?.n,1,"only one successful receipt recorded");
+});
