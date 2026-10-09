@@ -230,7 +230,7 @@ test("CVI-1B.4I executes exact bound SQL across authenticated tenant, grant, ses
   const sql = postgres(url, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
   t.after(async () => { await sql.end({ timeout: 1 }); });
   const contractSource = await readFile(fileURLToPath(new URL("../../../artifacts/api-server/src/lib/cvi-trusted-read-preflight.ts", import.meta.url)), "utf8");
-  const match = contractSource.match(/export const CVI_TRUSTED_READ_PREFLIGHT_SQL = `([\\s\\S]*?)` as const;/);
+  const match = contractSource.match(/export const CVI_TRUSTED_READ_PREFLIGHT_SQL = `([\s\S]*?)` as const;/);
   assert.ok(match?.[1], "exact source SQL must be present");
   const CVI_TRUSTED_READ_PREFLIGHT_SQL = match[1];
   const at = "2026-10-09T04:00:00.000Z";
