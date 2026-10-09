@@ -32,3 +32,9 @@ Status: DRAFT STACKED PR; EXACT-HEAD CI PENDING; NO LIVE PROVIDER INTEGRATION
 - Check PR #957 exact HEAD validation and repair if needed.
 - Check PR #959 exact HEAD CI via proof branch; repair TypeScript/runtime tests if any fail.
 - Keep proof-only branches out of merge plans and retain dependency ordering.
+
+## Exact-head CI repair — 2026-10-09
+- PR #957 original HEAD `a22869da5726d00f60e85c325695ef70da14eef8` CI FAILED in Typecheck; errors TS2322 arose from narrow TypeScript inference of literal `grantedScopes` and `observation` in the two negative test fixtures. This is a test typing defect, not independent provider authentication.
+- Repaired PR #957 HEAD `cdcff6ecce0225dcbed61add31fdcd7f72cb5e41`; validation-only `ugp-cvi-1b4l-ci-proof-20261009-r2`, run 37910584730.
+- Repaired dependent PR #959 HEAD `34924b89725c4af194fa99b659f5d1b4e0705de5`; validation-only `ugp-cvi-1b4m-ci-proof-20261009-r2`, run 37910589255.
+- Neither HEAD is certified until exact-head workflow concludes successfully; preserve draft dependency chain.
