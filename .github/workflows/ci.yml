@@ -160,6 +160,14 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^49$'
           pnpm --filter @workspace/api-server test:ugp-10-33-execution-ephemeral
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -q '^49$'
+      - name: Test UGP-11.1D2 isolated transport PostgreSQL concurrency
+        env:
+          UGP_11_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_test
+        run: |
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f docs/universal-growth-platform/sql/UGP-11.1D1-DISPOSABLE-TRANSPORT-FIXTURE.sql
+          pnpm --filter @workspace/api-server exec tsx --test src/lib/ugp-11-1d2-transport.ephemeral.test.ts
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT COUNT(*) FROM ugp11_transport_fixture.jobs" | grep -q '^0$'
+
       - name: Test all current workspace packages
         run: pnpm -r --if-present test
 
