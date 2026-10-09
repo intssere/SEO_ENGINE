@@ -29,11 +29,10 @@ test("UGP-11.1D2 disposable PostgreSQL uniqueness, concurrent claim and fencing"
   const url=ephemeralUrl();
   if(!url){t.skip("UGP_11_EPHEMERAL_DATABASE_URL unset");return;}
   const db=postgres(url,{max:4,prepare:false,connect_timeout:8,idle_timeout:2});
-  t.after(async()=>db.end({timeout:1}));
+  t.after(async()=>{await db.unsafe("DELETE FROM ugp11_transport_fixture.jobs WHERE tenant_id='fixture-tenant'");await db.end({timeout:1});});
   const schema=await db`SELECT to_regclass('ugp11_transport_fixture.jobs')::text AS relation`;
   assert.equal(schema[0]?.relation,TABLE,"fixture must be explicitly migrated in CI");
   await db`DELETE FROM ugp11_transport_fixture.jobs WHERE tenant_id='fixture-tenant'`;
-  t.after(async()=>{await db`DELETE FROM ugp11_transport_fixture.jobs WHERE tenant_id='fixture-tenant'`;});
   const job=prepareAdmittedJob(envelope);
   const insert=()=>db`INSERT INTO ugp11_transport_fixture.jobs
     (identity,tenant_id,site_id,idempotency_key,job_class,envelope_fingerprint,upstream_fingerprint,
