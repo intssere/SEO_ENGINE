@@ -71,3 +71,48 @@ test("CVI-1B.4O concurrent nonce uniqueness and immutable acquisition records", 
   const finalRows = await a.unsafe<{ n: number }[]>("SELECT COUNT(*)::int AS n FROM cvi_acquisition_nonce_ledger");
   assert.equal(finalRows[0]?.n, 1);
 });
+
+
+test("CVI-1B.4P admission requires live tenant membership and site read grant", async t => {
+  const url = disposableUrl();
+  if (!url) { t.skip("explicit disposable localhost PostgreSQL required"); return; }
+  const sql = postgres(url, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
+  t.after(async () => { await sql.end({ timeout: 1 }); });
+  const migration = fileURLToPath(new URL("../migrations/0015_cvi_acquisition_membership_fence_draft.sql", import.meta.url));
+  await sql.unsafe(await readFile(migration, "utf8"));
+  const org = (await sql.unsafe<{ id: string }[]>("SELECT id FROM organizations WHERE slug='cvi-nonce-proof'"))[0]!.id;
+  const site = (await sql.unsafe<{ id: string }[]>("SELECT id FROM sites WHERE domain='nonce.cvi.test'"))[0]!.id;
+  const connection = (await sql.unsafe<{ id: string }[]>("SELECT id FROM connections WHERE site_id=$1::uuid", [site]))[0]!.id;
+  const session = (await sql.unsafe<{ id: string }[]>("SELECT id FROM auth_sessions WHERE subject='cvi-nonce-subject'"))[0]!.id;
+  const insertSql = `INSERT INTO cvi_acquisition_nonce_ledger
+    (acquisition_id,tenant_id,site_id,connection_id,auth_subject,auth_session_id,
+     request_nonce,requested_resource,observation_fingerprint,requested_at,observed_at)
+    VALUES ($1,$2::uuid,$3::uuid,$4::uuid,'cvi-nonce-subject',$5::uuid,$6,
+      'sc-domain:nonce.cvi.test',$7,'2026-10-09T00:00:00Z','2026-10-09T00:00:01Z')`;
+  const insert = (id: string, nonce: string) =>
+    sql.unsafe(insertSql,[id,org,site,connection,session,nonce,"b".repeat(64)]);
+  await assert.rejects(insert("fence-no-membership","nonce-fence-1"), /cvi_acquisition_read_grant_invalid/);
+  const membership = (await sql.unsafe<{ id: string }[]>(
+    `INSERT INTO cvi_organization_memberships
+      (organization_id,auth_subject,member_role,status,effective_at,revoked_at)
+      VALUES ($1::uuid,'cvi-nonce-subject','viewer','active','2026-10-08T00:00:00Z',NULL) RETURNING id`,
+    [org]))[0]!.id;
+  await assert.rejects(insert("fence-no-grant","nonce-fence-2"), /cvi_acquisition_read_grant_invalid/);
+  const grant = (await sql.unsafe<{ id: string }[]>(
+    `INSERT INTO cvi_site_read_grants
+      (organization_membership_id,organization_id,site_id,permission,status,effective_at,revoked_at)
+      VALUES ($1::uuid,$2::uuid,$3::uuid,'read_evidence','active','2026-10-08T00:00:00Z',NULL) RETURNING id`,
+    [membership,org,site]))[0]!.id;
+  await insert("fence-active","nonce-fence-3");
+  await sql.unsafe("UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[grant]);
+  await assert.rejects(insert("fence-revoked-grant","nonce-fence-4"), /cvi_acquisition_read_grant_invalid/);
+  await sql.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+  await sql.unsafe("UPDATE cvi_organization_memberships SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[membership]);
+  await assert.rejects(insert("fence-revoked-membership","nonce-fence-5"), /cvi_acquisition_read_grant_invalid/);
+  await sql.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[membership]);
+  await sql.unsafe("UPDATE connections SET scopes=ARRAY['https://www.googleapis.com/auth/analytics.readonly'] WHERE id=$1::uuid",[connection]);
+  await assert.rejects(insert("fence-wrong-scope","nonce-fence-6"), /cvi_acquisition_connection_site_invalid/);
+  const records=await sql.unsafe<{ n: number }[]>(
+    "SELECT COUNT(*)::int AS n FROM cvi_acquisition_nonce_ledger WHERE acquisition_id LIKE 'fence-%'");
+  assert.equal(records[0]?.n,1,"denied acquisition IDs and nonces were not admitted");
+});
