@@ -6,6 +6,7 @@ import postgres from "postgres";
 
 const core = fileURLToPath(new URL("../migrations/0001_core.sql", import.meta.url));
 const migration = fileURLToPath(new URL("../migrations/0012_cvi_tenant_site_acl_draft.sql", import.meta.url));
+const authMigration = fileURLToPath(new URL("../migrations/0002_auth.sql", import.meta.url));
 const databaseName = "seo_engine_cvi_disposable";
 function verifiedDatabaseUrl(): string | null {
   const raw = process.env.CVI_1B4E_DISPOSABLE_DATABASE_URL;
@@ -35,12 +36,13 @@ test("CVI-1B.4E actual ACL foreign keys and revocation work in isolated disposab
     WHERE table_schema='public' AND table_type='BASE TABLE'
   `;
   assert.equal(coreCount[0]?.count, 29);
+  await sql.unsafe(await readFile(authMigration, "utf8"));
   await sql.unsafe(await readFile(migration, "utf8"));
   const current = await sql<{ count: number }[]>`
     SELECT COUNT(*)::int AS count FROM information_schema.tables
     WHERE table_schema='public' AND table_type='BASE TABLE'
   `;
-  assert.equal(current[0]?.count, 32);
+  assert.equal(current[0]?.count, 34);
   const seed = await sql<{ id: string }[]>`
     INSERT INTO organizations (name,slug) VALUES ('CVI A','cvi-disposable-a') RETURNING id
   `;
@@ -125,7 +127,7 @@ test("CVI-1B.4F audit rows reject UPDATE, DELETE and TRUNCATE in disposable Post
     SELECT COUNT(*)::int AS count FROM information_schema.tables
     WHERE table_schema='public' AND table_type='BASE TABLE'
   `;
-  assert.equal(count[0]?.count, 32, "base ACL certification must run first");
+  assert.equal(count[0]?.count, 34, "base ACL certification must run first");
   const path = fileURLToPath(new URL("../migrations/0013_cvi_acl_audit_immutability_draft.sql", import.meta.url));
   await sql.unsafe(await readFile(path, "utf8"));
   const inserted = await sql<{ id: string }[]>`
