@@ -150,3 +150,73 @@ test("CVI-1B.4F audit rows reject UPDATE, DELETE and TRUNCATE in disposable Post
   `;
   assert.equal(retained[0]?.count, 1);
 });
+
+
+test("CVI-1B.4G concurrent membership revocation invalidates later read", async t => {
+  const url = verifiedDatabaseUrl();
+  if (!url) { t.skip("explicit disposable CI database URL not configured"); return; }
+  const reader = postgres(url, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
+  const writer = postgres(url, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
+  t.after(async () => { await reader.end({ timeout: 1 }); await writer.end({ timeout: 1 }); });
+  const org = await writer<{ id: string }[]>`INSERT INTO organizations (name,slug) VALUES ('CVI concurrency', 'cvi-concurrency-a') RETURNING id`;
+  const organizationId = org[0]!.id;
+  const sites = await writer<{ id: string }[]>`INSERT INTO sites (organization_id,name,domain,canonical_origin)
+    VALUES (${organizationId}::uuid, 'Concurrency','concurrency.cvi.test','https://concurrency.cvi.test') RETURNING id`;
+  const siteId = sites[0]!.id;
+  const membership = await writer<{ id: string }[]>`INSERT INTO cvi_organization_memberships
+    (organization_id,auth_subject,member_role,status,effective_at,revoked_at)
+    VALUES (${organizationId}::uuid,'cvi-concurrency-subject','viewer','active','2026-10-08T00:00:00Z',NULL) RETURNING id`;
+  const memberId = membership[0]!.id;
+  const grant = await writer<{ id: string }[]>`INSERT INTO cvi_site_read_grants
+    (organization_membership_id,organization_id,site_id,permission,status,effective_at,revoked_at)
+    VALUES (${memberId}::uuid,${organizationId}::uuid,${siteId}::uuid,'read_evidence','active','2026-10-08T00:00:00Z',NULL) RETURNING id`;
+
+  let unlock!: () => void, signal!: () => void;
+  const locked = new Promise<void>(resolve => { signal = resolve; });
+  const release = new Promise<void>(resolve => { unlock = resolve; });
+  const holder = reader.begin(async tx => {
+    const current = await tx<{ count: number }[]>`SELECT COUNT(*)::int AS count
+      FROM cvi_organization_memberships m JOIN cvi_site_read_grants g
+      ON g.organization_membership_id=m.id AND g.organization_id=m.organization_id
+      WHERE m.id=${memberId}::uuid AND m.status='active' AND g.status='active'
+      AND g.site_id=${siteId}::uuid AND g.permission='read_evidence'`;
+    assert.equal(current[0]?.count, 1);
+    await tx`SELECT id FROM cvi_organization_memberships WHERE id=${memberId}::uuid FOR UPDATE`;
+    signal();
+    await release;
+  });
+  try {
+    await locked;
+    const revocation = writer<{ status: string }[]>`UPDATE cvi_organization_memberships
+      SET status='revoked',revoked_at=now()
+      WHERE id=${memberId}::uuid RETURNING status`;
+    const committed = Promise.resolve(revocation).then(rows => assert.equal(rows[0]?.status, "revoked"));
+    unlock();
+    await holder;
+    await committed;
+    const fresh = await reader<{ count: number }[]>`SELECT COUNT(*)::int AS count
+      FROM cvi_organization_memberships m JOIN cvi_site_read_grants g
+      ON g.organization_membership_id=m.id AND g.organization_id=m.organization_id
+      WHERE m.id=${memberId}::uuid AND m.status='active' AND g.status='active'
+      AND g.site_id=${siteId}::uuid AND g.permission='read_evidence'`;
+    assert.equal(fresh[0]?.count, 0);
+    const retained = await reader<{ count: number }[]>`SELECT COUNT(*)::int AS count
+      FROM cvi_site_read_grants WHERE id=${grant[0]!.id}::uuid`;
+    assert.equal(retained[0]?.count, 1);
+  } finally {
+    unlock();
+    await holder.catch(() => undefined);
+  }
+});
+
+test("CVI-1B.4G independent site grant revocation prevents a fresh active-grant lookup", async t => {
+  const url = verifiedDatabaseUrl();
+  if (!url) { t.skip("explicit disposable CI database URL not configured"); return; }
+  const sql = postgres(url, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
+  t.after(async () => { await sql.end({ timeout: 1 }); });
+  const before = await sql<{ count: number }[]>`SELECT COUNT(*)::int AS count FROM cvi_site_read_grants WHERE status='active'`;
+  assert.ok(before[0]!.count > 0);
+  await sql`UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE status='active'`;
+  const after = await sql<{ count: number }[]>`SELECT COUNT(*)::int AS count FROM cvi_site_read_grants WHERE status='active'`;
+  assert.equal(after[0]?.count, 0);
+});
