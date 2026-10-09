@@ -31,3 +31,10 @@ Status: DRAFT STACKED PR, exact-head CI pending, NOT DEPLOYED.
 1. Verify PR #956 CI exact HEAD and disposable Postgres test. Fix any SQL and test defects on branch; rerun exact-head CI.
 2. Investigate independent provider property access attestation and canonical resource binding with time-bounded, revocation-aware server-only resolver.
 3. Separately prioritize CVI trusted source acquisition, factual verification, editorial workflows and UGP integration. Do not conflate these with security preflight completion.
+
+## CI repair and current exact head (2026-10-09)
+- First PR #956 HEAD `70f5cb19def6dc8e98faf092fb5d77ce30ecd0c0` FAILED disposable PostgreSQL certification, run 37906511912. Root cause: JavaScript string.replace interpolation treated the SQL regex `$'` as replacement-template suffix, corrupting the TypeScript SQL literal; not a provider or database policy failure.
+- Repaired SQL literal using direct string construction, then replaced regexp backslash-escaped dots with unambiguous PostgreSQL character classes `[.]`.
+- PR #956 CURRENT HEAD: `0cf039beeaebe48fed20f458842aaa5186c8edfb`.
+- New exact-head GitHub CI proof branch `ugp-cvi-1b4e-ci-proof-20261009-k-r3` triggers run 37906724434, IN PROGRESS at handoff. Earlier proof branches must NOT substitute for this head.
+- No runtime, database, production or provider operation was performed. Static inspection does not substitute for successful current-head disposable PostgreSQL certification.
