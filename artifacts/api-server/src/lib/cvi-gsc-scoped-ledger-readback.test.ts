@@ -49,7 +49,7 @@ test("SQL binds all tenant identity and current grants in same locked read",()=>
   "a.tenant_id=$2::uuid","a.site_id=$3::uuid","a.connection_id=$4::uuid",
   "a.auth_subject=$5","a.auth_session_id=$6::uuid","g.permission='read_evidence'",
   "se.revoked_at IS NULL","m.revoked_at IS NULL","g.revoked_at IS NULL",
-  "FOR SHARE OF s,c,se,m,g LIMIT 2",
+  "LIMIT 2 FOR SHARE OF s,c,se,m,g",
  ]) assert.ok(CVI_GSC_SCOPED_READBACK_SQL.includes(clause),clause);
  assert.doesNotMatch(CVI_GSC_SCOPED_READBACK_SQL,/\b(INSERT|UPDATE|DELETE|TRUNCATE)\b/i);
 });
