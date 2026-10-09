@@ -222,3 +222,76 @@ test("CVI-1B.4G independent site grant revocation prevents a fresh active-grant 
   const after = await sql<{ count: number }[]>`SELECT COUNT(*)::int AS count FROM cvi_site_read_grants WHERE status='active'`;
   assert.equal(after[0]?.count, 0);
 });
+
+
+test("CVI-1B.4I executes exact bound SQL across authenticated tenant, grant, session, site and connection states", async t => {
+  const url = verifiedDatabaseUrl();
+  if (!url) { t.skip("explicit disposable CI database URL not configured"); return; }
+  const sql = postgres(url, { max: 1, prepare: false, connect_timeout: 8, idle_timeout: 2 });
+  t.after(async () => { await sql.end({ timeout: 1 }); });
+  const { CVI_TRUSTED_READ_PREFLIGHT_SQL } = await import("../../../artifacts/api-server/src/lib/cvi-trusted-read-preflight.js");
+  const at = "2026-10-09T04:00:00.000Z";
+  const orgs = await sql<{ id: string }[]>`INSERT INTO organizations(name,slug)
+    VALUES ('CVI H verify','cvi-h-sql-verification') RETURNING id`;
+  const org = orgs[0]!.id;
+  const otherOrgs = await sql<{ id: string }[]>`INSERT INTO organizations(name,slug)
+    VALUES ('CVI other verify','cvi-other-sql-verification') RETURNING id`;
+  const otherOrg = otherOrgs[0]!.id;
+  const sites = await sql<{ id: string }[]>`INSERT INTO sites(organization_id,name,domain,canonical_origin)
+    VALUES (${org}::uuid,'CVI H','cvi-h.example.test','https://cvi-h.example.test') RETURNING id`;
+  const site = sites[0]!.id;
+  const others = await sql<{ id: string }[]>`INSERT INTO sites(organization_id,name,domain,canonical_origin)
+    VALUES (${otherOrg}::uuid,'CVI other','cvi-other.example.test','https://cvi-other.example.test') RETURNING id`;
+  const otherSite = others[0]!.id;
+  const sessions = await sql<{ id: string }[]>`INSERT INTO auth_sessions(token_hash,subject,email,role,csrf_token_hash,expires_at)
+    VALUES (${"c".repeat(64)},'cvi-preflight-user','cvi@example.test','admin',${"d".repeat(64)},'2026-10-09T06:00:00Z')
+    RETURNING id`;
+  const session = sessions[0]!.id;
+  const memberRows = await sql<{ id: string }[]>`INSERT INTO cvi_organization_memberships
+    (organization_id,auth_subject,member_role,status,effective_at,revoked_at)
+    VALUES (${org}::uuid,'cvi-preflight-user','viewer','active','2026-10-08T00:00:00Z',NULL) RETURNING id`;
+  const member = memberRows[0]!.id;
+  const grants = await sql<{ id: string }[]>`INSERT INTO cvi_site_read_grants
+    (organization_membership_id,organization_id,site_id,permission,status,effective_at,revoked_at)
+    VALUES (${member}::uuid,${org}::uuid,${site}::uuid,'read_evidence','active','2026-10-08T00:00:00Z',NULL)
+    RETURNING id`;
+  const grant = grants[0]!.id;
+  const connectionRows = await sql<{ id: string }[]>`INSERT INTO connections(site_id,provider,external_account_id,scopes,status)
+    VALUES (${site}::uuid,'google','cvi-preflight',ARRAY['https://www.googleapis.com/auth/webmasters.readonly'],'connected')
+    RETURNING id`;
+  const connection = connectionRows[0]!.id;
+
+  type Flags = { session_ok: boolean; membership_ok: boolean; grant_ok: boolean; connection_ok: boolean; site_ok: boolean };
+  const query = async (sessionId = session, subject = "cvi-preflight-user", tenant = org, siteId = site) => {
+    const rows = await sql.unsafe<Flags[]>(CVI_TRUSTED_READ_PREFLIGHT_SQL,
+      [sessionId, subject, tenant, siteId, at]);
+    assert.equal(rows.length, 1);
+    return rows[0]!;
+  };
+  const allTrue = (flags: Flags) => Object.values(flags).every(value => value === true);
+  assert.equal(allTrue(await query()), true, "valid disposable server records match");
+  assert.equal((await query(session, "different-principal")).session_ok, false);
+  assert.equal((await query(session, "different-principal")).membership_ok, false);
+  assert.equal((await query(session, "different-principal")).grant_ok, false);
+  assert.equal((await query(session, "cvi-preflight-user", otherOrg, otherSite)).site_ok, true);
+  assert.equal((await query(session, "cvi-preflight-user", otherOrg, otherSite)).membership_ok, false);
+  assert.equal((await query(session, "cvi-preflight-user", otherOrg, otherSite)).grant_ok, false);
+
+  await sql`UPDATE connections SET scopes=ARRAY[]::text[] WHERE id=${connection}::uuid`;
+  assert.equal((await query()).connection_ok, false, "empty read-scopes deny");
+  await sql`UPDATE connections SET scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=${connection}::uuid`;
+  await sql`UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=${grant}::uuid`;
+  assert.equal((await query()).grant_ok, false, "revoked grant denies");
+  await sql`UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=${grant}::uuid`;
+  await sql`UPDATE cvi_organization_memberships SET status='revoked',revoked_at=now() WHERE id=${member}::uuid`;
+  assert.equal((await query()).membership_ok, false, "revoked membership denies");
+  assert.equal((await query()).grant_ok, false, "grant requires active membership");
+  await sql`UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=${member}::uuid`;
+  await sql`UPDATE sites SET is_active=false WHERE id=${site}::uuid`;
+  assert.equal((await query()).site_ok, false, "inactive site denies");
+  assert.equal((await query()).grant_ok, false, "grant requires active site");
+  await sql`UPDATE sites SET is_active=true WHERE id=${site}::uuid`;
+  await sql`UPDATE auth_sessions SET revoked_at=now() WHERE id=${session}::uuid`;
+  assert.equal((await query()).session_ok, false, "revoked session denies");
+  assert.equal(allTrue(await query()), false);
+});
