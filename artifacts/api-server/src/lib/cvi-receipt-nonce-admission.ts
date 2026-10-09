@@ -60,7 +60,7 @@ export async function admitCviReceiptNonce(input: Readonly<{
   evaluatedAt: string;
   ledger: CviAtomicAcquisitionLedger;
 }>): Promise<CviReceiptNonceAdmission> {
-  const result = (status: CviReceiptNonceAdmission["status"], reasons: string[],
+  const result = (status: CviReceiptNonceAdmission["status"], reasons: readonly string[],
     signatureVerified: boolean, recorded = false): CviReceiptNonceAdmission => ({
       version: CVI_RECEIPT_NONCE_ADMISSION_VERSION,
       status, reasons, receiptSignatureVerified: signatureVerified,
