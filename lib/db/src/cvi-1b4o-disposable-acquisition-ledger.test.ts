@@ -156,3 +156,77 @@ test("CVI-1C.8 actual exported atomic SQL rejects racing nonces and revoked memb
     "SELECT COUNT(*)::int AS n FROM cvi_acquisition_nonce_ledger WHERE acquisition_id LIKE 'cvi-1c8-%'");
   assert.equal(rows[0]?.n,1,"only one successful receipt recorded");
 });
+
+
+test("CVI-1C.10 concurrent membership/grant revocation serializes nonce admission", async t => {
+  const url=disposableUrl();
+  if (!url) { t.skip("explicit disposable PostgreSQL required"); return; }
+  const a=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+  const b=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+  const monitor=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+  t.after(async()=>{await a.end({timeout:1});await b.end({timeout:1});await monitor.end({timeout:1});});
+  const migration=fileURLToPath(new URL("../migrations/0016_cvi_acquisition_revocation_serialization_draft.sql",import.meta.url));
+  await a.unsafe(await readFile(migration,"utf8"));
+  const source=fileURLToPath(new URL("../../../artifacts/api-server/src/lib/cvi-receipt-nonce-admission.ts",import.meta.url));
+  const code=await readFile(source,"utf8");
+  const match=code.match(/export const CVI_ATOMIC_RECEIPT_LEDGER_SQL = \[([\s\S]*?)\]\.join\(" "\) as string;/);
+  assert.ok(match);
+  const fragments=match[1]!.split("\n").map(x=>x.trim())
+    .filter(x=>x.startsWith('"')).map(x=>JSON.parse(x.replace(/,$/,"")) as string);
+  const insertSQL=fragments.join(" ");
+  const org=(await a.unsafe<{id:string}[]>("SELECT id FROM organizations WHERE slug='cvi-nonce-proof'"))[0]!.id;
+  const site=(await a.unsafe<{id:string}[]>("SELECT id FROM sites WHERE domain='nonce.cvi.test'"))[0]!.id;
+  const connection=(await a.unsafe<{id:string}[]>("SELECT id FROM connections WHERE site_id=$1::uuid",[site]))[0]!.id;
+  const session=(await a.unsafe<{id:string}[]>("SELECT id FROM auth_sessions WHERE subject='cvi-nonce-subject'"))[0]!.id;
+  const membership=(await a.unsafe<{id:string}[]>(
+    "SELECT id FROM cvi_organization_memberships WHERE organization_id=$1::uuid AND auth_subject='cvi-nonce-subject'",[org]))[0]!.id;
+  const grant=(await a.unsafe<{id:string}[]>(
+    "SELECT id FROM cvi_site_read_grants WHERE organization_membership_id=$1::uuid AND permission='read_evidence'",[membership]))[0]!.id;
+  const bPid=(await b.unsafe<{pid:number}[]>("SELECT pg_backend_pid()::int AS pid"))[0]!.pid;
+  await a.unsafe("UPDATE connections SET scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'], status='connected' WHERE id=$1::uuid",[connection]);
+  await a.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[membership]);
+  await a.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+  let ordinal=0;
+  async function certifyRevocationRace(table:"membership"|"grant") {
+    ordinal++;
+    const target=table==="membership"
+      ? {sql:"UPDATE cvi_organization_memberships SET status='revoked',revoked_at=now() WHERE id=$1::uuid",id:membership}
+      : {sql:"UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=$1::uuid",id:grant};
+    await a.unsafe("BEGIN");
+    try {
+      await a.unsafe(target.sql,[target.id]);
+      const pending=b.unsafe<{acquisition_id:string}[]>(insertSQL,[
+        "cvi-1c10-race-"+ordinal,org,site,"cvi-nonce-subject",session,connection,
+        "cvi-1c10-nonce-"+ordinal,"sc-domain:nonce.cvi.test",
+        "d".repeat(64),"2026-10-09T00:00:00Z","2026-10-09T00:00:01Z",
+      ]).then(
+        rows=>({rows,error:null as null|unknown}),
+        error=>({rows:null as null|{acquisition_id:string}[],error}),
+      );
+      let sawLock=false;
+      for(let i=0;i<50;i++){
+        const observed=await monitor.unsafe<{wait_event_type:string|null}[]>(
+          "SELECT wait_event_type FROM pg_stat_activity WHERE pid=$1",[bPid]);
+        if(observed[0]?.wait_event_type==="Lock"){sawLock=true;break;}
+        await monitor.unsafe("SELECT pg_sleep(0.05)");
+      }
+      assert.equal(sawLock,true,table+" revocation lock must stall admission");
+      await a.unsafe("COMMIT");
+      const finished=await pending;
+      assert.equal(finished.rows,null,"no acquisition admitted during revocation race");
+      assert.match(String((finished.error as {message?:string})?.message),/cvi_acquisition_read_grant_invalid/);
+    } catch(error) {
+      await a.unsafe("ROLLBACK").catch(()=>{});
+      throw error;
+    }
+    const restore=table==="membership"
+      ? "UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid"
+      : "UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid";
+    await a.unsafe(restore,[target.id]);
+  }
+  await certifyRevocationRace("membership");
+  await certifyRevocationRace("grant");
+  const rows=await a.unsafe<{n:number}[]>(
+    "SELECT COUNT(*)::int AS n FROM cvi_acquisition_nonce_ledger WHERE acquisition_id LIKE 'cvi-1c10-%'");
+  assert.equal(rows[0]?.n,0,"all admission races denied and no replay tombstones forged");
+});
