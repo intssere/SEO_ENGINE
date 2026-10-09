@@ -114,9 +114,7 @@ SELECT
         OR
         (c.provider='shopify'
           AND 'read_content'=ANY(c.scopes)
-          AND c.external_account_id ~ '^[a-z0-9][a-z0-9-]*\\.myshopify\\.com
-` as const;
-)
+          AND c.external_account_id ~ '^[a-z0-9][a-z0-9-]*\.myshopify\.com$')
       )
       AND NOT EXISTS (
         SELECT 1 FROM unnest(c.scopes) AS requested_scope(scope)
