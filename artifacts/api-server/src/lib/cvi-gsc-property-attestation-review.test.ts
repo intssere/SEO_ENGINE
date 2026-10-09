@@ -11,8 +11,8 @@ const base = {
   evaluatedAt:"2026-10-09T04:03:00.000Z",
   maxAgeSeconds:300,
   connectionIdentityFingerprint:"a".repeat(64),
-  grantedScopes:[GSC_READONLY_SCOPE],
-  observation:{siteEntry:[{siteUrl:"sc-domain:example.com",permissionLevel:"siteFullUser"}]},
+  grantedScopes:[GSC_READONLY_SCOPE] as string[],
+  observation:{siteEntry:[{siteUrl:"sc-domain:example.com",permissionLevel:"siteFullUser"}]} as unknown,
 };
 const check = (patch: Partial<typeof base> = {}) => reviewCviGscPropertyAttestation({...base,...patch});
 
