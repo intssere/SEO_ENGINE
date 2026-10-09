@@ -28,3 +28,9 @@ Date: 2026-10-09. Status: DRAFT, exact-head CI rerun pending. NO authorization o
 1. Monitor/check exact-head full CI for repaired #951 and #954; verify both their dedicated DB proof and full TS typecheck.
 2. Repair failures on respective PR branches, refresh dependent stacks without unauthorized rebase/merge.
 3. Review provider-specific scope semantics and independent attestation source before enabling any authorization.
+
+## Follow-up repair status (2026-10-09)
+- The first repair accidentally serialized the multiline SQL extractor regex with double-escaped backslashes; corrected to a true `[\\s\\S]` character class in both dependent branches.
+- Latest PR #951 HEAD `19985b0e1ec5ec2aa80c4dfee9fdf0ab3c327e67`; proof branch `ugp-cvi-1b4e-ci-proof-20261009-i-r3`, run 37904321622.
+- Latest PR #954 HEAD `d2e677edf17fdd7ba6058385ecca7addd5d0a7af`; proof branch `ugp-cvi-1b4j-ci-proof-20261009-r3`, run 37904329024.
+- Both exact-head runs remain pending at this checkpoint. Do not call either increment CI-certified without success for the corresponding exact head.
