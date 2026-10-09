@@ -42,7 +42,7 @@ export const CVI_GSC_SCOPED_READBACK_SQL = [
   'AND g.permission=\'read_evidence\' AND g.status=\'active\'',
   'AND g.revoked_at IS NULL AND g.effective_at<=clock_timestamp()',
   'AND (g.expires_at IS NULL OR g.expires_at>clock_timestamp())',
-  'FOR SHARE OF s,c,se,m,g LIMIT 2',
+  'LIMIT 2 FOR SHARE OF s,c,se,m,g',
 ].join(" ");
 
 export interface CviScopedReadbackStore {
