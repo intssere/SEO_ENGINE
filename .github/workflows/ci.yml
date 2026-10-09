@@ -166,6 +166,7 @@ jobs:
         run: |
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f docs/universal-growth-platform/sql/UGP-11.1D1-DISPOSABLE-TRANSPORT-FIXTURE.sql
           pnpm --filter @workspace/api-server exec tsx --test src/lib/ugp-11-1d2-transport.ephemeral.test.ts
+          pnpm --filter @workspace/api-server exec tsx --test src/lib/ugp-11-1d3-postgres-store.ephemeral.test.ts
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -Atc "SELECT COUNT(*) FROM ugp11_transport_fixture.jobs" | grep -q '^0$'
 
       - name: Test all current workspace packages
