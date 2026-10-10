@@ -91,6 +91,7 @@ jobs:
           push-to-registry: true
 
       - name: Verify registry digest and emit release receipt
+        id: verify_digest
         shell: bash
         run: |
           set -euo pipefail
@@ -98,6 +99,7 @@ jobs:
           DIGEST="$(docker buildx imagetools inspect "$TAG" --format '{{json .Manifest.Digest}}' | tr -d '"')"
           test -n "$DIGEST"
           test "$DIGEST" = "${{ steps.build.outputs.digest }}"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
           printf '%s\n' \
             "source_sha=${{ steps.identity.outputs.source_sha }}" \
             "source_tree=${{ steps.identity.outputs.source_tree }}" \
@@ -109,3 +111,26 @@ jobs:
             "provenance=mode=max" \
             "sbom=true" \
             "attestation=published"
+
+      - name: Produce sanitized verified receipt artifact
+        id: sanitized_receipt
+        shell: bash
+        env:
+          RECEIPT_SOURCE_SHA: ${{ steps.identity.outputs.source_sha }}
+          RECEIPT_SOURCE_TREE: ${{ steps.identity.outputs.source_tree }}
+          RECEIPT_VERIFIED_DIGEST: ${{ steps.verify_digest.outputs.digest }}
+          RECEIPT_IMAGE: ghcr.io/intssere/seo-engine
+        run: |
+          set -euo pipefail
+          node --test scripts/p12-2-l10-50-release-receipt.test.mjs
+          node scripts/p12-2-l10-50-release-receipt.mjs
+
+      - name: Upload sanitized receipt and checksum only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: production-release-receipt-${{ github.run_id }}-${{ steps.identity.outputs.source_sha }}
+          path: ${{ steps.sanitized_receipt.outputs.receipt_dir }}/
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
+          include-hidden-files: false
