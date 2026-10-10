@@ -15,3 +15,11 @@ Predecessor CVI-1C.29: draft PR #1040 at exact HEAD `d8aba944c781323e47483e4e42c
 
 ## Status
 Audit prepared on `workstream/cvi-1c30-between-read-revocation-pr1040-dependent`. Implementation and exact-head CI remain pending.
+
+## Exact-head certification receipt
+- Implementation HEAD: `6b9d9caf775fe56511595fc4fc8192e8a2de307a`
+- Full workflow https://github.com/intssere/SEO_ENGINE/actions/runs/38052141985 — completed SUCCESS
+- Validation job `114213244587` — completed SUCCESS with no failed steps
+- Earlier workflow `38049688121` failed TypeScript typecheck; the repair is incorporated in the certified implementation HEAD.
+- PR #1044 remains draft/unmerged. No deployment, provider access or production database activity.
+- This documentation update creates a later commit requiring its own final-HEAD check.
