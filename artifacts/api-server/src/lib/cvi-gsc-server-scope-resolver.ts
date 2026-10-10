@@ -44,6 +44,12 @@ export type CviGscServerScope = Readonly<{
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const ID=/^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,255}$/;
 const ISO=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\.\d{3}Z$/;
+function instant(value:unknown):number|null {
+ if(typeof value!=="string"||!ISO.test(value))return null;
+ const ms=Date.parse(value);
+ return Number.isFinite(ms)&&new Date(ms).toISOString()===value?ms:null;
+}
+
 /** Private, read-only candidate resolver. No session authentication is done
  * by this function. The principal MUST have come from protected server auth.
  * A returned scope does not permit future reads without a new DB ACL check.
@@ -53,10 +59,10 @@ export function createCviGscServerScopeResolver(sql:postgres.Sql) {
   acquisitionId:string;principal:AuthPrincipal;now:string;
  }>):Promise<CviGscServerScope|null>=>{
   const p=input?.principal;
-  const checkedAt=typeof input?.now==="string"&&ISO.test(input.now)?Date.parse(input.now):NaN;
-  const expires=p && typeof p.expiresAt==="string"&&ISO.test(p.expiresAt)?Date.parse(p.expiresAt):NaN;
+  const checkedAt=instant(input?.now);
+  const expires=instant(p?.expiresAt);
   if(!p||!ID.test(input.acquisitionId)||!ID.test(p.subject)||!UUID.test(p.sessionId)||
-    !Number.isFinite(checkedAt)||!Number.isFinite(expires)||expires<=checkedAt)
+    checkedAt===null||expires===null||expires<=checkedAt)
    return null;
   const rows=await sql.unsafe<Record<string,unknown>[]>(
    CVI_GSC_SERVER_SCOPE_RESOLVER_SQL,[input.acquisitionId,p.subject,p.sessionId],
