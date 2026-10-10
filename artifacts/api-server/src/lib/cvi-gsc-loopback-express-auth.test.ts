@@ -24,6 +24,8 @@ async function runLoopback(input:Readonly<{
   changed.set(key,process.env[key]);
   process.env[key]=AUTH_ENV[key as keyof typeof AUTH_ENV];
  }
+ changed.set("DATABASE_URL",process.env.DATABASE_URL);
+ delete process.env.DATABASE_URL;
  if(!input.enabled) process.env.AUTH_ENFORCEMENT_ENABLED="false";
  if(!input.configured) process.env.AUTH_SESSION_SECRET="tiny";
  // For this test, no database URL is needed. Missing/forged cookies never
