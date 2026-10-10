@@ -53,9 +53,9 @@ export function reviewOfflineOidcIdentityFixture(token:string,config:FixtureVeri
  if(payload.iss!==config.issuer||payload.aud!==config.audience||typeof payload.sub!=="string"||
    !ID.test(payload.sub))return deny("issuer_audience_mismatch",true);
  const now=Math.floor(at/1000);
- if(!Number.isSafeInteger(payload.iat)||!Number.isSafeInteger(payload.exp)||
+ if(typeof payload.iat!=="number"||typeof payload.exp!=="number"||\n   !Number.isSafeInteger(payload.iat)||!Number.isSafeInteger(payload.exp)||
    payload.iat>now||payload.exp<=now||payload.exp<=payload.iat||
-   (payload.nbf!==undefined&&(!Number.isSafeInteger(payload.nbf)||payload.nbf>now)))
+   (payload.nbf!==undefined&&(typeof payload.nbf!=="number"||!Number.isSafeInteger(payload.nbf)||payload.nbf>now)))
   return deny("invalid_time",true,true);
  // Offline caller-supplied public key is NEVER a verified IDP trust anchor.
  return deny("offline_fixture_not_authoritative",true,true);
