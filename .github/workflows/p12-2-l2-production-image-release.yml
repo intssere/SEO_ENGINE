@@ -43,6 +43,8 @@ jobs:
       - name: Verify source identity and authorization
         id: identity
         shell: bash
+        env:
+          AUTHORIZATION_INPUT: ${{ inputs.authorization }}
         run: |
           set -euo pipefail
           SOURCE_SHA="$(git rev-parse HEAD)"
@@ -50,10 +52,9 @@ jobs:
           test "$SOURCE_SHA" = "$GITHUB_SHA"
           test "$(git status --porcelain=v1 | wc -l)" -eq 0
           EXPECTED_AUTH="AUTHORIZE:P12_2_L2_PROD_IMAGE_RELEASE:${SOURCE_SHA}:${SOURCE_TREE}"
-          test "${{ inputs.authorization }}" = "$EXPECTED_AUTH"
+          test "$AUTHORIZATION_INPUT" = "$EXPECTED_AUTH"
           echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
           echo "source_tree=$SOURCE_TREE" >> "$GITHUB_OUTPUT"
-          echo "authorization=$EXPECTED_AUTH" >> "$GITHUB_OUTPUT"
 
       - name: Login to GHCR
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
@@ -107,5 +108,4 @@ jobs:
             "target=runtime" \
             "provenance=mode=max" \
             "sbom=true" \
-            "attestation=published" \
-            "authorization=${{ steps.identity.outputs.authorization }}"
+            "attestation=published"
