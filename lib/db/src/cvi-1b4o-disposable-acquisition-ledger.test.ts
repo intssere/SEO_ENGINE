@@ -535,3 +535,59 @@ test("CVI-1C.24 private Express/DB two-read composition enforces revocation betw
  assert.equal((await normal(input)).status,"DENY","revoked DB session denies even a valid Express-shaped principal");
  await admin.unsafe("UPDATE auth_sessions SET revoked_at=NULL WHERE id=$1::uuid",[session]);
 });
+
+
+test("CVI-1C.27 real app cookie session roundtrip is canonical and revocation-aware",async t=>{
+ const url=disposableUrl();
+ if(!url){t.skip("explicit disposable localhost PostgreSQL required");return;}
+ const sql=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+ t.after(async()=>{await sql.end({timeout:1});});
+ const priorUrl=process.env.DATABASE_URL;
+ process.env.DATABASE_URL=url;
+ t.after(()=>{
+  if(priorUrl===undefined)delete process.env.DATABASE_URL;
+  else process.env.DATABASE_URL=priorUrl;
+ });
+ // Runtime-only imports avoid lib/db TypeScript rootDir dragging api-server sources.
+ const authPath=fileURLToPath(new URL(
+  "../../../artifacts/api-server/src/lib/auth-foundation.ts",import.meta.url));
+ const gatePath=fileURLToPath(new URL(
+  "../../../artifacts/api-server/src/lib/cvi-gsc-express-auth-gate.ts",import.meta.url));
+ const {createAuthSession,loadAuthSession,revokeAuthSession,sha256}=await import(authPath);
+ const {reviewCviExpressAuthenticatedPrincipal}=await import(gatePath);
+ const now=new Date();
+ const subject="cvi-1c27-session-proof";
+ const config={
+  sessionSecret:"a".repeat(48),
+  enabled:true,configured:true,
+  publicOrigin:"https://example.test",googleClientId:"offline-test",
+  googleClientSecret:"offline-test",adminEmails:new Set<string>(),
+  operatorEmails:new Set<string>(),viewerEmails:new Set<string>(),issues:[],
+ };
+ const issued=await createAuthSession({
+  subject,email:"roundtrip@example.test",displayName:null,role:"viewer",
+  config,now,
+ });
+ // Credential is a one-time random test token; never emit it in failure messages.
+ assert.ok(issued.token.length>=32);
+ assert.equal(issued.principal.subject,subject);
+ const session=await loadAuthSession(issued.token,new Date(now.getTime()+1000));
+ assert.ok(session,"real application session lookup must accept valid stored token");
+ assert.equal(session!.subject,subject);
+ assert.equal(session!.sessionId,issued.principal.sessionId);
+ const gate=reviewCviExpressAuthenticatedPrincipal({
+  req:{auth:session!},config:{enabled:true,configured:true},
+  evaluatedAt:new Date(now.getTime()+2000).toISOString(),
+ });
+ assert.equal(gate.status,"AUTH_CONTEXT_PRESENT_REVIEW_ONLY",
+  "loaded DB timestamps must satisfy canonical CVI session requirements");
+ assert.equal(await loadAuthSession("forged-unrecognized-cookie",new Date(now.getTime()+2000)),null);
+ const stored=(await sql.unsafe<{token_hash:string}[]>(
+  "SELECT token_hash FROM auth_sessions WHERE id=$1::uuid",[session!.sessionId]))[0];
+ assert.ok(stored);
+ assert.equal(stored!.token_hash,sha256(issued.token));
+ assert.notEqual(stored!.token_hash,issued.token);
+ await revokeAuthSession(issued.token);
+ assert.equal(await loadAuthSession(issued.token,new Date(now.getTime()+3000)),null,
+  "revoked stored cookie must never reload");
+});
