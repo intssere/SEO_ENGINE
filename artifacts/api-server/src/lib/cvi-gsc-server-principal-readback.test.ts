@@ -51,14 +51,14 @@ test("supplied identity in lineage cannot override server principal or server si
  assert.equal(calls,0);
 });
 test("missing principal, expired session, invalid site binding and source failures deny before query",async()=>{
- const read=(override:Partial<ReturnType<typeof context>>)=>createCviServerPrincipalReadback({...context(),...override});
+
  for(const deps of [
   {getAuthenticatedPrincipal:async()=>null},
   {getAuthenticatedPrincipal:async()=>({...principal,expiresAt:"2026-10-10T00:01:00.000Z"})},
   {getServerBoundSiteConnection:async()=>({tenantId:"unverified",siteId,connectionId})},
   {getAuthenticatedPrincipal:async()=>{throw Error("secret");}},
  ]) {
-  const result=await read(deps)({acquisitionId:"acq-1",lineage});
+  const result=await createCviServerPrincipalReadback({...context(),...deps})({acquisitionId:"acq-1",lineage});
   assert.equal(result.status,"DENY");
  }
 });
