@@ -5,7 +5,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import postgres from "postgres";
 import { attachAuthSession, requireApiAuthentication } from "../middlewares/auth-security.js";
-import { AUTH_SESSION_COOKIE, AUTH_IDLE_TTL_MS, createAuthSession, loadAuthConfig, revokeAuthSession, rotateAuthSessionToken, sha256 } from "./auth-foundation.js";
+import { AUTH_SESSION_COOKIE, AUTH_IDLE_TTL_MS, createAuthSession, loadAuthConfig, loadAuthSession, revokeAuthSession, rotateAuthSessionToken, sha256 } from "./auth-foundation.js";
 import { reviewCviExpressAuthenticatedPrincipal } from "./cvi-gsc-express-auth-gate.js";
 
 const EXPECTED_DB = "seo_engine_cvi_disposable";
@@ -178,6 +178,18 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await rival.end({timeout:1});
       await observer.end({timeout:1});
     }
+    // CVI-1C.35: skewed application time cannot mint future idle state.
+    const skew=await createAuthSession({subject:"cvi-clock-skew",email:"synthetic-viewer@example.test",displayName:null,role:"viewer",config});
+    const future=new Date(Date.now()+365*24*60*60*1000);
+    const previousDate=new Date(0);
+    assert.ok(await loadAuthSession(skew.token,future),"future caller clock does not deny a live DB session");
+    const touched=await sql<{delta:number}[]>`SELECT abs(extract(epoch FROM (last_seen_at-clock_timestamp())))::float AS delta
+      FROM auth_sessions WHERE id=${skew.principal.sessionId}::uuid`;
+    assert.ok((touched[0]?.delta??Infinity)<30,"last_seen_at stays near PostgreSQL time");
+    assert.ok(await loadAuthSession(skew.token,previousDate),"past caller clock does not deny valid DB session");
+    await sql`UPDATE auth_sessions SET last_seen_at=clock_timestamp()-interval '40 minutes' WHERE id=${skew.principal.sessionId}::uuid`;
+    assert.equal(await loadAuthSession(skew.token,future),null,"future caller time cannot revive idle-expired session");
+    assert.equal(await loadAuthSession(skew.token,previousDate),null,"past caller time cannot revive idle-expired session");
     process.env.AUTH_ENFORCEMENT_ENABLED="false";
     assert.equal((await request(rotated)).status,403);
     process.env.AUTH_ENFORCEMENT_ENABLED="true";

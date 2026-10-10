@@ -318,6 +318,8 @@ export async function createAuthSession(input: {
 
 export async function loadAuthSession(token: string, now = new Date()): Promise<AuthPrincipal | null> {
   if (!token) return null;
+  // Retain the legacy optional argument for callers; persisted authorization uses database time.
+  void now;
   const sql = database();
   try {
     const rows = await sql<Array<{
@@ -331,10 +333,10 @@ export async function loadAuthSession(token: string, now = new Date()): Promise<
       lastSeenAt: string;
       expiresAt: string;
     }>>`
-      UPDATE auth_sessions SET last_seen_at=${now.toISOString()}::timestamptz
+      UPDATE auth_sessions SET last_seen_at=clock_timestamp()
       WHERE token_hash=${sha256(token)} AND revoked_at IS NULL
-        AND expires_at>${now.toISOString()}::timestamptz
-        AND last_seen_at>${new Date(now.getTime() - AUTH_IDLE_TTL_MS).toISOString()}::timestamptz
+        AND expires_at>clock_timestamp()
+        AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
       RETURNING id::text,subject,email,display_name AS "displayName",role,
         csrf_token_hash AS "csrfTokenHash",created_at::text AS "createdAt",
         last_seen_at::text AS "lastSeenAt",expires_at::text AS "expiresAt"`;
@@ -348,7 +350,7 @@ export async function loadAuthSession(token: string, now = new Date()): Promise<
       role: row.role,
       csrfTokenHash: row.csrfTokenHash,
       issuedAt: new Date(row.createdAt).toISOString(),
-      lastSeenAt: now.toISOString(),
+      lastSeenAt: new Date(row.lastSeenAt).toISOString(),
       expiresAt: new Date(row.expiresAt).toISOString(),
     };
   } finally {
