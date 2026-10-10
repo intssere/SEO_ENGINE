@@ -10,3 +10,8 @@ This change does not yet simulate significant skew between the application clock
 
 ## Restrictions
 Proof-only isolated localhost PostgreSQL; no production schema/data, Google provider calls, publishing, public CVI route, merge or deployment. CI certification pending.
+
+## Certified implementation receipt
+- HEAD `90329ecaa8ff3e105aab1a5b4a7106a662392eee`
+- Full CI https://github.com/intssere/SEO_ENGINE/actions/runs/38075490427 — SUCCESS; job `114281471310`
+- No merge or deployment. A documentation-only update changes HEAD and requires separate exact-head certification.
