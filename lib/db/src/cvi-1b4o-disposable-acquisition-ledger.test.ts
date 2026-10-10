@@ -414,7 +414,28 @@ test("CVI-1C.22 real server scope resolver rejects revoked session, membership a
    expiresAt:"2099-01-01T00:00:00.000Z",
  };
  const request={acquisitionId:"cvi-1c15-acq-1",principal,now:"2026-10-10T12:00:00.000Z"};
- assert.deepEqual(await resolver(request),{tenantId:org,siteId:site,connectionId:conn});
+ const eligibility=await db.unsafe<Record<string,unknown>[]>(`
+ SELECT a.acquisition_id,a.disposition,a.auth_session_id::text AS ledger_session_id,
+   se.id IS NOT NULL AS session_joined,se.revoked_at AS session_revoked,
+   se.expires_at AS session_expires,s.is_active AS site_active,
+   c.status AS connection_status,c.provider AS provider,c.scopes AS scopes,
+   m.status AS member_status,m.revoked_at AS member_revoked,
+   g.status AS grant_status,g.revoked_at AS grant_revoked,
+   g.permission AS grant_permission
+ FROM cvi_acquisition_nonce_ledger a
+ LEFT JOIN sites s ON s.id=a.site_id
+ LEFT JOIN connections c ON c.id=a.connection_id
+ LEFT JOIN auth_sessions se ON se.id=a.auth_session_id
+ LEFT JOIN cvi_organization_memberships m ON m.organization_id=a.tenant_id
+   AND m.auth_subject=a.auth_subject
+ LEFT JOIN cvi_site_read_grants g ON g.organization_membership_id=m.id
+   AND g.site_id=a.site_id AND g.permission='read_evidence'
+ WHERE a.acquisition_id=$1`,[request.acquisitionId]);
+ assert.equal(eligibility.length,1,"fixture acquisition must exist");
+ const resolved=await resolver(request);
+ assert.deepEqual(resolved,{tenantId:org,siteId:site,connectionId:conn},
+   "scope eligibility: "+JSON.stringify(eligibility));
+
  assert.equal(await resolver({...request,acquisitionId:"missing"}),null);
  assert.equal(await resolver({...request,principal:{...principal,sessionId:"ffffffff-ffff-4fff-8fff-ffffffffffff"}}),null);
  assert.equal(await resolver({...request,principal:{...principal,subject:"intruder"}}),null);
