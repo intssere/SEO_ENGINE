@@ -9,3 +9,6 @@ Extend disposable PostgreSQL private historical composition tests. Rotate a synt
 Existing session loader performs a SELECT followed by a separate last-seen UPDATE; this is a separate atomicity/revocation race to audit rather than claiming resolved here. Existing rotation returns a new token without verifying whether the UPDATE matched; assess separately before production approval. A rotated token does not itself create tenant/site authorization, and a historical acquisition is never an execution or publishing capability.
 
 No production database, public route, live provider, CMS action, merge or deployment. Certification pending exact-head proof CI.
+
+## Exact-head certification
+Implementation HEAD `06f25c85da5789b2550095a1a85d33f2a60428fc` passed full CI at https://github.com/intssere/SEO_ENGINE/actions/runs/38055078990 (job `114221760963`, SUCCESS). PR #1050 remains draft/unmerged. Documentation-only update requires fresh exact-head verification.
