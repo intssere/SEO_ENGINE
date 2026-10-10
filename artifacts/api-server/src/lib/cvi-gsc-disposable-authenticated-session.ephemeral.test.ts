@@ -111,6 +111,56 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     assert.equal((await request(rotated)).status,200);
     await revokeAuthSession(rotated);
     assert.equal((await request(rotated)).status,401);
+    // CVI-1C.33: concurrent revocation must defeat pending session refresh
+    // and rotation. The synthetic rival transaction holds the row lock until
+    // the competing HTTP/rotation operation is observed as lock-blocked.
+    const rival = postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const observer = postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      for(const mode of ["load","rotate"] as const) {
+        const subject = await createAuthSession({
+          subject:"cvi-concurrency-"+mode,email:"synthetic-admin@example.test",
+          displayName:null,role:"admin",config,
+        });
+        await rival.unsafe("BEGIN");
+        let pending:Promise<unknown>|undefined;
+        try {
+          await rival`UPDATE auth_sessions SET revoked_at=now() WHERE id=${subject.principal.sessionId}::uuid`;
+          const competing = mode==="load"
+            ? request(subject.token)
+            : rotateAuthSessionToken(subject.principal.sessionId);
+          pending = Promise.resolve(competing);
+          const lockWait = async()=>{
+            for(let attempt=0;attempt<60;attempt++){
+              const blocked = await observer<{n:number}[]>`
+                SELECT count(*)::int AS n FROM pg_stat_activity
+                WHERE datname=current_database() AND wait_event_type='Lock'
+                  AND pid<>pg_backend_pid()`;
+              if((blocked[0]?.n??0)>0)return;
+              await new Promise(resolve=>setTimeout(resolve,30));
+            }
+            throw Error("cvi_1c33_competing_operation_not_lock_blocked");
+          };
+          await lockWait();
+          await rival.unsafe("COMMIT");
+          if(mode==="load"){
+            const outcome=await pending as Awaited<ReturnType<typeof request>>;
+            assert.equal(outcome.status,401,"revoked session cannot win a concurrent load");
+          }else{
+            await assert.rejects(pending,/auth_session_rotation_not_eligible/,
+              "revoked session cannot win a concurrent rotation");
+          }
+          pending=undefined;
+          assert.equal((await request(subject.token)).status,401);
+        }finally{
+          await rival.unsafe("ROLLBACK").catch(()=>undefined);
+          if(pending)await pending.catch(()=>undefined);
+        }
+      }
+    }finally{
+      await rival.end({timeout:1});
+      await observer.end({timeout:1});
+    }
     process.env.AUTH_ENFORCEMENT_ENABLED="false";
     assert.equal((await request(rotated)).status,403);
     process.env.AUTH_ENFORCEMENT_ENABLED="true";
