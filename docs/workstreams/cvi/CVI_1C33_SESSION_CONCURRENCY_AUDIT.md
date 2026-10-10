@@ -15,3 +15,6 @@ Parent CVI-1C.32 PR #1052 at exact HEAD `a2636fb862edd0f916ea3261a8dcbbae791cba1
 
 ## Restrictions
 Draft-only engineering; no production database, production migration, live Google access, new public route, CMS action, merge or deployment. The current file records a source-backed audit and proposed certification; no implementation or CI certification of CVI-1C.33 is claimed.
+
+## Implemented concurrency increment
+Extended the existing CVI-1C.27 disposable PostgreSQL authenticated-HTTP test with two lock-serialized cases: a real authenticated HTTP cookie session refresh racing revocation, and token rotation racing revocation. The independent PostgreSQL observer requires an actual `pg_stat_activity.wait_event_type='Lock'` before committing the synthetic revocation. After commit the request must be HTTP 401, rotation must reject as ineligible, and the old token must not authenticate. The source preserves all existing authorization and publishing denials. Exact-head CI has not yet been certified. Additional clock-skew/role-CSRF concurrency coverage remains future work.
