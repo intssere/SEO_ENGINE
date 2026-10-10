@@ -169,6 +169,11 @@ test("CVI-1C.28 disposable authenticated tenant/site private composition", async
   await revokeAuthSession(replacement);
   assert.equal(await loadAuthSession(replacement),null,"revoked rotated token must fail");
   assert.equal((await read()).status,"DENY");
+  // CVI-1C.32: rotation must not return a usable token for revoked or missing sessions.
+  await assert.rejects(rotateAuthSessionToken(principal.sessionId),/auth_session_rotation_not_eligible/);
+  await assert.rejects(rotateAuthSessionToken("00000000-0000-4000-8000-000000000001"),/auth_session_rotation_not_eligible/);
+  const remaining=await sql<{revoked:boolean}[]>`SELECT revoked_at IS NOT NULL AS revoked FROM auth_sessions WHERE id=${principal.sessionId}::uuid`;
+  assert.equal(remaining[0]?.revoked,true);
  }finally{
   await sql.end({timeout:1});
   for(const [key,value] of old)if(value===undefined)delete process.env[key];else process.env[key]=value;
