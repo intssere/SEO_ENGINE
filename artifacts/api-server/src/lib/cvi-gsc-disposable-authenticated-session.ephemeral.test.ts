@@ -109,6 +109,23 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     const rotated = await rotateAuthSessionToken(b.principal.sessionId);
     assert.equal((await request(b.token)).status,401);
     assert.equal((await request(rotated)).status,200);
+    // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
+    assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
+    assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
+    const rotatedRow=await sql<{role:string;csrf:string}[]>`
+      SELECT role,csrf_token_hash AS csrf FROM auth_sessions
+      WHERE id=${b.principal.sessionId}::uuid`;
+    assert.equal(rotatedRow[0]?.role,"admin");
+    assert.equal(rotatedRow[0]?.csrf,sha256(b.csrfToken));
+    // A future application timestamp must never extend a persisted session's
+    // actual expiry; absolute expiry remains checked on the DB row.
+    const past = await createAuthSession({
+      subject:"cvi-clock-expired",email:"synthetic-viewer@example.test",
+      displayName:null,role:"viewer",config,
+    });
+    await sql`UPDATE auth_sessions SET expires_at=now()-interval '1 minute'
+      WHERE id=${past.principal.sessionId}::uuid`;
+    assert.equal((await request(past.token)).status,401);
     await revokeAuthSession(rotated);
     assert.equal((await request(rotated)).status,401);
     // CVI-1C.33: concurrent revocation must defeat pending session refresh
