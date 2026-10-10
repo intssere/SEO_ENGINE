@@ -452,3 +452,86 @@ test("CVI-1C.22 real server scope resolver rejects revoked session, membership a
  assert.equal(await resolver(request),null,"revoked Google connection denies scope");
  await db.unsafe("UPDATE connections SET status='connected' WHERE id=$1::uuid",[conn]);
 });
+
+
+test("CVI-1C.24 private Express/DB two-read composition enforces revocation between statements",async t=>{
+ const url=disposableUrl();
+ if(!url){t.skip("explicit disposable localhost PostgreSQL required");return;}
+ const db=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+ const admin=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+ t.after(async()=>{await db.end({timeout:1});await admin.end({timeout:1});});
+ const compositionPath=fileURLToPath(new URL(
+  "../../../artifacts/api-server/src/lib/cvi-gsc-private-express-db-composition.ts",import.meta.url));
+ const {createCviPrivateExpressDbComposition}=await import(compositionPath);
+ const org=(await admin.unsafe<{id:string}[]>("SELECT id FROM organizations WHERE slug='cvi-nonce-proof'"))[0]!.id;
+ const site=(await admin.unsafe<{id:string}[]>("SELECT id FROM sites WHERE domain='nonce.cvi.test'"))[0]!.id;
+ const conn=(await admin.unsafe<{id:string}[]>("SELECT id FROM connections WHERE site_id=$1::uuid",[site]))[0]!.id;
+ const session=(await admin.unsafe<{id:string}[]>("SELECT id FROM auth_sessions WHERE subject='cvi-nonce-subject'"))[0]!.id;
+ const member=(await admin.unsafe<{id:string}[]>(
+  "SELECT id FROM cvi_organization_memberships WHERE organization_id=$1::uuid AND auth_subject='cvi-nonce-subject'",[org]))[0]!.id;
+ const grant=(await admin.unsafe<{id:string}[]>(
+  "SELECT id FROM cvi_site_read_grants WHERE organization_membership_id=$1::uuid AND permission='read_evidence'",[member]))[0]!.id;
+ await admin.unsafe("UPDATE connections SET status='connected',scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=$1::uuid",[conn]);
+ await admin.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[member]);
+ await admin.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+ await admin.unsafe("UPDATE auth_sessions SET revoked_at=NULL WHERE id=$1::uuid",[session]);
+ const principal={
+  sessionId:session,subject:"cvi-nonce-subject",email:"nonce@example.test",
+  displayName:null,role:"viewer" as const,csrfTokenHash:"f".repeat(64),
+  issuedAt:"2026-10-10T00:00:00.000Z",
+  lastSeenAt:"2026-10-10T00:01:00.000Z",
+  expiresAt:"2099-01-01T00:00:00.000Z",
+ };
+ const acquisitionId="cvi-1c15-acq-1";
+ const lineage={
+  version:"cvi-1c13-gsc-acquisition-lineage-v1" as const,
+  status:"UNTRUSTED_CAPTURE_REVIEW_ONLY" as const,reasons:[] as string[],
+  tenantId:org,siteId:site,connectionId:conn,
+  authSubject:principal.subject,authSessionId:session,
+  acquisitionId,requestNonce:"cvi-1c15-nonce-1",
+  requestedResource:"sc-domain:nonce.cvi.test",
+  observationFingerprint:"e".repeat(64),attestationFingerprint:"b".repeat(64),
+  packetFingerprint:"c".repeat(64),requestIdentityConsistent:true as const,
+  independentProviderOriginVerified:false as const,
+  independentOAuthCustodyVerified:false as const,
+  durableReplayVerified:false as const,executionAuthorized:false as const,
+  publicationAuthorized:false as const,
+ };
+ const input={req:{auth:principal},acquisitionId,lineage};
+ const config={enabled:true,configured:true};
+ const now=()=>"2026-10-10T00:03:00.000Z";
+ const normal=createCviPrivateExpressDbComposition({sql:db,authConfig:config,now});
+ const accepted=await normal(input);
+ assert.equal(accepted.status,"UNTRUSTED_HISTORICAL_REVIEW_ONLY");
+ assert.equal(accepted.publicationAuthorized,false);
+ assert.equal(accepted.executionAuthorized,false);
+ assert.equal(accepted.providerOriginVerified,false);
+ const deniedAuth=await createCviPrivateExpressDbComposition({
+  sql:db,authConfig:{enabled:false,configured:true},now,
+ })(input);
+ assert.equal(deniedAuth.status,"DENY","CVI must never inherit optional application auth");
+ const crossTenant=await normal({...input,lineage:{...lineage,tenantId:"ffffffff-ffff-4fff-8fff-ffffffffffff"}});
+ assert.equal(crossTenant.status,"DENY");
+ // The first resolver query succeeds. Revoke the grant *between* resolver
+ // and historical readback. The second query must recheck current ACL.
+ let selects=0;
+ const interceptSql={unsafe:async(query:string,args:string[])=>{
+  const result=await db.unsafe(query,args);
+  selects++;
+  if(selects===1){
+   await admin.unsafe("UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[grant]);
+  }
+  return result;
+ }} as unknown as typeof db;
+ const checked=createCviPrivateExpressDbComposition({
+  sql:interceptSql,authConfig:config,now,
+ });
+ const deniedMidway=await checked(input);
+ assert.equal(selects,2,"resolver and independent readback both execute");
+ assert.equal(deniedMidway.status,"DENY","revocation between reads denies historical access");
+ assert.equal(deniedMidway.publicationAuthorized,false);
+ await admin.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+ await admin.unsafe("UPDATE auth_sessions SET revoked_at=now() WHERE id=$1::uuid",[session]);
+ assert.equal((await normal(input)).status,"DENY","revoked DB session denies even a valid Express-shaped principal");
+ await admin.unsafe("UPDATE auth_sessions SET revoked_at=NULL WHERE id=$1::uuid",[session]);
+});
