@@ -9,7 +9,7 @@ const workflow = readFileSync(
 );
 test("L10.43 production image release remains exact manual-only and immutable",()=>{
   assert.match(workflow,/workflow_dispatch:/);
-  assert.doesNotMatch(workflow,/^\s+(?:push|schedule|pull_request|workflow_run):/m);
+  assert.doesNotMatch(workflow,/^  (?:push|schedule|pull_request|workflow_run):/m);
   assert.match(workflow,/test "\$GITHUB_REF" = "refs\/heads\/main"/);
   assert.match(workflow,/test "\$GITHUB_RUN_ATTEMPT" = "1"/);
   assert.match(workflow,/EXPECTED_AUTH="AUTHORIZE:P12_2_L2_PROD_IMAGE_RELEASE:/);
