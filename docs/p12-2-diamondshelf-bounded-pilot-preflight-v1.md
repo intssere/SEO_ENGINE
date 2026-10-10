@@ -1,11 +1,21 @@
 # P12.2 — Diamond Shelf bounded-pilot preflight v1 (proposal only)
 
-**Status:** repository-only design, not executable authority.
+**Status:** repository-only conditional fallback design, not executable authority. **First evaluate reuse of the already-executed full-site Packet 014 baseline and an incremental/reconciliation path; a 20-page pilot is not presumed necessary.**
 **Base:** `a19cd21da5d60dbb1862867ce0cdade4746791be` (PR #1064 push-to-main CI `38079304319`: SUCCESS).
 **Target:** `https://diamondshelf.us`; exact source site ID `eb1da9ee-539c-4200-8f04-f64ccaea7768`.
 **Source anchors:** `artifacts/api-server/src/lib/first-party-crawl-manual.ts`, `p12-2-l2-one-shot-operator-caller.ts`, `p12-2-l6-3-live-operator.ts`, `first-party-live-adapters.ts`.
 **Prerequisite:** `docs/p12-2-diamondshelf-first-controlled-run-go-no-go.md`.
 **Policy:** `AGENTS.md`; no generic continuation authorizes Production SQL, writes, crawling, config, deployment or provider requests.
+
+## Critical historical full-crawl checkpoint and route selection
+
+The real Diamond Shelf Packet 014 full-site crawl already ran on October 6, 2026 (see `docs/p12-2-l10-17-packet-014-post-run-certification.md` and `docs/p12-2-l10-19-expected-absence-disposition.md`). Exact run ID `p12-2-diamond-shelf-post-0010-full-014` finalized 3,044/3,044 URLs: 3,043 successful fetches and one raw 404 at `/blogs/news`. An authorized expected-absence disposition/reconciliation leaves zero **effective** unresolved terminal failures, but the legacy `wholeSiteCertified=false` flag and absence of a `completed_run` row must remain untouched. Do not imply the original crawl never happened or label it clean-certified.
+
+**Prefer route A:** Verify live authoritative database identity, exact historical Packet 014 evidence, schema, baseline freshness and incremental eligibility under separately authorized SELECT-only preflight; if source-backed incremental planner can safely produce a fresh one-shot incremental/reconciliation run, design that packet rather than repeating 3,044 URLs.
+
+**Use route B conditionally:** A new 20-page `bounded_pilot` only if compatibility/evidence requirements establish a need for a post-release smoke or an incremental path is not yet certifiable. Do not execute it by default; do not replay the old Packet 014.
+
+**Route C:** Fresh full-site run only if the baseline is unusable/stale by documented criteria or a full recrawl is otherwise justified and separately authorized. Never silently promote the historical false certification flag to true.
 
 ## Discovery
 
@@ -16,7 +26,7 @@
 - Latest verified Railway image is `ghcr.io/intssere/seo-engine@sha256:45cbaecd3e40f3354303b63c30b139ba155e02a753d50ad94eb1a627e25b61c2`, app `seo-engine-shadow`, deployment `11362736-c4ea-43a0-9e4b-f6627acdee24`; no source-to-runtime compatibility proof has yet been completed for the fresh pilot.
 - Railway-managed Postgres and restored instance passed bounded metadata and nine-table comparison, but the normative `docs/p8-8-w09c2y-railway-database-architecture-decision.md` still selects external Neon as authoritative Production target. Site row contents and active durable crawl claims have not been inspected.
 
-## Proposed bounded envelope (requires independent code-backed validation)
+## Conditional fallback: proposed bounded envelope (requires independent code-backed validation)
 
 | Field | Proposed value | Gate |
 | --- | --- | --- |
@@ -56,4 +66,4 @@
 
 **NO-GO** for a live Production-backed pilot until steps 1–7 are evidenced. This doc constitutes only a preflight specification and is not a claim that a 20-page pilot was built, authorized, deployed or executed.
 
-**Next increment:** implement/test deterministic inert pilot packet builder and a safe inspection-only CLI, without creating live authorization, database connection, deployed runtime or network traffic. Define separately reviewed read-only site/claim query packet. No changes to historical Packet 014.
+**Next increment:** prioritize deterministic read-only source-backed historical baseline and incremental-eligibility preflight (with no live SQL until separately authorized), then decide route A/B/C. An inert pilot packet builder is conditional fallback, not the mandatory next crawl. No changes to historical Packet 014.
