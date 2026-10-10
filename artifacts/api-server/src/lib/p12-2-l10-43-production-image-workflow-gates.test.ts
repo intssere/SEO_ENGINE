@@ -22,7 +22,9 @@ test("L10.43 production image release remains exact manual-only and immutable",(
   assert.match(workflow,/test "\$DIGEST" = "\$\{\{ steps\.build\.outputs\.digest \}\}"/);
 });
 test("L10.43 no automated upload/deploy introduced by offline receipt adapter",()=>{
-  assert.doesNotMatch(workflow,/actions\/upload-artifact@/);
+  assert.match(workflow,/actions\/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02/);
+  assert.match(workflow,/retention-days: 7/);
+  assert.match(workflow,/if-no-files-found: error/);
   assert.doesNotMatch(workflow,/railway(?:\.app|\/action| up| deploy)/i);
   assert.doesNotMatch(workflow,/p12-2-l10-42-release-receipt-dry-run/);
 });
