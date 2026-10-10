@@ -112,6 +112,43 @@ test("CVI-1C.28 disposable authenticated tenant/site private composition", async
     }
    }
   }finally{await rival.end({timeout:1});}
+  // CVI-1C.30: deterministically revoke after eligible scope resolution but
+  // before the independently authorized historical readback SQL statement.
+  for(const target of [
+   {table:"cvi_site_read_grants",id:grant},
+   {table:"cvi_organization_memberships",id:member},
+   {table:"connections",id:conn},
+   {table:"sites",id:site},
+  ] as const){
+   let statements=0;
+   const interceptor={
+    unsafe:async <T extends Record<string,unknown>[]>(query:string,params:unknown[])=>{
+     const rows=await sql.unsafe<T>(query,params as Parameters<typeof sql.unsafe>[1]);
+     statements++;
+     if(statements===1){
+      assert.match(query,/FROM cvi_acquisition_nonce_ledger/);
+      await sql.unsafe(target.table==="connections"
+       ?"UPDATE connections SET status='revoked' WHERE id=$1::uuid"
+       :target.table==="sites"
+       ?"UPDATE sites SET is_active=false WHERE id=$1::uuid"
+       :`UPDATE ${target.table} SET status='revoked',revoked_at=now() WHERE id=$1::uuid`,[target.id]);
+     }
+     return rows;
+    },
+   } as unknown as typeof sql;
+   const interposed=createCviPrivateExpressDbComposition({
+    sql:interceptor,authConfig:config,now:()=>new Date().toISOString(),
+   });
+   const result=await interposed({req:{auth:principal},acquisitionId:acquisition,lineage});
+   assert.equal(statements,2,`scope and readback must both execute for ${target.table}`);
+   assert.equal(result.status,"DENY",`revoked ${target.table} between queries must deny`);
+   await sql.unsafe(target.table==="connections"
+    ?"UPDATE connections SET status='connected' WHERE id=$1::uuid"
+    :target.table==="sites"
+    ?"UPDATE sites SET is_active=true WHERE id=$1::uuid"
+    :`UPDATE ${target.table} SET status='active',revoked_at=NULL WHERE id=$1::uuid`,[target.id]);
+   assert.equal((await read()).status,"UNTRUSTED_HISTORICAL_REVIEW_ONLY");
+  }
   await revokeAuthSession(created.token);
   assert.equal((await read()).status,"DENY");
  }finally{
