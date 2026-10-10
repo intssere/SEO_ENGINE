@@ -23,3 +23,6 @@ Inspect full CI; repair and re-proof any failure with exact new SHA. Then CVI-1C
 
 ## Certification repair (2026-10-10)
 Initial CI run 38044865592 failed only in the new dedicated certification: the test asserted `inet_server_addr() = 127.0.0.1`, but GitHub's PostgreSQL Docker service returned `172.18.0.2/32` despite connecting through the strictly allowlisted runner-local TCP endpoint. Removed that Docker-address assumption while retaining the exact URL allowlist and `current_database()` assertion. Repair commit `a73628d04332f652e7d27e4d9a7d99387d44e383`, proof branch `ugp-cvi-1b4e-ci-proof-20261010-ae`, rerun https://github.com/intssere/SEO_ENGINE/actions/runs/38045393691 — **queued at documentation update**. Exact-head certification still pending.
+
+## Second failed proof and verified source repair
+Run 38045393691 failed again because the exact-HEAD source still contained the Docker server-IP assertion. Confirmed by fetching the source at commit `a73628d04332f652e7d27e4d9a7d99387d44e383`. Corrected and verified source at `5d56c42c23b775a541d3a6122295071bd02228e7`; the assertion is now absent. Proof branch: `ugp-cvi-1b4e-ci-proof-20261010-af`. CI: https://github.com/intssere/SEO_ENGINE/actions/runs/38046221001 (queued when written). Certification remains pending.
