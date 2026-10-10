@@ -75,6 +75,43 @@ test("CVI-1C.28 disposable authenticated tenant/site private composition", async
   assert.equal((await read()).status,"DENY");
   await sql`UPDATE connections SET scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=${conn}::uuid`;
   assert.equal((await read()).status,"UNTRUSTED_HISTORICAL_REVIEW_ONLY");
+  // CVI-1C.29: concurrent revocation must serialize with both private read statements.
+  const rival=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+  try{
+   for(const target of [
+    {table:"cvi_site_read_grants",id:grant},
+    {table:"cvi_organization_memberships",id:member},
+    {table:"connections",id:conn},
+    {table:"sites",id:site},
+   ] as const){
+    await rival.unsafe("BEGIN");
+    let pending:Promise<Awaited<ReturnType<typeof read>>>|undefined;
+    try{
+     const mutation=target.table==="connections"
+      ?"UPDATE connections SET status='revoked' WHERE id=$1::uuid"
+      :target.table==="sites"
+      ?"UPDATE sites SET is_active=false WHERE id=$1::uuid"
+      :`UPDATE ${target.table} SET status='revoked',revoked_at=now() WHERE id=$1::uuid`;
+     await rival.unsafe(mutation,[target.id]);
+     let settled=false;
+     pending=read().then(v=>{settled=true;return v;},e=>{settled=true;throw e;});
+     await new Promise(resolve=>setTimeout(resolve,120));
+     assert.equal(settled,false,`private read must block behind uncommitted ${target.table} revoke`);
+     await rival.unsafe("COMMIT");
+     assert.equal((await pending).status,"DENY",`post-commit ${target.table} revocation denies`);
+     pending=undefined;
+     await sql.unsafe(target.table==="connections"
+      ?"UPDATE connections SET status='connected' WHERE id=$1::uuid"
+      :target.table==="sites"
+      ?"UPDATE sites SET is_active=true WHERE id=$1::uuid"
+      :`UPDATE ${target.table} SET status='active',revoked_at=NULL WHERE id=$1::uuid`,[target.id]);
+     assert.equal((await read()).status,"UNTRUSTED_HISTORICAL_REVIEW_ONLY");
+    }finally{
+     await rival.unsafe("ROLLBACK").catch(()=>undefined);
+     if(pending)await pending.catch(()=>undefined);
+    }
+   }
+  }finally{await rival.end({timeout:1});}
   await revokeAuthSession(created.token);
   assert.equal((await read()).status,"DENY");
  }finally{
