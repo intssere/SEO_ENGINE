@@ -383,3 +383,72 @@ test("CVI-1C.18 real postgres.Sql adapter admits only active and scoped historic
  assert.equal(await store.fetchScoped(principal),null,"revoked session denies read");
  await db.unsafe("UPDATE auth_sessions SET revoked_at=NULL WHERE id=$1::uuid",[session]);
 });
+
+
+test("CVI-1C.22 real server scope resolver rejects revoked session, membership and grant",async t=>{
+ const url=disposableUrl();
+ if(!url){t.skip("explicit disposable localhost PostgreSQL required");return;}
+ const db=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+ t.after(async()=>{await db.end({timeout:1});});
+ // Dynamic path ensures lib/db TypeScript project does not compile api-server files.
+ const file=fileURLToPath(new URL(
+   "../../../artifacts/api-server/src/lib/cvi-gsc-server-scope-resolver.ts",import.meta.url));
+ const {createCviGscServerScopeResolver}=await import(file);
+ const resolver=createCviGscServerScopeResolver(db);
+ const org=(await db.unsafe<{id:string}[]>("SELECT id FROM organizations WHERE slug='cvi-nonce-proof'"))[0]!.id;
+ const site=(await db.unsafe<{id:string}[]>("SELECT id FROM sites WHERE domain='nonce.cvi.test'"))[0]!.id;
+ const conn=(await db.unsafe<{id:string}[]>("SELECT id FROM connections WHERE site_id=$1::uuid",[site]))[0]!.id;
+ const session=(await db.unsafe<{id:string}[]>("SELECT id FROM auth_sessions WHERE subject='cvi-nonce-subject'"))[0]!.id;
+ const member=(await db.unsafe<{id:string}[]>(
+   "SELECT id FROM cvi_organization_memberships WHERE organization_id=$1::uuid AND auth_subject='cvi-nonce-subject'",[org]))[0]!.id;
+ const grant=(await db.unsafe<{id:string}[]>(
+   "SELECT id FROM cvi_site_read_grants WHERE organization_membership_id=$1::uuid AND permission='read_evidence'",[member]))[0]!.id;
+ await db.unsafe("UPDATE connections SET status='connected',scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=$1::uuid",[conn]);
+ await db.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[member]);
+ await db.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+ const principal={
+   sessionId:session,subject:"cvi-nonce-subject",email:"nonce@example.test",
+   displayName:null,role:"viewer" as const,csrfTokenHash:"f".repeat(64),
+   issuedAt:"2026-10-10T00:00:00.000Z",
+   lastSeenAt:"2026-10-10T00:01:00.000Z",
+   expiresAt:"2099-01-01T00:00:00.000Z",
+ };
+ const request={acquisitionId:"cvi-1c15-acq-1",principal,now:"2026-10-10T12:00:00.000Z"};
+ const eligibility=await db.unsafe<Record<string,unknown>[]>(`
+ SELECT a.acquisition_id,a.disposition,a.auth_session_id::text AS ledger_session_id,
+   se.id IS NOT NULL AS session_joined,se.revoked_at AS session_revoked,
+   se.expires_at AS session_expires,s.is_active AS site_active,
+   c.status AS connection_status,c.provider AS provider,c.scopes AS scopes,
+   m.status AS member_status,m.revoked_at AS member_revoked,
+   g.status AS grant_status,g.revoked_at AS grant_revoked,
+   g.permission AS grant_permission
+ FROM cvi_acquisition_nonce_ledger a
+ LEFT JOIN sites s ON s.id=a.site_id
+ LEFT JOIN connections c ON c.id=a.connection_id
+ LEFT JOIN auth_sessions se ON se.id=a.auth_session_id
+ LEFT JOIN cvi_organization_memberships m ON m.organization_id=a.tenant_id
+   AND m.auth_subject=a.auth_subject
+ LEFT JOIN cvi_site_read_grants g ON g.organization_membership_id=m.id
+   AND g.site_id=a.site_id AND g.permission='read_evidence'
+ WHERE a.acquisition_id=$1`,[request.acquisitionId]);
+ assert.equal(eligibility.length,1,"fixture acquisition must exist");
+ const resolved=await resolver(request);
+ assert.deepEqual(resolved,{tenantId:org,siteId:site,connectionId:conn},
+   "scope eligibility: "+JSON.stringify(eligibility));
+
+ assert.equal(await resolver({...request,acquisitionId:"missing"}),null);
+ assert.equal(await resolver({...request,principal:{...principal,sessionId:"ffffffff-ffff-4fff-8fff-ffffffffffff"}}),null);
+ assert.equal(await resolver({...request,principal:{...principal,subject:"intruder"}}),null);
+ await db.unsafe("UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[grant]);
+ assert.equal(await resolver(request),null,"revoked site grant denies scope resolution");
+ await db.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+ await db.unsafe("UPDATE cvi_organization_memberships SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[member]);
+ assert.equal(await resolver(request),null,"revoked organization membership denies scope");
+ await db.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[member]);
+ await db.unsafe("UPDATE auth_sessions SET revoked_at=now() WHERE id=$1::uuid",[session]);
+ assert.equal(await resolver(request),null,"revoked auth session denies scope");
+ await db.unsafe("UPDATE auth_sessions SET revoked_at=NULL WHERE id=$1::uuid",[session]);
+ await db.unsafe("UPDATE connections SET status='revoked' WHERE id=$1::uuid",[conn]);
+ assert.equal(await resolver(request),null,"revoked Google connection denies scope");
+ await db.unsafe("UPDATE connections SET status='connected' WHERE id=$1::uuid",[conn]);
+});
