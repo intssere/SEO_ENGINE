@@ -334,3 +334,52 @@ test("CVI-1C.16 scoped readback SQL denies tenant/session mismatch and revoked g
  assert.equal((await query(args)).length,0,"revoked membership forbids historical read");
  await db.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[membership]);
 });
+
+
+test("CVI-1C.18 real postgres.Sql adapter admits only active and scoped historical record",async t=>{
+ const url=disposableUrl();
+ if(!url){t.skip("explicit disposable localhost PostgreSQL required");return;}
+ const db=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
+ t.after(async()=>{await db.end({timeout:1});});
+ const {createCviScopedPostgresReadbackStore}=await import(
+   "../../../artifacts/api-server/src/lib/cvi-gsc-scoped-readback-postgres-adapter.js"
+ );
+ const store=createCviScopedPostgresReadbackStore(db);
+ const org=(await db.unsafe<{id:string}[]>("SELECT id FROM organizations WHERE slug='cvi-nonce-proof'"))[0]!.id;
+ const site=(await db.unsafe<{id:string}[]>("SELECT id FROM sites WHERE domain='nonce.cvi.test'"))[0]!.id;
+ const connection=(await db.unsafe<{id:string}[]>("SELECT id FROM connections WHERE site_id=$1::uuid",[site]))[0]!.id;
+ const session=(await db.unsafe<{id:string}[]>("SELECT id FROM auth_sessions WHERE subject='cvi-nonce-subject'"))[0]!.id;
+ const membership=(await db.unsafe<{id:string}[]>(
+   "SELECT id FROM cvi_organization_memberships WHERE organization_id=$1::uuid AND auth_subject='cvi-nonce-subject'",[org]))[0]!.id;
+ const grant=(await db.unsafe<{id:string}[]>(
+   "SELECT id FROM cvi_site_read_grants WHERE organization_membership_id=$1::uuid AND permission='read_evidence'",[membership]))[0]!.id;
+ const principal={acquisitionId:"cvi-1c15-acq-1",tenantId:org,siteId:site,
+   connectionId:connection,authSubject:"cvi-nonce-subject",authSessionId:session};
+ await db.unsafe("UPDATE connections SET status='connected',scopes=ARRAY['https://www.googleapis.com/auth/webmasters.readonly'] WHERE id=$1::uuid",[connection]);
+ await db.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[membership]);
+ await db.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+ const found=await store.fetchScoped(principal);
+ assert.ok(found);
+ assert.deepEqual(found,{
+  acquisitionId:principal.acquisitionId,tenantId:org,siteId:site,connectionId:connection,
+  authSubject:"cvi-nonce-subject",authSessionId:session,requestNonce:"cvi-1c15-nonce-1",
+  requestedResource:"sc-domain:nonce.cvi.test",observationFingerprint:"e".repeat(64),
+  disposition:"recorded_untrusted",
+ });
+ assert.equal(await store.fetchScoped({...principal,tenantId:"ffffffff-ffff-4fff-8fff-ffffffffffff"}),null,
+   "other tenant cannot retrieve acquisition");
+ assert.equal(await store.fetchScoped({...principal,authSessionId:"ffffffff-ffff-4fff-8fff-ffffffffffff"}),null,
+   "other session cannot retrieve acquisition");
+ assert.equal(await store.fetchScoped({...principal,authSubject:"other-subject"}),null,
+   "other subject cannot retrieve acquisition");
+ assert.equal(await store.fetchScoped({...principal,acquisitionId:"absent-acquisition"}),null);
+ await db.unsafe("UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[grant]);
+ assert.equal(await store.fetchScoped(principal),null,"revoked grant denies read");
+ await db.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
+ await db.unsafe("UPDATE cvi_organization_memberships SET status='revoked',revoked_at=now() WHERE id=$1::uuid",[membership]);
+ assert.equal(await store.fetchScoped(principal),null,"revoked membership denies read");
+ await db.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[membership]);
+ await db.unsafe("UPDATE auth_sessions SET revoked_at=now() WHERE id=$1::uuid",[session]);
+ assert.equal(await store.fetchScoped(principal),null,"revoked session denies read");
+ await db.unsafe("UPDATE auth_sessions SET revoked_at=NULL WHERE id=$1::uuid",[session]);
+});
