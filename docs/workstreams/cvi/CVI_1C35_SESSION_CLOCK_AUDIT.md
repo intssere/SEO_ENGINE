@@ -9,3 +9,9 @@ The authentication loader accepts a caller-provided `now` timestamp and uses it 
 Build disposable PostgreSQL tests for simulated positive and negative clock offsets, future timestamp writes, idle expiry checks after skew, rotated-token revalidation, and preservation of current role/CSRF state. Prefer a single trusted server/database time source for mutable session validation, without using caller time as an authority for persistent expiry. Preserve compatibility with existing API semantics, review current callers, and require full exact-head CI.
 
 No public route, production database migration, live provider calls, publishing, merge or deployment. This document is an audit proposal, not a certification.
+
+## Successful exact-head implementation CI
+- PR #1062 implementation SHA `883891356404e1735a7470bde57191e53d93b6f6`.
+- Workflow https://github.com/intssere/SEO_ENGINE/actions/runs/38078180357 — completed SUCCESS; validation job `114289438013`.
+- Parent CVI-1C.34 final SHA `ef4ea37c7ae67b843f00b5864c1424c3fca9689b` passed CI https://github.com/intssere/SEO_ENGINE/actions/runs/38078029041.
+- PR remains draft/unmerged; no deployment. Documentation update requires independent exact-head proof.
