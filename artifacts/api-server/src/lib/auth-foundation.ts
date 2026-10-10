@@ -331,14 +331,15 @@ export async function loadAuthSession(token: string, now = new Date()): Promise<
       lastSeenAt: string;
       expiresAt: string;
     }>>`
-      SELECT id::text,subject,email,display_name AS "displayName",role,csrf_token_hash AS "csrfTokenHash",created_at::text AS "createdAt",last_seen_at::text AS "lastSeenAt",expires_at::text AS "expiresAt"
-      FROM auth_sessions
-      WHERE token_hash=${sha256(token)} AND revoked_at IS NULL AND expires_at>${now.toISOString()}::timestamptz
+      UPDATE auth_sessions SET last_seen_at=${now.toISOString()}::timestamptz
+      WHERE token_hash=${sha256(token)} AND revoked_at IS NULL
+        AND expires_at>${now.toISOString()}::timestamptz
         AND last_seen_at>${new Date(now.getTime() - AUTH_IDLE_TTL_MS).toISOString()}::timestamptz
-      LIMIT 1`;
+      RETURNING id::text,subject,email,display_name AS "displayName",role,
+        csrf_token_hash AS "csrfTokenHash",created_at::text AS "createdAt",
+        last_seen_at::text AS "lastSeenAt",expires_at::text AS "expiresAt"`;
     const row = rows[0];
     if (!row) return null;
-    await sql`UPDATE auth_sessions SET last_seen_at=${now.toISOString()} WHERE id=${row.id}::uuid`;
     return {
       sessionId: row.id,
       subject: row.subject,
@@ -359,7 +360,13 @@ export async function rotateAuthSessionToken(sessionId: string): Promise<string>
   const token = randomToken(32);
   const sql = database();
   try {
-    await sql`UPDATE auth_sessions SET token_hash=${sha256(token)},last_seen_at=now() WHERE id=${sessionId}::uuid AND revoked_at IS NULL`;
+    const updated = await sql<{ id: string }[]>`
+      UPDATE auth_sessions SET token_hash=${sha256(token)},last_seen_at=now()
+      WHERE id=${sessionId}::uuid AND revoked_at IS NULL
+        AND expires_at>clock_timestamp()
+        AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+      RETURNING id::text`;
+    if (updated.length !== 1) throw new Error("auth_session_rotation_not_eligible");
     return token;
   } finally {
     await sql.end({ timeout: 1 }).catch(() => undefined);
