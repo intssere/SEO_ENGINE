@@ -34,3 +34,9 @@ Date: 2026-10-10. Status: stacked draft / terminal CI pending.
 1. Verify exact-head terminal full CI for #1013 and #1017 and repair any failure.
 2. Continue only after asserting the resolver can be wired to real authenticated session and requested acquisition without cross-tenant leakage or optional-auth bypass.
 3. Preserve draft-only stack and fail-closed publication gates.
+
+## Recovery checkpoint (2026-10-10)
+- First PR #1013 proof (run 38038394937) failed two workspace unit tests because the ISO regex lacked the seconds component. The first repair added canonical parsing but unintentionally kept the malformed regex; run 38038604335 also failed.
+- Corrected PR #1013 exact HEAD **6125e44de444224e79db0c5df71225b9507a3086** with `HH:MM:SS.mmmZ` canonical validation; fresh proof branch `ugp-cvi-1c21-ci-proof-20261010-r3`, run **38038832103**, full CI in progress at checkpoint.
+- PR #1017 first proof run 38038662350 returned null at the valid fixture due to inherited malformed timestamp validation. An intermediate diagnostic run 38038765361 was created. Corrected PR #1017 exact HEAD **f565433baa29676a5f15580362371449e4944425**; proof branch `ugp-cvi-1b4e-ci-proof-20261010-aa`, run **38038837286**.
+- **Actual disposable CVI PostgreSQL proof step for corrected #1017: SUCCESS**. Full CI still in progress at checkpoint. No production operations.
