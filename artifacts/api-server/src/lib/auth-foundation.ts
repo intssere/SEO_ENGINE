@@ -306,9 +306,9 @@ export async function createAuthSession(input: {
         displayName: input.displayName,
         role: input.role,
         csrfTokenHash,
-        issuedAt: row.createdAt,
-        lastSeenAt: row.lastSeenAt,
-        expiresAt: row.expiresAt,
+        issuedAt: new Date(row.createdAt).toISOString(),
+        lastSeenAt: new Date(row.lastSeenAt).toISOString(),
+        expiresAt: new Date(row.expiresAt).toISOString(),
       },
     };
   } finally {
@@ -346,9 +346,9 @@ export async function loadAuthSession(token: string, now = new Date()): Promise<
       displayName: row.displayName,
       role: row.role,
       csrfTokenHash: row.csrfTokenHash,
-      issuedAt: row.createdAt,
+      issuedAt: new Date(row.createdAt).toISOString(),
       lastSeenAt: now.toISOString(),
-      expiresAt: row.expiresAt,
+      expiresAt: new Date(row.expiresAt).toISOString(),
     };
   } finally {
     await sql.end({ timeout: 1 }).catch(() => undefined);
