@@ -123,7 +123,7 @@ test("CVI-1C.28 disposable authenticated tenant/site private composition", async
    let statements=0;
    const interceptor={
     unsafe:async <T extends Record<string,unknown>[]>(query:string,params:unknown[])=>{
-     const rows=await sql.unsafe<T>(query,params);
+     const rows=await sql.unsafe<T>(query,params as Parameters<typeof sql.unsafe>[1]);
      statements++;
      if(statements===1){
       assert.match(query,/FROM cvi_acquisition_nonce_ledger/);
