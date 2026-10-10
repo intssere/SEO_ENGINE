@@ -74,6 +74,19 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_cvi_disposable -v ON_ERROR_STOP=1 -f lib/db/migrations/0002_auth.sql
           pnpm --filter @workspace/api-server exec tsx --test src/lib/cvi-gsc-disposable-authenticated-session.ephemeral.test.ts
 
+      - name: Certify CVI-1C.28 private authorization composition (proof branch only)
+        if: startsWith(github.ref, 'refs/heads/ugp-cvi-1b4e-ci-proof-')
+        env:
+          CVI_1B4E_DISPOSABLE_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_cvi_disposable
+        run: |
+          test -z "${DATABASE_URL:-}"
+          createdb -h 127.0.0.1 -U postgres seo_engine_cvi_disposable
+          trap 'dropdb -h 127.0.0.1 -U postgres --if-exists seo_engine_cvi_disposable' EXIT
+          for migration in 0001_core.sql 0002_auth.sql 0012_cvi_tenant_site_acl_draft.sql 0013_cvi_acl_audit_immutability_draft.sql 0014_cvi_acquisition_nonce_ledger_draft.sql 0015_cvi_acquisition_membership_fence_draft.sql 0016_cvi_acquisition_revocation_serialization_draft.sql; do
+            psql -h 127.0.0.1 -U postgres -d seo_engine_cvi_disposable -v ON_ERROR_STOP=1 -f "lib/db/migrations/$migration"
+          done
+          pnpm --filter @workspace/api-server exec tsx --test src/lib/cvi-gsc-private-composition.ephemeral.test.ts
+
       - name: Validate legacy PostgreSQL core schema
         run: |
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
