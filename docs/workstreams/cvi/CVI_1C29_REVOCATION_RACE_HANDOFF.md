@@ -11,3 +11,10 @@ The test is runnable only with explicitly allowlisted localhost seo_engine_cvi_d
 The certification targets revocation before the scope resolver's SQL read. It does not prove atomicity of the two separate statements or eliminate the window between an initial eligible read and a later revocation. The second scoped read independently rechecks authorization. All successful outcomes remain UNTRUSTED_HISTORICAL_REVIEW_ONLY and not provider-verified.
 
 Status: implementation committed, exact-head CI pending.
+
+## Successful certification receipt
+- Certified implementation HEAD: `82ca3f41bc64c7d587c91983f7b33cf19da7161e`
+- Workflow: https://github.com/intssere/SEO_ENGINE/actions/runs/38048396960 — completed SUCCESS
+- Job: `114202444317` — completed SUCCESS
+- PR #1040 remains open/draft and unmerged; no deployment.
+- Caveat: updating this documentation creates a new HEAD; certify that revision separately.
