@@ -341,9 +341,9 @@ test("CVI-1C.18 real postgres.Sql adapter admits only active and scoped historic
  if(!url){t.skip("explicit disposable localhost PostgreSQL required");return;}
  const db=postgres(url,{max:1,prepare:false,connect_timeout:8,idle_timeout:2});
  t.after(async()=>{await db.end({timeout:1});});
- const {createCviScopedPostgresReadbackStore}=await import(
-   "../../../artifacts/api-server/src/lib/cvi-gsc-scoped-readback-postgres-adapter.js"
- );
+ const adapterModulePath=fileURLToPath(new URL(
+   "../../../artifacts/api-server/src/lib/cvi-gsc-scoped-readback-postgres-adapter.ts",import.meta.url));
+ const {createCviScopedPostgresReadbackStore}=await import(adapterModulePath);
  const store=createCviScopedPostgresReadbackStore(db);
  const org=(await db.unsafe<{id:string}[]>("SELECT id FROM organizations WHERE slug='cvi-nonce-proof'"))[0]!.id;
  const site=(await db.unsafe<{id:string}[]>("SELECT id FROM sites WHERE domain='nonce.cvi.test'"))[0]!.id;
