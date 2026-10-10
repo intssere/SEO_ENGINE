@@ -88,7 +88,7 @@ test("CVI-1C.28 disposable authenticated tenant/site private composition", async
     let pending:Promise<Awaited<ReturnType<typeof read>>>|undefined;
     try{
      const mutation=target.table==="connections"
-      ?"UPDATE connections SET status='disconnected' WHERE id=$1::uuid"
+      ?"UPDATE connections SET status='revoked' WHERE id=$1::uuid"
       :target.table==="sites"
       ?"UPDATE sites SET is_active=false WHERE id=$1::uuid"
       :`UPDATE ${target.table} SET status='revoked',revoked_at=now() WHERE id=$1::uuid`;
