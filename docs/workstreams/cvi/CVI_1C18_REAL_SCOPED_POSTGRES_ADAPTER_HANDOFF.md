@@ -13,8 +13,11 @@ Status: Draft; exact-head full CI pending. No production actions.
 - Head branch workstream/cvi-1c18-disposable-real-adapter-pr1006-dependent
 - Base branch workstream/cvi-1c17-scoped-readback-postgres-adapter-pr1003-dependent
 - Initial HEAD 03db5283859db4a93514e6988cd68ab90c55a04c
+- Revised HEAD d77b469df9723f37fedf725658cd96b2f64e2e76 (CI dependency build repair)
 - Exact-head disposable CI proof branch ugp-cvi-1b4e-ci-proof-20261010-v
-- Workflow run 38035697748 was queued at initial check.
+- Initial workflow run 38035697748 failed disposable test because the API's OAuth package output was not built before the DB test dynamically imported the adapter. No database assertion failed.
+- Repair added `pnpm --filter @seo-engine/oauth-connection-manager build` in the gated disposable CI step.
+- Replacement exact-head proof branch ugp-cvi-1b4e-ci-proof-20261010-w; workflow run 38035806976. The disposable CVI certification step has passed; full CI pending at checkpoint.
 
 ## Tests
 - Appends a new integration test to lib/db/src/cvi-1b4o-disposable-acquisition-ledger.test.ts.
