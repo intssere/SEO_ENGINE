@@ -318,7 +318,7 @@ test("CVI-1C.16 scoped readback SQL denies tenant/session mismatch and revoked g
  await db.unsafe("UPDATE cvi_organization_memberships SET status='active',revoked_at=NULL WHERE id=$1::uuid",[membership]);
  await db.unsafe("UPDATE cvi_site_read_grants SET status='active',revoked_at=NULL WHERE id=$1::uuid",[grant]);
  const args=["cvi-1c15-acq-1",org,site,connection,"cvi-nonce-subject",session];
- const query=(values:readonly unknown[])=>db.unsafe<{acquisitionId:string;tenantId:string;requestNonce:string}[]>(readSql,values as unknown[]);
+ const query=(values:readonly string[])=>db.unsafe<{acquisitionId:string;tenantId:string;requestNonce:string}[]>(readSql,[...values]);
  const authorized=await query(args);
  assert.equal(authorized.length,1);
  assert.equal(authorized[0]!.tenantId,org);
