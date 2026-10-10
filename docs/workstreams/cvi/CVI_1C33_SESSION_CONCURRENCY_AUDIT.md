@@ -18,3 +18,10 @@ Draft-only engineering; no production database, production migration, live Googl
 
 ## Implemented concurrency increment
 Extended the existing CVI-1C.27 disposable PostgreSQL authenticated-HTTP test with two lock-serialized cases: a real authenticated HTTP cookie session refresh racing revocation, and token rotation racing revocation. The independent PostgreSQL observer requires an actual `pg_stat_activity.wait_event_type='Lock'` before committing the synthetic revocation. After commit the request must be HTTP 401, rotation must reject as ineligible, and the old token must not authenticate. The source preserves all existing authorization and publishing denials. Exact-head CI has not yet been certified. Additional clock-skew/role-CSRF concurrency coverage remains future work.
+
+## Verified implementation CI receipt
+- Exact implementation HEAD: `424f20b270e7adcbf57a25fd61f87a5e0064ad79`
+- Full CI run: https://github.com/intssere/SEO_ENGINE/actions/runs/38071665600 — completed SUCCESS
+- Job: `114270139647` — completed SUCCESS, no failed steps
+- PR #1055 remains open/draft, unmerged and undeployed.
+- The following documentation commit must receive separate exact-head verification.
