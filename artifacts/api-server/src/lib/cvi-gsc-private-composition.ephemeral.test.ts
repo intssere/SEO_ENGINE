@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import postgres from "postgres";
-import { createAuthSession, loadAuthConfig, loadAuthSession, revokeAuthSession } from "./auth-foundation.js";
+import { createAuthSession, loadAuthConfig, loadAuthSession, revokeAuthSession, rotateAuthSessionToken } from "./auth-foundation.js";
 import { createCviPrivateExpressDbComposition } from "./cvi-gsc-private-express-db-composition.js";
 import { CVI_GSC_ACQUISITION_LINEAGE_VERSION, type CviGscAcquisitionLineage } from "./cvi-gsc-acquisition-lineage.js";
 
@@ -149,7 +149,25 @@ test("CVI-1C.28 disposable authenticated tenant/site private composition", async
     :`UPDATE ${target.table} SET status='active',revoked_at=NULL WHERE id=$1::uuid`,[target.id]);
    assert.equal((await read()).status,"UNTRUSTED_HISTORICAL_REVIEW_ONLY");
   }
-  await revokeAuthSession(created.token);
+  // CVI-1C.31: token rotation does not give the old token new authority.
+  const replacement=await rotateAuthSessionToken(principal.sessionId);
+  assert.equal(await loadAuthSession(created.token),null,"rotated-out token must fail");
+  const rotated=await loadAuthSession(replacement);
+  assert.ok(rotated,"new token must resolve to the same session");
+  assert.equal(rotated.sessionId,principal.sessionId);
+  assert.equal((await read()).status,"UNTRUSTED_HISTORICAL_REVIEW_ONLY",
+    "token rotation cannot re-authorize an otherwise unauthorized scope");
+  // Cached principal must not bypass a revoked/expired DB session.
+  await sql`UPDATE auth_sessions SET expires_at=now()-interval '1 minute' WHERE id=${principal.sessionId}::uuid`;
+  assert.equal(await loadAuthSession(replacement),null,"expired token must fail");
+  assert.equal((await read()).status,"DENY","stale principal cannot authorize an expired session");
+  await sql`UPDATE auth_sessions SET expires_at=now()+interval '1 day',last_seen_at=now()-interval '7 days' WHERE id=${principal.sessionId}::uuid`;
+  assert.equal(await loadAuthSession(replacement),null,"idle-expired session must fail");
+  // Restore only synthetic disposable state to isolate the later revoke test.
+  await sql`UPDATE auth_sessions SET last_seen_at=now() WHERE id=${principal.sessionId}::uuid`;
+  assert.ok(await loadAuthSession(replacement));
+  await revokeAuthSession(replacement);
+  assert.equal(await loadAuthSession(replacement),null,"revoked rotated token must fail");
   assert.equal((await read()).status,"DENY");
  }finally{
   await sql.end({timeout:1});
