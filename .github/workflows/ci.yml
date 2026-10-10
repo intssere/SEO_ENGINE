@@ -59,6 +59,7 @@ jobs:
         run: |
           createdb -h 127.0.0.1 -U postgres seo_engine_cvi_disposable
           trap 'dropdb -h 127.0.0.1 -U postgres --if-exists seo_engine_cvi_disposable' EXIT
+          pnpm --filter @seo-engine/oauth-connection-manager build
           pnpm --filter @workspace/db test:cvi-1b4e
           pnpm --filter @workspace/db test:cvi-1b4o
 
