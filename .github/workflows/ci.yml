@@ -63,6 +63,17 @@ jobs:
           pnpm --filter @workspace/db test:cvi-1b4e
           pnpm --filter @workspace/db test:cvi-1b4o
 
+      - name: Certify CVI-1C.27 real disposable authenticated HTTP sessions (proof branch only)
+        if: startsWith(github.ref, 'refs/heads/ugp-cvi-1b4e-ci-proof-')
+        env:
+          CVI_1B4E_DISPOSABLE_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_cvi_disposable
+        run: |
+          test -z "${DATABASE_URL:-}"
+          createdb -h 127.0.0.1 -U postgres seo_engine_cvi_disposable
+          trap 'dropdb -h 127.0.0.1 -U postgres --if-exists seo_engine_cvi_disposable' EXIT
+          psql -h 127.0.0.1 -U postgres -d seo_engine_cvi_disposable -v ON_ERROR_STOP=1 -f lib/db/migrations/0002_auth.sql
+          pnpm --filter @workspace/api-server exec tsx --test src/lib/cvi-gsc-disposable-authenticated-session.ephemeral.test.ts
+
       - name: Validate legacy PostgreSQL core schema
         run: |
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
