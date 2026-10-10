@@ -64,6 +64,30 @@ The real Diamond Shelf Packet 014 full-site crawl already ran on October 6, 2026
 8. **Execution review:** one operator invocation maximum, no automatic retries, no reusing frozen Packet 014. Preserve all raw failure and claim evidence. Any unexpected mismatch is terminal BLOCKED, not repaired inline.
 9. **Post-run proof:** independently verify durable receipts, completed/failed URLs, robots decisions, crawl freshness and no provider/public-site writes. Expand to full-site only after a separate approval.
 
+
+## Expected-absence-aware comparison adapter: design disposition
+
+**Result of source audit: DESIGN REQUIRED, NO EXECUTION ADMISSION.**
+
+The generic `compareFullSiteCrawlHistory()` computes inventory, sitemap lastmod, aggregate ledger and certification transition; it explicitly does **not** establish per-URL HTTP status, fetch result, canonical target, indexability or content fingerprint. Its comparison contract is **not** an authorization to make an uncertified crawl into a certified one.
+
+The `resolveP122L2IncrementalExecutableMaterial()` execution adapter enforces the stricter two-certified-source boundary through `assertSource("before"|"after", source)`: each source requires `wholeSiteCertified=true`, completed checkpoint, validated inventory/execution/certification fingerprints and matching site/origin. Packet 014's immutable raw certification remains false. Accordingly **using Packet 014 directly as an incremental before-source must continue to fail closed**.
+
+A candidate alternative is a **new, separately versioned, non-mutating comparable-baseline adapter** returning `eligible_for_comparison_only`, never `wholeSiteCertified=true`. It must require all of:
+
+- Exact historical Packet 014 run/site/origin/plan/checkpoint/accounting fingerprints and verified L2 claim/receipt lineage; no inferred or synthesized history.
+- One and only one append-only expected-absence disposition and reconciliation bound by exact failed URL/event; `raw_terminal_failure_count=1`, `expected_absence_count=1`, `effective_unresolved_terminal_failure_count=0` and final 3,044/3,044/pending 0. Validate the original HTTP 404/410 event rather than trusting only a status label.
+- Preserve raw `wholeSiteCertified=false`, original terminal failure, original failed-URL identity, zero completed-run and zero recovery-receipt counts. No UPDATE, DELETE, backfill, fabricated success or mutation of `FullSiteCrawlCertification`.
+- Independently identify a separate **current** full/complete sitemap inventory and trustworthy current-run material. The existing executor requires **two separately whole-site-certified crawl sources**; this proposed adapter **must not** feed its output into that executor without a newly designed, reviewed, explicitly typed execution boundary.
+- A distinct tagged comparison result with `baseline_kind=certified_with_expected_absence`, immutable raw flags, bound reconciliation receipt, explicit per-URL outcome **unavailable**, comparison-only authorization=false for network/persistence/provider/public-site actions, and a deterministic new fingerprint.
+- Explicit reviewers covering DB/data-lineage and security/privacy, followed by source-backed positive/negative fixtures. Reject additional or mismatched failures, wrong origins, duplicates, bad event/disposition fingerprints, provisional claims, incomplete checkpoints, missing snapshot, post-target drift and conflicting runs.
+
+**Test plan before implementation authority:** (1) current incremental resolver rejects unchanged Packet 014-style false-certified before source; (2) existing certified-before/certified-after path remains unchanged; (3) valid one-absence fixture yields only a non-executable comparison artifact; (4) reject additional/other failures, invalid counts, forged reconciliation, stale/mismatched inventory, duplicate receipts, cross-site origin and timestamp contradictions; (5) invariant test that no inferred output changes legacy certification fields or authorizes external traffic/database mutations.
+
+**Production prerequisite remains independent:** correct Neon-vs-Railway authority, exact site and historical record identity, deployed-image compatibility, bounded separately authorized SELECT-only eligibility check. No evidence in this source audit resolves these.
+
+**Decision:** Perform comparison-only adapter implementation and fixture certification as a *separately authorized* work package after this PR closes. Do **not** silently weaken `assertSource()`, `assertFullSiteCrawlCertificationIntegrity()` or the incremental executor's current dual-certified-source requirement. If comparison-only evidence is insufficient to safely construct a new incremental execution design, use a separately approved bounded pilot or fresh full crawl.
+
 ## Open blocker disposition
 
 **NO-GO** for a live Production-backed pilot until steps 1–7 are evidenced. This doc constitutes only a preflight specification and is not a claim that a 20-page pilot was built, authorized, deployed or executed.
