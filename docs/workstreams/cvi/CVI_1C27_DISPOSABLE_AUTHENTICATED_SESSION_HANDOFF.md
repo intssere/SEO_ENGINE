@@ -26,3 +26,13 @@ Initial CI run 38044865592 failed only in the new dedicated certification: the t
 
 ## Second failed proof and verified source repair
 Run 38045393691 failed again because the exact-HEAD source still contained the Docker server-IP assertion. Confirmed by fetching the source at commit `a73628d04332f652e7d27e4d9a7d99387d44e383`. Corrected and verified source at `5d56c42c23b775a541d3a6122295071bd02228e7`; the assertion is now absent. Proof branch: `ugp-cvi-1b4e-ci-proof-20261010-af`. CI: https://github.com/intssere/SEO_ENGINE/actions/runs/38046221001 (queued when written). Certification remains pending.
+
+## Final exact-head certification — SUCCESS
+- Draft PR #1029 exact HEAD: `5d56c42c23b775a541d3a6122295071bd02228e7`
+- Proof branch: `ugp-cvi-1b4e-ci-proof-20261010-af`
+- Full GitHub Actions run: https://github.com/intssere/SEO_ENGINE/actions/runs/38046221001 — `completed`, `success`
+- Validation job: `114196188317` — `completed`, `success` (35 completed steps)
+- Dedicated step `Certify CVI-1C.27 real disposable authenticated HTTP sessions (proof branch only)` — `completed`, `success`
+- Prior failed runs `38044865592` and `38045393691` remain historical failures, not certification receipts.
+- PR remains open/draft; no merge, deployment, provider activity, production migration, tenant authorization or publishing occurred.
+- Next increment proposed: CVI-1C.28 private authorization composition with real disposable tenant/site grants and independent revocation, historical review only.
