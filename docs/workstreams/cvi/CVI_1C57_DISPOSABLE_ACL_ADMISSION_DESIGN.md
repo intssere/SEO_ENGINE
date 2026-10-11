@@ -39,3 +39,8 @@ The earlier statement that a dedicated ACL fixture must be invented was incomple
 **Revised next step:** First inspect the existing CVI-1C.28 composition test for membership/grant admission and revocation coverage. Prefer extending that proof-step fixture only when a genuinely uncovered, narrowly bounded regression is found. Do not apply ACL migrations inside the CVI-1C.27 shared session step, duplicate a proof database name during parallel tests, or activate dormant migrations via production bootstrap.
 
 This discovery is about the inspected CI workflow, not production deployment. No database migrations were run in this review.
+
+## Existing regression coverage / narrowed gap
+`artifacts/api-server/src/lib/cvi-gsc-private-composition.ephemeral.test.ts` already inserts synthetic organization, site, `auth_sessions`, membership and `read_evidence` grant (lines 43–48). It asserts denial for wrong site and revoked grant or membership (lines 66–73), and exercises concurrent revocation/authorization behavior against grants, memberships, connections and sites (approximately lines 80–150), plus session expiry and rotation. Therefore rebuilding that test with the same `read_evidence` scenarios would duplicate existing CI coverage.
+
+**Actual remaining bounded question:** Does a distinct synthetic `review_content` grant receive strict, non-escalating admission with a matching subject/site and revocation timing, without being interpreted as permission to edit drafts? Scope any further regression to this permission distinction. No runtime handler or migration activation is authorized; reuse the already isolated CVI-1C.28 proof fixture after independent review.
