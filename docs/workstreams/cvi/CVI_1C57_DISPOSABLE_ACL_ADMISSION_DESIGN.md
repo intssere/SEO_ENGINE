@@ -1,0 +1,46 @@
+# CVI-1C.57 — Disposable ACL Admission and Revocation Design
+
+## Baseline
+Parent CVI-1C.56 draft PR #1109, documentation head `84ce8f2ee27fa1222a74e47b884709b2a4af753f`. Final exact-head CI https://github.com/intssere/SEO_ENGINE/actions/runs/38149489609 was in progress when this design increment began.
+
+## Source-confirmed constraints
+- `lib/db/migrations/0012_cvi_tenant_site_acl_draft.sql` defines dormant `cvi_organization_memberships` and `cvi_site_read_grants` with cross-organization foreign keys, effective and expiry times, and active/revoked states. It allows `read_evidence`, `review_content`, and `manage_connection`, **not** `edit_draft`.
+- `lib/db/migrations/0016_cvi_acquisition_revocation_serialization_draft.sql` uses site → connection → session → membership → grant locking for read-only acquisition admission; it is not a production draft-edit authorization design.
+- `lib/db/src/runtime-bootstrap.ts` does not apply the dormant CVI ACL migrations.
+- Current CVI-1C.55/56 tests check in-memory synthetic permission and disposable session-scoped synthetic mutation, **not** actual site ACL revocation.
+
+## Proposed next disposable-only certification
+1. Author a dedicated test database fixture or isolated rollback-scoped transaction that explicitly applies `0012` to a **disposable localhost database only**, with schema prerequisites verified, no production URL and no default runtime bootstrap changes.
+2. Create synthetic organization, site, session subject, active editor membership, and `review_content` read grant. Test positive **review-only** admission and negative cross-org/site, inactive membership, revoked grant, not-yet-effective and expired rows.
+3. Run two dedicated connections: one locks site/session/membership/grant in the vetted common order while another revokes membership/grant. Assert deterministic operation-first and revocation-first outcomes with no unauthorized synthetic review receipt.
+4. Do **not** treat `review_content` as `edit_draft`; new mutation-specific permission requires separate product/security approval and schema review. No `action_plans` writes.
+5. Ensure fixtures and SQL are designed to clean up completely on failure, and CI checks fail closed if disposable database identity cannot be established.
+
+## Review checklist
+- Establish that migration application in the test harness does not conflict with the existing disposable CI's schema setup, table counts, or cleanup procedures.
+- Confirm the exact session identity mapping (`auth_sessions.subject` to `cvi_organization_memberships.auth_subject`), site organization identity, and required read-only grant.
+- Confirm lock ordering and effective-time checks after lock waits.
+- Compare existing CVI-1C.xx tests for duplicate coverage before implementing this test.
+- Obtain independent database/security review before any mutation-grant schema extension, production API integration, or deployment.
+
+## Explicit nonclaims
+Design-only. Not an ACL migration, no production enforcement, grants, credentials, provider calls, CMS publishing, production DB access, merge or deployment. Passing CI certifies documentation and the existing test suite only, not the proposed ACL behavior.
+
+## Disposable harness review — concrete implementation constraints
+Inspected `artifacts/api-server/src/lib/cvi-gsc-disposable-authenticated-session.ephemeral.test.ts`: the test allows only PostgreSQL at `127.0.0.1:5432/seo_engine_cvi_disposable` as user `postgres` (with no URL query/fragment), rejects inherited `DATABASE_URL`, verifies the connected database name, requires `auth_sessions`, and then temporarily points `DATABASE_URL` at that disposable instance. The existing harness holds one main test across many CVI increments and restores environment variables in `finally`.
+
+**Critical isolation requirement:** Do **not** automatically apply draft migration `0012` inside that shared session harness: it changes public schema and could invalidate CI schema-count expectations or other concurrently running tests. First design an **independent disposable database fixture** or a schema-isolated rollback strategy with explicit prerequisites and a committed cleanup test. Its exact database name and CI workflow orchestration must be established from source before implementation. An ephemeral PostgreSQL test can use `BEGIN ... ROLLBACK` if all DDL and records are in the same connection/transaction and no parallel connections need the uncommitted schema; concurrent revocation proof needs a genuinely committed temporary schema and reliable teardown.
+
+**No migration enactment is part of CVI-1C.57.** Only after fixture isolation and policy review should a separate bounded PR add tests for the *existing read-only* `review_content` grant. Its success must never be used to claim `edit_draft` authority.
+
+## CI fixture discovery and corrected implementation strategy
+The earlier statement that a dedicated ACL fixture must be invented was incomplete. `.github/workflows/ci.yml`, lines 77–88, already has a **proof-branch-only** `Certify CVI-1C.28 private authorization composition` step. It creates `seo_engine_cvi_disposable` on localhost, applies `0001_core.sql`, `0002_auth.sql`, and dormant `0012` through `0016` migrations, runs `cvi-gsc-private-composition.ephemeral.test.ts`, and drops the database on step exit. Its isolation is per CI step: the earlier CVI-1C.27 authenticated-session step creates and removes a separate instance of the identically named disposable database. The main `seo_engine_test` schema is separate.
+
+**Revised next step:** First inspect the existing CVI-1C.28 composition test for membership/grant admission and revocation coverage. Prefer extending that proof-step fixture only when a genuinely uncovered, narrowly bounded regression is found. Do not apply ACL migrations inside the CVI-1C.27 shared session step, duplicate a proof database name during parallel tests, or activate dormant migrations via production bootstrap.
+
+This discovery is about the inspected CI workflow, not production deployment. No database migrations were run in this review.
+
+## Existing regression coverage / narrowed gap
+`artifacts/api-server/src/lib/cvi-gsc-private-composition.ephemeral.test.ts` already inserts synthetic organization, site, `auth_sessions`, membership and `read_evidence` grant (lines 43–48). It asserts denial for wrong site and revoked grant or membership (lines 66–73), and exercises concurrent revocation/authorization behavior against grants, memberships, connections and sites (approximately lines 80–150), plus session expiry and rotation. Therefore rebuilding that test with the same `read_evidence` scenarios would duplicate existing CI coverage.
+
+**Actual remaining bounded question:** Does a distinct synthetic `review_content` grant receive strict, non-escalating admission with a matching subject/site and revocation timing, without being interpreted as permission to edit drafts? Scope any further regression to this permission distinction. No runtime handler or migration activation is authorized; reuse the already isolated CVI-1C.28 proof fixture after independent review.
