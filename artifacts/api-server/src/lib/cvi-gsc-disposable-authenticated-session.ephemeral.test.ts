@@ -583,6 +583,39 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     assert.equal(canSyntheticEditDraft({...validDraft,subjectMatches:false}),false);
     assert.equal(canSyntheticEditDraft({...validDraft,siteMatches:false}),false);
     assert.equal(canSyntheticEditDraft({...validDraft,unexpired:false}),false);
+    // CVI-1C.56: atomic synthetic policy admission and write share the session lock.
+    const policySession=await createAuthSession({
+      subject:"cvi-policy-atomic",email:"synthetic-admin@example.test",
+      displayName:null,role:"operator",config,
+    });
+    const policyDb=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try{
+      await policyDb.unsafe("CREATE TEMP TABLE cvi_policy_atomic_write(value text NOT NULL)");
+      const applySyntheticDraft=async(permission:"synthetic_edit_draft"|"review_content")=>
+        policyDb.begin(async tx=>{
+          const sessions=await tx<{role:string;subject:string}[]>`
+            SELECT role,subject FROM auth_sessions
+            WHERE id=${policySession.principal.sessionId}::uuid
+              AND revoked_at IS NULL AND expires_at>clock_timestamp()
+              AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+            FOR UPDATE`;
+          const live=sessions[0];
+          if(!live||!["operator","admin"].includes(live.role)
+            ||live.subject!=="cvi-policy-atomic"||permission!=="synthetic_edit_draft")return false;
+          await tx`INSERT INTO cvi_policy_atomic_write(value) VALUES ('synthetic-authorized')`;
+          return true;
+        });
+      assert.equal(await applySyntheticDraft("review_content"),false);
+      assert.equal(await applySyntheticDraft("synthetic_edit_draft"),true);
+      await sql`UPDATE auth_sessions SET revoked_at=clock_timestamp()
+        WHERE id=${policySession.principal.sessionId}::uuid`;
+      assert.equal(await applySyntheticDraft("synthetic_edit_draft"),false);
+      const count=await policyDb<{n:number}[]>`
+        SELECT count(*)::int AS n FROM cvi_policy_atomic_write`;
+      assert.equal(count[0]?.n,1,"only the prerevocation synthetic write persists");
+    }finally{
+      await policyDb.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
