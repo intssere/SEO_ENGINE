@@ -5,6 +5,7 @@ on:
     paths:
       - "docs/integration/int-02a-ugp-migration-source-map*"
       - "docs/integration/int-02b-migration-admission*"
+      - "docs/integration/int-02b-historical-lineage-policy*"
       - ".github/workflows/int-02a-migration-manifest-tests.yml"
 permissions:
   contents: read
@@ -17,4 +18,4 @@ jobs:
         with:
           persist-credentials: false
       - name: Verify source-only fail-closed migration manifest and admission evaluator
-        run: node --test docs/integration/int-02a-ugp-migration-source-map.test.mjs docs/integration/int-02b-migration-admission.test.mjs
+        run: node --test docs/integration/int-02a-ugp-migration-source-map.test.mjs docs/integration/int-02b-migration-admission.test.mjs docs/integration/int-02b-historical-lineage-policy.test.mjs
