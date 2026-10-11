@@ -1,0 +1,53 @@
+{
+  "schema": "seo-engine-int-02a-migration-source-map-v1",
+  "status": "DESIGN_ONLY_NOT_APPROVED_FOR_EXECUTION",
+  "mainHead": "93f457f9f00d1ef36c3c92dacef1ca42aa2c2b9e",
+  "pinnedUgpHead": "5cecb83da3352fd6a2e79423abbb69f2e7e9105b",
+  "guards": {
+    "executeSql": false,
+    "deploy": false,
+    "productionDatabaseAccess": false,
+    "preserveMain0008Through0011": true,
+    "requireIndependentInstalledLineageCertification": true,
+    "requireDisposablePostgresBeforePromotion": true
+  },
+  "entries": [
+    {
+      "original": "0008_ugp_10_3_authority_outreach_review_events.sql",
+      "candidate": "0012_ugp_10_3_authority_outreach_review_events.sql",
+      "gitBlobSha1": "a8a38a277d486aae95fcfb1c416e2842904aeeb4",
+      "rawSha256": "21331890d3f7ceacc0db47efca8b7e6cce50826a44fcf72c2a9cf6a788ea45f0",
+      "requiredObjects": [
+        "sites"
+      ]
+    },
+    {
+      "original": "0009_ugp_10_31_outbound_safety_ledger.sql",
+      "candidate": "0013_ugp_10_31_outbound_safety_ledger.sql",
+      "gitBlobSha1": "60c3682ceceae897ca76d7843284d0aeaa82b43f",
+      "rawSha256": "3acad462f9bc527d03e1247ded261c9f701dc367b186710c7300b3c1c587c29b",
+      "requiredObjects": [
+        "sites"
+      ]
+    },
+    {
+      "original": "0010_ugp_10_32_single_send_execution.sql",
+      "candidate": "0014_ugp_10_32_single_send_execution.sql",
+      "gitBlobSha1": "846b78c56b2aeee6c24a6ccd4d8820c8ef695b67",
+      "rawSha256": "b78caa1ae8e0d2a9316a88ea8b026dac0271a089b2e7424ed983915c1f8ec0f0",
+      "requiredObjects": [
+        "authority_outreach_send_reservations",
+        "sites"
+      ]
+    },
+    {
+      "original": "0011_ugp_10_33_controlled_https_certification.sql",
+      "candidate": "0015_ugp_10_33_controlled_https_certification.sql",
+      "gitBlobSha1": "50c9861d02ab0caebc25190141fa9fe5ade8e98c",
+      "rawSha256": "801f8cb03807a594825cc5af74dcfbcc0d77412b3d2ef5127b89ab10674a73ad",
+      "requiredObjects": [
+        "authority_outreach_single_send_execution_events"
+      ]
+    }
+  ]
+}
