@@ -67,3 +67,13 @@ The dormant `cvi_site_read_grants` table permits `review_content`, but its name 
 
 ## Evidence and verification scope
 This design is grounded in the inspected ACL SQL drafts and `operational-data.ts`; it does not establish whether site-level ACL migrations are wired into bootstrap, seeded, or deployed. All findings remain design-stage with no production database reads, external provider operations or public writes.
+
+## Runtime bootstrap exclusion — source verified
+Read `lib/db/src/runtime-bootstrap.ts` on this workstream. Its `applyMigration` call sites explicitly name only `0001_core.sql` and `0002_auth.sql` (lines 318 and 334). The file recognizes other schema table-count baselines but contains **no invocation of draft CVI ACL migration `0012`**, nor does it apply `0013`–`0016`. Accordingly this inspected runtime-bootstrap implementation does not automatically enable the CVI ACL tables. This is a statement about the inspected bootstrap source, **not** a proof of all deployments, external migration runners, or production database state. Any future integration must certify migration eligibility separately and must not auto-apply dormant draft files.
+
+## Security review sequence
+1. Preserve bootstrap exclusion for dormant CVI migrations and evidence-only operation until explicit schema activation approval.
+2. Obtain a documented policy decision for `edit_draft` vs `review_content`; specify subject-to-organization-to-site binding.
+3. Resolve auth-disabled production fail-closed policy without changing local/disposable behavior silently.
+4. Propose a deterministic cross-handler lock order, including site/membership/grant/session/plan, and test concurrent revocations.
+5. Only then propose a narrow runtime change behind authorized feature/environment gates, supported by disposable PostgreSQL and HTTP tests and independent review.
