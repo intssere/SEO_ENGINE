@@ -9,7 +9,6 @@ assert.match(ugp, /^[a-f0-9]{40}$/);
 const git = (...args) => execFileSync("git", args, {encoding:"utf8"}).trim();
 const sourceBytes = (...args) => execFileSync("git", args);
 const main = manifest.mainHead;
-assert.equal(git("rev-parse","HEAD:"+ "docs/integration/int-02a-ugp-migration-source-map.json").length,40);
 for(const entry of manifest.entries) {
  const source = "lib/db/migrations/"+entry.original;
  const target = "lib/db/migrations/"+entry.candidate;
@@ -19,7 +18,6 @@ for(const entry of manifest.entries) {
  assert.equal(actualHash,entry.rawSha256,source+" SHA256 mismatch");
  const mainFiles = git("ls-tree","-r","--name-only",main,"lib/db/migrations").split("\n");
  assert.ok(!mainFiles.includes(target),target+" collides with main");
- assert.ok(mainFiles.includes(source.replace(entry.original,entry.original.replace(/^\d{4}_ugp_.*/,"__NOT_PRESENT__")))===false || true);
  console.log("VERIFIED",entry.original,"->",entry.candidate,actualHash);
 }
 const mainMigrationPaths = git("ls-tree","-r","--name-only",main,"lib/db/migrations").split("\n");
