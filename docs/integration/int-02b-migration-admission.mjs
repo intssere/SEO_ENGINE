@@ -7,10 +7,11 @@ export const EXPECTED_COMBINED_TABLES=55;
 export const UGP_TABLES=Object.freeze(["authority_outreach_review_events","authority_outreach_suppressions","authority_outreach_send_reservations","authority_outreach_send_safety_events","authority_outreach_single_send_executions","authority_outreach_single_send_execution_events"]);
 export function assessMigrationAdmission(snapshot){
   assert.ok(snapshot && typeof snapshot==="object");
-  const {tableCount,tableNames,hasFinalConstraint,sourceHashesVerified,installedLineageVerified,targetDatabaseIdentityVerified,authorizedDisposableExecution}=snapshot;
+  const {tableCount,tableNames,hasFinalConstraint,auditTriggerEnabled,sourceHashesVerified,installedLineageVerified,targetDatabaseIdentityVerified,authorizedDisposableExecution}=snapshot;
   if(!Number.isInteger(tableCount)||tableCount<0||!Array.isArray(tableNames)||tableNames.some(x=>typeof x!=="string"))return {admitted:false,reason:"invalid_schema_snapshot"};
   if(new Set(tableNames).size!==tableNames.length||tableNames.length!==tableCount)return {admitted:false,reason:"ambiguous_schema_snapshot"};
   const present=UGP_TABLES.filter(x=>tableNames.includes(x)).length;
+  if(tableCount===EXPECTED_COMBINED_TABLES&&present===6&&auditTriggerEnabled===false)return {admitted:false,reason:"audit_trigger_disabled"};
   if(tableCount===EXPECTED_COMBINED_TABLES&&present===6&&hasFinalConstraint===true)return {admitted:false,reason:"already_installed_no_replay"};
   if(tableCount!==EXPECTED_MAIN_TABLES||present!==0||hasFinalConstraint!==false)return {admitted:false,reason:"unrecognized_or_partial_lineage"};
   if(sourceHashesVerified!==true)return {admitted:false,reason:"source_integrity_unverified"};
