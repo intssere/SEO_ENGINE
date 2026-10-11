@@ -1,4 +1,21 @@
 /** INT-02B read-only historical receipt intake. Never authorizes SQL. */
+import {readFileSync} from "node:fs";
+const mapped=JSON.parse(readFileSync(new URL("./int-02a-ugp-migration-source-map.json",import.meta.url)));
+const canonical=new Set([
+ "0001_core.sql",
+ "0002_auth.sql",
+ "0003_observation_evidence_schema.sql",
+ "0004_first_party_crawl_execution_state.sql",
+ "0005_p8_8_policy_mutation_reservations.sql",
+ "0006_p8_8_policy_mutation_controls.sql",
+ "0007_p8_8_policy_mutation_dispatch.sql",
+ "0008_first_party_crawl_l2_invocations.sql",
+ "0009_first_party_crawl_l2_bounded_pilot_phase.sql",
+ "0010_first_party_crawl_terminal_failure_recovery.sql",
+ "0011_first_party_crawl_expected_absence_disposition.sql",
+ ...mapped.entries.map(e=>e.candidate)
+]);
+
 const HEX=/^[0-9a-f]{64}$/;
 const UTC=/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/;
 const validUtc=value=>typeof value==="string"&&UTC.test(value)&&!Number.isNaN(Date.parse(value))&&new Date(value).toISOString().slice(0,19)===value.slice(0,19);
@@ -15,6 +32,7 @@ export function inspectHistoricalReceiptBundle(bundle){
  for(const r of bundle.receipts){
   if(!r||typeof r.filename!=="string"||!/^[0-9]{4}_[a-z0-9_]+\.sql$/.test(r.filename)||seen.has(r.filename))return deny("receipt_identity_invalid");
   seen.add(r.filename);
+  if(!canonical.has(r.filename))return deny("receipt_not_canonical_integration_migration");
   const ordinal=Number(r.filename.slice(0,4));
   if(ordinal<1||ordinal>15||ordinal<=preceding||sequence.has(ordinal))return deny("receipt_sequence_invalid");
   preceding=ordinal;
