@@ -10,3 +10,8 @@ The test establishes demotion-first ordering only. Operation-first ordering, ato
 
 ## Certification
 Full exact-head CI pending.
+
+## Implementation certification receipt
+- Exact HEAD `188298252d855b7f3ef60099bf076266ff888f1d`.
+- Full CI https://github.com/intssere/SEO_ENGINE/actions/runs/38129564810 — SUCCESS, job `114440880643`, zero failed steps.
+- Draft PR #1084 remains unmerged and undeployed. This documentation revision requires independent exact-head verification.
