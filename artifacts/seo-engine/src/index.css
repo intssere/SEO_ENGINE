@@ -3403,10 +3403,10 @@ td:first-child {
 .customerOnboardingHeader { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:30px; }
 .customerEyebrow { color:#365be7; font-size:12px; font-weight:800; letter-spacing:.11em; }
 .customerOnboarding h1 { font-size:clamp(29px,3vw,42px); font-weight:750; letter-spacing:-.04em; margin:8px 0; }
-.customerOnboardingHeader p:not(.customerEyebrow), .customerOnboardingCard>p, .customerOnboardingAside p { color:#66758a; line-height:1.65; }
+.customerOnboardingHeader p:not(.customerEyebrow), .customerOnboardingCard>p, .customerOnboardingAside p { color:#52627a; line-height:1.65; }
 .customerBackLink { font-size:13px; color:#375ce7; padding:10px 0; text-decoration:underline; }
 .customerSteps { display:flex; padding:0; margin:0 0 24px; list-style:none; gap:10px; }
-.customerSteps li { flex:1; display:flex; align-items:center; gap:10px; color:#758398; font-size:13px; padding:12px 10px; border-bottom:2px solid #dbe1eb; }
+.customerSteps li { flex:1; display:flex; align-items:center; gap:10px; color:#53647b; font-size:13px; padding:12px 10px; border-bottom:2px solid #dbe1eb; }
 .customerSteps li span { width:26px; height:26px; border-radius:50%; background:#e9edf5; display:grid; place-items:center; font-weight:700; }
 .customerSteps .current { color:#274de1; border-color:#4164ee; font-weight:750; }
 .customerSteps .current span { background:#4164ee; color:white; }
@@ -3417,7 +3417,7 @@ td:first-child {
 .customerOnboardingCard h2 { font-size:25px; line-height:1.3; font-weight:750; margin:0 0 10px; }
 .customerOnboardingCard label { display:block; font-size:13px; font-weight:700; margin:22px 0 8px; }
 .customerOnboardingCard input,.customerOnboardingCard select { display:block; width:100%; min-height:48px; background:white; border:1px solid #cad4e2; border-radius:9px; padding:10px 12px; }
-.customerOnboardingCard small { color:#7c8798; display:block; margin-top:8px; line-height:1.5; }
+.customerOnboardingCard small { color:#52627a; display:block; margin-top:8px; line-height:1.5; }
 .customerPrimaryButton { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:46px; border:0; padding:11px 18px; background:#345bea; color:white; border-radius:9px; font-weight:650; margin-top:24px; text-decoration:none; cursor:pointer; }
 .customerPrimaryButton:disabled { background:#b9c4d9; cursor:not-allowed; }
 .customerSecondaryButton { border:1px solid #cbd5e3; background:white; border-radius:9px; padding:11px 18px; min-height:46px; margin-top:24px; }
