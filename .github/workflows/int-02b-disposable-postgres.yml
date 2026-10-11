@@ -88,3 +88,19 @@ jobs:
           after="$(PGDATABASE=int02_main_only psql -X -At -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
           test "$after" = "$before"
           echo "INT_02B_OUT_OF_ORDER_REFUSED_MAIN_BASELINE_PRESERVED"
+      - name: Verify partial UGP installation remains incomplete and rejects 0015
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb int02_partial_ugp
+          for file in lib/db/migrations/00{01..13}_*.sql; do
+            PGDATABASE=int02_partial_ugp psql -X -v ON_ERROR_STOP=1 -f "$file" >/dev/null
+          done
+          before="$(PGDATABASE=int02_partial_ugp psql -X -At -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
+          test "$before" -eq 53
+          if PGDATABASE=int02_partial_ugp psql -X -v ON_ERROR_STOP=1 -f lib/db/migrations/0015_ugp_10_33_controlled_https_certification.sql >/tmp/int02-partial.log 2>&1; then
+            echo "ERROR: 0015 succeeded before required 0014 tables"; exit 1
+          fi
+          after="$(PGDATABASE=int02_partial_ugp psql -X -At -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
+          test "$after" = "$before"
+          echo "INT_02B_PARTIAL_SCHEMA_REJECTED_AND_PRESERVED"
