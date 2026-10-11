@@ -6,6 +6,7 @@ on:
       - "lib/db/migrations/001[2-5]_ugp_*.sql"
       - ".github/workflows/int-02b-disposable-postgres.yml"
       - "docs/integration/int-02b-catalog-evidence*.mjs"
+      - "docs/integration/int-02b-database-identity*.mjs"
 permissions:
   contents: read
 jobs:
@@ -36,6 +37,8 @@ jobs:
           persist-credentials: false
       - name: Test structural catalog comparator (fail closed)
         run: node --test docs/integration/int-02b-catalog-evidence.test.mjs
+      - name: Test disposable database identity gate
+        run: node --test docs/integration/int-02b-database-identity.test.mjs
       - name: Install psql client
         run: |
           sudo apt-get update -qq
@@ -161,6 +164,20 @@ jobs:
           assert.equal(verifyDisposableLineageEvidence({...input,migrationSource:migrationSource+'--altered'}).verified,false);
           assert.equal(verifyDisposableLineageEvidence({...input,expectedTables:[...observedTables.slice(1),'forged_table']}).verified,false);
           console.log('INT02_DISPOSABLE_CATALOG_EVIDENCE_PASS',observedTables.length,observedConstraints.length);
+          JS
+      - name: Independently observe disposable database identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          observed="$(PGDATABASE=int02_attested psql -X -At -v ON_ERROR_STOP=1 -c "SELECT json_build_object('database', current_database(), 'currentUser', current_user, 'serverAddress', inet_server_addr()::text, 'serverPort', inet_server_port()::text)::text")"
+          OBSERVED_IDENTITY="$observed" node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {verifyDisposableDatabaseIdentity} from './docs/integration/int-02b-database-identity.mjs';
+          const observed=JSON.parse(process.env.OBSERVED_IDENTITY);
+          const expected={database:'int02_attested',currentUser:'test',serverAddress:'127.0.0.1',serverPort:'5432'};
+          assert.deepEqual(verifyDisposableDatabaseIdentity(observed,expected),{verified:true,reason:'disposable_identity_observation_matches'});
+          assert.equal(verifyDisposableDatabaseIdentity({...observed,database:'production'},expected).verified,false);
+          console.log('INT02_POSTGRES_OBSERVED_IDENTITY_PASS');
           JS
       - name: Verify exact UGP table keys and immutable audit triggers
         shell: bash
