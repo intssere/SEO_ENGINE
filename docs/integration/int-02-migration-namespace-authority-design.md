@@ -56,6 +56,14 @@ Implications:
 3. A new integration migration manifest is a **proposed** contract, not an existing guaranteed ledger. Specify immutable UGP-original SQL hashes and explicit mapping only after source audit and a confirmed current numbering reservation.
 4. Refuse to recognize a partially installed, already-applied-but-misnumbered, or semantically divergent schema as ready; build disposable negative tests.
 
+## INT-02A dedicated migration-executor evidence (verified)
+
+Main's **P12.2 migration 0011 is not a freely renumberable SQL script**. The production migration contract `artifacts/api-server/src/lib/p12-2-l10-19-a-0011-apply-contract.ts` hardcodes exact migration path, Git blob SHA and SHA-256, together with Packet 014, execution-plan, checkpoint, failure-event, accounting-snapshot and L2 receipt fingerprints into an explicit authorization fingerprint. The corresponding `p12-2-l10-19-a-0011-apply-cli.ts` expects the migration at `/app/0011_first_party_crawl_expected_absence_disposition.sql`, verifies raw bytes against expected SHA-256 and requires the exact authorization literal before invoking `psql` with a single bounded process and state checks.
+
+**Consequences:** preserve main 0011's original filename, bytes, pinned artifacts and historical authorizations. Do not change the main 0008–0011 namespace or replace its migration body. The ordinary `runtime-bootstrap.ts` path is not the only migration authority. Other dedicated execution pathways must be traced before assuming lack of checksum/receipt tracking. UGP 0008–0011 path consumers and historical apply receipts still require separate verification before final UGP integration numbering. No existing UGP installation may be assumed upgrade-safe from filename renumbering alone.
+
+**INT-02 acceptance gate:** produce a source-backed immutable mapping manifest (original UGP blob SHA, raw SHA-256, proposed integration path, prerequisite objects, execution consumers); test collision and already-applied-lineage rejection on disposable PostgreSQL; preserve independent Production authority decision. No SQL/DDL was executed during this audit.
+
 ## Explicit gates
 
 **INT-02A:** source-backed SQL and migration-runner dependency audit with filename and checksum mapping; no DDL.
