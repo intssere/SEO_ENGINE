@@ -109,6 +109,22 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     const rotated = await rotateAuthSessionToken(b.principal.sessionId);
     assert.equal((await request(b.token)).status,401);
     assert.equal((await request(rotated)).status,200);
+    // CVI-1C.40: fresh authorization must honor persisted demotion/promotion.
+    const demoted=await createAuthSession({
+      subject:"cvi-role-change",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    assert.equal((await request(demoted.token,{method:"POST",csrf:demoted.csrfToken})).status,200);
+    await sql`UPDATE auth_sessions SET role='viewer' WHERE id=${demoted.principal.sessionId}::uuid`;
+    assert.equal((await request(demoted.token,{method:"POST",csrf:demoted.csrfToken})).status,403,
+      "persisted demotion denies previously authorized session");
+    const demotedToken=await rotateAuthSessionToken(demoted.principal.sessionId);
+    assert.equal((await request(demoted.token)).status,401);
+    assert.equal((await request(demotedToken,{method:"POST",csrf:demoted.csrfToken})).status,403,
+      "rotation cannot restore a demoted role");
+    await sql`UPDATE auth_sessions SET role='admin' WHERE id=${demoted.principal.sessionId}::uuid`;
+    assert.equal((await request(demotedToken,{method:"POST",csrf:demoted.csrfToken})).status,200,
+      "authorized role updates are read from DB on each authenticated request");
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
