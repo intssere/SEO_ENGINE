@@ -1,5 +1,6 @@
 /** INT-02B read-only historical receipt intake. Never authorizes SQL. */
 import {readFileSync} from "node:fs";
+import {createHash} from "node:crypto";
 const mapped=JSON.parse(readFileSync(new URL("./int-02a-ugp-migration-source-map.json",import.meta.url)));
 const canonical=new Set([
  "0001_core.sql",
@@ -39,6 +40,8 @@ export function inspectHistoricalReceiptBundle(bundle){
   preceding=ordinal;
   sequence.add(ordinal);
   if(typeof r.sha256!=="string"||!HEX.test(r.sha256)||typeof r.appliedAtUtc!=="string"||!validUtc(r.appliedAtUtc))return deny("receipt_evidence_incomplete");
+  const actual=createHash("sha256").update(readFileSync(new URL("../../lib/db/migrations/"+r.filename,import.meta.url))).digest("hex");
+  if(r.sha256!==actual)return deny("receipt_source_sha256_mismatch");
  }
 
  if(!bundle.witness||typeof bundle.witness.immutableReference!=="string"||!bundle.witness.immutableReference.trim()||typeof bundle.witness.attestor!=="string"||!bundle.witness.attestor.trim())return deny("independent_witness_not_supplied");
