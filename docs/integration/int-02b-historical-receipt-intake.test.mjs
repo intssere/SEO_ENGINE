@@ -19,7 +19,7 @@ for(const [reason,change] of [
 
 test("reject impossible Gregorian timestamp",()=>assert.equal(check({...bundle,receipts:[{...bundle.receipts[0],appliedAtUtc:"2026-02-30T10:00:00Z"}]}).reason,"receipt_evidence_incomplete"));
 test("reject duplicate migration ordinal with different filename",()=>assert.equal(check({...bundle,receipts:[bundle.receipts[0],{...bundle.receipts[0],filename:"0001_alternate.sql"}]}).reason,"receipt_not_canonical_integration_migration"));
-test("reject reversed migration ordinals",()=>assert.equal(check({...bundle,receipts:[{...bundle.receipts[0],filename:"0002_auth.sql"},bundle.receipts[0]]}).reason,"receipt_sequence_invalid"));
+test("reject reversed migration ordinals",()=>assert.equal(check({...bundle,receipts:[{...bundle.receipts[0],filename:"0002_auth.sql",sha256:createHash("sha256").update(readFileSync(new URL("../../lib/db/migrations/0002_auth.sql",import.meta.url))).digest("hex")},bundle.receipts[0]]}).reason,"receipt_sequence_invalid"));
 
 test("reject fabricated migration with an otherwise well-formed name",()=>assert.equal(check({...bundle,receipts:[{...bundle.receipts[0],filename:"0016_fabricated.sql"}]}).reason,"receipt_not_canonical_integration_migration"));
 
