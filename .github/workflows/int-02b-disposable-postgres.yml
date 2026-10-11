@@ -195,3 +195,28 @@ jobs:
           test "$count" -eq 55
           test "$constraint_count" -eq 0
           echo "INT02_TAMPERED_55_TABLE_SCHEMA_NOT_EQUIVALENT"
+      - name: Verify admission evaluator rejects observed tampered 55-table schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          for db in seo_engine_test int02_tampered; do
+            tables="$(PGDATABASE="$db" psql -X -At -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(table_name ORDER BY table_name),'[]'::json)::text FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
+            constraint="$(PGDATABASE="$db" psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM pg_constraint WHERE conname='ua_single_send_exec_event_reason_v2_check'")"
+            DB_NAME="$db" TABLES="$tables" CONSTRAINT_COUNT="$constraint" node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {assessMigrationAdmission} from './docs/integration/int-02b-migration-admission.mjs';
+          const result=assessMigrationAdmission({
+            tableCount:55,
+            tableNames:JSON.parse(process.env.TABLES),
+            hasFinalConstraint:process.env.CONSTRAINT_COUNT==='1',
+            sourceHashesVerified:true,
+            installedLineageVerified:true,
+            targetDatabaseIdentityVerified:true,
+            authorizedDisposableExecution:true
+          });
+          assert.equal(result.admitted,false);
+          const expected=process.env.DB_NAME==='seo_engine_test'?'already_installed_no_replay':'unrecognized_or_partial_lineage';
+          assert.equal(result.reason,expected);
+          console.log('INT02_REAL_SCHEMA_ADMISSION_REJECTED',process.env.DB_NAME,result.reason);
+          JS
+          done
