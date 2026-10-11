@@ -14,3 +14,7 @@ for(const [reason,change] of [
  ["legacy_ugp_namespace_collision",{...bundle,receipts:[{...bundle.receipts[0],filename:"0008_ugp_10_3_authority_outreach_review_events.sql"}]}],
  ["independent_witness_not_supplied",{...bundle,witness:{attestor:"reviewer"}}]
 ])test("reject "+reason,()=>assert.deepEqual(check(change),{reviewEligible:false,executionAuthorized:false,reason}));
+
+test("reject impossible Gregorian timestamp",()=>assert.equal(check({...bundle,receipts:[{...bundle.receipts[0],appliedAtUtc:"2026-02-30T10:00:00Z"}]}).reason,"receipt_evidence_incomplete"));
+test("reject duplicate migration ordinal with different filename",()=>assert.equal(check({...bundle,receipts:[bundle.receipts[0],{...bundle.receipts[0],filename:"0001_alternate.sql"}]}).reason,"receipt_sequence_invalid"));
+test("reject reversed migration ordinals",()=>assert.equal(check({...bundle,receipts:[{...bundle.receipts[0],filename:"0002_auth.sql"},bundle.receipts[0]]}).reason,"receipt_sequence_invalid"));
