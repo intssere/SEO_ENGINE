@@ -5,6 +5,7 @@ on:
     paths:
       - "lib/db/migrations/001[2-5]_ugp_*.sql"
       - ".github/workflows/int-02b-disposable-postgres.yml"
+      - "docs/integration/int-02b-catalog-evidence*.mjs"
 permissions:
   contents: read
 jobs:
@@ -33,6 +34,8 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+      - name: Test structural catalog comparator (fail closed)
+        run: node --test docs/integration/int-02b-catalog-evidence.test.mjs
       - name: Install psql client
         run: |
           sudo apt-get update -qq
