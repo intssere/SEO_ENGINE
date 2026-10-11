@@ -29,7 +29,7 @@ test("C4 isolated SQL: locked control serializes close-before-claim and claim-be
  await db`DELETE FROM ugp11_transport_fixture.controls WHERE tenant_id=${tenant}`;
  for(const [i,mode] of modes.entries()){
   for(const order of ["close-first","claim-first"] as const){
-   const site=`c4-${i}-${order}`,identity=String(i+1).repeat(64);
+   const site=`c4-${i}-${order}`;
    // Identity is unique across sites AND all cases (globally primary keyed).
    const id=String(i+1)+String(order==="close-first"?4:5).repeat(63);
    await db`INSERT INTO ugp11_transport_fixture.controls
