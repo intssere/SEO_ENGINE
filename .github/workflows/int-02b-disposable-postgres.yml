@@ -284,6 +284,17 @@ jobs:
           console.log('INT02_DISABLED_AUDIT_TRIGGER_REJECTED');
           JS
 
+      - name: Create changed-column and added-index disposable negatives
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb -T seo_engine_test int02_column_tampered
+          createdb -T seo_engine_test int02_index_tampered
+          PGDATABASE=int02_column_tampered psql -X -v ON_ERROR_STOP=1 -c "ALTER TABLE authority_outreach_review_events ADD COLUMN int02_unexpected_column text"
+          PGDATABASE=int02_index_tampered psql -X -v ON_ERROR_STOP=1 -c "CREATE INDEX int02_unexpected_sites_domain_idx ON sites(domain)"
+          for db in int02_column_tampered int02_index_tampered; do
+            PGDATABASE="$db" psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -qx 55
+          done
       - name: Compare real PostgreSQL catalog snapshots against pinned disposable installation
         shell: bash
         run: |
@@ -299,17 +310,21 @@ jobs:
           PGDATABASE=seo_engine_test psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-reference.json
           PGDATABASE=int02_tampered psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-tampered.json
           PGDATABASE=int02_disabled_trigger psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-disabled.json
+          PGDATABASE=int02_column_tampered psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-column.json
+          PGDATABASE=int02_index_tampered psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-index.json
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import {readFileSync} from 'node:fs';
           import {compareCatalogEvidence} from './docs/integration/int-02b-catalog-evidence.mjs';
           const load=(name)=>JSON.parse(readFileSync('/tmp/int02-catalog-'+name+'.json','utf8'));
           const reference=load('reference');
-          for (const [name,snapshot] of [['untampered',reference],['constraint_tamper',load('tampered')],['disabled_trigger',load('disabled')]]) {
+          for (const [name,snapshot] of [['untampered',reference],['constraint_tamper',load('tampered')],['disabled_trigger',load('disabled')],['column_tamper',load('column')],['index_tamper',load('index')]]) {
             const result=compareCatalogEvidence({observed:snapshot,reference,referenceProvenance:'pinned_disposable_sql_installation'});
             assert.equal(result.verified,name==='untampered',name+': '+result.reason);
             if(name==='constraint_tamper')assert.equal(result.reason,'catalog_constraints_mismatch');
             if(name==='disabled_trigger')assert.equal(result.reason,'catalog_triggers_mismatch');
+            if(name==='column_tamper')assert.equal(result.reason,'catalog_columns_mismatch');
+            if(name==='index_tamper')assert.equal(result.reason,'catalog_indexes_mismatch');
             console.log('INT02_CATALOG_COMPARISON',name,result.reason);
           }
           JS
