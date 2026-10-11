@@ -249,3 +249,31 @@ jobs:
           assert.deepEqual(result,{admitted:false,reason:'audit_trigger_disabled'});
           console.log('INT02_DISABLED_AUDIT_TRIGGER_REJECTED');
           JS
+
+      - name: Compare real PostgreSQL catalog snapshots against pinned disposable installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/int02-catalog.sql <<'SQL'
+          SELECT json_build_object(
+            'columns', (SELECT json_agg(json_build_object('table',table_name,'column',column_name,'definition',data_type || ':' || is_nullable || ':' || coalesce(column_default,'')) ORDER BY table_name,column_name) FROM information_schema.columns WHERE table_schema='public'),
+            'constraints', (SELECT json_agg(json_build_object('table',c.conrelid::regclass::text,'name',c.conname,'definition',pg_get_constraintdef(c.oid)) ORDER BY c.conrelid::regclass::text,c.conname) FROM pg_constraint c WHERE c.connamespace='public'::regnamespace),
+            'indexes', (SELECT json_agg(json_build_object('table',tablename,'name',indexname,'definition',indexdef) ORDER BY tablename,indexname) FROM pg_indexes WHERE schemaname='public'),
+            'triggers', (SELECT json_agg(json_build_object('table',t.tgrelid::regclass::text,'name',t.tgname,'definition',pg_get_triggerdef(t.oid),'enabled',t.tgenabled::text) ORDER BY t.tgrelid::regclass::text,t.tgname) FROM pg_trigger t JOIN pg_class cl ON cl.oid=t.tgrelid WHERE cl.relnamespace='public'::regnamespace AND NOT t.tgisinternal)
+          )::text;
+          SQL
+          reference="$(PGDATABASE=seo_engine_test psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql)"
+          tampered="$(PGDATABASE=int02_tampered psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql)"
+          disabled="$(PGDATABASE=int02_disabled_trigger psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql)"
+          REFERENCE="$reference" TAMPERED="$tampered" DISABLED="$disabled" node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {compareCatalogEvidence} from './docs/integration/int-02b-catalog-evidence.mjs';
+          const reference=JSON.parse(process.env.REFERENCE);
+          for (const [name,snapshot] of [['untampered',reference],['constraint_tamper',JSON.parse(process.env.TAMPERED)],['disabled_trigger',JSON.parse(process.env.DISABLED)]]) {
+            const result=compareCatalogEvidence({observed:snapshot,reference,referenceProvenance:'pinned_disposable_sql_installation'});
+            assert.equal(result.verified,name==='untampered',name+': '+result.reason);
+            if(name==='constraint_tamper')assert.equal(result.reason,'catalog_constraints_mismatch');
+            if(name==='disabled_trigger')assert.equal(result.reason,'catalog_triggers_mismatch');
+            console.log('INT02_CATALOG_COMPARISON',name,result.reason);
+          }
+          JS
