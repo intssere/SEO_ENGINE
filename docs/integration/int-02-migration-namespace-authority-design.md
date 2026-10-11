@@ -29,6 +29,21 @@ Main `lib/db/src/runtime-bootstrap.ts` recognizes P12.2 L2/recovery/expected abs
 7. Review exact SQL (including referential dependencies, triggers, indexes, permissions and backfill behavior), migration consumers, any installed migration ledger and build packaging **before** choosing final numbering or authorizing DDL.
 8. Resolve canonical Production data authority (Neon vs Railway) independently; test only disposable fixtures. Do not infer what has been applied from repository filenames.
 
+## INT-02A source-level SQL dependency audit (verified)
+
+All four UGP SQL bodies were read at UGP HEAD `c454f4428be6799bc6c0e0c160c27f0f7d58869e`:
+
+- UGP 0008 creates `authority_outreach_review_events` (1 table), foreign key to `sites(id)`.
+- UGP 0009 creates `authority_outreach_suppressions`, `authority_outreach_send_reservations`, and `authority_outreach_send_safety_events` (3 tables), with `sites` references and intra-migration reservation reference.
+- UGP 0010 creates `authority_outreach_single_send_executions` and `authority_outreach_single_send_execution_events` (2 tables), dependent on the 0009 reservations and `sites`.
+- UGP 0011 adds a changed event-reason CHECK constraint to the execution-events table created in UGP 0010. It first discovers and drops the existing constraint dynamically, and fails if missing; this makes ordering and replay checks particularly important.
+- The four UGP migrations have **six new tables total**, plus an ALTER migration. They form the dependency sequence `UGP 0008 / 0009 -> UGP 0010 -> UGP 0011` (the 0008 and 0009 relationship is not asserted from FK evidence; both depend on the pre-existing `sites` table).
+- Proposed 0012–0015 remains provisional; do not assume those numbers unused in later branch changes, or that renamed files can be applied safely to databases that already recorded original 0008–0011 names.
+
+**Concrete fail-closed hazards:** (1) duplicate sequence IDs masquerading as equivalent migrations; (2) an already-applied UGP installation recorded by original filenames/checksums; (3) the UGP 0011 dynamic constraint replacement applied against an unexpected constraint; (4) main runtime classification based on table count and UGP's six extra tables; (5) packaging/runtime bootstrap assumptions on both branches.
+
+**Next source audit:** trace the actual runner/ledger and test assertions that bind filenames and checksums; verify current main schema prerequisite objects and all SQL effects (triggers, indexes, DML). Then create a deterministic rename/manifest proposal with isolated fixture tests. No SQL execution authorized by this document.
+
 ## Explicit gates
 
 **INT-02A:** source-backed SQL and migration-runner dependency audit with filename and checksum mapping; no DDL.
