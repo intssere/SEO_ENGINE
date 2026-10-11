@@ -48,6 +48,6 @@ jobs:
           done
           count="$(psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
           echo "Combined table count: $count"
-          test "$count" -eq 49
+          test "$count" -eq 55
           psql -X -v ON_ERROR_STOP=1 -c "SELECT conname FROM pg_constraint WHERE conname='ua_single_send_exec_event_reason_v2_check'" | grep ua_single_send_exec_event_reason_v2_check
           echo "INT_02B_COMBINED_DISPOSABLE_POSTGRES_PASS"
