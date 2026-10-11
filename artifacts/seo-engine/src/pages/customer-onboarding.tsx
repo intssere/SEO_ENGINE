@@ -1,88 +1,66 @@
 import "./customer-onboarding.css";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
 
-
-const platforms = ["Auto-detect", "Shopify", "WordPress", "Webflow", "Custom website"] as const;
-type Platform = typeof platforms[number];
-
-function parsePublicWebsite(input: string): { host: string; normalized: string } | null {
+const platforms = ["Auto-detect", "Shopify", "WordPress", "Webflow", "Custom website"];
+function siteUrl(value: string) {
   try {
-    const candidate = input.trim();
-    if (!candidate || candidate.includes("@") || /\s/.test(candidate)) return null;
-    const url = new URL(/^https?:\/\//i.test(candidate) ? candidate : `https://${candidate}`);
-    const host = url.hostname.toLowerCase();
-    if (url.protocol !== "https:" || !host.includes(".") || url.username || url.password ||
-      url.port || /^(localhost|.*\.localhost)$/.test(host) || /^(?:\d{1,3}\.){3}\d{1,3}$/.test(host) ||
-      /\.(?:local|internal|test|invalid)$/.test(host)) return null;
-    return { host, normalized: `https://${host}` };
-  } catch { return null; }
+    const raw = value.trim();
+    if (!raw || /[\s@]/.test(raw)) return "";
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : "https://" + raw);
+    const h = url.hostname.toLowerCase();
+    if (url.protocol !== "https:" || !h.includes(".") || url.port || url.username || url.password ||
+      /^(localhost|.*\.localhost|\d+(?:\.\d+){3})$/.test(h) || /\.(local|internal|test|invalid)$/.test(h)) return "";
+    return "https://" + h;
+  } catch { return ""; }
 }
-
 export default function CustomerOnboardingPage() {
   const [url, setUrl] = useState("");
-  const [platform, setPlatform] = useState<Platform>("Auto-detect");
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const parsed = useMemo(() => parsePublicWebsite(url), [url]);
-  return (
-    <div className="customerOnboarding">
-      <header className="customerOnboardingHeader">
-        <div><p className="customerEyebrow">GETTING STARTED</p><h1>Connect your website</h1>
-        <p>Set up your SEO workspace in a few clear steps. Nothing will be changed on your website.</p></div>
-        <Link href="/" className="customerBackLink">Back to Command Center</Link>
-      </header>
-      <ol className="customerSteps" aria-label="Onboarding steps">
-        {["Website", "Data sources", "Readiness"].map((name, i) => (
-          <li key={name} className={step === i+1 ? "current" : step > i+1 ? "completed" : ""} aria-current={step===i+1 ? "step" : undefined}>
-            <span>{step>i+1 ? "✓" : i+1}</span>{name}
-          </li>
-        ))}
-      </ol>
-      <div className="customerOnboardingGrid">
-        <section className="customerOnboardingCard">
-          {step===1 && <>
-            <div className="customerSectionIcon">◎</div>
-            <h2>Which website would you like to analyze?</h2>
-            <p>Enter your public website address. This design preview checks the address format only; it does not register a site or detect its technology.</p>
-            <label htmlFor="customer-website-url">Website URL</label>
-            <input id="customer-website-url" placeholder="https://example.com" autoComplete="url" value={url} onChange={e=>setUrl(e.target.value)} aria-describedby="customer-url-help"/>
-            <small id="customer-url-help">{url && !parsed ? "Enter a public HTTPS domain without credentials, an IP address or a custom port." : "Example: yourstore.com — ownership checks happen in the live connection process."}</small>
-            <label htmlFor="customer-platform">Website platform</label>
-            <select id="customer-platform" value={platform} onChange={e=>setPlatform(e.target.value as Platform)}>
-              {platforms.map(p=><option value={p} key={p}>{p}</option>)}
-            </select>
-            <button className="customerPrimaryButton" disabled={!parsed} onClick={()=>setStep(2)}>Continue →</button>
-          </>}
-          {step===2 && <>
-            <div className="customerSectionIcon">◇</div>
-            <h2>Choose your data connections</h2>
-            <p>Google Search Console and Google Analytics are optional. Connecting them requires an authenticated, authorized production provider flow; this preview does not initiate OAuth.</p>
-            <div className="customerSource"><span><strong>Google Search Console</strong><small>Search performance and indexed pages</small></span><span>Optional</span></div>
-            <div className="customerSource"><span><strong>Google Analytics 4</strong><small>Visitor and engagement measurements</small></span><span>Optional</span></div>
-            <div className="customerSource"><span><strong>{platform==="Auto-detect" ? "Website platform" : platform}</strong><small>Platform-specific access after verification</small></span><span>Setup required</span></div>
-            <p className="customerNotice"> Permissions are granted separately. No connection is assumed.</p>
-            <div className="customerButtonRow"><button className="customerSecondaryButton" onClick={()=>setStep(1)}>Back</button><button className="customerPrimaryButton" onClick={()=>setStep(3)}>Review readiness →</button></div>
-          </>}
-          {step===3 && <>
-            <div className="customerSectionIcon">✓</div>
-            <h2>Ready for verified setup</h2>
-            <p>Your selections are local to this preview. Website ownership, provider authorization and any real crawl must be completed through certified backend operations.</p>
-            <div className="customerReview"><span>Requested website</span><strong>{parsed?.normalized}</strong></div>
-            <div className="customerReview"><span>Platform selection</span><strong>{platform}</strong></div>
-            <div className="customerReview"><span>Ownership verification</span><strong>Not started</strong></div>
-            <div className="customerReview"><span>Analysis job</span><strong>Not started</strong></div>
-            <p className="customerNotice"> No data has been sent, no website added, and no analysis scheduled.</p>
-            <div className="customerButtonRow"><button className="customerSecondaryButton" onClick={()=>setStep(2)}>Back</button><Link href="/connections" className="customerPrimaryButton">View existing connections →</Link></div>
-          </>}
-        </section>
-        <aside className="customerOnboardingAside">
-          <div className="customerAsideIcon">✓</div>
-          <h3>You're in control</h3>
-          <p>SEO ENGINE separates site analysis from making changes. A connection never authorizes a public-site modification.</p>
-          <ul><li>Read-only by default</li><li>Explicit site-level access</li><li>Evidence-backed status</li><li>No silent optimization actions</li></ul>
-          <div className="customerAsideFoot">Integration availability depends on verified deployment and permissions.</div>
-        </aside>
-      </div>
+  const [platform, setPlatform] = useState("Auto-detect");
+  const [step, setStep] = useState(1);
+  const normalized = siteUrl(url);
+  return <div className="customerOnboarding">
+    <header className="customerOnboardingHeader">
+      <div><p className="customerEyebrow">GETTING STARTED</p><h1>Connect your website</h1>
+      <p>Set up your SEO workspace in a few clear steps. Nothing will be changed on your website.</p></div>
+      <Link href="/" className="customerBackLink">Back to Command Center</Link>
+    </header>
+    <ol className="customerSteps" aria-label="Onboarding steps">
+      {["Website", "Data sources", "Readiness"].map((name, i) => <li key={name} className={step === i+1 ? "current" : step > i+1 ? "completed" : ""} aria-current={step===i+1 ? "step" : undefined}><span>{step>i+1 ? "✓" : i+1}</span>{name}</li>)}
+    </ol>
+    <div className="customerOnboardingGrid">
+      <section className="customerOnboardingCard">
+        {step===1 && <>
+          <h2>Which website would you like to analyze?</h2>
+          <p>Enter your public website address. This preview checks format only; no site is registered or detected.</p>
+          <label htmlFor="customer-website-url">Website URL</label>
+          <input id="customer-website-url" placeholder="https://example.com" autoComplete="url" value={url} onChange={e=>setUrl(e.target.value)} aria-describedby="customer-url-help"/>
+          <small id="customer-url-help">{url && !normalized ? "Enter a public HTTPS domain without credentials, IP address or custom port." : "Ownership verification is required for live setup."}</small>
+          <label htmlFor="customer-platform">Website platform</label>
+          <select id="customer-platform" value={platform} onChange={e=>setPlatform(e.target.value)}>{platforms.map(p=><option key={p}>{p}</option>)}</select>
+          <button className="customerPrimaryButton" disabled={!normalized} onClick={()=>setStep(2)}>Continue →</button>
+        </>}
+        {step===2 && <>
+          <h2>Choose your data connections</h2>
+          <p>Google Search Console and GA4 are optional. This preview does not start OAuth or grant access.</p>
+          {["Google Search Console", "Google Analytics 4", platform==="Auto-detect" ? "Website platform" : platform].map((name,i)=><div className="customerSource" key={i}><strong>{name}</strong><span>{i===2?"Setup required":"Optional"}</span></div>)}
+          <p className="customerNotice">Permissions are granted separately. No connection is assumed.</p>
+          <div className="customerButtonRow"><button className="customerSecondaryButton" onClick={()=>setStep(1)}>Back</button><button className="customerPrimaryButton" onClick={()=>setStep(3)}>Review readiness →</button></div>
+        </>}
+        {step===3 && <>
+          <h2>Ready for verified setup</h2>
+          <p>Ownership, provider authorization and crawling require certified backend workflows.</p>
+          {[["Requested website",normalized],["Platform selection",platform],["Ownership verification","Not started"],["Analysis job","Not started"]].map(([name,value])=><div className="customerReview" key={name}><span>{name}</span><strong>{value}</strong></div>)}
+          <p className="customerNotice">No data has been sent, no website added, and no analysis scheduled.</p>
+          <div className="customerButtonRow"><button className="customerSecondaryButton" onClick={()=>setStep(2)}>Back</button><Link href="/connections" className="customerPrimaryButton">View existing connections →</Link></div>
+        </>}
+      </section>
+      <aside className="customerOnboardingAside">
+        <h3>You're in control</h3>
+        <p>Analysis is separate from changes. Connecting a site never authorizes public-site modifications.</p>
+        <ul><li>Read-only by default</li><li>Explicit site-level access</li><li>Evidence-backed status</li><li>No silent optimization actions</li></ul>
+        <small>Integration availability depends on verified deployment and permissions.</small>
+      </aside>
     </div>
-  );
+  </div>;
 }
