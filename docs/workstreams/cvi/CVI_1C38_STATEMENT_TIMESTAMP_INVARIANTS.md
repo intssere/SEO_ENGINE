@@ -10,3 +10,8 @@ Session load and rotation continue to use `clock_timestamp()` checks (rotation a
 
 ## Boundaries
 Synthetic disposable PostgreSQL, stacked draft PR, no production changes, provider calls, publication authority, merge or deployment. Exact-head CI pending.
+
+## Certified implementation proof
+- Exact implementation HEAD `23e07e8c612016f24b71b666623effa57a0b4072`
+- Full CI https://github.com/intssere/SEO_ENGINE/actions/runs/38122428762 completed SUCCESS, job `114419743394`, no failures.
+- PR #1075 remains open/draft; no merge or deployment. This documentation receipt commit requires its own exact-head CI.
