@@ -1,3 +1,4 @@
+import "./customer-onboarding.css";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Globe2, CheckCircle2, CircleHelp, LockKeyhole, Plug, ShieldCheck } from "lucide-react";
