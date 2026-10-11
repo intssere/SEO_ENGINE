@@ -7,6 +7,7 @@ on:
       - ".github/workflows/int-02b-disposable-postgres.yml"
       - "docs/integration/int-02b-catalog-evidence*.mjs"
       - "docs/integration/int-02b-database-identity*.mjs"
+      - "docs/integration/int-02b-disposable-apply-trace*.mjs"
 permissions:
   contents: read
 jobs:
@@ -47,16 +48,31 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          : > /tmp/int02-apply-trace.tsv
           for file in lib/db/migrations/00{01..15}_*.sql; do
             test -f "$file"
             echo "TEST_APPLY ${file##*/}"
             psql -X -v ON_ERROR_STOP=1 -f "$file" >/dev/null
+            printf "%s\\t%s\\n" "${file##*/}" "$(sha256sum "$file" | cut -d " " -f1)" >> /tmp/int02-apply-trace.tsv
           done
           count="$(psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
           echo "Combined table count: $count"
           test "$count" -eq 55
           psql -X -v ON_ERROR_STOP=1 -c "SELECT conname FROM pg_constraint WHERE conname='ua_single_send_exec_event_reason_v2_check'" | grep ua_single_send_exec_event_reason_v2_check
           echo "INT_02B_COMBINED_DISPOSABLE_POSTGRES_PASS"
+      - name: Verify source-bound completed disposable apply trace
+        run: |
+          node --test docs/integration/int-02b-disposable-apply-trace.test.mjs
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          import {verifyDisposableApplyTrace} from './docs/integration/int-02b-disposable-apply-trace.mjs';
+          const rows=readFileSync('/tmp/int02-apply-trace.tsv','utf8').trim().split('\\n');
+          const trace=rows.map((row,i)=>{const [filename,sha256]=row.split('\\t'); return {sequence:i+1,filename,sha256,database:'seo_engine_test',status:'psql_completed'};});
+          const result=verifyDisposableApplyTrace({trace,sourceResolver:name=>readFileSync('lib/db/migrations/'+name)});
+          assert.equal(result.verified,true,result.reason);
+          console.log('INT02_COMPLETED_DISPOSABLE_TRACE_PASS',trace.length);
+          JS
       - name: Verify installation replay fails closed and preserves installed schema
         shell: bash
         run: |
