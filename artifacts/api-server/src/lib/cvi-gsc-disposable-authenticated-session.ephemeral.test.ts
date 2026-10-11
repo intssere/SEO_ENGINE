@@ -178,6 +178,49 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await rival.end({timeout:1});
       await observer.end({timeout:1});
     }
+    // CVI-1C.39: eligible rotation after a row lock must refresh using post-wait time.
+    const waiting=await createAuthSession({
+      subject:"cvi-rotation-clock-wait",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const holding=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const waitingObserver=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await holding.unsafe("BEGIN");
+      let pending:Promise<string>|undefined;
+      try {
+        await holding`UPDATE auth_sessions SET last_seen_at=last_seen_at
+          WHERE id=${waiting.principal.sessionId}::uuid`;
+        pending=rotateAuthSessionToken(waiting.principal.sessionId);
+        let sawLock=false;
+        for(let attempt=0;attempt<80;attempt++){
+          const blocked=await waitingObserver<{n:number}[]>`
+            SELECT count(*)::int AS n FROM pg_stat_activity
+            WHERE datname=current_database() AND wait_event_type='Lock' AND pid<>pg_backend_pid()`;
+          if((blocked[0]?.n??0)>0){sawLock=true;break;}
+          await new Promise(resolve=>setTimeout(resolve,30));
+        }
+        assert.ok(sawLock,"rotation must be observed waiting for row lock");
+        // Ensure the transaction-start timestamp is measurably before release.
+        await new Promise(resolve=>setTimeout(resolve,150));
+        const marker=await waitingObserver<{at:string}[]>`SELECT clock_timestamp()::text AS at`;
+        await holding.unsafe("COMMIT");
+        const newToken=await pending;
+        pending=undefined;
+        const saved=await waitingObserver<{at:string}[]>`SELECT last_seen_at::text AS at
+          FROM auth_sessions WHERE id=${waiting.principal.sessionId}::uuid`;
+        assert.ok(new Date(saved[0]!.at).getTime()>=new Date(marker[0]!.at).getTime(),
+          "rotated last_seen_at must not predate row-lock release");
+        assert.equal((await request(waiting.token)).status,401);
+        assert.equal((await request(newToken)).status,200);
+      }finally{
+        await holding.unsafe("ROLLBACK").catch(()=>undefined);
+        if(pending)await pending.catch(()=>undefined);
+      }
+    }finally{
+      await holding.end({timeout:1});
+      await waitingObserver.end({timeout:1});
+    }
     // CVI-1C.35: skewed application time cannot mint future idle state.
     const skew=await createAuthSession({subject:"cvi-clock-skew",email:"synthetic-viewer@example.test",displayName:null,role:"viewer",config});
     const future=new Date(Date.now()+365*24*60*60*1000);
