@@ -174,7 +174,7 @@ jobs:
           import assert from 'node:assert/strict';
           import {verifyDisposableDatabaseIdentity} from './docs/integration/int-02b-database-identity.mjs';
           const observed=JSON.parse(process.env.OBSERVED_IDENTITY);
-          const expected={database:'int02_attested',currentUser:'test',serverAddress:'127.0.0.1',serverPort:'5432'};
+          const expected={database:'int02_attested',currentUser:'test',serverAddress:'docker_private',serverPort:'5432'};
           assert.deepEqual(verifyDisposableDatabaseIdentity(observed,expected),{verified:true,reason:'disposable_identity_observation_matches'});
           assert.equal(verifyDisposableDatabaseIdentity({...observed,database:'production'},expected).verified,false);
           console.log('INT02_POSTGRES_OBSERVED_IDENTITY_PASS');
