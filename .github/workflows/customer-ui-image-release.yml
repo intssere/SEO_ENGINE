@@ -57,7 +57,7 @@ jobs:
           [[ "$SOURCE_SHA_INPUT" =~ ^[0-9a-f]{40}$ ]]
           [[ "$SOURCE_TREE_INPUT" =~ ^[0-9a-f]{40}$ ]]
           test "$AUTHORIZATION_INPUT" = "AUTHORIZE:CUSTOMER_UI_IMAGE_RELEASE:${SOURCE_SHA_INPUT}:${SOURCE_TREE_INPUT}"
-          git fetch --no-tags origin main
+          # Full-history checkout provides origin/main without a second authenticated fetch.
           git merge-base --is-ancestor "$SOURCE_SHA_INPUT" origin/main
           test "$(git rev-parse "${SOURCE_SHA_INPUT}^{tree}")" = "$SOURCE_TREE_INPUT"
           # No release without successful, exact-head push-triggered main CI.
