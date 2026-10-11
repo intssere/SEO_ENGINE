@@ -1,0 +1,26 @@
+# CVI-1C.52 — Proposal Draft Mutation Authorization Integration Design
+
+## Certified base
+CVI-1C.51 draft PR #1097, head `1ae226ef22e421e2a2e692b790d07372629f274d`, exact-head full CI https://github.com/intssere/SEO_ENGINE/actions/runs/38144961242 SUCCESS.
+
+## Selected representative *candidate* (not implementation approval)
+- Route `PATCH /approvals/:id/draft` in `artifacts/api-server/src/routes/operational.ts`, calls `editProposalDraft` with `verifiedActorId(req)` after same-origin and schema validation.
+- `artifacts/api-server/src/lib/operational-data.ts`, `editProposalDraft` lines 286–342: opens `sql.begin`, reads and row-locks `action_plans` scoped to readiness site, checks draft eligibility and fingerprint, updates `action_plans.expected_outcome`. Existing constraints include dry-run and `publicSiteWrites: false`; this does **not** authorize CMS publication.
+- Global `attachAuthSession` and `requireApiAuthentication` in `artifacts/api-server/src/middlewares/auth-security.ts` authenticate and authorize at request entry using `req.auth`. That snapshot alone does not recheck in-flight session demotion or revocation.
+
+## Candidate authorization contract and review gates
+1. Carry a verified session ID to the service without trusting client-submitted role, identity, tenant, or site. Existing `actorId` is an audit identifier and must not substitute for session authorization.
+2. Inside the *same* `sql.begin` transaction as `action_plans` update, read the persisted session with `FOR UPDATE`, assert not revoked, unexpired absolute and idle bounds using PostgreSQL time, and minimum role appropriate for the draft edit route. **Determine required role from existing policy before modifying code.**
+3. Establish lock order **session before action_plan** for this handler. Check interaction with global session rotation, concurrent draft edits, approval decisions, and any tenant membership/site grant rows. Do not introduce a cross-service global lock or hold locks during external operations.
+4. Preserve readiness-site filtering, proposal fingerprint/confirmation, blocked risk, lifecycle and no-public-write invariants; deny before mutation for stale or unauthorized requests. Decide whether a member role requires separate tenant/site authorization; do not infer grants from `readiness.siteId` alone.
+5. Separate disposable PostgreSQL and HTTP tests: active editor success; demotion-first denies with no update; edit-first lock then demotion waits; revocation-first denial; expiry/idle boundary; rollback on validation failure; stale fingerprint; simultaneous approval and draft edit; token rotation.
+6. Audit return status/error mapping, lock timeout and deadlock retry policy. Confirm no CMS/provider/network side effects in the chosen path from full dependency scan; preserve historical-review-only CVI and existing feature gates.
+7. Require independent security/DB review and exact-head full CI before introducing an implementation PR. Do not alter production route behavior in this design increment.
+
+## Alternatives considered
+- `decideProposalReview` also has `sql.begin` with `action_plans FOR UPDATE`, but approval lifecycle transitions are more consequential. Evaluate after lower-risk draft edit.
+- `commitAuthorityOutreachReviewDecision` operates in a transaction but has qualification-loader and review-event integrity complexity. Defer pending further inspection.
+- Competitor acquisition and signal collection have external effects and multi-step jobs. Exclude as initial candidates.
+
+## Status
+Source-backed design candidate only. No runtime changes, providers, production DB, publishing, merge, or deployment. This design **does not claim** production transactional authorization is implemented.
