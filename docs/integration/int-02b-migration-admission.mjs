@@ -19,7 +19,9 @@ export function assessMigrationAdmission(snapshot){
   if(installedLineageVerified!==true)return {admitted:false,reason:"migration_history_unverified"};
   if(targetDatabaseIdentityVerified!==true)return {admitted:false,reason:"database_identity_unverified"};
   if(authorizedDisposableExecution!==true)return {admitted:false,reason:"execution_not_authorized"};
-  return {admitted:true,reason:"disposable_only_preflight_pass"};
+  // Caller-supplied Boolean flags are not independent installation evidence.
+  // INT-02B has no approved installer or authenticated historical provenance.
+  return {admitted:false,reason:"independent_installation_authority_unavailable"};
 }
 export function enforceNoAutomaticInstallation(){return {admitted:false,reason:"automatic_migration_disabled"};}
 
