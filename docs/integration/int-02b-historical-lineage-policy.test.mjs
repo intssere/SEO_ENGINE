@@ -1,0 +1,14 @@
+import {test} from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import {classifyMigrationHistory} from "./int-02b-historical-lineage-policy.mjs";
+const map=JSON.parse(readFileSync(new URL("./int-02a-ugp-migration-source-map.json",import.meta.url)));
+const receipts=map.entries.map(e=>({filename:e.candidate,sha256:e.rawSha256}));
+const check=(input,reason)=>assert.deepEqual(classifyMigrationHistory(input),{accepted:false,reason});
+test("history source must be independently verified",()=>check({receipts,kind:"combined"},"history_origin_unverified"));
+test("missing receipts reject",()=>check({receipts:[],verifiedOrigin:true,kind:"combined"},"history_missing"));
+test("historical UGP 0008 collision refuses",()=>check({receipts:[{filename:map.entries[0].original,sha256:map.entries[0].rawSha256}],verifiedOrigin:true,kind:"combined"},"legacy_ugp_number_collision"));
+test("duplicate receipt rejects",()=>check({receipts:[receipts[0],receipts[0]],verifiedOrigin:true,kind:"combined"},"duplicate_receipt_identity"));
+test("checksum mismatch refuses",()=>check({receipts:receipts.map((r,i)=>i===2?{...r,sha256:"0".repeat(64)}:r),verifiedOrigin:true,kind:"combined"},"integration_checksum_mismatch"));
+test("partial sequence refuses",()=>check({receipts:receipts.slice(0,3),verifiedOrigin:true,kind:"combined"},"incomplete_integration_history"));
+test("even valid UGP source receipts cannot certify historical main lineage",()=>check({receipts,verifiedOrigin:true,kind:"combined"},"historical_main_receipts_not_yet_independently_certified"));
