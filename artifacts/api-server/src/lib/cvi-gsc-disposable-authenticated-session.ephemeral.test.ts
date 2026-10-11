@@ -67,6 +67,16 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       });
     });
     api.post("/cvi-offline-probe",(_req,res) => res.status(200).json({csrf:"accepted",publication_authorized:false}));
+    // CVI-1C.41: synthetic barrier after entry authorization, before handler action.
+    let barrierArrived: (()=>void)|undefined;
+    let barrierRelease: (()=>void)|undefined;
+    const arrived = new Promise<void>(resolve=>{barrierArrived=resolve;});
+    const release = new Promise<void>(resolve=>{barrierRelease=resolve;});
+    api.post("/cvi-role-barrier",async (req,res)=>{
+      barrierArrived?.();
+      await release;
+      res.status(200).json({role_snapshot:req.auth?.role??null,synthetic_only:true});
+    });
     app.use("/api",api);
     server = createServer(app);
     await new Promise<void>((resolve,reject) => {
@@ -125,6 +135,27 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     await sql`UPDATE auth_sessions SET role='admin' WHERE id=${demoted.principal.sessionId}::uuid`;
     assert.equal((await request(demotedToken,{method:"POST",csrf:demoted.csrfToken})).status,200,
       "authorized role updates are read from DB on each authenticated request");
+    // CVI-1C.41 documents an entry-authorized in-flight request's stale snapshot.
+    const inFlight=await createAuthSession({
+      subject:"cvi-inflight-role",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const pendingBarrier=fetch("http://127.0.0.1:"+address.port+"/api/cvi-role-barrier",{
+      method:"POST",headers:{cookie:AUTH_SESSION_COOKIE+"="+inFlight.token,
+        "x-csrf-token":inFlight.csrfToken},signal:AbortSignal.timeout(5000),
+    });
+    await Promise.race([
+      arrived,
+      new Promise<never>((_,reject)=>setTimeout(()=>reject(Error("role_barrier_not_reached")),3000)),
+    ]);
+    await sql`UPDATE auth_sessions SET role='viewer' WHERE id=${inFlight.principal.sessionId}::uuid`;
+    barrierRelease?.();
+    const barrierResponse=await pendingBarrier;
+    assert.equal(barrierResponse.status,200,"existing middleware authorizes at entry");
+    const barrierBody=await barrierResponse.json() as {role_snapshot:string};
+    assert.equal(barrierBody.role_snapshot,"admin","in-flight principal remains a snapshot");
+    assert.equal((await request(inFlight.token,{method:"POST",csrf:inFlight.csrfToken})).status,403,
+      "new requests observe persisted demotion");
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
