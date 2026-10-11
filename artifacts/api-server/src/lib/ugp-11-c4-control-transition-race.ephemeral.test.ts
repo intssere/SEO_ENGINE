@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import postgres from "postgres";
-import {attemptClosedFixtureClaim} from "./ugp-11-1d6-closed-claim.js";
+import {attemptClosedFixtureClaim, type ClosedClaimAttempt} from "./ugp-11-1d6-closed-claim.js";
 const modes=["paused","draining","killed"] as const;
 const digest="a".repeat(64);
 const tenant="c4-race-tenant";
@@ -47,10 +47,11 @@ test("C4 control transition racing with claim attempts never admits fixture auth
        RETURNING mode,revision`;
      assert.equal(changed[0]?.mode,mode);
    });
-   const claims=Promise.all(Array.from({length:5},(_,i)=>
+   const claimAttempts: Promise<ClosedClaimAttempt[]> = Promise.all(Array.from({length:5},(_,i): Promise<ClosedClaimAttempt> =>
      attemptClosedFixtureClaim(url,{identity,tenantId:tenant,siteId:site,workerId:"c4-racer-"+i})
    ));
-   const [_,attempts]=await Promise.all([transition,claims]);
+   const attempts: ClosedClaimAttempt[] = await claimAttempts;
+   await transition;
    for(const result of attempts)
      assert.deepEqual(result,{claimed:false,dispatchAllowed:false,reason:"no_certified_p9_authority"});
    const [control]=await db`SELECT mode,revision,source FROM ugp11_transport_fixture.controls
