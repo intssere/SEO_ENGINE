@@ -280,19 +280,19 @@ export async function createAuthSession(input: {
   now?: Date;
 }): Promise<{ token: string; csrfToken: string; principal: AuthPrincipal }> {
   if (!input.config.sessionSecret) throw new Error("auth_configuration_invalid");
-  const now = input.now ?? new Date();
+  // Keep optional caller time for source compatibility; database controls persisted issuance.
+  void input.now;
   const token = randomToken(32);
   const csrfToken = randomToken(24);
   const tokenHash = sha256(token);
   const csrfTokenHash = sha256(csrfToken);
-  const expiresAt = new Date(now.getTime() + AUTH_SESSION_TTL_MS);
   const userAgentHash = input.userAgent ? hmacSha256(input.userAgent, input.config.sessionSecret) : null;
   const ipHash = input.ip ? hmacSha256(input.ip, input.config.sessionSecret) : null;
   const sql = database();
   try {
     const rows = await sql<Array<{ id: string; createdAt: string; lastSeenAt: string; expiresAt: string }>>`
       INSERT INTO auth_sessions(token_hash,subject,email,display_name,role,csrf_token_hash,user_agent_hash,ip_hash,created_at,last_seen_at,expires_at)
-      VALUES(${tokenHash},${input.subject},${input.email.toLowerCase()},${input.displayName},${input.role},${csrfTokenHash},${userAgentHash},${ipHash},${now.toISOString()},${now.toISOString()},${expiresAt.toISOString()})
+      VALUES(${tokenHash},${input.subject},${input.email.toLowerCase()},${input.displayName},${input.role},${csrfTokenHash},${userAgentHash},${ipHash},clock_timestamp(),clock_timestamp(),clock_timestamp()+${AUTH_SESSION_TTL_MS}::bigint * interval '1 millisecond')
       RETURNING id::text AS id,created_at::text AS "createdAt",last_seen_at::text AS "lastSeenAt",expires_at::text AS "expiresAt"`;
     const row = rows[0];
     if (!row) throw new Error("auth_session_create_failed");
