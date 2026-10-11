@@ -169,7 +169,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          observed="$(PGDATABASE=int02_attested psql -X -At -v ON_ERROR_STOP=1 -c "SELECT json_build_object('database', current_database(), 'currentUser', current_user, 'serverAddress', inet_server_addr()::text, 'serverPort', inet_server_port()::text)::text")"
+          observed="$(PGHOST=127.0.0.1 PGDATABASE=int02_attested psql -X -At -v ON_ERROR_STOP=1 -c "SELECT json_build_object('database', current_database(), 'currentUser', current_user, 'serverAddress', inet_server_addr()::text, 'serverPort', inet_server_port()::text)::text")"
           OBSERVED_IDENTITY="$observed" node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import {verifyDisposableDatabaseIdentity} from './docs/integration/int-02b-database-identity.mjs';
