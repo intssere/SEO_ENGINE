@@ -1,0 +1,44 @@
+name: INT-01 offline merge-tree simulation
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/int-01-merge-tree.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  merge-tree:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact integration branch source without credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Offline three-way merge simulation (no merge or push)
+        shell: bash
+        run: |
+          set -euo pipefail
+          MAIN=a19cd21da5d60dbb1862867ce0cdade4746791be
+          UGP=a6e492f1b9f0332fda2d518cfb4ad51c61b56460
+          BASE=1f03834d976b73b64c9d7eede79b9535cfb32e68
+          git fetch --no-tags origin "$MAIN" "$UGP" "$BASE"
+          test "$(git merge-base "$MAIN" "$UGP")" = "$BASE"
+          set +e
+          git merge-tree --write-tree --messages "$MAIN" "$UGP" > merge-tree-evidence.txt 2>&1
+          status=$?
+          set -e
+          printf 'main=%s\nugp=%s\nbase=%s\nmerge_tree_exit_code=%s\n' "$MAIN" "$UGP" "$BASE" "$status"
+          sed -n '1,500p' merge-tree-evidence.txt
+          if [ "$status" -gt 1 ]; then
+            echo "Merge simulation infrastructure/command failure"
+            exit "$status"
+          fi
+          if [ "$status" -eq 1 ]; then
+            echo "Merge conflicts detected; integration is blocked. This diagnostic job reports success only for execution, not for mergeability."
+          else
+            echo "Git merge-tree reported no textual conflicts; semantic migration collision remains an independent NO-GO."
+          fi
+          echo "No branch ref updated; no commit or deployment produced."
