@@ -363,7 +363,7 @@ export async function rotateAuthSessionToken(sessionId: string): Promise<string>
   const sql = database();
   try {
     const updated = await sql<{ id: string }[]>`
-      UPDATE auth_sessions SET token_hash=${sha256(token)},last_seen_at=now()
+      UPDATE auth_sessions SET token_hash=${sha256(token)},last_seen_at=clock_timestamp()
       WHERE id=${sessionId}::uuid AND revoked_at IS NULL
         AND expires_at>clock_timestamp()
         AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
