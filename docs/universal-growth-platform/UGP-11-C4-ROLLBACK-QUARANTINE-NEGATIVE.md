@@ -1,0 +1,9 @@
+# UGP-11.C4 — Disposable Rollback and Manual-Quarantine Negative Evidence
+
+Baseline: `initiative-universal-growth-platform` HEAD `8f0b410ca0b4df2a698074e0910a270a02dd7dfc`, post-merge CI #38128607111 successful. Workstream #1061; independent P9 trust/governance #1054 remains open.
+
+The fixture-only CI test starts with a manually expired lease owned by `old-owner`, fence 7 and attempts 1. It enters a genuine disposable PostgreSQL transaction, conditionally updates the synthetic fixture lease to candidate/fence 8, then deliberately throws, forcing rollback. After the transaction rejects, it verifies the previous owner/fence/attempts remain unchanged. As a separately simulated conservative recovery decision, it moves the fixture row into `manual_intervention` and confirms the ordinary claimed-state retry predicate affects zero rows. Receipt remains absent.
+
+**What this does not establish:** The deliberate application exception has a known rollback. It is **not** an actual ambiguous commit, dropped connection during COMMIT, or unknown server outcome. Quarantine is applied in a separate deliberate test step, not automatically by an operational recovery subsystem. A database-commit ambiguity can leave uncertainty about whether a side effect occurred and must not be inferred safe solely from a local exception. Real ambiguous-commit failure injection, fresh-connection reconciliation, redrive suppression, clock boundary conditions and provider receipt evidence remain outstanding.
+
+This fixture is restricted to loopback `/seo_engine_test` and the existing `ugp11_transport_fixture` tables, with `source='fixture_only'` unchanged. No P9 issuer, operational positive claim, worker, scheduler, production DDL/database, dependency installation, deployment, provider communication or website mutation is part of this change.
