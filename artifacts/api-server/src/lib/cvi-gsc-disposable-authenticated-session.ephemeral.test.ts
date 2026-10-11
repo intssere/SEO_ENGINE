@@ -550,6 +550,39 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await writeDb.end({timeout:1});
       await revokeDb.end({timeout:1});
     }
+    // CVI-1C.55: in-memory-only candidate edit-draft ACL policy (not production grants).
+    type SyntheticDraftPolicy = {
+      globalRole: "viewer" | "operator" | "admin";
+      memberRole: "viewer" | "editor" | "owner";
+      membershipActive: boolean;
+      grantActive: boolean;
+      permission: "review_content" | "synthetic_edit_draft";
+      subjectMatches: boolean;
+      siteMatches: boolean;
+      unexpired: boolean;
+    };
+    const canSyntheticEditDraft=(p:SyntheticDraftPolicy)=>(
+      (p.globalRole==="operator"||p.globalRole==="admin") &&
+      (p.memberRole==="editor"||p.memberRole==="owner") &&
+      p.membershipActive && p.grantActive &&
+      p.permission==="synthetic_edit_draft" &&
+      p.subjectMatches && p.siteMatches && p.unexpired
+    );
+    const validDraft:SyntheticDraftPolicy={
+      globalRole:"operator",memberRole:"editor",membershipActive:true,
+      grantActive:true,permission:"synthetic_edit_draft",
+      subjectMatches:true,siteMatches:true,unexpired:true,
+    };
+    assert.equal(canSyntheticEditDraft(validDraft),true);
+    assert.equal(canSyntheticEditDraft({...validDraft,globalRole:"admin",memberRole:"owner"}),true);
+    assert.equal(canSyntheticEditDraft({...validDraft,globalRole:"viewer"}),false);
+    assert.equal(canSyntheticEditDraft({...validDraft,memberRole:"viewer"}),false);
+    assert.equal(canSyntheticEditDraft({...validDraft,membershipActive:false}),false);
+    assert.equal(canSyntheticEditDraft({...validDraft,grantActive:false}),false);
+    assert.equal(canSyntheticEditDraft({...validDraft,permission:"review_content"}),false);
+    assert.equal(canSyntheticEditDraft({...validDraft,subjectMatches:false}),false);
+    assert.equal(canSyntheticEditDraft({...validDraft,siteMatches:false}),false);
+    assert.equal(canSyntheticEditDraft({...validDraft,unexpired:false}),false);
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
