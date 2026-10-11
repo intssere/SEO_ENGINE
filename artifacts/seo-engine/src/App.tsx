@@ -13,6 +13,7 @@ import {
 import { Layout } from './components/layout';
 import { AuthProvider } from './lib/auth-client';
 import DashboardPage from './pages/dashboard';
+import CustomerOnboardingPage from './pages/customer-onboarding';
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
 import GovernancePage from './pages/governance';
@@ -49,6 +50,7 @@ function Router() {
       <Layout>
         <Switch>
           <Route path="/" component={DashboardPage} />
+          <Route path="/onboarding" component={CustomerOnboardingPage} />
           <Route path="/opportunities" component={OpportunitiesPage} />
           <Route path="/governance" component={GovernancePage} />
           <Route path="/actions" component={ActionsPage} />
