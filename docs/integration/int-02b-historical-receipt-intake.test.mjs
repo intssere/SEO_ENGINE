@@ -32,3 +32,14 @@ test("non-object receipt entry is rejected",()=>assert.equal(check({...bundle,re
 
 test("reject incomplete otherwise valid main receipts",()=>assert.equal(check({...bundle,receipts:bundle.receipts.slice(0,10)}).reason,"historical_receipt_set_incomplete"));
 test("reject canonical but noncontiguous 11-receipt sequence",()=>assert.equal(check({...bundle,receipts:[...bundle.receipts.slice(0,10),{...bundle.receipts[10],filename:"0012_ugp_10_3_authority_outreach_review_events.sql",sha256:createHash("sha256").update(readFileSync(new URL("../../lib/db/migrations/0012_ugp_10_3_authority_outreach_review_events.sql",import.meta.url))).digest("hex")}] }).reason,"historical_receipt_sequence_incomplete"));
+
+test("complete 15-migration integration receipts remain unauthenticated without independent witness verification",()=>{
+ const map=JSON.parse(readFileSync(new URL("./int-02a-ugp-migration-source-map.json",import.meta.url)));
+ const all=[...receipts,...map.entries.map(e=>({filename:e.candidate,sha256:createHash("sha256").update(readFileSync(new URL("../../lib/db/migrations/"+e.candidate,import.meta.url))).digest("hex"),appliedAtUtc:"2026-10-11T10:00:00Z"}))];
+ assert.deepEqual(check({...bundle,receipts:all}),{reviewEligible:false,executionAuthorized:false,reason:"independent_witness_not_authenticated"});
+});
+test("complete 15-migration receipts reject missing integration migration",()=>{
+ const map=JSON.parse(readFileSync(new URL("./int-02a-ugp-migration-source-map.json",import.meta.url)));
+ const all=[...receipts,...map.entries.map(e=>({filename:e.candidate,sha256:createHash("sha256").update(readFileSync(new URL("../../lib/db/migrations/"+e.candidate,import.meta.url))).digest("hex"),appliedAtUtc:"2026-10-11T10:00:00Z"}))];
+ assert.equal(check({...bundle,receipts:all.slice(0,14)}).reason,"historical_receipt_set_incomplete");
+});
