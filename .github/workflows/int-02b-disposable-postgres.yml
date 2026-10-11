@@ -181,3 +181,17 @@ jobs:
              AND tg.tgname='authority_outreach_review_events_reject_update_delete' AND NOT tg.tgisinternal);
           SQL
           echo "INT02_UGP_SCHEMA_KEYS_AND_IMMUTABILITY_TRIGGER_PASS"
+      - name: Reject tampered UGP schema constraint evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb int02_tampered
+          for file in lib/db/migrations/00{01..15}_*.sql; do
+            PGDATABASE=int02_tampered psql -X -v ON_ERROR_STOP=1 -f "$file" >/dev/null
+          done
+          PGDATABASE=int02_tampered psql -X -v ON_ERROR_STOP=1 -c "ALTER TABLE authority_outreach_single_send_execution_events DROP CONSTRAINT ua_single_send_exec_event_reason_v2_check"
+          count="$(PGDATABASE=int02_tampered psql -X -At -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
+          constraint_count="$(PGDATABASE=int02_tampered psql -X -At -c "SELECT count(*) FROM pg_constraint WHERE conname='ua_single_send_exec_event_reason_v2_check'")"
+          test "$count" -eq 55
+          test "$constraint_count" -eq 0
+          echo "INT02_TAMPERED_55_TABLE_SCHEMA_NOT_EQUIVALENT"
