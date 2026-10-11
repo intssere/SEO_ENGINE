@@ -232,6 +232,49 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await demoter.end({timeout:1});
       await operation.end({timeout:1});
     }
+    // CVI-1C.44: operation's session lock precedes a competing demotion.
+    const first=await createAuthSession({
+      subject:"cvi-operation-first",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const firstOperation=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const secondDemoter=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await firstOperation.unsafe("BEGIN");
+      let demotion:Promise<unknown>|undefined;
+      try {
+        const role=await firstOperation<{role:string}[]>`
+          SELECT role FROM auth_sessions WHERE id=${first.principal.sessionId}::uuid
+            AND revoked_at IS NULL AND expires_at>clock_timestamp()
+            AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+          FOR UPDATE`;
+        assert.equal(role[0]?.role,"admin","operation acquires eligible admin session lock");
+        demotion=Promise.resolve(secondDemoter`UPDATE auth_sessions SET role='viewer'
+          WHERE id=${first.principal.sessionId}::uuid`);
+        let blocked=false;
+        for(let attempt=0;attempt<80;attempt++){
+          const locks=await sql<{count:number}[]>`
+            SELECT count(*)::int AS count FROM pg_stat_activity
+            WHERE datname=current_database() AND wait_event_type='Lock'
+              AND pid<>pg_backend_pid()`;
+          if((locks[0]?.count??0)>0){blocked=true;break;}
+          await new Promise(resolve=>setTimeout(resolve,30));
+        }
+        assert.ok(blocked,"demotion must wait for authorized operation's lock");
+        // The synthetic operation makes no real data mutation or provider call.
+        await firstOperation.unsafe("COMMIT");
+        await demotion;
+        demotion=undefined;
+        assert.equal((await request(first.token,{method:"POST",csrf:first.csrfToken})).status,403,
+          "subsequent operation sees committed demotion");
+      }finally{
+        await firstOperation.unsafe("ROLLBACK").catch(()=>undefined);
+        if(demotion)await demotion.catch(()=>undefined);
+      }
+    }finally{
+      await firstOperation.end({timeout:1});
+      await secondDemoter.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
