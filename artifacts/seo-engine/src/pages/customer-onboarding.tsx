@@ -22,7 +22,7 @@ export default function CustomerOnboardingPage() {
   return <div className="customerOnboarding">
     <header className="customerOnboardingHeader">
       <div><p className="customerEyebrow">GETTING STARTED</p><h1>Connect your website</h1>
-      <p>Set up your SEO workspace in a few clear steps. Nothing will be changed on your website.</p></div>
+      <p>Set up SEO ENGINE without changing your website.</p></div>
       <Link href="/" className="customerBackLink">Back to Command Center</Link>
     </header>
     <ol className="customerSteps" aria-label="Onboarding steps">
@@ -49,7 +49,7 @@ export default function CustomerOnboardingPage() {
         </>}
         {step===3 && <>
           <h2>Ready for verified setup</h2>
-          <p>Ownership, provider authorization and crawling require certified backend workflows.</p>
+          <p>Live setup requires verified backend access.</p>
           {[["Requested website",normalized],["Platform selection",platform],["Ownership verification","Not started"],["Analysis job","Not started"]].map(([name,value])=><div className="customerReview" key={name}><span>{name}</span><strong>{value}</strong></div>)}
           <p className="customerNotice">No data has been sent, no website added, and no analysis scheduled.</p>
           <div className="customerButtonRow"><button className="customerSecondaryButton" onClick={()=>setStep(2)}>Back</button><Link href="/connections" className="customerPrimaryButton">View existing connections →</Link></div>
@@ -57,7 +57,7 @@ export default function CustomerOnboardingPage() {
       </section>
       <aside className="customerOnboardingAside">
         <h3>You're in control</h3>
-        <p>Analysis is separate from changes. Connecting a site never authorizes public-site modifications.</p>
+        <p>Site connection does not authorize changes.</p>
         <ul><li>Read-only by default</li><li>Explicit site-level access</li><li>Evidence-backed status</li><li>No silent optimization actions</li></ul>
         <small>Integration availability depends on verified deployment and permissions.</small>
       </aside>
