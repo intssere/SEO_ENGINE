@@ -24,3 +24,6 @@ test("reject reversed migration ordinals",()=>assert.equal(check({...bundle,rece
 test("reject fabricated migration with an otherwise well-formed name",()=>assert.equal(check({...bundle,receipts:[{...bundle.receipts[0],filename:"0016_fabricated.sql"}]}).reason,"receipt_not_canonical_integration_migration"));
 
 test("reject receipt digest that is syntactically valid but does not match canonical SQL",()=>assert.equal(check({...bundle,receipts:[{...bundle.receipts[0],sha256:"b".repeat(64)}]}).reason,"receipt_source_sha256_mismatch"));
+
+test("null receipt entry is a controlled denial, not an exception",()=>assert.deepEqual(check({...bundle,receipts:[null]}),{reviewEligible:false,executionAuthorized:false,reason:"receipt_identity_invalid"}));
+test("non-object receipt entry is rejected",()=>assert.equal(check({...bundle,receipts:["malformed"]}).reason,"receipt_identity_invalid"));
