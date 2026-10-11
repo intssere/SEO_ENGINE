@@ -34,7 +34,7 @@ export default function CustomerOnboardingPage() {
       <ol className="customerSteps" aria-label="Onboarding steps">
         {["Website", "Data sources", "Readiness"].map((name, i) => (
           <li key={name} className={step === i+1 ? "current" : step > i+1 ? "completed" : ""} aria-current={step===i+1 ? "step" : undefined}>
-            <span>{step>i+1 ? ✓ : i+1}</span>{name}
+            <span>{step>i+1 ? "✓" : i+1}</span>{name}
           </li>
         ))}
       </ol>
