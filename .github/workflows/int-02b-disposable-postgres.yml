@@ -284,6 +284,16 @@ jobs:
           console.log('INT02_DISABLED_AUDIT_TRIGGER_REJECTED');
           JS
 
+      - name: Independently install second pinned disposable schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb int02_second_clean
+          for file in lib/db/migrations/00{01..15}_*.sql; do
+            PGDATABASE=int02_second_clean psql -X -v ON_ERROR_STOP=1 -f "$file" >/dev/null
+          done
+          PGDATABASE=int02_second_clean psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -qx 55
+          echo "INT02_SECOND_INDEPENDENT_INSTALL_COMPLETE"
       - name: Create changed-column and added-index disposable negatives
         shell: bash
         run: |
@@ -308,6 +318,7 @@ jobs:
           )::text;
           SQL
           PGDATABASE=seo_engine_test psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-reference.json
+          PGDATABASE=int02_second_clean psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-second.json
           PGDATABASE=int02_tampered psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-tampered.json
           PGDATABASE=int02_disabled_trigger psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-disabled.json
           PGDATABASE=int02_column_tampered psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-column.json
@@ -318,9 +329,9 @@ jobs:
           import {compareCatalogEvidence} from './docs/integration/int-02b-catalog-evidence.mjs';
           const load=(name)=>JSON.parse(readFileSync('/tmp/int02-catalog-'+name+'.json','utf8'));
           const reference=load('reference');
-          for (const [name,snapshot] of [['untampered',reference],['constraint_tamper',load('tampered')],['disabled_trigger',load('disabled')],['column_tamper',load('column')],['index_tamper',load('index')]]) {
+          for (const [name,snapshot] of [['untampered',reference],['independent_install',load('second')],['constraint_tamper',load('tampered')],['disabled_trigger',load('disabled')],['column_tamper',load('column')],['index_tamper',load('index')]]) {
             const result=compareCatalogEvidence({observed:snapshot,reference,referenceProvenance:'pinned_disposable_sql_installation'});
-            assert.equal(result.verified,name==='untampered',name+': '+result.reason);
+            assert.equal(result.verified,(name==='untampered'||name==='independent_install'),name+': '+result.reason);
             if(name==='constraint_tamper')assert.equal(result.reason,'catalog_constraints_mismatch');
             if(name==='disabled_trigger')assert.equal(result.reason,'catalog_triggers_mismatch');
             if(name==='column_tamper')assert.equal(result.reason,'catalog_columns_mismatch');
