@@ -8,7 +8,7 @@ type Platform = typeof platforms[number];
 function parsePublicWebsite(input: string): { host: string; normalized: string } | null {
   try {
     const candidate = input.trim();
-    if (!candidate || /[\\\s@]/.test(candidate)) return null;
+    if (!candidate || candidate.includes("@") || /\s/.test(candidate)) return null;
     const url = new URL(/^https?:\/\//i.test(candidate) ? candidate : `https://${candidate}`);
     const host = url.hostname.toLowerCase();
     if (url.protocol !== "https:" || !host.includes(".") || url.username || url.password ||
