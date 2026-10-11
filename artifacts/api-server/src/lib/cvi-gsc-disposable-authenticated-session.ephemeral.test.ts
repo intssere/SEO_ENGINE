@@ -354,6 +354,50 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await revoker.end({timeout:1});
       await waitingMutation.end({timeout:1});
     }
+    // CVI-1C.47: an operation's authorization row lock precedes revocation.
+    const operationFirst=await createAuthSession({
+      subject:"cvi-revoke-operation-first",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const heldOperation=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const competingRevoker=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await heldOperation.unsafe("BEGIN");
+      let competing:Promise<unknown>|undefined;
+      try {
+        const authorized=await heldOperation<{role:string}[]>`
+          SELECT role FROM auth_sessions
+          WHERE id=${operationFirst.principal.sessionId}::uuid
+            AND revoked_at IS NULL AND expires_at>clock_timestamp()
+            AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+          FOR UPDATE`;
+        assert.equal(authorized[0]?.role,"admin");
+        competing=Promise.resolve(competingRevoker`
+          UPDATE auth_sessions SET revoked_at=clock_timestamp()
+          WHERE id=${operationFirst.principal.sessionId}::uuid`);
+        let blocked=false;
+        for(let n=0;n<80;n++){
+          const locks=await sql<{count:number}[]>`
+            SELECT count(*)::int AS count FROM pg_stat_activity
+            WHERE datname=current_database() AND wait_event_type='Lock'
+              AND pid<>pg_backend_pid()`;
+          if((locks[0]?.count??0)>0){blocked=true;break;}
+          await new Promise(resolve=>setTimeout(resolve,30));
+        }
+        assert.ok(blocked,"revocation must wait for earlier authorization row lock");
+        await heldOperation.unsafe("COMMIT");
+        await competing;
+        competing=undefined;
+        assert.equal((await request(operationFirst.token,{method:"POST",csrf:operationFirst.csrfToken})).status,401,
+          "subsequent request rejects a revoked session");
+      }finally{
+        await heldOperation.unsafe("ROLLBACK").catch(()=>undefined);
+        if(competing)await competing.catch(()=>undefined);
+      }
+    }finally{
+      await heldOperation.end({timeout:1});
+      await competingRevoker.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
