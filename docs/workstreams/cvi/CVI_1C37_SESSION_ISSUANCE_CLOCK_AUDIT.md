@@ -18,3 +18,9 @@ Audit and source-backed gap identified. No CVI-1C.37 source modification, test i
 
 ## Implementation
 Session issuance has been changed to database-clock timestamps for created_at, last_seen_at and absolute expiration; optional input.now remains accepted for compatibility but is no longer trusted for persisted authorization. Disposable PostgreSQL tests inject far-future and far-past creation time and check real database time and canonical TTL. All behavior still requires exact-head CI certification. Source-side caller audit was limited to inspected authentication functions and indexed code-search results and does not constitute exhaustive proof of compatibility.
+
+## Exact-head implementation CI receipt
+- Implementation HEAD: `0269f498a7b0908d92d5b1fd21c2d828655bf957`
+- Full workflow: https://github.com/intssere/SEO_ENGINE/actions/runs/38121814808 — completed SUCCESS; job `114417914238`.
+- PR #1073 remains open and draft. No merge or deployment.
+- This documentation revision itself requires final exact-head certification.
