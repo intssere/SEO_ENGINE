@@ -220,3 +220,16 @@ jobs:
           console.log('INT02_REAL_SCHEMA_ADMISSION_REJECTED',process.env.DB_NAME,result.reason);
           JS
           done
+      - name: Reject disabled immutable-audit trigger despite unchanged table inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb int02_disabled_trigger
+          for file in lib/db/migrations/00{01..15}_*.sql; do
+            PGDATABASE=int02_disabled_trigger psql -X -v ON_ERROR_STOP=1 -f "$file" >/dev/null
+          done
+          PGDATABASE=int02_disabled_trigger psql -X -v ON_ERROR_STOP=1 -c "ALTER TABLE authority_outreach_review_events DISABLE TRIGGER authority_outreach_review_events_reject_update_delete"
+          enabled="$(PGDATABASE=int02_disabled_trigger psql -X -At -c "SELECT t.tgenabled FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid WHERE c.relname='authority_outreach_review_events' AND t.tgname='authority_outreach_review_events_reject_update_delete'")"
+          test "$enabled" = D
+          PGDATABASE=int02_disabled_trigger psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -qx 55
+          echo "INT02_DISABLED_TRIGGER_TAMPERED_FIXTURE_CONFIRMED"
