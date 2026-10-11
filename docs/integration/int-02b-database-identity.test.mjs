@@ -11,3 +11,5 @@ test("caller-supplied identity Boolean never substitutes for observations",()=>{
  assert.equal(verifyDisposableDatabaseIdentity(undefined,identity).verified,false);
 });
 test("production identity certification unavailable",()=>assert.deepEqual(refuseProductionIdentityPromotion(),{verified:false,reason:"production_identity_not_certified"}));
+
+test("accept PostgreSQL loopback address from published service port",()=>assert.equal(verifyDisposableDatabaseIdentity({...identity,serverAddress:"127.0.0.1"},{...identity,serverAddress:"docker_private"}).verified,true));
