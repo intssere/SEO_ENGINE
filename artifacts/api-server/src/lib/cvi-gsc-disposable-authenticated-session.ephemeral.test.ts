@@ -188,6 +188,50 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     }finally{
       await authorizationConnection.end({timeout:1});
     }
+    // CVI-1C.43: committed demotion wins over a blocked operation's role read.
+    const ordered=await createAuthSession({
+      subject:"cvi-ordered-demotion",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const demoter=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const operation=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await demoter.unsafe("BEGIN");
+      let pending:Promise<string>|undefined;
+      try {
+        await demoter`UPDATE auth_sessions SET role='viewer'
+          WHERE id=${ordered.principal.sessionId}::uuid`;
+        pending=operation.begin(async tx=>{
+          const rows=await tx<{role:string}[]>`
+            SELECT role FROM auth_sessions
+            WHERE id=${ordered.principal.sessionId}::uuid AND revoked_at IS NULL
+              AND expires_at>clock_timestamp()
+              AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+            FOR UPDATE`;
+          return rows[0]?.role??"missing";
+        });
+        let sawWait=false;
+        for(let attempt=0;attempt<80;attempt++){
+          const blocked=await sql<{count:number}[]>`
+            SELECT count(*)::int AS count FROM pg_stat_activity
+            WHERE datname=current_database() AND wait_event_type='Lock'
+              AND pid<>pg_backend_pid()`;
+          if((blocked[0]?.count??0)>0){sawWait=true;break;}
+          await new Promise(resolve=>setTimeout(resolve,30));
+        }
+        assert.ok(sawWait,"operation must wait behind role demotion lock");
+        await demoter.unsafe("COMMIT");
+        assert.equal(await pending,"viewer","fenced operation observes committed demotion");
+        pending=undefined;
+        assert.equal((await request(ordered.token,{method:"POST",csrf:ordered.csrfToken})).status,403);
+      }finally{
+        await demoter.unsafe("ROLLBACK").catch(()=>undefined);
+        if(pending)await pending.catch(()=>undefined);
+      }
+    }finally{
+      await demoter.end({timeout:1});
+      await operation.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
