@@ -8,6 +8,7 @@ on:
       - "docs/integration/int-02b-historical-lineage-policy*"
       - "docs/integration/int-02b-installer-authority-fence*"
       - "docs/integration/int-02b-receipt-witness*"
+      - "docs/integration/int-02b-cross-layer-no-execution.test.mjs"
       - ".github/workflows/int-02a-migration-manifest-tests.yml"
 permissions:
   contents: read
@@ -20,4 +21,4 @@ jobs:
         with:
           persist-credentials: false
       - name: Verify source-only fail-closed migration manifest and admission evaluator
-        run: node --test docs/integration/int-02a-ugp-migration-source-map.test.mjs docs/integration/int-02b-migration-admission.test.mjs docs/integration/int-02b-historical-lineage-policy.test.mjs docs/integration/int-02b-installer-authority-fence.test.mjs docs/integration/int-02b-receipt-witness.test.mjs
+        run: node --test docs/integration/int-02a-ugp-migration-source-map.test.mjs docs/integration/int-02b-migration-admission.test.mjs docs/integration/int-02b-historical-lineage-policy.test.mjs docs/integration/int-02b-installer-authority-fence.test.mjs docs/integration/int-02b-receipt-witness.test.mjs docs/integration/int-02b-cross-layer-no-execution.test.mjs
