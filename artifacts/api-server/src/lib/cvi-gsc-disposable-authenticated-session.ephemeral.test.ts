@@ -5,7 +5,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import postgres from "postgres";
 import { attachAuthSession, requireApiAuthentication } from "../middlewares/auth-security.js";
-import { AUTH_SESSION_COOKIE, AUTH_IDLE_TTL_MS, createAuthSession, loadAuthConfig, loadAuthSession, revokeAuthSession, rotateAuthSessionToken, sha256 } from "./auth-foundation.js";
+import { AUTH_SESSION_COOKIE, AUTH_IDLE_TTL_MS, AUTH_SESSION_TTL_MS, createAuthSession, loadAuthConfig, loadAuthSession, revokeAuthSession, rotateAuthSessionToken, sha256 } from "./auth-foundation.js";
 import { reviewCviExpressAuthenticatedPrincipal } from "./cvi-gsc-express-auth-gate.js";
 
 const EXPECTED_DB = "seo_engine_cvi_disposable";
@@ -230,7 +230,7 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
           extract(epoch FROM (expires_at-created_at))::float AS ttl
         FROM auth_sessions WHERE id=${issued.principal.sessionId}::uuid`;
       assert.ok((observed[0]?.offset??Infinity)<30,"issuance must use DB time");
-      assert.ok(Math.abs((observed[0]?.ttl??Infinity)-14400)<1,
+      assert.ok(Math.abs((observed[0]?.ttl??Infinity)-AUTH_SESSION_TTL_MS/1000)<1,
         "absolute TTL must not inherit the injected application clock");
       assert.equal((await request(issued.token)).status,200);
       assert.notEqual(issued.principal.issuedAt,injected.toISOString());
