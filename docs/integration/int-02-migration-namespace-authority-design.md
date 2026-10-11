@@ -82,6 +82,19 @@ Integration requirements: (1) do not preserve a DB-prepare command with the old 
 
 The earlier `0012–0015` assignment remains **tentative**. It has not been implemented, and the updated UGP head must be frozen again for any code transfer.
 
+## INT-02A pinned UGP migration mapping candidate
+
+At verified UGP HEAD `5cecb83da3352fd6a2e79423abbb69f2e7e9105b`, the four original migration source **Git blob IDs** were directly verified. These identify source contents only; **Git SHA-1 is not equivalent to a SHA-256 migration checksum**, and SHA-256 is not claimed computed here.
+
+| UGP source | Source Git blob ID | Proposed integration filename (unapproved) |
+| --- | --- | --- |
+| `0008_ugp_10_3_authority_outreach_review_events.sql` | `a8a38a277d486aae95fcfb1c416e2842904aeeb4` | `0012_ugp_10_3_authority_outreach_review_events.sql` |
+| `0009_ugp_10_31_outbound_safety_ledger.sql` | `60c3682ceceae897ca76d7843284d0aeaa82b43f` | `0013_ugp_10_31_outbound_safety_ledger.sql` |
+| `0010_ugp_10_32_single_send_execution.sql` | `846b78c56b2aeee6c24a6ccd4d8820c8ef695b67` | `0014_ugp_10_32_single_send_execution.sql` |
+| `0011_ugp_10_33_controlled_https_certification.sql` | `50c9861d02ab0caebc25190141fa9fe5ade8e98c` | `0015_ugp_10_33_controlled_https_certification.sql` |
+
+**Unresolved before INT-02B:** compute and freeze raw-byte SHA-256 with a reproducible fixture; inspect all UGP apply/deploy paths and existing installation receipts; verify `0012–0015` availability against a freshly frozen main and UGP tree; establish conditional-safe mapping for UGP databases that may already have original 0008–0011 installed; and test both schemas with disposable PostgreSQL. No renames or SQL application occurred.
+
 ## Explicit gates
 
 **INT-02A:** source-backed SQL and migration-runner dependency audit with filename and checksum mapping; no DDL.
