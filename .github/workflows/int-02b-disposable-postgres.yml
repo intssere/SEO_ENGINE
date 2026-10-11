@@ -148,10 +148,11 @@ jobs:
           import assert from 'node:assert/strict';
           import {readFileSync} from 'node:fs';
           import {verifyDisposableLineageEvidence} from './docs/integration/int-02b-migration-admission.mjs';
+          import {PINNED_MAIN_TABLES} from './docs/integration/int-02b-main-schema-source-baseline.mjs';
           const observedTables=JSON.parse(process.env.ACTUAL_TABLES);
           const observedConstraints=JSON.parse(process.env.ACTUAL_CONSTRAINTS);
           const migrationSource=readFileSync('lib/db/migrations/0011_first_party_crawl_expected_absence_disposition.sql','utf8');
-          const input={observedTables,observedConstraints,expectedTables:[...observedTables],databaseName:process.env.DB_NAME,expectedDatabaseName:'int02_attested',migrationSource,expectedSourceSha256:process.env.BASE_SHA};
+          const input={observedTables,observedConstraints,expectedTables:PINNED_MAIN_TABLES,databaseName:process.env.DB_NAME,expectedDatabaseName:'int02_attested',migrationSource,expectedSourceSha256:process.env.BASE_SHA};
           assert.equal(verifyDisposableLineageEvidence(input).verified,true);
           assert.equal(verifyDisposableLineageEvidence({...input,databaseName:'unknown_database'}).verified,false);
           assert.equal(verifyDisposableLineageEvidence({...input,migrationSource:migrationSource+'--altered'}).verified,false);
