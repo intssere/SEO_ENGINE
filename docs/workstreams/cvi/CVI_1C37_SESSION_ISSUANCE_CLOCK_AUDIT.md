@@ -15,3 +15,6 @@ CVI-1C.36 draft PR #1069, exact HEAD `6730bb6e30bed913e5b0786bc1cc3c432366c3aa`,
 
 ## Current status
 Audit and source-backed gap identified. No CVI-1C.37 source modification, test implementation or CI certification yet. No merge, deployment, production migration, OAuth/provider use or CMS mutation.
+
+## Implementation
+Session issuance has been changed to database-clock timestamps for created_at, last_seen_at and absolute expiration; optional input.now remains accepted for compatibility but is no longer trusted for persisted authorization. Disposable PostgreSQL tests inject far-future and far-past creation time and check real database time and canonical TTL. All behavior still requires exact-head CI certification. Source-side caller audit was limited to inspected authentication functions and indexed code-search results and does not constitute exhaustive proof of compatibility.
