@@ -51,3 +51,25 @@ jobs:
           test "$count" -eq 55
           psql -X -v ON_ERROR_STOP=1 -c "SELECT conname FROM pg_constraint WHERE conname='ua_single_send_exec_event_reason_v2_check'" | grep ua_single_send_exec_event_reason_v2_check
           echo "INT_02B_COMBINED_DISPOSABLE_POSTGRES_PASS"
+      - name: Verify installation replay fails closed and preserves installed schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="$(psql -X -At -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
+          if psql -X -v ON_ERROR_STOP=1 -f lib/db/migrations/0012_ugp_10_3_authority_outreach_review_events.sql >/tmp/int02-replay.log 2>&1; then
+            echo "ERROR: repeated migration unexpectedly succeeded"; exit 1
+          fi
+          after="$(psql -X -At -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
+          test "$before" = "55" && test "$after" = "$before"
+          psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM pg_constraint WHERE conname='ua_single_send_exec_event_reason_v2_check'" | grep -qx 1
+          echo "INT_02B_REPLAY_REFUSED_SCHEMA_UNCHANGED"
+      - name: Verify constraint migration rejects missing prerequisite
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -c "CREATE SCHEMA int02_negative"
+          psql -X -v ON_ERROR_STOP=1 -c "SET search_path TO int02_negative; CREATE TABLE authority_outreach_single_send_execution_events (event_reason text);"
+          if psql -X -v ON_ERROR_STOP=1 -c "SET search_path TO int02_negative;" -f lib/db/migrations/0015_ugp_10_33_controlled_https_certification.sql >/tmp/int02-missing.log 2>&1; then
+            echo "ERROR: 0015 unexpectedly accepted invalid prerequisite"; exit 1
+          fi
+          echo "INT_02B_MISSING_PREREQUISITE_REFUSED"
