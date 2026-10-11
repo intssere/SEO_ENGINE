@@ -490,6 +490,66 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await revokeWriter.end({timeout:1});
       await revokeGate.end({timeout:1});
     }
+    // CVI-1C.50: an atomic synthetic mutation commits before queued revocation.
+    const firstWrite=await createAuthSession({
+      subject:"cvi-write-before-revoke",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const writeDb=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const revokeDb=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await writeDb.unsafe("CREATE TEMP TABLE cvi_write_before_revoke(value text NOT NULL)");
+      await writeDb.unsafe("BEGIN");
+      let revokePending:Promise<unknown>|undefined;
+      try {
+        const eligible=await writeDb<{role:string}[]>`
+          SELECT role FROM auth_sessions
+          WHERE id=${firstWrite.principal.sessionId}::uuid AND revoked_at IS NULL
+            AND expires_at>clock_timestamp()
+            AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+          FOR UPDATE`;
+        assert.equal(eligible[0]?.role,"admin");
+        await writeDb`INSERT INTO cvi_write_before_revoke(value) VALUES ('committed-before-revocation')`;
+        revokePending=Promise.resolve(revokeDb`UPDATE auth_sessions
+          SET revoked_at=clock_timestamp() WHERE id=${firstWrite.principal.sessionId}::uuid`);
+        let waiting=false;
+        for(let n=0;n<80;n++){
+          const locks=await sql<{count:number}[]>`
+            SELECT count(*)::int AS count FROM pg_stat_activity
+            WHERE datname=current_database() AND wait_event_type='Lock'
+              AND pid<>pg_backend_pid()`;
+          if((locks[0]?.count??0)>0){waiting=true;break;}
+          await new Promise(resolve=>setTimeout(resolve,30));
+        }
+        assert.ok(waiting,"revocation waits for authorized synthetic write transaction");
+        await writeDb.unsafe("COMMIT");
+        await revokePending;
+        revokePending=undefined;
+        const persisted=await writeDb<{n:number}[]>`
+          SELECT count(*)::int AS n FROM cvi_write_before_revoke`;
+        assert.equal(persisted[0]?.n,1,"first authorized write commits before revocation");
+        assert.equal((await request(firstWrite.token,{method:"POST",csrf:firstWrite.csrfToken})).status,401);
+        const denied=await writeDb.begin(async tx=>{
+          const rows=await tx<{role:string}[]>`
+            SELECT role FROM auth_sessions
+            WHERE id=${firstWrite.principal.sessionId}::uuid AND revoked_at IS NULL
+            FOR UPDATE`;
+          if(rows[0]?.role!=="admin")return false;
+          await tx`INSERT INTO cvi_write_before_revoke(value) VALUES ('forbidden')`;
+          return true;
+        });
+        assert.equal(denied,false,"later synthetic write denied after revocation");
+        const finalCount=await writeDb<{n:number}[]>`
+          SELECT count(*)::int AS n FROM cvi_write_before_revoke`;
+        assert.equal(finalCount[0]?.n,1);
+      }finally{
+        await writeDb.unsafe("ROLLBACK").catch(()=>undefined);
+        if(revokePending)await revokePending.catch(()=>undefined);
+      }
+    }finally{
+      await writeDb.end({timeout:1});
+      await revokeDb.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
