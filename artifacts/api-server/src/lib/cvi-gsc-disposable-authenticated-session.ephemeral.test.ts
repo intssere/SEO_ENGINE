@@ -275,6 +275,40 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await firstOperation.end({timeout:1});
       await secondDemoter.end({timeout:1});
     }
+    // CVI-1C.45: authorization and synthetic DB mutation share one transaction.
+    const atomic=await createAuthSession({
+      subject:"cvi-atomic-write",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const mutationDb=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await mutationDb.unsafe("CREATE TEMP TABLE cvi_atomic_synthetic_writes(value text NOT NULL)");
+      const attempt=async()=>{
+        return mutationDb.begin(async tx=>{
+          const rows=await tx<{role:string}[]>`
+            SELECT role FROM auth_sessions
+            WHERE id=${atomic.principal.sessionId}::uuid
+              AND revoked_at IS NULL AND expires_at>clock_timestamp()
+              AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+            FOR UPDATE`;
+          if(rows[0]?.role!=="admin")return false;
+          await tx`INSERT INTO cvi_atomic_synthetic_writes(value) VALUES ('allowed')`;
+          return true;
+        });
+      };
+      assert.equal(await attempt(),true);
+      await sql`UPDATE auth_sessions SET role='viewer' WHERE id=${atomic.principal.sessionId}::uuid`;
+      assert.equal(await attempt(),false,"demotion denies synthetic DB mutation");
+      const after=await mutationDb<{n:number}[]>`SELECT count(*)::int AS n FROM cvi_atomic_synthetic_writes`;
+      assert.equal(after[0]?.n,1,"denied mutation must not persist");
+      await sql`UPDATE auth_sessions SET revoked_at=clock_timestamp()
+        WHERE id=${atomic.principal.sessionId}::uuid`;
+      assert.equal(await attempt(),false,"revoked session denies synthetic DB mutation");
+      const final=await mutationDb<{n:number}[]>`SELECT count(*)::int AS n FROM cvi_atomic_synthetic_writes`;
+      assert.equal(final[0]?.n,1,"revocation must not persist a denied mutation");
+    }finally{
+      await mutationDb.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
