@@ -74,6 +74,14 @@ The UGP branch contains four dedicated `lib/db/src/ugp-10-*-migration.test.ts` m
 
 No equivalent production-apply hard-binding to UGP original filenames has been established by these test excerpts; this is **not proof that no such binder exists**. The next implementation design must update tests and any dedicated consumers atomically with renaming, protect separately installed UGP environments, and continue to reject partial/mismatched schema states. No production or disposable PostgreSQL was accessed here.
 
+## INT-02A newly verified executable migration consumer
+
+At refreshed UGP HEAD `5cecb83da3352fd6a2e79423abbb69f2e7e9105b`, `artifacts/api-server/src/lib/authority-outreach-ugp-10-33-db-prepare.ts` reads `DATABASE_URL`, inspects public table count, and contains an explicit SQL preparation array: `0003_observation_evidence_schema.sql`, then `0008_ugp_10_3_authority_outreach_review_events.sql`, `0009_ugp_10_31_outbound_safety_ledger.sql`, `0010_ugp_10_32_single_send_execution.sql`, `0011_ugp_10_33_controlled_https_certification.sql`. It reads each file from `lib/db/migrations` and invokes `sql.unsafe`. **This is an executable schema-mutating consumer, not merely a fixture test.** The UGP-10.33 live-runner also reads `DATABASE_URL` and public table count. No tool was run.
+
+Integration requirements: (1) do not preserve a DB-prepare command with the old migration sequence as an executable combined-app path; (2) adopt a separately scoped, nonautomatic installer only after immutable source fingerprint mapping, exact allowed database identity and existing installation proof; (3) ensure Docker packaging and build entrypoint do not allow the old UGP preparation path to bypass main's release/migration gates; (4) include tests that reject accidental original-number application, wrong baseline, stale migration checksums and ambiguous installed schema; (5) do not infer from source filename renumbering that an already-used UGP database can safely replay installation.
+
+The earlier `0012–0015` assignment remains **tentative**. It has not been implemented, and the updated UGP head must be frozen again for any code transfer.
+
 ## Explicit gates
 
 **INT-02A:** source-backed SQL and migration-runner dependency audit with filename and checksum mapping; no DDL.
