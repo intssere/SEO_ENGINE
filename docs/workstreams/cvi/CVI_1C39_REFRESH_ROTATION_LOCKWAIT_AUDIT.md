@@ -17,3 +17,8 @@ Synthetic disposable PostgreSQL; no production database, live providers, public 
 
 ## Bounded implementation
 Changed successful token rotation's `last_seen_at` refresh from PostgreSQL transaction-start `now()` to `clock_timestamp()` while retaining the conditional revocation/expiry/idle checks. Added disposable row-lock blocking regression verifying the persisted refresh timestamp is no earlier than a DB clock marker captured immediately before releasing the lock, the old token denies, and the rotated token authenticates. Await exact-head full CI; no runtime certification claimed yet.
+
+## Exact-head implementation CI receipt
+- Implementation SHA `7ce128792a362feefad9a4ae370cfc7ea4ac3fba`.
+- Full workflow https://github.com/intssere/SEO_ENGINE/actions/runs/38123039267 completed SUCCESS, validation job `114421533338`, no failed steps.
+- PR #1077 remains open/draft, unmerged and undeployed. This documentation revision requires separate exact-head CI.
