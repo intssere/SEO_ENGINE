@@ -10,3 +10,6 @@ Develop an isolated, synthetic-only concurrency test using a controlled pause be
 
 ## Restrictions
 No production database access, real provider interactions, public CVI route, publishing, merges or deployment. This document is a design audit, not completed enforcement.
+
+## Added synthetic mid-request experiment
+A localhost Express probe now pauses an already authorized admin POST after shared middleware. A committed PostgreSQL role change to viewer occurs while the handler is paused; the probe records the pre-change request role snapshot and subsequent POST authorization is expected to deny. This explicitly demonstrates the entry-only authorization boundary; it is not a security fix for sensitive downstream operations. Full exact-head CI and transactional fencing design remain outstanding.
