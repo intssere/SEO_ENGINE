@@ -18,6 +18,9 @@ for(const entry of manifest.entries) {
  assert.equal(actualHash,entry.rawSha256,source+" SHA256 mismatch");
  const mainFiles = git("ls-tree","-r","--name-only",main,"lib/db/migrations").split("\n");
  assert.ok(!mainFiles.includes(target),target+" collides with main");
+ const stagedBytes = readFileSync(new URL("../../lib/db/migrations/"+entry.candidate,import.meta.url));
+ assert.equal(createHash("sha256").update(stagedBytes).digest("hex"),entry.rawSha256,target+" staged SHA256 mismatch");
+ assert.equal(git("hash-object","lib/db/migrations/"+entry.candidate),entry.gitBlobSha1,target+" staged Git blob mismatch");
  console.log("VERIFIED",entry.original,"->",entry.candidate,actualHash);
 }
 const mainMigrationPaths = git("ls-tree","-r","--name-only",main,"lib/db/migrations").split("\n");
