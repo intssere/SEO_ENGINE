@@ -1,0 +1,53 @@
+name: INT-02B disposable PostgreSQL migration compatibility
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/db/migrations/001[2-5]_ugp_*.sql"
+      - ".github/workflows/int-02b-disposable-postgres.yml"
+permissions:
+  contents: read
+jobs:
+  disposable-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: seo_engine_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d seo_engine_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: test
+      PGPASSWORD: test
+      PGDATABASE: seo_engine_test
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Install psql client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+      - name: Install isolated combined schema in disposable service
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in lib/db/migrations/00{01..15}_*.sql; do
+            test -f "$file"
+            echo "TEST_APPLY ${file##*/}"
+            psql -X -v ON_ERROR_STOP=1 -f "$file" >/dev/null
+          done
+          count="$(psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
+          echo "Combined table count: $count"
+          test "$count" -eq 49
+          psql -X -v ON_ERROR_STOP=1 -c "SELECT conname FROM pg_constraint WHERE conname='ua_single_send_exec_event_reason_v2_check'" | grep ua_single_send_exec_event_reason_v2_check
+          echo "INT_02B_COMBINED_DISPOSABLE_POSTGRES_PASS"
