@@ -33,26 +33,27 @@ test("C4 disposable PostgreSQL strict lease expiry: future/equal denied, past al
     transaction_timestamp()+interval '20 minutes',
     transaction_timestamp()+interval '10 minutes','claimed','A',7,1,
     transaction_timestamp()-interval '2 minutes',transaction_timestamp()+${offset}*interval '1 second')`;
-  // Capture a single PostgreSQL statement timestamp for equality and comparison;
-  // no JS clock, elapsed-time sleeps, or flaky sub-second race.
-  const attempt=await db`WITH clock AS MATERIALIZED (SELECT transaction_timestamp() AS now),
-    normalized AS (UPDATE ugp11_transport_fixture.jobs SET
-     lease_expires_at=(SELECT now FROM clock)+${offset}*interval '1 second'
-     WHERE identity=${identity} RETURNING identity),
-    moved AS (UPDATE ugp11_transport_fixture.jobs j SET worker_id='B',
-       fence=fence+1,attempts=attempts+1,claimed_at=(SELECT now FROM clock),
-       lease_expires_at=(SELECT now FROM clock)+interval '60 seconds'
-     WHERE j.identity=${identity} AND j.status='claimed' AND j.worker_id='A' AND j.fence=7
-       AND j.lease_expires_at<(SELECT now FROM clock)
-       AND EXISTS (SELECT 1 FROM normalized WHERE normalized.identity=j.identity)
-     RETURNING j.fence) SELECT fence FROM moved`;
-  // Never infer from the above CTE's same-row UPDATE ordering: PostgreSQL
-  // does not guarantee two modifications to one row in one statement.
+  // Same database transaction_timestamp() anchors equality and takeover.
+  // Tests are independent of the host clock and scheduler timing.
+  await db.begin(async tx=>{
+   const [clock]=await tx`SELECT transaction_timestamp() AS now`;
+   const now=clock.now as Date;
+   await tx`UPDATE ugp11_transport_fixture.jobs SET
+     lease_expires_at=${now}::timestamptz+${offset}*interval '1 second'
+     WHERE identity=${identity}`;
+   const attempt=await tx`UPDATE ugp11_transport_fixture.jobs SET
+     worker_id='B',fence=fence+1,attempts=attempts+1,
+     claimed_at=transaction_timestamp(),
+     lease_expires_at=transaction_timestamp()+interval '60 seconds'
+     WHERE identity=${identity} AND status='claimed' AND worker_id='A'
+      AND fence=7 AND lease_expires_at<transaction_timestamp()
+     RETURNING fence`;
+   assert.equal(attempt.length,offset<0?1:0);
+  });
   const [row]=await db`SELECT worker_id,fence,attempts FROM ugp11_transport_fixture.jobs WHERE identity=${identity}`;
-  assert.ok(row);
-  assert.equal(attempt.length,0,"same-statement double-update is intentionally not an authorization path");
-  assert.equal(row.worker_id,"A");
-  assert.equal(Number(row.fence),7);
-  assert.equal(Number(row.attempts),1);
+  assert.equal(row.worker_id,offset<0?"B":"A");
+  assert.equal(Number(row.fence),offset<0?8:7);
+  assert.equal(Number(row.attempts),offset<0?2:1);
+
  }
 });
