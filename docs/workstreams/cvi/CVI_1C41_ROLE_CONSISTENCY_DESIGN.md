@@ -13,3 +13,9 @@ No production database access, real provider interactions, public CVI route, pub
 
 ## Added synthetic mid-request experiment
 A localhost Express probe now pauses an already authorized admin POST after shared middleware. A committed PostgreSQL role change to viewer occurs while the handler is paused; the probe records the pre-change request role snapshot and subsequent POST authorization is expected to deny. This explicitly demonstrates the entry-only authorization boundary; it is not a security fix for sensitive downstream operations. Full exact-head CI and transactional fencing design remain outstanding.
+
+## Certified implementation result
+- Exact SHA `de83756aefa7eff62b41b2fd9f2ea8417612a3ef`.
+- Full CI https://github.com/intssere/SEO_ENGINE/actions/runs/38125703455 — SUCCESS, job `114429511437`.
+- The demonstrated mid-request snapshot is a documented limitation, not completed transactional role fencing.
+- PR #1080 remains draft/unmerged/undeployed. This receipt commit requires separate full CI.
