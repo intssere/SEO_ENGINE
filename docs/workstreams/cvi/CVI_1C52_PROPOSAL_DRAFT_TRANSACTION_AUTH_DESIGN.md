@@ -24,3 +24,13 @@ CVI-1C.51 draft PR #1097, head `1ae226ef22e421e2a2e692b790d07372629f274d`, exact
 
 ## Status
 Source-backed design candidate only. No runtime changes, providers, production DB, publishing, merge, or deployment. This design **does not claim** production transactional authorization is implemented.
+
+## Source policy confirmation — scoped design correction
+- `artifacts/api-server/src/lib/auth-foundation.ts` lines 103–114: `requiredRoleForApiRequest` explicitly requires **operator** for `/approvals/:id/draft` and `/approvals/:id/decision`, with `roleAllows` ranking viewer < operator < admin. The transaction check must use **operator-or-admin**, not admin-only.
+- `artifacts/api-server/src/routes/index.ts` installs `requireApiAuthentication` before `operationalRouter`; the synchronous middleware check is at request entry, not mutation commit.
+- `artifacts/api-server/src/lib/auth-foundation.ts` session load updates `last_seen_at` using `clock_timestamp()` after verifying nonrevocation and absolute/idle expiry. The proposed transaction fence should read the current persisted role/expiry without inadvertently extending session lifetime or bypassing the entry CSRF check.
+- `artifacts/api-server/src/lib/operational-data.ts` `getRuntimeReadiness` selects an active site by fixed domain `diamondshelf.us`; this is an operational site selector, **not** proof of membership or tenant ownership. A separate membership/site-grant policy decision is still required before production integration.
+- The existing `editProposalDraft` transaction locks `action_plans` after the readiness check. Adding a session row lock must establish session-before-plan lock order, account for concurrent token rotation and logout, and avoid reusing the request snapshot as a fresh authorization source.
+
+## Implementation admission decision
+**Design-only / not authorized to alter runtime.** The candidate is lower-risk than external execution routes, but the missing tenant/site authorization contract and compatibility with auth-disabled operational modes require explicit resolution and review. Preserve the existing operator role, dry-run invariants, feature gates and no-public-write semantics; do not assume role-checking alone authorizes access to any site's proposals.
