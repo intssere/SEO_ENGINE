@@ -62,6 +62,19 @@ test("CVI-1C.28 disposable authenticated tenant/site private composition", async
   assert.equal(positive.tenantAuthorizationForFutureOperations,false);
   assert.equal(positive.executionAuthorized,false);
   assert.equal(positive.publicationAuthorized,false);
+  // CVI-1C.58: review_content is a distinct read grant, never edit authority.
+  await sql`UPDATE cvi_site_read_grants SET permission='review_content' WHERE id=${grant}::uuid`;
+  const contentGrant=await sql<{permission:string}[]>`
+    SELECT permission FROM cvi_site_read_grants
+    WHERE id=${grant}::uuid AND site_id=${site}::uuid
+      AND status='active' AND revoked_at IS NULL`;
+  assert.equal(contentGrant[0]?.permission,"review_content");
+  assert.equal((await read()).status,"DENY",
+    "review_content must not substitute for read_evidence acquisition grant");
+  await sql`UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=${grant}::uuid`;
+  assert.equal((await read()).status,"DENY","revoked content review grant cannot authorize acquisition");
+  await sql`UPDATE cvi_site_read_grants SET permission='read_evidence',status='active',revoked_at=NULL WHERE id=${grant}::uuid`;
+  assert.equal((await read()).status,"UNTRUSTED_HISTORICAL_REVIEW_ONLY");
   assert.equal((await read("forged-subject")).status,"DENY");
   assert.equal((await read(principal.subject,{...lineage,siteId:"wrong"})).status,"DENY");
   await sql`UPDATE cvi_site_read_grants SET status='revoked',revoked_at=now() WHERE id=${grant}::uuid`;
