@@ -46,6 +46,7 @@ jobs:
         run: corepack pnpm install --frozen-lockfile --ignore-scripts
       - name: Run combined-tree customer app typecheck and full contract suite
         run: |
+          corepack pnpm run typecheck:libs
           corepack pnpm --filter @workspace/seo-engine typecheck
           corepack pnpm --filter @workspace/seo-engine test
       - name: Build combined-tree customer app
