@@ -132,3 +132,29 @@ jobs:
           console.log('INT02_LIVE_SNAPSHOT_REJECTED',process.env.DB_NAME,result.reason);
           JS
           done
+      - name: Evaluate attested read-only database catalog observations
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb int02_attested
+          for file in lib/db/migrations/00{01..11}_*.sql; do
+            PGDATABASE=int02_attested psql -X -v ON_ERROR_STOP=1 -f "$file" >/dev/null
+          done
+          DB_NAME="$(PGDATABASE=int02_attested psql -X -At -c "SELECT current_database()")"
+          ACTUAL_TABLES="$(PGDATABASE=int02_attested psql -X -At -c "SELECT coalesce(json_agg(table_name ORDER BY table_name),'[]'::json)::text FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
+          ACTUAL_CONSTRAINTS="$(PGDATABASE=int02_attested psql -X -At -c "SELECT coalesce(json_agg(conname ORDER BY conname),'[]'::json)::text FROM pg_constraint WHERE connamespace='public'::regnamespace")"
+          BASE_SHA="$(sha256sum lib/db/migrations/0011_first_party_crawl_expected_absence_disposition.sql | cut -d ' ' -f1)"
+          DB_NAME="$DB_NAME" ACTUAL_TABLES="$ACTUAL_TABLES" ACTUAL_CONSTRAINTS="$ACTUAL_CONSTRAINTS" BASE_SHA="$BASE_SHA" node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          import {verifyDisposableLineageEvidence} from './docs/integration/int-02b-migration-admission.mjs';
+          const observedTables=JSON.parse(process.env.ACTUAL_TABLES);
+          const observedConstraints=JSON.parse(process.env.ACTUAL_CONSTRAINTS);
+          const migrationSource=readFileSync('lib/db/migrations/0011_first_party_crawl_expected_absence_disposition.sql','utf8');
+          const input={observedTables,observedConstraints,expectedTables:[...observedTables],databaseName:process.env.DB_NAME,expectedDatabaseName:'int02_attested',migrationSource,expectedSourceSha256:process.env.BASE_SHA};
+          assert.equal(verifyDisposableLineageEvidence(input).verified,true);
+          assert.equal(verifyDisposableLineageEvidence({...input,databaseName:'unknown_database'}).verified,false);
+          assert.equal(verifyDisposableLineageEvidence({...input,migrationSource:migrationSource+'--altered'}).verified,false);
+          assert.equal(verifyDisposableLineageEvidence({...input,expectedTables:[...observedTables.slice(1),'forged_table']}).verified,false);
+          console.log('INT02_DISPOSABLE_CATALOG_EVIDENCE_PASS',observedTables.length,observedConstraints.length);
+          JS
