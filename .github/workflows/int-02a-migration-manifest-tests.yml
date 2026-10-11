@@ -1,0 +1,19 @@
+name: INT-02A migration manifest static tests
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/integration/int-02a-ugp-migration-source-map*"
+      - ".github/workflows/int-02a-migration-manifest-tests.yml"
+permissions:
+  contents: read
+jobs:
+  offline-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify source-only fail-closed migration manifest
+        run: node --test docs/integration/int-02a-ugp-migration-source-map.test.mjs
