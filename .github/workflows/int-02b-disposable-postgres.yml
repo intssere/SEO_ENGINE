@@ -233,3 +233,16 @@ jobs:
           test "$enabled" = D
           PGDATABASE=int02_disabled_trigger psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -qx 55
           echo "INT02_DISABLED_TRIGGER_TAMPERED_FIXTURE_CONFIRMED"
+      - name: Verify admission denies observed disabled immutable trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          tables="$(PGDATABASE=int02_disabled_trigger psql -X -At -v ON_ERROR_STOP=1 -c "SELECT json_agg(table_name ORDER BY table_name)::text FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
+          state="$(PGDATABASE=int02_disabled_trigger psql -X -At -v ON_ERROR_STOP=1 -c "SELECT t.tgenabled FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid WHERE c.relname='authority_outreach_review_events' AND t.tgname='authority_outreach_review_events_reject_update_delete'")"
+          TABLES="$tables" TRIGGER_STATE="$state" node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {assessMigrationAdmission} from './docs/integration/int-02b-migration-admission.mjs';
+          const result=assessMigrationAdmission({tableCount:55,tableNames:JSON.parse(process.env.TABLES),hasFinalConstraint:true,auditTriggerEnabled:process.env.TRIGGER_STATE==='O',sourceHashesVerified:true,installedLineageVerified:true,targetDatabaseIdentityVerified:true,authorizedDisposableExecution:true});
+          assert.deepEqual(result,{admitted:false,reason:'audit_trigger_disabled'});
+          console.log('INT02_DISABLED_AUDIT_TRIGGER_REJECTED');
+          JS
