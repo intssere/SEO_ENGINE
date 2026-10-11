@@ -5,6 +5,10 @@
       {
         "label": "Overview",
         "path": "/"
+      },
+      {
+        "label": "Connect website",
+        "path": "/onboarding"
       }
     ]
   },
