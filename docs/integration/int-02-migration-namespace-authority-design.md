@@ -44,6 +44,18 @@ All four UGP SQL bodies were read at UGP HEAD `c454f4428be6799bc6c0e0c160c27f0f7
 
 **Next source audit:** trace the actual runner/ledger and test assertions that bind filenames and checksums; verify current main schema prerequisite objects and all SQL effects (triggers, indexes, DML). Then create a deterministic rename/manifest proposal with isolated fixture tests. No SQL execution authorized by this document.
 
+## INT-02A bootstrap tracking findings (source-backed)
+
+At both branch heads, `lib/db/src/runtime-bootstrap.ts`'s `applyMigration(sql, filename)` reads a SQL file by explicit filename and submits its contents to `sql.unsafe`. The ordinary bootstrap path applies only `0001_core.sql` and `0002_auth.sql` when their early table-count states warrant them. Subsequent migrations are not shown to be automatically sequenced by a durable migration ledger in this path. **Do not infer that the entire repository has no migration ledger**: all dedicated P12.2/UGP migration executors, release CLIs and tests still require inspection.
+
+Main's `classifyRuntimeIdentitySchema(tableCount, shape)` distinguishes selected ambiguous 38-, 41-, and 43-table shapes by presence/count of crawl L2, recovery/disposition and P8.8 policy tables; it also recognizes later engineering table counts. UGP's parallel bootstrap instead recognizes its outreach phases. Neither can simply replace the other in a combined runtime.
+
+Implications:
+1. Preserve the current main bootstrap's explicit Production shape distinctions. Combined schema admission must distinguish the **actual** six UGP outreach tables and altered CHECK constraint, not just an arithmetic table-count increment.
+2. Search every dedicated migration apply/certifier and runtime packaging path for existing lineage fingerprints, checksum enforcement and rollout receipts before assigning new filenames.
+3. A new integration migration manifest is a **proposed** contract, not an existing guaranteed ledger. Specify immutable UGP-original SQL hashes and explicit mapping only after source audit and a confirmed current numbering reservation.
+4. Refuse to recognize a partially installed, already-applied-but-misnumbered, or semantically divergent schema as ready; build disposable negative tests.
+
 ## Explicit gates
 
 **INT-02A:** source-backed SQL and migration-runner dependency audit with filename and checksum mapping; no DDL.
