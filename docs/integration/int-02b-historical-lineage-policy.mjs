@@ -25,3 +25,30 @@ export function classifyMigrationHistory({receipts,verifiedOrigin,kind}={}){
  }
  return {accepted:false,reason:"historical_main_receipts_not_yet_independently_certified"};
 }
+
+/**
+ * Observation-only migration inventory. Reports shape, never certifies provenance.
+ * Distinguishes original UGP numbering from the renumbered integration series.
+ * A missing/ambiguous receipt must never be silently interpreted as unapplied.
+ */
+export function describeHistoricalLineage(receipts){
+ if(!Array.isArray(receipts)||receipts.length===0)return {classification:"unknown",reason:"history_missing",admitted:false};
+ if(receipts.some(r=>!r||typeof r.filename!=="string"||typeof r.sha256!=="string"||!/^[0-9a-f]{64}$/.test(r.sha256)))
+  return {classification:"inconsistent",reason:"malformed_receipt",admitted:false};
+ const byName=new Map();
+ for(const receipt of receipts){
+  if(byName.has(receipt.filename))return {classification:"inconsistent",reason:"duplicate_receipt_identity",admitted:false};
+  byName.set(receipt.filename,receipt.sha256);
+ }
+ const original=map.entries.filter(e=>byName.has(e.original));
+ const integrated=map.entries.filter(e=>byName.has(e.candidate));
+ if(original.length && integrated.length)return {classification:"inconsistent",reason:"mixed_ugp_namespace",admitted:false};
+ for(const entry of map.entries){
+  const originalSha=byName.get(entry.original), integratedSha=byName.get(entry.candidate);
+  if((originalSha&&originalSha!==entry.rawSha256)||(integratedSha&&integratedSha!==entry.rawSha256))
+   return {classification:"inconsistent",reason:"ugp_checksum_mismatch",admitted:false};
+ }
+ if(original.length)return {classification:original.length===map.entries.length?"legacy_ugp_only":"partial",reason:"original_ugp_namespace_requires_independent_history",admitted:false};
+ if(integrated.length)return {classification:integrated.length===map.entries.length?"combined_candidate":"partial",reason:"integration_history_requires_independent_main_receipts",admitted:false};
+ return {classification:"main_candidate_or_unknown",reason:"main_history_requires_independent_provenance",admitted:false};
+}
