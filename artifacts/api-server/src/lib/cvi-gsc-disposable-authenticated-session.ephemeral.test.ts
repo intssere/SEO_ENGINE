@@ -345,7 +345,7 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
         await revoker.unsafe("COMMIT");
         assert.equal(await pending,false,"waiting authorization cannot survive committed revocation");
         pending=undefined;
-        assert.equal((await request(revokedRace.token,{method:"POST",csrf:revokedRace.csrfToken})).status,403);
+        assert.equal((await request(revokedRace.token,{method:"POST",csrf:revokedRace.csrfToken})).status,401,"revoked session is unauthenticated");
       }finally{
         await revoker.unsafe("ROLLBACK").catch(()=>undefined);
         if(pending)await pending.catch(()=>undefined);
