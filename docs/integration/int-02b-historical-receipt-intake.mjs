@@ -27,7 +27,7 @@ export function inspectHistoricalReceiptBundle(bundle){
  if(!Array.isArray(bundle.receipts)||bundle.receipts.length===0)return deny("receipts_missing");
  if(typeof bundle.sourceCommit!=="string"||!/^[0-9a-f]{40}$/.test(bundle.sourceCommit))return deny("source_commit_missing");
  if(!bundle.target||typeof bundle.target!=="object"||!["projectId","environmentId","serviceId","database"].every(k=>typeof bundle.target[k]==="string"&&bundle.target[k].trim()))return deny("target_identity_incomplete");
- if(bundle.receipts.some(r=>/^00(?:08|09|10|11)_ugp_/.test(r.filename)))return deny("legacy_ugp_namespace_collision");
+ if(bundle.receipts.some(r=>r&&typeof r.filename==="string"&&/^00(?:08|09|10|11)_ugp_/.test(r.filename)))return deny("legacy_ugp_namespace_collision");
  const seen=new Set();
  const sequence=new Set();
  let preceding=0;
@@ -40,7 +40,10 @@ export function inspectHistoricalReceiptBundle(bundle){
   preceding=ordinal;
   sequence.add(ordinal);
   if(typeof r.sha256!=="string"||!HEX.test(r.sha256)||typeof r.appliedAtUtc!=="string"||!validUtc(r.appliedAtUtc))return deny("receipt_evidence_incomplete");
-  const actual=createHash("sha256").update(readFileSync(new URL("../../lib/db/migrations/"+r.filename,import.meta.url))).digest("hex");
+  let bytes;
+  try{bytes=readFileSync(new URL("../../lib/db/migrations/"+r.filename,import.meta.url));}
+  catch{return deny("canonical_source_unavailable");}
+  const actual=createHash("sha256").update(bytes).digest("hex");
   if(r.sha256!==actual)return deny("receipt_source_sha256_mismatch");
  }
 
