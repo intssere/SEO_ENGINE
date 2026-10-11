@@ -14,3 +14,6 @@ CVI-1C.38 implementation HEAD `23e07e8c612016f24b71b666623effa57a0b4072` passed 
 
 ## Safety limits
 Synthetic disposable PostgreSQL; no production database, live providers, public route, publishing, merge or deployment. Audit only; implementation and certification pending.
+
+## Bounded implementation
+Changed successful token rotation's `last_seen_at` refresh from PostgreSQL transaction-start `now()` to `clock_timestamp()` while retaining the conditional revocation/expiry/idle checks. Added disposable row-lock blocking regression verifying the persisted refresh timestamp is no earlier than a DB clock marker captured immediately before releasing the lock, the old token denies, and the rotated token authenticates. Await exact-head full CI; no runtime certification claimed yet.
