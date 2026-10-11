@@ -262,14 +262,16 @@ jobs:
             'triggers', (SELECT json_agg(json_build_object('table',t.tgrelid::regclass::text,'name',t.tgname,'definition',pg_get_triggerdef(t.oid),'enabled',t.tgenabled::text) ORDER BY t.tgrelid::regclass::text,t.tgname) FROM pg_trigger t JOIN pg_class cl ON cl.oid=t.tgrelid WHERE cl.relnamespace='public'::regnamespace AND NOT t.tgisinternal)
           )::text;
           SQL
-          reference="$(PGDATABASE=seo_engine_test psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql)"
-          tampered="$(PGDATABASE=int02_tampered psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql)"
-          disabled="$(PGDATABASE=int02_disabled_trigger psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql)"
-          REFERENCE="$reference" TAMPERED="$tampered" DISABLED="$disabled" node --input-type=module <<'JS'
+          PGDATABASE=seo_engine_test psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-reference.json
+          PGDATABASE=int02_tampered psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-tampered.json
+          PGDATABASE=int02_disabled_trigger psql -X -At -v ON_ERROR_STOP=1 -f /tmp/int02-catalog.sql > /tmp/int02-catalog-disabled.json
+          node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
           import {compareCatalogEvidence} from './docs/integration/int-02b-catalog-evidence.mjs';
-          const reference=JSON.parse(process.env.REFERENCE);
-          for (const [name,snapshot] of [['untampered',reference],['constraint_tamper',JSON.parse(process.env.TAMPERED)],['disabled_trigger',JSON.parse(process.env.DISABLED)]]) {
+          const load=(name)=>JSON.parse(readFileSync('/tmp/int02-catalog-'+name+'.json','utf8'));
+          const reference=load('reference');
+          for (const [name,snapshot] of [['untampered',reference],['constraint_tamper',load('tampered')],['disabled_trigger',load('disabled')]]) {
             const result=compareCatalogEvidence({observed:snapshot,reference,referenceProvenance:'pinned_disposable_sql_installation'});
             assert.equal(result.verified,name==='untampered',name+': '+result.reason);
             if(name==='constraint_tamper')assert.equal(result.reason,'catalog_constraints_mismatch');
