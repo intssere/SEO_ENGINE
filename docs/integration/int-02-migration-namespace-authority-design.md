@@ -64,6 +64,16 @@ Main's **P12.2 migration 0011 is not a freely renumberable SQL script**. The pro
 
 **INT-02 acceptance gate:** produce a source-backed immutable mapping manifest (original UGP blob SHA, raw SHA-256, proposed integration path, prerequisite objects, execution consumers); test collision and already-applied-lineage rejection on disposable PostgreSQL; preserve independent Production authority decision. No SQL/DDL was executed during this audit.
 
+## INT-02A UGP migration consumer audit (source-backed)
+
+The UGP branch contains four dedicated `lib/db/src/ugp-10-*-migration.test.ts` modules. Each currently resolves its original relative migration filename under `../migrations/` and executes that exact SQL in guarded local disposable tests. Therefore **renaming UGP SQL files alone will break these existing tests** and any analogous runtime consumers must be inventoried. In the inspected tests:
+- UGP-10.3 tests an additive transactional migration, immutability and localhost/W07 prerequisite.
+- UGP-10.31 tests an additive transaction on the UGP-10.3 baseline and outbound-ledger mutation denial.
+- UGP-10.32 tests a 47-table baseline leading into single-send execution and uses SHA-256 for test fixtures; its direct source path is original 0010.
+- UGP-10.33 tests constraint expansion on the existing 49-table state with the original 0011 SQL path; this mutation must not be applied out of order.
+
+No equivalent production-apply hard-binding to UGP original filenames has been established by these test excerpts; this is **not proof that no such binder exists**. The next implementation design must update tests and any dedicated consumers atomically with renaming, protect separately installed UGP environments, and continue to reject partial/mismatched schema states. No production or disposable PostgreSQL was accessed here.
+
 ## Explicit gates
 
 **INT-02A:** source-backed SQL and migration-runner dependency audit with filename and checksum mapping; no DDL.
