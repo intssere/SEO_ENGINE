@@ -95,6 +95,19 @@ At verified UGP HEAD `5cecb83da3352fd6a2e79423abbb69f2e7e9105b`, the four origin
 
 **Unresolved before INT-02B:** compute and freeze raw-byte SHA-256 with a reproducible fixture; inspect all UGP apply/deploy paths and existing installation receipts; verify `0012–0015` availability against a freshly frozen main and UGP tree; establish conditional-safe mapping for UGP databases that may already have original 0008–0011 installed; and test both schemas with disposable PostgreSQL. No renames or SQL application occurred.
 
+## INT-02A immutable SQL SHA-256 evidence — PASS
+
+A GitHub Actions source-only workflow `.github/workflows/int-02a-ugp-migration-checksums.yml` checked frozen UGP commit `5cecb83da3352fd6a2e79423abbb69f2e7e9105b` against all four pinned Git blobs, then calculated the SHA-256 of their raw bytes. Workflow run [38122466686](https://github.com/intssere/SEO_ENGINE/actions/runs/38122466686) completed **SUCCESS**, source-checksums job `114419850899`:
+
+| Original migration | Raw-byte SHA-256 |
+| --- | --- |
+| `0008_ugp_10_3_authority_outreach_review_events.sql` | `21331890d3f7ceacc0db47efca8b7e6cce50826a44fcf72c2a9cf6a788ea45f0` |
+| `0009_ugp_10_31_outbound_safety_ledger.sql` | `3acad462f9bc527d03e1247ded261c9f701dc367b186710c7300b3c1c587c29b` |
+| `0010_ugp_10_32_single_send_execution.sql` | `b78caa1ae8e0d2a9316a88ea8b026dac0271a089b2e7424ed983915c1f8ec0f0` |
+| `0011_ugp_10_33_controlled_https_certification.sql` | `801f8cb03807a594825cc5af74dcfbcc0d77412b3d2ef5127b89ab10674a73ad` |
+
+These represent original UGP source bytes only. The proposed integration copies must have identical raw SHA-256 and an explicitly distinct installation identity; do not reinterpret old applied-migration receipts as evidence that renamed copies were installed. This is **not** a PostgreSQL schema compatibility certification. Neither a DB connection nor SQL execution occurred.
+
 ## Explicit gates
 
 **INT-02A:** source-backed SQL and migration-runner dependency audit with filename and checksum mapping; no DDL.
