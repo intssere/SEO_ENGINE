@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {createHash} from "node:crypto";
+import {PINNED_MAIN_TABLES} from "./int-02b-main-schema-source-baseline.mjs";
 const manifest=JSON.parse(readFileSync(new URL("./int-02a-ugp-migration-source-map.json",import.meta.url)));
 export const EXPECTED_MAIN_TABLES=49;
 export const EXPECTED_COMBINED_TABLES=55;
@@ -29,4 +30,14 @@ export function verifyDisposableLineageEvidence({observedTables, observedConstra
   if(actual.some((name,i)=>name!==expected[i])||observedConstraints.length===0||observedConstraints.some(x=>typeof x!=="string"))return {verified:false,reason:"schema_shape_unverified"};
   if(typeof migrationSource!=="string"||createHash("sha256").update(migrationSource).digest("hex")!==expectedSourceSha256)return {verified:false,reason:"source_integrity_unverified"};
   return {verified:true,reason:"disposable_fixture_evidence_verified_only"};
+}
+
+/** Stronger source-derived admission gate. Pure; never runs SQL or accepts observed tables as its expected baseline. */
+export function assessCanonicalMainAdmission(snapshot){
+  if(!snapshot || !Array.isArray(snapshot.tableNames) || snapshot.tableNames.length!==PINNED_MAIN_TABLES.length)
+    return {admitted:false,reason:"canonical_schema_inventory_mismatch"};
+  const actual=[...snapshot.tableNames].sort();
+  if(actual.some((name,i)=>name!==PINNED_MAIN_TABLES[i]))
+    return {admitted:false,reason:"canonical_schema_inventory_mismatch"};
+  return assessMigrationAdmission(snapshot);
 }
