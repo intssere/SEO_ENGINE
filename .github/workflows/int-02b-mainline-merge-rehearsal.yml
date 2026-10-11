@@ -12,7 +12,7 @@ jobs:
   offline-merge-rehearsal:
     if: github.event.pull_request.number == 1072
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -42,6 +42,14 @@ jobs:
         run: |
           node --test docs/integration/int-02a-ugp-migration-source-map.test.mjs docs/integration/int-02b-migration-admission.test.mjs docs/integration/int-02b-historical-lineage-policy.test.mjs docs/integration/int-02b-installer-authority-fence.test.mjs docs/integration/int-02b-receipt-witness.test.mjs docs/integration/int-02b-historical-receipt-intake.test.mjs docs/integration/int-02b-cross-layer-no-execution.test.mjs
           node --test artifacts/seo-engine/src/navigation.test.mjs artifacts/seo-engine/src/accessibility-certification-contract.test.mjs artifacts/seo-engine/src/product-polish-certification-contract.test.mjs
+      - name: Install workspace dependencies without lifecycle scripts
+        run: corepack pnpm install --frozen-lockfile --ignore-scripts
+      - name: Run combined-tree customer app typecheck and full contract suite
+        run: |
+          corepack pnpm --filter @workspace/seo-engine typecheck
+          corepack pnpm --filter @workspace/seo-engine test
+      - name: Build combined-tree customer app
+        run: corepack pnpm --filter @workspace/seo-engine build
       - name: Ensure rehearsal never persists a merge
         if: always()
         shell: bash
