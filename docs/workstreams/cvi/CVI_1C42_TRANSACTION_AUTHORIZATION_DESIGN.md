@@ -17,3 +17,8 @@ Design audit only. No production DB, external providers, public CVI route, CMS w
 
 ## Bounded synthetic regression added
 The disposable PostgreSQL test now establishes a second connection and tests a transaction-scoped `SELECT ... FOR UPDATE` of active session role. A prior committed demotion denies a synthetic in-memory operation; restoration to an active admin role allows it. This does not yet test concurrent lock ordering or protect production mutations. Full exact-head CI pending.
+
+## Implementation CI receipt
+- Exact SHA `79bf6635f85795290d20b63e98f5762395deae5d`.
+- Full CI https://github.com/intssere/SEO_ENGINE/actions/runs/38128814811 completed SUCCESS (job `114438684497`).
+- No merge or deployment. This documentation receipt revision requires separate exact-head CI.
