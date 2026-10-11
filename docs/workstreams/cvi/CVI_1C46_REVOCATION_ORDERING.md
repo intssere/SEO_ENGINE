@@ -7,3 +7,6 @@ A transaction holds an uncommitted `auth_sessions.revoked_at` update; a second d
 
 ## Boundaries and remaining work
 Test is revocation-first ordering, not operation-first revocation, nor an integrated real business write. Follow-up should integrate synthetic write count under revocation contention and verify rollback semantics; then separately review endpoint authorization architecture. All tests require full exact-head CI. No production DB, external provider, public CVI route, CMS publishing, merge or deployment.
+
+## Implementation CI receipt
+Corrected implementation `d6e511cf781dd37b898b7927e5d53fdacb5376a4`: SUCCESS https://github.com/intssere/SEO_ENGINE/actions/runs/38134471492 (job `114455405989`). The revoked session returns HTTP 401, not 403. Documentation-inclusive exact-head CI still required.
