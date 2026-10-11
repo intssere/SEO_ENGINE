@@ -3384,3 +3384,19 @@ td:first-child {
     border: 1px solid CanvasText;
   }
 }
+
+/* UX-CH-02 — customer collapsible desktop sidebar and safe onboarding preview */
+.customerShell { transition: grid-template-columns 180ms ease; }
+.customerShell--compact { grid-template-columns: 76px minmax(0,1fr) !important; }
+.customerShell--compact .customerSidebar { width:76px; min-width:76px; }
+.customerBrand { gap: 10px; }
+.customerCollapseButton { margin-left:auto; color:#b5c7df; border:1px solid #334766; border-radius:8px; padding:7px; display:flex; align-items:center; justify-content:center; }
+.customerCollapseButton:hover { color:white; background:#273c5a; }
+.customerShell--compact .customerBrandText, .customerShell--compact .customerSidebarFoot, .customerShell--compact .navLinkText, .customerShell--compact .navStatus { display:none; }
+.customerShell--compact .customerBrand { justify-content:center; flex-wrap:wrap; gap:12px; padding-inline:4px; }
+.customerShell--compact .customerCollapseButton { margin:0; }
+.customerShell--compact .primaryNav a { justify-content:center; padding:12px 4px; }
+.customerShell--compact .navDomainLabel { font-size:12px; text-align:center; }
+.navItemIcon { flex-shrink:0; display:inline-block; }
+.primaryNav a { display:flex; gap:10px; align-items:center; }
+@media(prefers-reduced-motion:reduce) { .customerShell { transition:none; } }

@@ -38,6 +38,7 @@ const expectedPrimaryRoutes = [
 ];
 
 const engineeringOnlyRoutes = [
+  "/onboarding",
   "/rankings",
   "/internal-links",
   "/ai-visibility",

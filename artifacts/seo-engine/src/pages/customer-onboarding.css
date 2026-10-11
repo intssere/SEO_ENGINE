@@ -1,0 +1,28 @@
+.customerOnboarding{max-width:1100px;margin:auto;padding:32px 24px}
+.customerOnboardingHeader,.customerButtonRow{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.customerOnboardingHeader{margin-bottom:28px}
+.customerEyebrow{color:#345bea;font-size:12px;font-weight:800}
+.customerOnboarding h1{font-size:clamp(28px,3vw,40px);font-weight:750;margin:8px 0}
+.customerOnboarding p,.customerOnboarding small{color:#52627a;line-height:1.6}
+.customerBackLink{color:#345bea;padding:12px}
+.customerSteps{display:flex;gap:8px;list-style:none;padding:0;margin:0 0 24px}
+.customerSteps li{flex:1;border-bottom:2px solid #dbe1eb;padding:10px;color:#52627a;font-size:13px}
+.customerSteps li span{display:inline-block;border-radius:50%;background:#e9edf5;padding:5px 9px;margin-right:8px}
+.customerSteps .current{border-color:#345bea;color:#274de1;font-weight:750}
+.customerSteps .completed{border-color:#177b54;color:#177b54}
+.customerOnboardingGrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(250px,1fr);gap:20px;align-items:start}
+.customerOnboardingCard,.customerOnboardingAside{background:#fff;border:1px solid #e1e6ef;border-radius:16px;padding:clamp(22px,3vw,36px)}
+.customerOnboardingCard h2{font-size:24px;font-weight:750;margin-bottom:10px}
+.customerOnboardingCard label{display:block;font-size:13px;font-weight:700;margin:20px 0 8px}
+.customerOnboardingCard input,.customerOnboardingCard select{display:block;width:100%;min-height:48px;border:1px solid #cad4e2;border-radius:9px;padding:10px;background:#fff}
+.customerOnboardingCard small{display:block;margin-top:8px}
+.customerPrimaryButton,.customerSecondaryButton{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 16px;border-radius:9px;margin-top:24px}
+.customerPrimaryButton{background:#345bea;color:white}
+.customerPrimaryButton:disabled{background:#b9c4d9}
+.customerSecondaryButton{border:1px solid #cbd5e3}
+.customerSource,.customerReview{display:flex;justify-content:space-between;gap:14px;border:1px solid #e2e7f0;border-radius:10px;padding:15px;margin:12px 0;font-size:13px}
+.customerSource span,.customerReview span{color:#52627a}
+.customerReview strong{overflow-wrap:anywhere}
+.customerNotice{padding:14px;background:#f1f5ff;border-radius:10px;font-size:13px;margin-top:20px}
+@media(max-width:900px){.customerOnboardingGrid{grid-template-columns:1fr}}
+@media(max-width:767px){.customerOnboarding{padding:18px 16px}.customerSteps li{font-size:11px;padding:8px 2px}}

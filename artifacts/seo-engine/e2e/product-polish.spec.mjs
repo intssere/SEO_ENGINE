@@ -6,6 +6,7 @@ import {
 
 const ROUTES = [
   "/",
+  "/onboarding",
   "/opportunities",
   "/governance",
   "/actions",

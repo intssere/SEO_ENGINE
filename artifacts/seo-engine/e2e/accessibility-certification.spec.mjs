@@ -16,6 +16,7 @@ const WCAG_AA_TAGS = [
 
 const ROUTES = [
   "/",
+  "/onboarding",
   "/opportunities",
   "/governance",
   "/actions",

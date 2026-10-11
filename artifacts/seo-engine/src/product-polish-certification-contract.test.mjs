@@ -15,6 +15,7 @@ const packageJson = read("../package.json");
 
 const EXPECTED_ROUTES = [
   "/",
+  "/onboarding",
   "/opportunities",
   "/governance",
   "/actions",

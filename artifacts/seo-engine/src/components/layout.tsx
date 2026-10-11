@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState, createContext, useContext } from "react";
 import { Link, useLocation } from "wouter";
 import { AskModal } from "./ask-modal";
+import { PanelLeftClose, PanelLeftOpen, LayoutDashboard, Search, ScanSearch, ShieldCheck, Activity, Settings, Plug, ClipboardCheck, Rocket, ListChecks, Sparkles } from "lucide-react";
 import { useGetDashboard } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth-client";
 import navigation from "@/navigation.json";
@@ -21,6 +22,7 @@ type NavigationDomain = {
 
 const NAV_DOMAINS = navigation as NavigationDomain[];
 const NAV_ITEMS = NAV_DOMAINS.flatMap((domain) => domain.items);
+const NAV_ICONS: Record<string, typeof LayoutDashboard> = {"/": LayoutDashboard, "/opportunities": Search, "/technical-seo": ScanSearch, "/governance": ShieldCheck, "/actions": ListChecks, "/approvals": ClipboardCheck, "/deployments": Rocket, "/performance": Activity, "/connections": Plug, "/settings": Settings, "/onboarding": Sparkles};
 
 function navigationDomainId(domain: string) {
   return `nav-domain-${domain.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
@@ -30,18 +32,20 @@ function NavigationGroups({
   location,
   approvalsPending,
   onNavigate,
+  compact = false,
 }: {
   location: string;
   approvalsPending?: number;
   onNavigate?: () => void;
+  compact?: boolean;
 }) {
   return (
-    <nav className="primaryNav" aria-label="Primary navigation">
+    <nav className={`primaryNav ${compact ? "primaryNav--compact" : ""}`} aria-label="Primary navigation">
       {NAV_DOMAINS.map((domain) => {
         const domainId = navigationDomainId(domain.domain);
         return (
           <div className="navDomain" key={domain.domain} role="group" aria-labelledby={domainId}>
-            <p className="navDomainLabel" id={domainId}>{domain.domain}</p>
+            <p className="navDomainLabel" id={domainId}>{compact ? "·" : domain.domain}</p>
             <div className="navDomainItems">
               {domain.items.map((item) => {
                 const isActive = location === item.path;
@@ -50,9 +54,12 @@ function NavigationGroups({
                     key={item.path}
                     href={item.path}
                     className={isActive ? "active" : ""}
+                    title={compact ? item.label : undefined}
+                    aria-label={compact ? item.label : undefined}
                     aria-current={isActive ? "page" : undefined}
                     onClick={onNavigate}
                   >
+                    {(() => { const Icon = NAV_ICONS[item.path] || Search; return <Icon size={18} aria-hidden="true" className="navItemIcon" />; })()}
                     <span className="navLinkText">
                       {item.label}
                       {item.label === "Approvals" && approvalsPending ? ` · ${approvalsPending}` : ""}
@@ -74,6 +81,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const { data, isLoading } = useGetDashboard();
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const askReturnFocusRef = useRef<HTMLElement | null>(null);
   const mobileNavToggleRef = useRef<HTMLButtonElement>(null);
   const mainContentRef = useRef<HTMLElement>(null);
@@ -132,23 +140,27 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <AskModalContext.Provider value={setAskModalOpen}>
-      <div className="shell">
+      <div className={`shell customerShell ${isSidebarCollapsed ? "customerShell--compact" : ""}`}>
         <a className="skipLink" href="#main-content">Skip to main content</a>
-        <aside className="sidebar">
-          <div className="brand">
+        <aside className="sidebar customerSidebar">
+          <div className="brand customerBrand">
             <span className="brandMark" aria-hidden="true">S</span>
-            <div>
+            <div className="customerBrandText">
               <strong>SEO ENGINE</strong>
-              <small>AI SEO Command Center</small>
+              <small>Workspace</small>
             </div>
+            <button type="button" className="customerCollapseButton" onClick={() => setIsSidebarCollapsed(v => !v)} aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={!isSidebarCollapsed} title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
+              {isSidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
+            </button>
           </div>
 
           <NavigationGroups
             location={location}
             approvalsPending={data?.approvalsPending}
+            compact={isSidebarCollapsed}
           />
 
-          <div className="sidebarFoot">
+          <div className="sidebarFoot customerSidebarFoot">
             {auth.enforcementEnabled && auth.authenticated && auth.user ? (
               <div className="mb-3 border-b border-[#24344f] pb-3 text-xs leading-5 text-[#9fb0c9]">
                 <strong className="block truncate text-[#dce6f4]">{auth.user.displayName || auth.user.email}</strong>
