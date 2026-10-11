@@ -20,3 +20,11 @@ Read-only source inspection of route modules and auth middleware at parent CVI-1
 
 ## Restrictions
 No production DB access, crawling, providers, Shopify write-scope activation, publishing, merge, or deployment. Parent CVI-1C.50 full CI success and CVI-1C.51 documentation CI must be recorded independently.
+
+## Service-level follow-up (source-backed)
+- `artifacts/api-server/src/lib/competitor-acquisition.ts` lines 590–625: `postgresEvidenceStore.insertIfAbsent` issues standalone `INSERT INTO evidence ... ON CONFLICT DO NOTHING RETURNING`; `getById` separately verifies duplicate evidence identity. Lines 671–699: collection is checked and executed *before* `persistCompetitorEvidence` is called. Consequently fencing the evidence insert alone would not authorize or undo prior acquisition activity. **Exclude from first integration target** until transport/network effects and transaction design are approved.
+- `artifacts/api-server/src/lib/signal-collection-execution.ts` lines 278–343: independent `jobs` INSERT/UPDATE methods reserve, claim, complete and fail a job. Lines 518–544 reserve and claim before invoking the configured runner. A single DB transaction spanning runner execution is inappropriate without a staged authorization/outbox design. **Exclude from first integration target**.
+- Both workflows have explicit gate checks, but feature gates and idempotency controls do not replace fresh role authorization at a protected operation boundary. Neither service was executed during this review.
+
+## Updated selection decision
+No eligible database-only production handler established in this sampled set. Before any implementation, inspect remaining local write handlers and their underlying services for a simple, fully database-transactional operation, then define ownership, tenant/site access checks, role requirements and lock ordering. Do not introduce a global transaction around Express middleware or across external calls.
