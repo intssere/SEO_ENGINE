@@ -1,6 +1,6 @@
 # INT-01 — Main + UGP isolated integration conflict ledger (2026-10-11)
 
-**Status:** Source-tree three-way structural simulation complete; actual Git index merge and combined tests **not executed**. NO integration certification or merge admission.
+**Status:** Source-tree analysis AND actual isolated GitHub Actions `git merge-tree` simulation complete. Six textual conflicts confirmed; combined tests **not executed**. NO integration certification or merge admission.
 
 ## Frozen refs
 - Canonical main: `a19cd21da5d60dbb1862867ce0cdade4746791be`.
@@ -28,6 +28,17 @@ The 8 overlapping paths requiring 3-way content reconciliation:
 7. `lib/db/src/runtime-bootstrap.test.ts` — both schema families have expectations and fail-closed cases.
 8. `lib/db/src/runtime-bootstrap.ts` — main contains P12.2 schema states through expected-absence 43-table Production; UGP introduces UGP-10 outreach table states. Must preserve both, never treat one schema state as another based solely on count.
 
+## Actual Git merge-tree result (subsequent certification)
+
+- Isolated GitHub Actions workflow: `.github/workflows/int-01-merge-tree.yml`; run **38119787505**, job **114411962240**, GitHub Actions conclusion SUCCESS **for diagnostic execution**.
+- Pinned exact heads and merge base passed merge-base equality check.
+- Executed `git merge-tree --write-tree --messages MAIN UGP`; exact tool exit code **1** (conflicts), not zero. The diagnostic job intentionally reports success for executing the simulation; it is **not** a merge-ready PASS.
+- **Six confirmed textual conflicts**: `.github/workflows/ci.yml`, `artifacts/api-server/build.mjs`, `artifacts/api-server/package.json`, `lib/db/package.json`, `lib/db/src/runtime-bootstrap.test.ts`, `lib/db/src/runtime-bootstrap.ts`.
+- Git auto-merged `Dockerfile` and `artifacts/api-server/src/lib/railway-deployment-adapter.test.ts`; both remain required semantic review.
+- Migration namespace collisions **0008–0011** remain independent P0 semantic conflicts, even without Git conflict markers.
+- The merge operation did not commit, push, update `main` or UGP or alter Production.
+- Full combined tree build/typecheck/tests are still **NOT RUN**. Do not interpret GitHub Actions green status as integration approval.
+
 ## P0 semantic collision — migrations
 
 Both branches independently assign migration numbers 0008 through 0011 to **different** schema families:
@@ -46,7 +57,7 @@ Distinct filenames can be auto-unioned by Git while still producing an invalid *
 
 ## Suggested gate order
 
-**INT-01 follow-up**: On a clone-capable authorized runner/worktree, execute `git merge-tree` (or disposable non-committing `git merge --no-commit --no-ff`) with these pinned refs. Capture true text conflicts, rename/delete conflicts, path inventory and `git diff --check`. Do not push merged code into either canonical branch.
+**INT-01 actual simulation**: Completed on GitHub Actions at pinned refs; six confirmed content conflicts. Next, resolve these conflicts only inside the isolated integration workstream, with explicit migration namespace/schema review before combined builds. No promotion to either canonical branch.
 
 **INT-02**: Independently design and test migration re-index/namespace and durable migration ledger; never use a casual rename.
 
@@ -58,4 +69,4 @@ Distinct filenames can be auto-unioned by Git while still producing an invalid *
 
 ## Disposition
 
-`STRUCTURAL_THREE_WAY_INVENTORY_COMPLETE`; `ACTUAL_GIT_MERGE_SIMULATION_BLOCKED_BY_LOCAL_GIT_NETWORK`; `EIGHT_SHARED_DIVERGENT_PATHS_REQUIRE_RECONCILIATION`; `MIGRATION_NAMESPACE_P0`; `COMBINED_TESTS_NOT_RUN`; `PRODUCTION_UNCHANGED`.
+`STRUCTURAL_THREE_WAY_INVENTORY_COMPLETE`; `ACTUAL_GIT_MERGE_TREE_CONFLICTS_CONFIRMED_6`; `EIGHT_SHARED_DIVERGENT_PATHS_REQUIRE_RECONCILIATION`; `MIGRATION_NAMESPACE_P0`; `COMBINED_TESTS_NOT_RUN`; `PRODUCTION_UNCHANGED`.
