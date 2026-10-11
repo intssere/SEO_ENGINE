@@ -36,10 +36,8 @@ test("C4 disposable PostgreSQL strict lease expiry: future/equal denied, past al
   // Same database transaction_timestamp() anchors equality and takeover.
   // Tests are independent of the host clock and scheduler timing.
   await db.begin(async tx=>{
-   const [clock]=await tx`SELECT transaction_timestamp() AS now`;
-   const now=clock.now as Date;
    await tx`UPDATE ugp11_transport_fixture.jobs SET
-     lease_expires_at=${now}::timestamptz+${offset}*interval '1 second'
+     lease_expires_at=transaction_timestamp()+${offset}*interval '1 second'
      WHERE identity=${identity}`;
    const attempt=await tx`UPDATE ugp11_transport_fixture.jobs SET
      worker_id='B',fence=fence+1,attempts=attempts+1,
