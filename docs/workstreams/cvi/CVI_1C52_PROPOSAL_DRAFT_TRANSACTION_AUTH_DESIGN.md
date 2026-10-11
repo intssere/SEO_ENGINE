@@ -34,3 +34,12 @@ Source-backed design candidate only. No runtime changes, providers, production D
 
 ## Implementation admission decision
 **Design-only / not authorized to alter runtime.** The candidate is lower-risk than external execution routes, but the missing tenant/site authorization contract and compatibility with auth-disabled operational modes require explicit resolution and review. Preserve the existing operator role, dry-run invariants, feature gates and no-public-write semantics; do not assume role-checking alone authorizes access to any site's proposals.
+
+## Authentication-disabled compatibility — verified source decision gate
+`loadAuthConfig` makes enforcement conditional on `AUTH_ENFORCEMENT_ENABLED` (`artifacts/api-server/src/lib/auth-foundation.ts`, line 64). `attachAuthSession` and `requireApiAuthentication` both bypass authentication when disabled (`artifacts/api-server/src/middlewares/auth-security.ts`, lines 56 and 72). Therefore a mandatory transaction-level session check would change auth-disabled semantics and can break existing operational flows; a conditional check would perpetuate the intentional non-enforcing mode. **Do not make either behavior change without an explicit environment/migration decision.** Review whether disabling authentication is permitted beyond disposable or local contexts, and require fail-closed rules for production.
+
+## Scope ownership — unresolved
+The inspected `getRuntimeReadiness()` obtains an active site record based on domain. That establishes a site target but not a user-to-tenant or session-to-site membership grant. No independent site membership authorization contract was established in this audit. A real integration must identify the canonical membership/grant tables and an authoritative role-to-site rule; if unavailable, remain blocked rather than treat operator role as sufficient.
+
+## Exact-head CI notes
+Initial design commit `9745fa8dbca476564b6e239ce295fc75f2f86084` passed full CI https://github.com/intssere/SEO_ENGINE/actions/runs/38145717260 (job `114488510782`). The subsequent design commit `6d22519ab559e206b5339c75bcf2e427e6e4e0ad` is being validated at https://github.com/intssere/SEO_ENGINE/actions/runs/38145954091. This addition requires a new exact-head CI receipt. No runtime code changed.
