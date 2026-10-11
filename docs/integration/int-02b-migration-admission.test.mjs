@@ -6,7 +6,7 @@ const main=Array.from({length:49},(_,i)=>"main_table_"+i);
 const combined=[...main,...UGP_TABLES];
 const valid={tableCount:49,tableNames:main,hasFinalConstraint:false,sourceHashesVerified:true,installedLineageVerified:true,targetDatabaseIdentityVerified:true,authorizedDisposableExecution:true};
 test("default automatic installation remains disabled",()=>assert.equal(enforceNoAutomaticInstallation().admitted,false));
-test("documented fully attested disposable fixture only",()=>assert.equal(assessMigrationAdmission(valid).admitted,true));
+test("caller-attested disposable fixture never authorizes migration",()=>assert.deepEqual(assessMigrationAdmission(valid),{admitted:false,reason:"independent_installation_authority_unavailable"}));
 test("reject missing lineage evidence",()=>assert.equal(assessMigrationAdmission({...valid,installedLineageVerified:false}).admitted,false));
 test("reject missing DB identity",()=>assert.equal(assessMigrationAdmission({...valid,targetDatabaseIdentityVerified:false}).admitted,false));
 test("reject missing explicit disposable execution approval",()=>assert.equal(assessMigrationAdmission({...valid,authorizedDisposableExecution:false}).admitted,false));
@@ -27,6 +27,8 @@ test("disposable evidence verifies exact observed structure and source",()=>{
 import {PINNED_MAIN_TABLES} from "./int-02b-main-schema-source-baseline.mjs";
 test("canonical inventory gate rejects fabricated but internally consistent 49-table state",()=>{
  const baseline={...valid,tableNames:PINNED_MAIN_TABLES};
- assert.equal(assessCanonicalMainAdmission(baseline).admitted,true);
+ assert.deepEqual(assessCanonicalMainAdmission(baseline),{admitted:false,reason:"independent_installation_authority_unavailable"});
  assert.deepEqual(assessCanonicalMainAdmission({...baseline,tableNames:[...PINNED_MAIN_TABLES.slice(1),"forged_table"]}),{admitted:false,reason:"canonical_schema_inventory_mismatch"});
 });
+
+test("unknown caller-supplied admission metadata cannot promote schema admission",()=>assert.equal(assessMigrationAdmission({...valid,approved:true,authorizer:"system",migrationExecuted:true,productionCertified:true}).admitted,false));
