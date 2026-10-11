@@ -1,6 +1,7 @@
 /** INT-02B read-only historical receipt intake. Never authorizes SQL. */
 const HEX=/^[0-9a-f]{64}$/;
 const UTC=/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/;
+const validUtc=value=>typeof value==="string"&&UTC.test(value)&&!Number.isNaN(Date.parse(value))&&new Date(value).toISOString().slice(0,19)===value.slice(0,19);
 const deny=(reason)=>({reviewEligible:false,executionAuthorized:false,reason});
 export function inspectHistoricalReceiptBundle(bundle){
  if(!bundle||typeof bundle!=="object"||Array.isArray(bundle))return deny("bundle_missing");
