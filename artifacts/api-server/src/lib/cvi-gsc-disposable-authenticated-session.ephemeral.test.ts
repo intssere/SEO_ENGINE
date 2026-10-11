@@ -156,6 +156,38 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     assert.equal(barrierBody.role_snapshot,"admin","in-flight principal remains a snapshot");
     assert.equal((await request(inFlight.token,{method:"POST",csrf:inFlight.csrfToken})).status,403,
       "new requests observe persisted demotion");
+    // CVI-1C.42: operation-scoped role readback under a PostgreSQL row lock.
+    // This is a synthetic operation, not a replacement for production route checks.
+    const fenced=await createAuthSession({
+      subject:"cvi-transaction-role",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const authorizationConnection=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await sql`UPDATE auth_sessions SET role='viewer' WHERE id=${fenced.principal.sessionId}::uuid`;
+      let syntheticWrites=0;
+      await authorizationConnection.begin(async transaction=>{
+        const rows=await transaction<{role:string}[]>`
+          SELECT role FROM auth_sessions WHERE id=${fenced.principal.sessionId}::uuid
+            AND revoked_at IS NULL AND expires_at>clock_timestamp()
+            AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+          FOR UPDATE`;
+        if(rows[0]?.role==="admin") syntheticWrites++;
+      });
+      assert.equal(syntheticWrites,0,"committed demotion denies fenced synthetic operation");
+      await sql`UPDATE auth_sessions SET role='admin' WHERE id=${fenced.principal.sessionId}::uuid`;
+      await authorizationConnection.begin(async transaction=>{
+        const rows=await transaction<{role:string}[]>`
+          SELECT role FROM auth_sessions WHERE id=${fenced.principal.sessionId}::uuid
+            AND revoked_at IS NULL AND expires_at>clock_timestamp()
+            AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+          FOR UPDATE`;
+        if(rows[0]?.role==="admin") syntheticWrites++;
+      });
+      assert.equal(syntheticWrites,1,"active admin is allowed one synthetic fenced operation");
+    }finally{
+      await authorizationConnection.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
