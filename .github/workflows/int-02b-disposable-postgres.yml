@@ -53,7 +53,7 @@ jobs:
             test -f "$file"
             echo "TEST_APPLY ${file##*/}"
             psql -X -v ON_ERROR_STOP=1 -f "$file" >/dev/null
-            printf "%s\\t%s\\n" "${file##*/}" "$(sha256sum "$file" | cut -d " " -f1)" >> /tmp/int02-apply-trace.tsv
+            printf "%s\t%s\n" "${file##*/}" "$(sha256sum "$file" | cut -d " " -f1)" >> /tmp/int02-apply-trace.tsv
           done
           count="$(psql -X -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")"
           echo "Combined table count: $count"
@@ -67,8 +67,8 @@ jobs:
           import assert from 'node:assert/strict';
           import {readFileSync} from 'node:fs';
           import {verifyDisposableApplyTrace} from './docs/integration/int-02b-disposable-apply-trace.mjs';
-          const rows=readFileSync('/tmp/int02-apply-trace.tsv','utf8').trim().split('\\n');
-          const trace=rows.map((row,i)=>{const [filename,sha256]=row.split('\\t'); return {sequence:i+1,filename,sha256,database:'seo_engine_test',status:'psql_completed'};});
+          const rows=readFileSync('/tmp/int02-apply-trace.tsv','utf8').trim().split('\n');
+          const trace=rows.map((row,i)=>{const [filename,sha256]=row.split('\t'); return {sequence:i+1,filename,sha256,database:'seo_engine_test',status:'psql_completed'};});
           const result=verifyDisposableApplyTrace({trace,sourceResolver:name=>readFileSync('lib/db/migrations/'+name)});
           assert.equal(result.verified,true,result.reason);
           console.log('INT02_COMPLETED_DISPOSABLE_TRACE_PASS',trace.length);
