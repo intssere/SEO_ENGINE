@@ -14,3 +14,6 @@ Identify exact source paths; preserve historical-review-only CVI and no publishi
 
 ## Status and restrictions
 Design audit only. No production DB, external providers, public CVI route, CMS write, merge or deployment. No end-to-end transactional authorization fencing claimed.
+
+## Bounded synthetic regression added
+The disposable PostgreSQL test now establishes a second connection and tests a transaction-scoped `SELECT ... FOR UPDATE` of active session role. A prior committed demotion denies a synthetic in-memory operation; restoration to an active admin role allows it. This does not yet test concurrent lock ordering or protect production mutations. Full exact-head CI pending.
