@@ -225,12 +225,14 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
         subject:"cvi-issuance-skew",email:"synthetic-viewer@example.test",
         displayName:null,role:"viewer",config,now:injected,
       });
-      const observed=await sql<{offset:number;ttl:number}[]>`
+      const observed=await sql<{offset:number;ttl:number;issuedAligned:boolean}[]>`
         SELECT abs(extract(epoch FROM (created_at-clock_timestamp())))::float AS offset,
-          extract(epoch FROM (expires_at-created_at))::float AS ttl
+          extract(epoch FROM (expires_at-created_at))::float AS ttl,
+          created_at=last_seen_at AS "issuedAligned"
         FROM auth_sessions WHERE id=${issued.principal.sessionId}::uuid`;
       assert.ok((observed[0]?.offset??Infinity)<30,"issuance must use DB time");
-      assert.ok(Math.abs((observed[0]?.ttl??Infinity)-AUTH_SESSION_TTL_MS/1000)<1,
+      assert.equal(observed[0]?.issuedAligned,true,"created_at and last_seen_at must match exactly");
+      assert.equal(observed[0]?.ttl,AUTH_SESSION_TTL_MS/1000,
         "absolute TTL must not inherit the injected application clock");
       assert.equal((await request(issued.token)).status,200);
       assert.notEqual(issued.principal.issuedAt,injected.toISOString());
