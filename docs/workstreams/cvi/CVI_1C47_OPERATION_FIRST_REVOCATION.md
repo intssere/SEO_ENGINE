@@ -7,3 +7,6 @@ An eligible synthetic admin session is locked via `SELECT ... FOR UPDATE` in a d
 
 ## Limitations
 Test only: no production mutation handler changed. The revocation-first ordering belongs to CVI-1C.46. The combination models both authorization/revocation lock orderings, but does not certify the integration of a real write transaction, rollback, tenant/site authorization or provider behavior. Full exact-head CI required. No production DB, external providers, CMS publication, merge or deployment.
+
+## Implementation CI receipt
+Implementation `46223917cef1e69468d3df03969ca8a98ef6cb57`: SUCCESS https://github.com/intssere/SEO_ENGINE/actions/runs/38134607827 (job `114455806312`). Documentation-inclusive exact-head CI still required.
