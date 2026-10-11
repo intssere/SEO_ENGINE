@@ -292,7 +292,7 @@ export async function createAuthSession(input: {
   try {
     const rows = await sql<Array<{ id: string; createdAt: string; lastSeenAt: string; expiresAt: string }>>`
       INSERT INTO auth_sessions(token_hash,subject,email,display_name,role,csrf_token_hash,user_agent_hash,ip_hash,created_at,last_seen_at,expires_at)
-      VALUES(${tokenHash},${input.subject},${input.email.toLowerCase()},${input.displayName},${input.role},${csrfTokenHash},${userAgentHash},${ipHash},clock_timestamp(),clock_timestamp(),clock_timestamp()+${AUTH_SESSION_TTL_MS}::bigint * interval '1 millisecond')
+      VALUES(${tokenHash},${input.subject},${input.email.toLowerCase()},${input.displayName},${input.role},${csrfTokenHash},${userAgentHash},${ipHash},statement_timestamp(),statement_timestamp(),statement_timestamp()+${AUTH_SESSION_TTL_MS}::bigint * interval '1 millisecond')
       RETURNING id::text AS id,created_at::text AS "createdAt",last_seen_at::text AS "lastSeenAt",expires_at::text AS "expiresAt"`;
     const row = rows[0];
     if (!row) throw new Error("auth_session_create_failed");
