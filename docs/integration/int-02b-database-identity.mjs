@@ -20,7 +20,8 @@ export function verifyDisposableDatabaseIdentity(observation,expected){
  const parts=observation.serverAddress.split(".").map(Number);
  const privateV4=parts.length===4 && parts.every(n=>Number.isInteger(n)&&n>=0&&n<=255) &&
    (parts[0]===10||(parts[0]===172&&parts[1]>=16&&parts[1]<=31)||(parts[0]===192&&parts[1]===168));
- if(expected.serverAddress!=="docker_private"||!privateV4)return deny("not_disposable_network");
+ const loopback=observation.serverAddress==="127.0.0.1"||observation.serverAddress==="::1";
+ if(expected.serverAddress!=="docker_private"||!(privateV4||loopback))return deny("not_disposable_network");
 
  if(observation.serverPort!=="5432")return deny("unexpected_postgres_port");
  return {verified:true,reason:"disposable_identity_observation_matches"};
