@@ -16,8 +16,8 @@ function validate(data) {
   data.entries.forEach((e,i) => {
     assert.match(e.gitBlobSha1, /^[a-f0-9]{40}$/);
     assert.match(e.rawSha256, /^[a-f0-9]{64}$/);
-    assert.match(e.original, new RegExp("^000" + (i+8) + "_ugp_.*\\.sql$"));
-    assert.match(e.candidate, new RegExp("^00" + (i+12) + "_ugp_.*\\.sql$"));
+    assert.match(e.original, new RegExp("^" + String(i+8).padStart(4,"0") + "_ugp_.*\\.sql$"));
+    assert.match(e.candidate, new RegExp("^" + String(i+12).padStart(4,"0") + "_ugp_.*\\.sql$"));
     assert.equal(e.candidate.slice(5), e.original.slice(5));
     assert.ok(Array.isArray(e.requiredObjects) && e.requiredObjects.length);
     assert.ok(!original.has(e.original) && !candidate.has(e.candidate));
