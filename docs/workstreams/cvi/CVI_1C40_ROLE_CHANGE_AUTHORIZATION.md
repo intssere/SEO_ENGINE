@@ -10,3 +10,9 @@ An already-loaded role may remain in an in-flight request after concurrent demot
 
 ## Boundaries
 Proof-only synthetic disposable PostgreSQL and localhost Express; no production DB, provider calls, public CVI routes, publishing, merges or deployments. Full exact-head CI pending.
+
+## Exact-head implementation certification
+- HEAD `ce348eadf46d3022c91ce4dcfa9f0b09944bf34d`.
+- Full CI https://github.com/intssere/SEO_ENGINE/actions/runs/38123711384 completed SUCCESS, job `114423557302`, no failed steps.
+- Parent CVI-1C.39 final HEAD `0ed581c031a268d0cb8b754f31bcac52f57c3344` passed https://github.com/intssere/SEO_ENGINE/actions/runs/38123451962.
+- PR #1078 remains open/draft, unmerged and undeployed; this documentation revision needs separate exact-head CI.
