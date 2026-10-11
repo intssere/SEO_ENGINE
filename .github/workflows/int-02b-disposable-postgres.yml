@@ -159,3 +159,25 @@ jobs:
           assert.equal(verifyDisposableLineageEvidence({...input,expectedTables:[...observedTables.slice(1),'forged_table']}).verified,false);
           console.log('INT02_DISPOSABLE_CATALOG_EVIDENCE_PASS',observedTables.length,observedConstraints.length);
           JS
+      - name: Verify exact UGP table keys and immutable audit triggers
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -At -v ON_ERROR_STOP=1 <<'SQL' | grep -qx '6|6|1'
+          SELECT
+            (SELECT count(*) FROM information_schema.tables
+             WHERE table_schema='public' AND table_name IN (
+               'authority_outreach_review_events','authority_outreach_suppressions',
+               'authority_outreach_send_reservations','authority_outreach_send_safety_events',
+               'authority_outreach_single_send_executions','authority_outreach_single_send_execution_events')),
+            (SELECT count(*) FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid
+             WHERE t.relnamespace='public'::regnamespace AND t.relname IN (
+               'authority_outreach_review_events','authority_outreach_suppressions',
+               'authority_outreach_send_reservations','authority_outreach_send_safety_events',
+               'authority_outreach_single_send_executions','authority_outreach_single_send_execution_events')
+               AND c.contype='p'),
+            (SELECT count(*) FROM pg_trigger tg JOIN pg_class t ON t.oid=tg.tgrelid
+             WHERE t.relnamespace='public'::regnamespace AND t.relname='authority_outreach_review_events'
+             AND tg.tgname='authority_outreach_review_events_reject_update_delete' AND NOT tg.tgisinternal);
+          SQL
+          echo "INT02_UGP_SCHEMA_KEYS_AND_IMMUTABILITY_TRIGGER_PASS"
