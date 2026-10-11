@@ -249,8 +249,8 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
             AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
           FOR UPDATE`;
         assert.equal(role[0]?.role,"admin","operation acquires eligible admin session lock");
-        demotion=secondDemoter`UPDATE auth_sessions SET role='viewer'
-          WHERE id=${first.principal.sessionId}::uuid`;
+        demotion=Promise.resolve(secondDemoter`UPDATE auth_sessions SET role='viewer'
+          WHERE id=${first.principal.sessionId}::uuid`);
         let blocked=false;
         for(let attempt=0;attempt<80;attempt++){
           const locks=await sql<{count:number}[]>`
