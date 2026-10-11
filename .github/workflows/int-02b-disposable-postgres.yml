@@ -67,9 +67,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          psql -X -v ON_ERROR_STOP=1 -c "CREATE SCHEMA int02_negative"
-          psql -X -v ON_ERROR_STOP=1 -c "SET search_path TO int02_negative; CREATE TABLE authority_outreach_single_send_execution_events (event_reason text);"
-          if psql -X -v ON_ERROR_STOP=1 -c "SET search_path TO int02_negative;" -f lib/db/migrations/0015_ugp_10_33_controlled_https_certification.sql >/tmp/int02-missing.log 2>&1; then
+          createdb int02_missing_prerequisite
+          if PGDATABASE=int02_missing_prerequisite psql -X -v ON_ERROR_STOP=1 -f lib/db/migrations/0015_ugp_10_33_controlled_https_certification.sql >/tmp/int02-missing.log 2>&1; then
             echo "ERROR: 0015 unexpectedly accepted invalid prerequisite"; exit 1
           fi
           echo "INT_02B_MISSING_PREREQUISITE_REFUSED"
