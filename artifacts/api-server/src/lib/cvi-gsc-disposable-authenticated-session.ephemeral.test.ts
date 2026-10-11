@@ -398,6 +398,50 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await heldOperation.end({timeout:1});
       await competingRevoker.end({timeout:1});
     }
+    // CVI-1C.48: a failed operation rolls back an already inserted synthetic row.
+    const rollbackSession=await createAuthSession({
+      subject:"cvi-rollback-atomic",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const rollbackDb=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await rollbackDb.unsafe("CREATE TEMP TABLE cvi_rollback_synthetic_rows(value text NOT NULL)");
+      await assert.rejects(
+        rollbackDb.begin(async tx=>{
+          const rows=await tx<{role:string}[]>`
+            SELECT role FROM auth_sessions
+            WHERE id=${rollbackSession.principal.sessionId}::uuid
+              AND revoked_at IS NULL AND expires_at>clock_timestamp()
+              AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+            FOR UPDATE`;
+          assert.equal(rows[0]?.role,"admin");
+          await tx`INSERT INTO cvi_rollback_synthetic_rows(value) VALUES ('rolled-back')`;
+          throw new Error("synthetic_operation_failure");
+        }),
+        /synthetic_operation_failure/);
+      const rolledBack=await rollbackDb<{n:number}[]>`
+        SELECT count(*)::int AS n FROM cvi_rollback_synthetic_rows`;
+      assert.equal(rolledBack[0]?.n,0,"failed authorized operation must roll back synthetic mutation");
+      await sql`UPDATE auth_sessions SET role='viewer'
+        WHERE id=${rollbackSession.principal.sessionId}::uuid`;
+      const denied=await rollbackDb.begin(async tx=>{
+        const rows=await tx<{role:string}[]>`
+          SELECT role FROM auth_sessions
+          WHERE id=${rollbackSession.principal.sessionId}::uuid
+            AND revoked_at IS NULL AND expires_at>clock_timestamp()
+            AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+          FOR UPDATE`;
+        if(rows[0]?.role!=="admin") return false;
+        await tx`INSERT INTO cvi_rollback_synthetic_rows(value) VALUES ('forbidden')`;
+        return true;
+      });
+      assert.equal(denied,false,"demoted role cannot enter synthetic write");
+      const afterDeny=await rollbackDb<{n:number}[]>`
+        SELECT count(*)::int AS n FROM cvi_rollback_synthetic_rows`;
+      assert.equal(afterDeny[0]?.n,0,"denied operation leaves no partial synthetic rows");
+    }finally{
+      await rollbackDb.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
