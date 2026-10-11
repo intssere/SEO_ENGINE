@@ -43,3 +43,9 @@ The inspected `getRuntimeReadiness()` obtains an active site record based on dom
 
 ## Exact-head CI notes
 Initial design commit `9745fa8dbca476564b6e239ce295fc75f2f86084` passed full CI https://github.com/intssere/SEO_ENGINE/actions/runs/38145717260 (job `114488510782`). The subsequent design commit `6d22519ab559e206b5339c75bcf2e427e6e4e0ad` is being validated at https://github.com/intssere/SEO_ENGINE/actions/runs/38145954091. This addition requires a new exact-head CI receipt. No runtime code changed.
+
+## Membership and schema discovery — evidence limited
+The inspected `lib/db/migrations/0002_auth.sql` defines `auth_sessions` with global role, subject, email, lifetime, and revocation fields, plus `auth_audit_events`. Neither table records an explicit site/tenant membership relationship. Code-search checks on default-branch indexed files for `tenant_memberships`, `site_memberships`, `site_users`, `site_grants`, and `workspace_memberships` returned no matches. **This is not proof that no authorization model exists elsewhere in the branch, database, or integrations.** Further migration and service inventory is required before deciding any schema addition.
+
+## Narrow implementation admission policy
+For the current single-site operational workflow, explicitly decide whether only globally configured operators/admins may act on the configured site, or whether user-to-site grants are mandatory before this mutation is usable. Record the accountable security/product owner and branch/environment policy. Until that decision, do not silently implement a global-role-only authorization fence as tenant-safe. Also decide fail-closed production behavior if `AUTH_ENFORCEMENT_ENABLED` is false. No migration, policy decision, or runtime behavior change is made in this document.
