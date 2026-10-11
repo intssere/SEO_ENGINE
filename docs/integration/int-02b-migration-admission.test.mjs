@@ -1,7 +1,7 @@
 import {test} from "node:test";
 import {createHash} from "node:crypto";
 import assert from "node:assert/strict";
-import {assessMigrationAdmission,enforceNoAutomaticInstallation,UGP_TABLES,verifyDisposableLineageEvidence} from "./int-02b-migration-admission.mjs";
+import {assessMigrationAdmission,enforceNoAutomaticInstallation,UGP_TABLES,verifyDisposableLineageEvidence,assessCanonicalMainAdmission} from "./int-02b-migration-admission.mjs";
 const main=Array.from({length:49},(_,i)=>"main_table_"+i);
 const combined=[...main,...UGP_TABLES];
 const valid={tableCount:49,tableNames:main,hasFinalConstraint:false,sourceHashesVerified:true,installedLineageVerified:true,targetDatabaseIdentityVerified:true,authorizedDisposableExecution:true};
@@ -23,4 +23,10 @@ test("disposable evidence verifies exact observed structure and source",()=>{
  assert.equal(verifyDisposableLineageEvidence({...evidence,databaseName:"production"}).verified,false);
  assert.equal(verifyDisposableLineageEvidence({...evidence,observedTables:["sites","other"]}).verified,false);
  assert.equal(verifyDisposableLineageEvidence({...evidence,migrationSource:"changed"}).verified,false);
+});
+import {PINNED_MAIN_TABLES} from "./int-02b-main-schema-source-baseline.mjs";
+test("canonical inventory gate rejects fabricated but internally consistent 49-table state",()=>{
+ const baseline={...valid,tableNames:PINNED_MAIN_TABLES};
+ assert.equal(assessCanonicalMainAdmission(baseline).admitted,true);
+ assert.deepEqual(assessCanonicalMainAdmission({...baseline,tableNames:[...PINNED_MAIN_TABLES.slice(1),"forged_table"]}),{admitted:false,reason:"canonical_schema_inventory_mismatch"});
 });
