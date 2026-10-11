@@ -190,6 +190,35 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     await sql`UPDATE auth_sessions SET last_seen_at=clock_timestamp()-interval '40 minutes' WHERE id=${skew.principal.sessionId}::uuid`;
     assert.equal(await loadAuthSession(skew.token,future),null,"future caller time cannot revive idle-expired session");
     assert.equal(await loadAuthSession(skew.token,previousDate),null,"past caller time cannot revive idle-expired session");
+    // CVI-1C.36: rotation cannot reset absolute expiry or idle expiry.
+    const boundary=await createAuthSession({
+      subject:"cvi-expiry-boundary",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    await sql`UPDATE auth_sessions SET expires_at=clock_timestamp()+interval '2 minutes'
+      WHERE id=${boundary.principal.sessionId}::uuid`;
+    const before=await sql<{expiry:string}[]>`SELECT expires_at::text AS expiry
+      FROM auth_sessions WHERE id=${boundary.principal.sessionId}::uuid`;
+    const next=await rotateAuthSessionToken(boundary.principal.sessionId);
+    assert.equal((await request(boundary.token)).status,401);
+    assert.equal((await request(next)).status,200);
+    const after=await sql<{expiry:string}[]>`SELECT expires_at::text AS expiry
+      FROM auth_sessions WHERE id=${boundary.principal.sessionId}::uuid`;
+    assert.equal(after[0]?.expiry,before[0]?.expiry,"rotation must not extend absolute expiry");
+    await sql`UPDATE auth_sessions SET expires_at=clock_timestamp()
+      WHERE id=${boundary.principal.sessionId}::uuid`;
+    assert.equal((await request(next)).status,401,"absolute expiry boundary denies");
+    await assert.rejects(rotateAuthSessionToken(boundary.principal.sessionId),
+      /auth_session_rotation_not_eligible/,"expired session cannot rotate");
+    const idleBoundary=await createAuthSession({
+      subject:"cvi-idle-boundary",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    await sql`UPDATE auth_sessions SET last_seen_at=clock_timestamp()-interval '31 minutes'
+      WHERE id=${idleBoundary.principal.sessionId}::uuid`;
+    await assert.rejects(rotateAuthSessionToken(idleBoundary.principal.sessionId),
+      /auth_session_rotation_not_eligible/,"idle-expired session cannot rotate");
+    assert.equal((await request(idleBoundary.token)).status,401);
     process.env.AUTH_ENFORCEMENT_ENABLED="false";
     assert.equal((await request(rotated)).status,403);
     process.env.AUTH_ENFORCEMENT_ENABLED="true";
