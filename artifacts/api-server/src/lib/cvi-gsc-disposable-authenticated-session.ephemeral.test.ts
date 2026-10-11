@@ -442,6 +442,54 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     }finally{
       await rollbackDb.end({timeout:1});
     }
+    // CVI-1C.49: revocation-first contention and synthetic mutation rollback.
+    const revokeAtomic=await createAuthSession({
+      subject:"cvi-revoke-atomic",email:"synthetic-admin@example.test",
+      displayName:null,role:"admin",config,
+    });
+    const revokeWriter=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const revokeGate=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await revokeWriter.unsafe("CREATE TEMP TABLE cvi_revoke_atomic_rows(value text NOT NULL)");
+      await revokeGate.unsafe("BEGIN");
+      let pending:Promise<boolean>|undefined;
+      try {
+        await revokeGate`UPDATE auth_sessions SET revoked_at=clock_timestamp()
+          WHERE id=${revokeAtomic.principal.sessionId}::uuid`;
+        pending=revokeWriter.begin(async tx=>{
+          const rows=await tx<{role:string}[]>`
+            SELECT role FROM auth_sessions WHERE id=${revokeAtomic.principal.sessionId}::uuid
+              AND revoked_at IS NULL AND expires_at>clock_timestamp()
+              AND last_seen_at>clock_timestamp()-${AUTH_IDLE_TTL_MS}::bigint * interval '1 millisecond'
+            FOR UPDATE`;
+          if(rows[0]?.role!=="admin")return false;
+          await tx`INSERT INTO cvi_revoke_atomic_rows(value) VALUES ('forbidden')`;
+          return true;
+        });
+        let observed=false;
+        for(let i=0;i<80;i++){
+          const locked=await sql<{count:number}[]>`
+            SELECT count(*)::int AS count FROM pg_stat_activity
+            WHERE datname=current_database() AND wait_event_type='Lock'
+              AND pid<>pg_backend_pid()`;
+          if((locked[0]?.count??0)>0){observed=true;break;}
+          await new Promise(resolve=>setTimeout(resolve,30));
+        }
+        assert.ok(observed,"atomic mutation authorization must wait for revocation");
+        await revokeGate.unsafe("COMMIT");
+        assert.equal(await pending,false,"committed revocation forbids concurrent write");
+        pending=undefined;
+        const count=await revokeWriter<{n:number}[]>`
+          SELECT count(*)::int AS n FROM cvi_revoke_atomic_rows`;
+        assert.equal(count[0]?.n,0,"denied transaction must leave no synthetic row");
+      }finally{
+        await revokeGate.unsafe("ROLLBACK").catch(()=>undefined);
+        if(pending)await pending.catch(()=>undefined);
+      }
+    }finally{
+      await revokeWriter.end({timeout:1});
+      await revokeGate.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
