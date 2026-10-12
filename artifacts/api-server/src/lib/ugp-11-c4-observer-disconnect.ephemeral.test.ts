@@ -1,9 +1,10 @@
-/** UGP-11.C4 disposable-only independent PostgreSQL observer disconnect injection.
- * Kills only a backend PID established by THIS test's dedicated observer session.
- * No schema writes, production authority, retries or provider dispatch.
+/** UGP-11.C4 disposable-only real PostgreSQL observer-disconnect experiment.
+ * An isolated psql child issues an in-flight SELECT; a distinct fixture SQL client
+ * terminates only its observed PID. No production SQL, runtime retries or dispatch.
  */
 import assert from "node:assert/strict";
 import test from "node:test";
+import {spawn} from "node:child_process";
 import postgres from "postgres";
 import {reconcileFencedCommitEvidence} from "./ugp-11-c4-fenced-evidence-reconcile.js";
 
@@ -15,31 +16,37 @@ test("interrupted independent database observation quarantines incomplete eviden
    !["127.0.0.1","localhost"].includes(url.hostname)||
    url.pathname!=="/seo_engine_test"||url.port!=="5432") throw Error("disposable_database_only");
  const admin=postgres(raw,{max:1,prepare:false,connect_timeout:5});
- const observer=postgres(raw,{max:1,prepare:false,connect_timeout:5});
- t.after(async()=>{await Promise.allSettled([admin.end({timeout:2}),observer.end({timeout:2})]);});
- let resolvePid!:(n:number)=>void;
- const pidReady=new Promise<number>(resolve=>{resolvePid=resolve;});
- const observation=observer.begin(async tx=>{
-   const [row]=await tx`SELECT pg_backend_pid() AS pid`;
-   const pid=Number(row?.pid);
-   assert.ok(Number.isSafeInteger(pid)&&pid>0);
-   resolvePid(pid);
-   await tx`SELECT pg_sleep(15)`;
-   // A result returned after a backend was intentionally terminated is invalid.
-   return "completed";
+ const tag="ugp_c4_disconnect_"+process.pid;
+ const child=spawn("psql",["-X","-v","ON_ERROR_STOP=1","-h","127.0.0.1","-p","5432",
+  "-U",decodeURIComponent(url.username),"-d","seo_engine_test",
+  "-c","SELECT pg_sleep(15)"],{env:{...process.env,PGPASSWORD:decodeURIComponent(url.password),
+   PGAPPNAME:tag,PGSSLMODE:"disable",PGGSSENCMODE:"disable",PGCONNECT_TIMEOUT:"5"},
+   stdio:["ignore","pipe","pipe"]});
+ let out="",err="";
+ child.stdout.setEncoding("utf8");child.stderr.setEncoding("utf8");
+ child.stdout.on("data",(s:string)=>{out=(out+s).slice(-3000)});
+ child.stderr.on("data",(s:string)=>{err=(err+s).slice(-3000)});
+ const exit=new Promise<{code:number|null;signal:NodeJS.Signals|null}>((resolve,reject)=>{
+  child.once("error",reject);
+  child.once("close",(code,signal)=>resolve({code,signal}));
  });
- const observationRejected=assert.rejects(observation,"an interrupted observer query cannot supply complete evidence");
- const pid=await pidReady;
- let active=false;
- for(let i=0;i<50;i++){
-   const [state]=await admin`SELECT state,query FROM pg_stat_activity WHERE pid=${pid}`;
-   if(state?.state==="active"&&String(state.query).includes("pg_sleep")){active=true;break;}
-   await new Promise<void>(resolve=>setTimeout(resolve,50));
+ t.after(async()=>{if(child.exitCode===null)child.kill("SIGKILL");await admin.end({timeout:2})});
+ let pid:number|undefined;
+ for(let i=0;i<100;i++){
+  const rows=await admin`SELECT pid FROM pg_stat_activity
+    WHERE application_name=${tag} AND state='active' AND query LIKE 'SELECT pg_sleep%'`;
+  if(rows.length===1){pid=Number(rows[0]?.pid);break;}
+  assert.ok(rows.length<=1,"never terminate ambiguous backend matches");
+  await new Promise<void>(resolve=>setTimeout(resolve,50));
  }
- assert.ok(active,"observer must be in the read before termination");
+ assert.ok(pid&&Number.isSafeInteger(pid),"the isolated observer must be in its in-flight read");
  const [terminated]=await admin`SELECT pg_terminate_backend(${pid}) AS stopped`;
- assert.equal(terminated?.stopped,true,"terminate only the observer PID");
- await observationRejected;
+ assert.equal(terminated?.stopped,true,"terminate only the dedicated observer backend");
+ const status=await exit;
+ assert.notEqual(status.code,0,"observer must not report SELECT success after termination");
+ assert.doesNotMatch(out,/\(1 row\)/,"observer cannot return a successful result");
+ assert.match(err,/terminating connection|server closed the connection|connection to server was lost|FATAL/i,
+  "child must report backend disconnect");
  const expected={attemptId:"observer-terminated",tenantId:"tenant",siteId:"site",
   jobIdentity:"a".repeat(64),fingerprint:"b".repeat(64),
   priorFence:2,committedFence:3,priorAttempts:1,owner:"candidate"};
