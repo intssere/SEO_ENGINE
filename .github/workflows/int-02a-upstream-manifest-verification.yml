@@ -1,0 +1,25 @@
+name: INT-02A upstream migration manifest verification
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/integration/int-02a-ugp-migration-source-map.json"
+      - "docs/integration/int-02a-upstream-source-verification.mjs"
+      - ".github/workflows/int-02a-upstream-manifest-verification.yml"
+permissions:
+  contents: read
+jobs:
+  upstream-fingerprint-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Fetch pinned source commits
+        shell: bash
+        run: |
+          git fetch --no-tags origin 93f457f9f00d1ef36c3c92dacef1ca42aa2c2b9e 5cecb83da3352fd6a2e79423abbb69f2e7e9105b
+      - name: Verify source fingerprints and target namespace availability
+        run: node docs/integration/int-02a-upstream-source-verification.mjs

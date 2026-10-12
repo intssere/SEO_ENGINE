@@ -1,0 +1,59 @@
+name: INT-02B isolated mainline merge rehearsal
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/int-02b-mainline-merge-rehearsal.yml"
+      - "docs/integration/**"
+      - "lib/db/migrations/001[2-5]_ugp_*.sql"
+permissions:
+  contents: read
+jobs:
+  offline-merge-rehearsal:
+    if: github.event.pull_request.number == 1072
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Rehearse merging exact main HEAD into disposable checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          main_sha="$(git rev-parse FETCH_HEAD)"
+          pr_sha="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$pr_sha"
+          git config user.name "INT-02B isolated CI rehearsal"
+          git config user.email "int02b-rehearsal@users.noreply.github.com"
+          if ! git merge --no-commit --no-ff "$main_sha" >/tmp/int02-merge-out.txt 2>&1; then
+            git status --short
+            echo "INT02_ISOLATED_MAIN_MERGE_CONFLICT"
+            exit 1
+          fi
+          git diff --cached --check
+          git diff --check
+          echo "INT02_ISOLATED_MAIN_MERGE_REHEARSAL_PASS"
+          printf 'Integration PR SHA: %s\nMain SHA: %s\n' "$pr_sha" "$main_sha"
+      - name: Run source-only integration migration and customer navigation checks
+        run: |
+          node --test docs/integration/int-02a-ugp-migration-source-map.test.mjs docs/integration/int-02b-migration-admission.test.mjs docs/integration/int-02b-historical-lineage-policy.test.mjs docs/integration/int-02b-installer-authority-fence.test.mjs docs/integration/int-02b-receipt-witness.test.mjs docs/integration/int-02b-historical-receipt-intake.test.mjs docs/integration/int-02b-cross-layer-no-execution.test.mjs
+          node --test artifacts/seo-engine/src/navigation.test.mjs artifacts/seo-engine/src/accessibility-certification-contract.test.mjs artifacts/seo-engine/src/product-polish-certification-contract.test.mjs
+      - name: Install workspace dependencies without lifecycle scripts
+        run: corepack pnpm install --frozen-lockfile --ignore-scripts
+      - name: Run combined-tree customer app typecheck and full contract suite
+        run: |
+          corepack pnpm run typecheck:libs
+          corepack pnpm --filter @workspace/seo-engine typecheck
+          corepack pnpm --filter @workspace/seo-engine test
+      - name: Build combined-tree customer app
+        run: corepack pnpm --filter @workspace/seo-engine build
+      - name: Ensure rehearsal never persists a merge
+        if: always()
+        shell: bash
+        run: |
+          if test -f .git/MERGE_HEAD; then git merge --abort; fi
+          echo "INT02_OFFLINE_REHEARSAL_NO_PUSH_NO_DEPLOY"
