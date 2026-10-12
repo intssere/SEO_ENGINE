@@ -67,6 +67,7 @@ export async function startDisposableCommitAckProxy(upstreamPort: number): Promi
         for(const frame of frames){
           // Limit the experiment to simple-query messages; never pass pipelining,
           // extended protocol, terminate or an unrecognized frontend operation.
+          if(frame.type==="p" && !idle && !waitingForCommit){upstream.write(frame.raw);continue;}
           if(frame.type!=="Q") throw Error("proxy_unsupported_frontend_frame");
           if(!idle||waitingForCommit) throw Error("proxy_query_while_busy");
           if(isExactSimpleCommit(frame)){
@@ -96,7 +97,10 @@ export async function startDisposableCommitAckProxy(upstreamPort: number): Promi
           // ReadyForQuery marks the session as able to receive one simple query.
           if(frame.type==="Z"){
             if(frame.payload.length!==1) throw Error("proxy_invalid_ready");
-            idle=frame.payload[0]===73;
+            // A ReadyForQuery in an open transaction (T) permits the next
+            // simple SQL command; only the COMMIT completion may require I.
+            if(frame.payload[0]!==73 && frame.payload[0]!==84) throw Error("proxy_unexpected_ready_status");
+            idle=true;
           } else if(!"RSEKZNTA DC123GHIVntsv".replace(/ /g,"").includes(frame.type)){
             throw Error("proxy_unsupported_backend_frame");
           }
