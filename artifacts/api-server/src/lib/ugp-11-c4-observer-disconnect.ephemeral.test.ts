@@ -28,6 +28,7 @@ test("interrupted independent database observation quarantines incomplete eviden
    // A result returned after a backend was intentionally terminated is invalid.
    return "completed";
  });
+ const observationRejected=assert.rejects(observation,"an interrupted observer query cannot supply complete evidence");
  const pid=await pidReady;
  let active=false;
  for(let i=0;i<50;i++){
@@ -38,7 +39,7 @@ test("interrupted independent database observation quarantines incomplete eviden
  assert.ok(active,"observer must be in the read before termination");
  const [terminated]=await admin`SELECT pg_terminate_backend(${pid}) AS stopped`;
  assert.equal(terminated?.stopped,true,"terminate only the observer PID");
- await assert.rejects(observation,"an interrupted observer query cannot supply complete evidence");
+ await observationRejected;
  const expected={attemptId:"observer-terminated",tenantId:"tenant",siteId:"site",
   jobIdentity:"a".repeat(64),fingerprint:"b".repeat(64),
   priorFence:2,committedFence:3,priorAttempts:1,owner:"candidate"};
