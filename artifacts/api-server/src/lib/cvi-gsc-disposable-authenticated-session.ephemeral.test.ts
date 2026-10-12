@@ -655,7 +655,7 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
         waiting65=waiter65.begin(async tx=>{
           await tx.unsafe("SET LOCAL lock_timeout='3s'");
           await tx.unsafe("UPDATE cvi_1c65_synthetic_lock SET value='after-wait' WHERE id=1");
-        });
+        }).then(()=>undefined); // Start postgres.js lazy thenable before observing its lock wait.
         let observed=false;
         for(let i=0;i<70;i++){
           const rows=await holder65<{n:number}[]>`
