@@ -19,9 +19,10 @@ test("reject Production targets without invoking executor",async()=>{
  assert.equal(calls,0);
  assert.equal(productionAdmission().ok,false);
 });
-test("reject injected SQL, invalid identity and oversized results",async()=>{
+test("reject injected SQL, invalid identity and saturated or oversized results",async()=>{
  assert.equal((await inspectDisposableMetadata({fixture,executor,queries:[{id:"session_identity",sql:"DELETE FROM users",params:[]}]})).ok,false);
  assert.equal((await inspectDisposableMetadata({fixture,executor:async()=>[]})).reason,"session_identity_mismatch");
- assert.equal((await inspectDisposableMetadata({fixture,executor:async(sql,p,ctx)=>ctx.queryId==="session_identity"?await executor(sql,p,ctx):Array(300).fill({})})).reason,"result_limit_exceeded");
+ assert.equal((await inspectDisposableMetadata({fixture,executor:async(sql,p,ctx)=>ctx.queryId==="session_identity"?await executor(sql,p,ctx):Array(300).fill({})})).reason,"result_limit_reached_inventory_incomplete");
+ assert.equal((await inspectDisposableMetadata({fixture,executor:async(sql,p,ctx)=>ctx.queryId==="session_identity"?await executor(sql,p,ctx):Array(128).fill({})})).reason,"result_limit_reached_inventory_incomplete");
  assert.equal((await inspectDisposableMetadata({fixture,executor:async()=>{throw Error("no secrets in result");}})).reason,"isolated_execution_failed");
 });
