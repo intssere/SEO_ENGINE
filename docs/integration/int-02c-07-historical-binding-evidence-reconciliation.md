@@ -4,7 +4,7 @@
 
 ## Direct evidence located
 
-The committed canonical document `docs/p12-2-l10-56h-1-railway-pitr-evidence-handoff.md` (October 10, 2026) states that the previous operator's Railway UI showed the unresolved `seo-engine-shadow` application `DATABASE_URL` reference as `\u0024{{Postgres.DATABASE_URL}}`. This is an **operator-reported historical observation**, not provider-native independently signed binding evidence and not proof the binding remains current.
+The committed canonical document `docs/p12-2-l10-56h-1-railway-pitr-evidence-handoff.md` (October 10, 2026) states that the previous operator's Railway UI showed the unresolved `seo-engine-shadow` application `DATABASE_URL` reference as `${{Postgres.DATABASE_URL}}`. This is an **operator-reported historical observation**, not provider-native independently signed binding evidence and not proof the binding remains current.
 
 Matching Railway control-plane identifiers independently inventoried:
 - project `52265e29-921b-4652-ac0d-9da4e5e69936`;
@@ -19,7 +19,7 @@ The read-only connected Railway `get_service_config` response exposed the app's 
 
 | Requirement | Result | Residual uncertainty |
 |---|---|---|
-| Historical unresolved app reference | **Reported: `\u0024{{Postgres.DATABASE_URL}}`** | Historical human UI observation only |
+| Historical unresolved app reference | **Reported: `${{Postgres.DATABASE_URL}}`** | Historical human UI observation only |
 | Current app variable name | **Verified: `DATABASE_URL`** | Variable target not shown |
 | Live target service/volume | **Identified candidate** | Source-of-truth status unapproved |
 | Provider-native structural reference | **Missing** | No safe reference-only endpoint verified |
