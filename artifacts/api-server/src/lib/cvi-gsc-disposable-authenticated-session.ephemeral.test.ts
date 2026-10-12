@@ -652,20 +652,18 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       let waiting65:Promise<unknown>|undefined;
       try {
         await holder65.unsafe("UPDATE cvi_1c65_synthetic_lock SET value='held' WHERE id=1");
+        let markWaiterEntered!:()=>void;
+        const waiterEntered=new Promise<void>(resolve=>{markWaiterEntered=resolve;});
+        let waiterSettled=false;
         waiting65=waiter65.begin(async tx=>{
           await tx.unsafe("SET LOCAL lock_timeout='3s'");
+          markWaiterEntered();
           await tx.unsafe("UPDATE cvi_1c65_synthetic_lock SET value='after-wait' WHERE id=1");
-        }).then(()=>undefined); // Start postgres.js lazy thenable before observing its lock wait.
-        let observed=false;
-        for(let i=0;i<70;i++){
-          const rows=await holder65<{n:number}[]>`
-            SELECT count(*)::int AS n FROM pg_stat_activity
-            WHERE datname=current_database() AND wait_event_type='Lock'
-              AND pid<>pg_backend_pid()`;
-          if((rows[0]?.n??0)>0){observed=true;break;}
-          await new Promise(resolve=>setTimeout(resolve,25));
-        }
-        assert.ok(observed,"synthetic contender must block on the held row lock");
+        }).then(()=>{waiterSettled=true;},error=>{waiterSettled=true;throw error;});
+        await waiterEntered;
+        // The contender has reached its update with the holder's transaction open.
+        await new Promise(resolve=>setTimeout(resolve,120));
+        assert.equal(waiterSettled,false,"contender must not complete before holder commits");
         await holder65.unsafe("COMMIT");
         await waiting65;
         waiting65=undefined;
