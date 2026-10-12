@@ -14,6 +14,7 @@ test("loopback proxy observes COMMIT completion and drops its successful ACK",as
  const upstream=net.createServer(socket=>{
    let phase=0;
    socket.on("data",chunk=>{
+     assert.ok(Buffer.isBuffer(chunk),"mock_upstream_requires_binary");
      if(phase===0){
        assert.equal(chunk.readInt32BE(4),196608);
        phase=1;
@@ -30,7 +31,7 @@ test("loopback proxy observes COMMIT completion and drops its successful ACK",as
  const proxy=await startDisposableCommitAckProxy(addr.port);
  const client=connect(proxy.port);
  let received=Buffer.alloc(0);
- client.on("data",c=>{received=Buffer.concat([received,c]);});
+ client.on("data",c=>{if(!Buffer.isBuffer(c)) throw Error("nonbinary_client_chunk");received=Buffer.concat([received,c]);});
  try{
    await new Promise<void>((resolve,reject)=>{
      client.once("error",reject);
