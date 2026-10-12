@@ -24,3 +24,6 @@ Proposal edit/decision currently locks `action_plans` inside `sql.begin`. A prop
 
 ## Restrictions
 Documentation-only. No runtime code, migration, production database, provider call, crawling, publishing, merge or deployment.
+
+## Verified statement order
+`decideProposalReview` starts `sql.begin` at line 221, locks its site-scoped `action_plans` row (`FOR UPDATE OF ap`, line 231), checks prior approvals, inserts approval, and updates the plan. `editProposalDraft` starts `sql.begin` at line 295, locks the plan (line 308) before checking prior approvals and draft revision, then updates `expected_outcome`. Both resolve runtime readiness/site before the transaction; neither includes a transaction-scoped session/membership/grant fence. The dormant acquisition trigger in `0016_cvi_acquisition_revocation_serialization_draft.sql` takes `FOR SHARE` locks site → connection → session → membership → grant; it checks absolute session expiry but not application idle expiry. Its locks only cover dormant acquisition insertion, not proposal editing. A future authorization implementation must reconcile plan-first and ACL-first sequences and test revocation timing and deadlock cycles. Source review alone is not concurrency certification.
