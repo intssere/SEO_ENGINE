@@ -78,3 +78,24 @@ jobs:
       - name: Run actual application identity guard against 49-table schema
         run: |
           pnpm --filter @workspace/db exec tsx -e 'import { ensureDiamondShelfIdentity } from "./src/runtime-bootstrap.ts"; (async () => { const r = await ensureDiamondShelfIdentity(process.env.DATABASE_URL); if (r.status !== "ready" || r.tableCount !== 49) { console.error(JSON.stringify({status:r.status,tableCount:r.tableCount,schemaState:r.schemaState,reason:r.reason})); process.exitCode=1; } else { console.log("APPLICATION_IDENTITY_GUARD_PASS "+r.schemaState); } })().catch(e => { console.error(e.message); process.exitCode=1; })'
+
+      - name: Certify interrupted migration recovery through disposable DB recreation
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PGHOST=127.0.0.1 PGUSER=postgres
+          createdb stage03d02c_recovery
+          psql -d stage03d02c_recovery -X -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql >/dev/null
+          test "$(psql -d stage03d02c_recovery -X -At -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")" = 29
+          set +e
+          psql -d stage03d02c_recovery -X -v ON_ERROR_STOP=1 -c "SELECT stage03d02c_injected_failure();" >/dev/null 2>&1
+          failure=$?
+          set -e
+          test "$failure" -ne 0
+          test "$(psql -d stage03d02c_recovery -X -At -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")" = 29
+          dropdb stage03d02c_recovery
+          createdb stage03d02c_recovery
+          test "$(psql -d stage03d02c_recovery -X -At -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")" = 0
+          psql -d stage03d02c_recovery -X -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql >/dev/null
+          test "$(psql -d stage03d02c_recovery -X -At -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")" = 29
+          echo "INTERRUPTED_MIGRATION_RECREATE_PASS"
