@@ -623,7 +623,6 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await planLockDb.unsafe("CREATE TEMP TABLE cvi_1c64_plan (id int PRIMARY KEY, marker text)");
       await planLockDb.unsafe("INSERT INTO cvi_1c64_plan VALUES (1,'unchanged')");
       await planLockDb.unsafe("BEGIN");
-      let blocked:Promise<unknown>|undefined;
       try {
         await planLockDb.unsafe("SET LOCAL lock_timeout = '3s'");
         await planLockDb.unsafe("SELECT * FROM cvi_1c64_plan WHERE id=1 FOR UPDATE");
@@ -638,7 +637,6 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
         assert.equal(after[0]?.marker,"authorized-test-only");
       }finally{
         await planLockDb.unsafe("ROLLBACK").catch(()=>undefined);
-        if(blocked) await blocked.catch(()=>undefined);
       }
     }finally{
       await planLockDb.end({timeout:1});
