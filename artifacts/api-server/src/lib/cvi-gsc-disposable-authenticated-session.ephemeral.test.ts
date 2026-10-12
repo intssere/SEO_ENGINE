@@ -678,6 +678,46 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await holder65.end({timeout:1});
       await waiter65.end({timeout:1});
     }
+    // CVI-1C.66: synthetic plan -> grant row lock order, in one disposable DB.
+    const first66=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const second66=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await first66.unsafe("CREATE TABLE cvi_1c66_lock_order (id int PRIMARY KEY, value text NOT NULL)");
+      await first66.unsafe("INSERT INTO cvi_1c66_lock_order VALUES (1,'plan'),(2,'grant')");
+      await first66.unsafe("BEGIN");
+      let secondPending66:Promise<void>|undefined;
+      try {
+        await first66.unsafe("SET LOCAL lock_timeout='3s'");
+        await first66.unsafe("SELECT id FROM cvi_1c66_lock_order WHERE id=1 FOR UPDATE");
+        await first66.unsafe("SELECT id FROM cvi_1c66_lock_order WHERE id=2 FOR UPDATE");
+        let entered66!:()=>void;
+        const secondEntered66=new Promise<void>(resolve=>{entered66=resolve;});
+        let settled66=false;
+        secondPending66=second66.begin(async tx=>{
+          await tx.unsafe("SET LOCAL lock_timeout='3s'");
+          entered66();
+          await tx.unsafe("SELECT id FROM cvi_1c66_lock_order WHERE id=1 FOR UPDATE");
+          await tx.unsafe("SELECT id FROM cvi_1c66_lock_order WHERE id=2 FOR UPDATE");
+          await tx.unsafe("UPDATE cvi_1c66_lock_order SET value='serialized' WHERE id=2");
+        }).then(()=>{settled66=true;},error=>{settled66=true;throw error;});
+        await secondEntered66;
+        await new Promise(resolve=>setTimeout(resolve,120));
+        assert.equal(settled66,false,"consistent-order contender must await holder");
+        await first66.unsafe("COMMIT");
+        await secondPending66;
+        secondPending66=undefined;
+        const final66=await first66<{value:string}[]>`
+          SELECT value FROM cvi_1c66_lock_order WHERE id=2`;
+        assert.equal(final66[0]?.value,"serialized");
+      }finally {
+        await first66.unsafe("ROLLBACK").catch(()=>undefined);
+        if(secondPending66)await secondPending66.catch(()=>undefined);
+      }
+    }finally{
+      await first66.unsafe("DROP TABLE IF EXISTS cvi_1c66_lock_order").catch(()=>undefined);
+      await first66.end({timeout:1});
+      await second66.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
