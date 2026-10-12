@@ -6,6 +6,8 @@ on:
     paths:
       - "docs/integration/int-02c-05a-railway-metadata-query-contract.mjs"
       - "docs/integration/int-02c-05a-railway-metadata-query-contract.test.mjs"
+      - "docs/integration/int-02c-05b-disposable-execution-adapter.mjs"
+      - "docs/integration/int-02c-05b-disposable-execution-adapter.test.mjs"
       - ".github/workflows/int-02c-05a-offline-metadata-contract.yml"
 
 permissions:
@@ -23,4 +25,4 @@ jobs:
         with:
           node-version: 22
       - name: Test static metadata contract without DB connection
-        run: node --test docs/integration/int-02c-05a-railway-metadata-query-contract.test.mjs
+        run: node --test docs/integration/int-02c-05a-railway-metadata-query-contract.test.mjs docs/integration/int-02c-05b-disposable-execution-adapter.test.mjs
