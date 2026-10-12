@@ -13,7 +13,7 @@ export async function inspectDisposableMetadata({fixture,executor,queries=QUERY_
    const records=await executor(q.sql,[...q.params],{fixtureOnly:true,queryId:q.id});
    if(!Array.isArray(records))return deny("invalid_result_shape");
    const max={session_identity:1,catalog_table_names:128,catalog_constraint_names:256,migration_ledger_candidates:32}[q.id];
-   if(records.length>=max)return deny("result_limit_reached_inventory_incomplete");
+   if(q.id!=="session_identity" && records.length>=max)return deny("result_limit_reached_inventory_incomplete");
    if(q.id==="session_identity"){
     if(records.length!==1||records[0]?.database_name!==fixture.database||records[0]?.session_role!==fixture.role||records[0]?.in_recovery!==false)return deny("session_identity_mismatch");
    }
