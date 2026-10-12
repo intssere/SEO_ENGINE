@@ -77,4 +77,4 @@ jobs:
           echo "COMPLETE_CHAIN_AND_SYNTHETIC_SESSION_PASS"
       - name: Run actual application identity guard against 49-table schema
         run: |
-          pnpm --filter @workspace/db exec tsx -e 'import { ensureDiamondShelfIdentity } from "./src/runtime-bootstrap.ts"; const r = await ensureDiamondShelfIdentity(process.env.DATABASE_URL); if (r.status !== "ready" || r.tableCount !== 49) { console.error(JSON.stringify({status:r.status,tableCount:r.tableCount,schemaState:r.schemaState,reason:r.reason})); process.exit(1) } console.log("APPLICATION_IDENTITY_GUARD_PASS "+r.schemaState)'
+          pnpm --filter @workspace/db exec tsx -e 'import { ensureDiamondShelfIdentity } from "./src/runtime-bootstrap.ts"; (async () => { const r = await ensureDiamondShelfIdentity(process.env.DATABASE_URL); if (r.status !== "ready" || r.tableCount !== 49) { console.error(JSON.stringify({status:r.status,tableCount:r.tableCount,schemaState:r.schemaState,reason:r.reason})); process.exitCode=1; } else { console.log("APPLICATION_IDENTITY_GUARD_PASS "+r.schemaState); } })().catch(e => { console.error(e.message); process.exitCode=1; })'
