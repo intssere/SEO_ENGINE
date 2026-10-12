@@ -50,7 +50,7 @@
 ## Current evidence classification
 
 - **Observed provider control plane:** identified exact Railway `Postgres`, volume and app service; app has `DATABASE_URL` name.
-- **Historical operator report:** `\u0024{{Postgres.DATABASE_URL}}` unresolved expression from October 10; not independently current.
+- **Historical operator report:** `${{Postgres.DATABASE_URL}}` unresolved expression from October 10; not independently current.
 - **Source-tested only:** PR #1072 migration compatibility and 05A–05D offline contracts.
 - **Not established:** canonical Production database authority; exact current application binding; authenticated SQL session; migration ledger; migration execution lineage; full recovery/RPO/RTO.
 
