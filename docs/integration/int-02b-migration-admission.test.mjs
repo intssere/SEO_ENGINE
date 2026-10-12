@@ -32,3 +32,9 @@ test("canonical inventory gate rejects fabricated but internally consistent 49-t
 });
 
 test("unknown caller-supplied admission metadata cannot promote schema admission",()=>assert.equal(assessMigrationAdmission({...valid,approved:true,authorizer:"system",migrationExecuted:true,productionCertified:true}).admitted,false));
+
+test("malformed admission snapshots return explicit denial rather than throwing",()=>{
+ for(const input of [undefined,null,false,0,"invalid",[],{}]){
+  assert.deepEqual(assessMigrationAdmission(input),{admitted:false,reason:"invalid_schema_snapshot"});
+ }
+});
