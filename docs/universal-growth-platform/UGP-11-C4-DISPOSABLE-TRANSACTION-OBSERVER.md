@@ -1,0 +1,7 @@
+# UGP-11.C4 — Disposable Transaction-Bound Independent Observer
+
+Base HEAD: `8333300c08fa413f30d76f93a8c8d024c4a712cf`; post-merge workflow #38277286666 succeeded.
+
+A standalone allowlisted observer opens a separate PostgreSQL connection, performs a `REPEATABLE READ` transaction, locks the scoped fenced job row `FOR SHARE`, reads exact immutable attempt markers, and only classifies complete evidence **after the transaction resolves successfully**. SQL query/connection errors classify as unavailable; missing rows or markers classify as partial. Conflicting or duplicate markers classify as conflicting. The existing exact-identity reconciler denies retries, provider dispatch and production authority regardless of the disposition. The experiment is isolated to localhost/127.0.0.1 port 5432, database `seo_engine_test` with disposable fixture tables.
+
+This is a bounded fixture-only implementation. A completed local read transaction does not guarantee continued freshness after the lock is released. The adapter is intentionally not wired into any production worker, scheduler, API route or provider mutation. It cannot prove replica freshness, general lock ordering, real production schema equivalence, multiple observers, or outage durability. No main integration, production DB, deploy, credentials or P9 operational grant. Exact-head push + PR CI, separate merge authorization, and post-merge CI are mandatory.
