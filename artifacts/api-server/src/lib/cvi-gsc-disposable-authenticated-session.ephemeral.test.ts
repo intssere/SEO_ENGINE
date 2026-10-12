@@ -616,6 +616,32 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
     }finally{
       await policyDb.end({timeout:1});
     }
+    // CVI-1C.64: synthetic temporary plan/grant lock order, no production ACL.
+    const planLockDb=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const grantLockDb=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await planLockDb.unsafe("CREATE TEMP TABLE cvi_1c64_plan (id int PRIMARY KEY, marker text)");
+      await planLockDb.unsafe("INSERT INTO cvi_1c64_plan VALUES (1,'unchanged')");
+      await planLockDb.unsafe("BEGIN");
+      try {
+        await planLockDb.unsafe("SET LOCAL lock_timeout = '3s'");
+        await planLockDb.unsafe("SELECT * FROM cvi_1c64_plan WHERE id=1 FOR UPDATE");
+        // PostgreSQL temporary tables are connection-private: prove isolation,
+        // and do not pretend a second connection can revoke a temp-table row.
+        const seen=await grantLockDb<{name:string|null}[]>`
+          SELECT to_regclass('pg_temp.cvi_1c64_plan')::text AS name`;
+        assert.equal(seen[0]?.name,null,"synthetic plan temp table must not leak to rival connection");
+        await planLockDb.unsafe("UPDATE cvi_1c64_plan SET marker='authorized-test-only' WHERE id=1");
+        await planLockDb.unsafe("COMMIT");
+        const after=await planLockDb<{marker:string}[]>`SELECT marker FROM cvi_1c64_plan WHERE id=1`;
+        assert.equal(after[0]?.marker,"authorized-test-only");
+      }finally{
+        await planLockDb.unsafe("ROLLBACK").catch(()=>undefined);
+      }
+    }finally{
+      await planLockDb.end({timeout:1});
+      await grantLockDb.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
