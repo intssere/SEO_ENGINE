@@ -7,7 +7,7 @@ on:
       - "docs/integration/int-02c-05a-railway-metadata-query-contract.mjs"
       - "docs/integration/int-02c-05a-railway-metadata-query-contract.test.mjs"
       - "docs/integration/int-02c-05b-disposable-execution-adapter.mjs"
-      - "docs/integration/int-02c-05b-disposable-execution-adapter.test.mjs docs/integration/int-02c-05c-independent-evidence-gate.test.mjs"
+      - "docs/integration/int-02c-05b-disposable-execution-adapter.test.mjs"
       - "docs/integration/int-02c-05c-independent-evidence-gate.mjs"
       - "docs/integration/int-02c-05c-independent-evidence-gate.test.mjs"
       - ".github/workflows/int-02c-05a-offline-metadata-contract.yml"
@@ -27,4 +27,4 @@ jobs:
         with:
           node-version: 22
       - name: Test static metadata contract without DB connection
-        run: node --test docs/integration/int-02c-05a-railway-metadata-query-contract.test.mjs docs/integration/int-02c-05b-disposable-execution-adapter.test.mjs
+        run: node --test docs/integration/int-02c-05a-railway-metadata-query-contract.test.mjs docs/integration/int-02c-05b-disposable-execution-adapter.test.mjs docs/integration/int-02c-05c-independent-evidence-gate.test.mjs
