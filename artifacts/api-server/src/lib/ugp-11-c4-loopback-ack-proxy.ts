@@ -48,6 +48,7 @@ export async function startDisposableCommitAckProxy(upstreamPort: number): Promi
     upstream.on("close",()=>{if(!finished) stop(Error("proxy_upstream_closed"));});
     client.on("data", chunk=>{
       if(finished)return;
+      if(!Buffer.isBuffer(chunk)){stop(Error("proxy_nonbinary_client_chunk"));return;}
       try {
         let data=chunk;
         if(!startupDone){
@@ -77,6 +78,7 @@ export async function startDisposableCommitAckProxy(upstreamPort: number): Promi
     });
     upstream.on("data", chunk=>{
       if(finished)return;
+      if(!Buffer.isBuffer(chunk)){stop(Error("proxy_nonbinary_upstream_chunk"));return;}
       try {
         if(!startupDone) throw Error("proxy_server_before_startup");
         for(const frame of backend.push(chunk)){
