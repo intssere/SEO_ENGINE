@@ -1,5 +1,4 @@
 import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 const requireDb = createRequire(new URL("../../lib/db/package.json", import.meta.url));
 const postgres = requireDb("postgres");
@@ -35,7 +34,7 @@ const url = new URL(rawUrl);
 if (!["postgresql:","postgres:"].includes(url.protocol)) fail("database_protocol_invalid");
 if (!url.hostname.endsWith(".railway.internal")) fail("public_or_nonrailway_database_refused");
 if (url.pathname !== "/" + EXPECTED_DB_NAME) fail("unexpected_database_name");
-if (!url.hostname.startsWith("Postgres-R84i.".toLowerCase()) && !url.hostname.startsWith("postgres-r84i."))
+if (!url.hostname.toLowerCase().startsWith("postgres-r84i."))
   fail("unexpected_database_host");
 const sql = postgres(rawUrl, {max:1,prepare:false,connect_timeout:8,idle_timeout:2});
 const countTables = async () => {
@@ -47,10 +46,10 @@ const receipt = {schema:"stage03d02a_v1",project:EXPECTED_PROJECT,environment:EX
   migrations:[],identity:"not_checked",authLifecycle:"not_checked",result:"blocked"};
 try {
   if ((await countTables()) !== 0) fail("nonempty_database_refused_no_reapply");
-  const migrationDir = fileURLToPath(new URL("../../lib/db/migrations/", import.meta.url));
+  const migrationBase = new URL("../../lib/db/migrations/", import.meta.url);
   for (let i=0;i<FILENAMES.length;i++) {
     const name=FILENAMES[i];
-    const source=await readFile(new URL(name, "file://" + migrationDir + "/"),"utf8");
+    const source=await readFile(new URL(name, migrationBase),"utf8");
     await sql.unsafe(source);
     const n=await countTables();
     receipt.migrations.push({name,tables:n,expected:COUNTS[i],pass:n===COUNTS[i]});
