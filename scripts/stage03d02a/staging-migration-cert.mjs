@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import postgres from "postgres";
+import { createRequire } from "node:module";
+const requireDb = createRequire(new URL("../../lib/db/package.json", import.meta.url));
+const postgres = requireDb("postgres");
 
 const EXPECTED_ENVIRONMENT = "86150bfb-2149-4c69-ba71-e9488c81c1e3";
 const EXPECTED_PROJECT = "52265e29-921b-4652-ac0d-9da4e5e69936";
