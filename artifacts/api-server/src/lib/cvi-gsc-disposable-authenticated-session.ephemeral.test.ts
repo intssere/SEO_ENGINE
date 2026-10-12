@@ -642,6 +642,42 @@ test("CVI-1C.27 real disposable PostgreSQL sessions authenticate only trusted HT
       await planLockDb.end({timeout:1});
       await grantLockDb.end({timeout:1});
     }
+    // CVI-1C.65: real two-connection contention on a disposable shared synthetic row.
+    const holder65=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    const waiter65=postgres(raw,{max:1,prepare:false,connect_timeout:5});
+    try {
+      await holder65.unsafe("CREATE TABLE cvi_1c65_synthetic_lock (id int PRIMARY KEY, value text NOT NULL)");
+      await holder65.unsafe("INSERT INTO cvi_1c65_synthetic_lock VALUES (1,'initial')");
+      await holder65.unsafe("BEGIN");
+      let waiting65:Promise<unknown>|undefined;
+      try {
+        await holder65.unsafe("UPDATE cvi_1c65_synthetic_lock SET value='held' WHERE id=1");
+        let markWaiterEntered!:()=>void;
+        const waiterEntered=new Promise<void>(resolve=>{markWaiterEntered=resolve;});
+        let waiterSettled=false;
+        waiting65=waiter65.begin(async tx=>{
+          await tx.unsafe("SET LOCAL lock_timeout='3s'");
+          markWaiterEntered();
+          await tx.unsafe("UPDATE cvi_1c65_synthetic_lock SET value='after-wait' WHERE id=1");
+        }).then(()=>{waiterSettled=true;},error=>{waiterSettled=true;throw error;});
+        await waiterEntered;
+        // The contender has reached its update with the holder's transaction open.
+        await new Promise(resolve=>setTimeout(resolve,120));
+        assert.equal(waiterSettled,false,"contender must not complete before holder commits");
+        await holder65.unsafe("COMMIT");
+        await waiting65;
+        waiting65=undefined;
+        const rows=await holder65<{value:string}[]>`SELECT value FROM cvi_1c65_synthetic_lock WHERE id=1`;
+        assert.equal(rows[0]?.value,"after-wait","waiter updates only after holder commits");
+      }finally {
+        await holder65.unsafe("ROLLBACK").catch(()=>undefined);
+        if(waiting65)await waiting65.catch(()=>undefined);
+      }
+    }finally{
+      await holder65.unsafe("DROP TABLE IF EXISTS cvi_1c65_synthetic_lock").catch(()=>undefined);
+      await holder65.end({timeout:1});
+      await waiter65.end({timeout:1});
+    }
     // CVI-1C.34: rotation preserves the server-stored role and CSRF hash.
     assert.equal((await request(rotated,{method:"POST",csrf:b.csrfToken})).status,200);
     assert.equal((await request(rotated,{method:"POST",csrf:"not-the-csrf-token"})).status,403);
