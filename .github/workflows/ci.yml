@@ -192,6 +192,8 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f docs/universal-growth-platform/sql/UGP-11-C4-DISPOSABLE-COMMIT-ATTEMPTS.sql
           pnpm --filter @workspace/api-server exec tsx --test src/lib/ugp-11-c4-real-pgwire-ack-disconnect.ephemeral.test.ts
           pnpm --filter @workspace/api-server exec tsx --test src/lib/ugp-11-c4-fenced-evidence-reconcile.test.ts
+          psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f docs/universal-growth-platform/sql/UGP-11-C4-DISPOSABLE-COMMIT-ATTEMPTS.sql
+          pnpm --filter @workspace/api-server exec tsx --test src/lib/ugp-11-c4-observer-snapshot-race.ephemeral.test.ts
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f docs/universal-growth-platform/sql/UGP-11.1D9-DISPOSABLE-JOURNAL.sql
           pnpm --filter @workspace/api-server exec tsx --test src/lib/ugp-11-1d9-journal.ephemeral.test.ts
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f docs/universal-growth-platform/sql/UGP-11.1D10-DISPOSABLE-PROJECTION.sql
