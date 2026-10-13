@@ -1,6 +1,6 @@
 import { useGetDashboard } from "@workspace/api-client-react";
 import { Link } from "wouter";
-import "./customer-home.css";
+
 
 export default function CustomerHomePage() {
   const { data, isLoading, isError } = useGetDashboard();
@@ -54,6 +54,6 @@ export default function CustomerHomePage() {
         </section>
       </div>
     </>}
-    <footer className="customerHomeFooter"><Link href="/">Open existing Command Center</Link><span>Customer Home preview · no provider or website changes</span></footer>
+    <footer className="customerHomeFooter"><Link href="/">Open existing Command Center</Link></footer>
   </main>;
 }
