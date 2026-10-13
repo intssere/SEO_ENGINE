@@ -1,59 +1,45 @@
 import { useGetDashboard } from "@workspace/api-client-react";
 import { Link } from "wouter";
 
+const areas = [
+  ["NEXT STEP", "Review data sources", "Check connection readiness before interpreting SEO results.", "/connections", "Review connections"],
+  ["TECHNICAL SEO", "Understand coverage", "Review crawl evidence and freshness; missing data is not a clean bill of health.", "/technical-seo", "View technical SEO"],
+  ["OPPORTUNITIES", "Prioritize findings", "Only persisted, evidence-backed opportunities can support a decision.", "/opportunities", "View opportunities"],
+  ["PERFORMANCE", "Measure outcomes", "Use measured and comparable data; unavailable metrics remain unavailable.", "/performance", "View performance"],
+] as const;
 
 export default function CustomerHomePage() {
   const { data, isLoading, isError } = useGetDashboard();
-  return <main className="customerHome">
-    <header className="customerHomeHero">
-      <div>
-        <p className="customerHomeEyebrow">YOUR WEBSITE WORKSPACE</p>
-        <h1>Website overview</h1>
-        <p className="customerHomeLead">Understand what is connected, what evidence is available, and what to do next.</p>
+  return <main className="mx-auto max-w-6xl space-y-6 px-5 py-8 sm:px-8">
+    <header className="flex flex-wrap items-center justify-between gap-5">
+      <div className="space-y-2">
+        <p className="text-xs font-bold uppercase tracking-widest text-blue-700">Website workspace</p>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Your website, clearly understood.</h1>
+        <p className="max-w-2xl text-sm text-slate-600">See what is connected, what the evidence supports, and what needs attention.</p>
       </div>
-      <Link href="/onboarding" className="customerHomePrimary">Website setup</Link>
+      <Link href="/onboarding" className="inline-flex min-h-11 items-center rounded-lg bg-blue-700 px-5 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2">Website setup</Link>
     </header>
-    {isLoading ? <section className="customerHomePanel" role="status">Loading your website data…</section>
-    : isError || !data ? <section className="customerHomePanel" role="alert">
-        <h2>Website data is unavailable</h2>
-        <p>We could not load the current workspace. No metrics or connection status can be confirmed.</p>
-        <Link href="/">Open the operational dashboard</Link>
+    {isLoading ? <section role="status" className="rounded-xl border bg-white p-6">Loading website data…</section>
+    : isError || !data ? <section role="alert" className="space-y-3 rounded-xl border bg-white p-6">
+      <h2 className="text-xl font-bold">Website data unavailable</h2>
+      <p>Current workspace evidence could not be loaded. No metrics can be confirmed.</p>
+      <Link href="/" className="text-blue-700 underline">Open Command Center</Link>
+    </section> : <>
+      <section aria-labelledby="customer-site-heading" className="space-y-3 rounded-xl border bg-white p-6">
+        <p className="text-xs font-bold uppercase tracking-widest text-blue-700">Current website</p>
+        <h2 id="customer-site-heading" className="text-2xl font-bold">{data.siteName}</h2>
+        <p className="break-all text-slate-600">{data.domain}</p>
+        <p className="text-sm text-slate-600">Workspace identity is stored. Search Console, analytics and crawl data require independent verification before metrics are shown.</p>
       </section>
-    : <>
-      <section className="customerHomePanel" aria-labelledby="customer-site-heading">
-        <div className="customerHomePanelHeader">
-          <div><p className="customerHomeEyebrow">CURRENT WEBSITE</p><h2 id="customer-site-heading">{data.siteName}</h2><p className="customerHomeDomain">{data.domain}</p></div>
-          <span className="customerHomeTag">Database-backed workspace</span>
-        </div>
-        <p className="customerHomeSubtle">Metrics are shown only when they have been collected and verified. A connected workspace does not imply Search Console, analytics, or crawling is active.</p>
-      </section>
-      <div className="customerHomeGrid">
-        <section className="customerHomePanel" aria-labelledby="customer-next-heading">
-          <p className="customerHomeEyebrow">NEXT RECOMMENDED STEP</p>
-          <h2 id="customer-next-heading">Review data-source readiness</h2>
-          <p>Check which integrations are connected before interpreting rankings, crawl coverage, or opportunity counts. No automated analysis is started from this page.</p>
-          <Link href="/connections" className="customerHomeTextLink">Review connections →</Link>
-        </section>
-        <section className="customerHomePanel" aria-labelledby="customer-evidence-heading">
-          <p className="customerHomeEyebrow">EVIDENCE & COVERAGE</p>
-          <h2 id="customer-evidence-heading">Verify current SEO evidence</h2>
-          <p>Check freshness, audit scope, and whether observations support decisions. Missing or incomplete data must not be treated as a healthy site.</p>
-          <Link href="/technical-seo" className="customerHomeTextLink">View technical SEO →</Link>
-        </section>
-        <section className="customerHomePanel" aria-labelledby="customer-opportunities-heading">
-          <p className="customerHomeEyebrow">OPPORTUNITIES</p>
-          <h2 id="customer-opportunities-heading">Prioritize verified findings</h2>
-          <p>Opportunities require persisted evidence. This page does not generate recommendations or authorize website changes.</p>
-          <Link href="/opportunities" className="customerHomeTextLink">Explore opportunities →</Link>
-        </section>
-        <section className="customerHomePanel" aria-labelledby="customer-impact-heading">
-          <p className="customerHomeEyebrow">MEASUREMENT</p>
-          <h2 id="customer-impact-heading">Track measured outcomes</h2>
-          <p>Review performance and attribution only when comparable source data is available.</p>
-          <Link href="/performance" className="customerHomeTextLink">View performance →</Link>
-        </section>
+      <div className="grid gap-4 md:grid-cols-2">
+        {areas.map(([label, title, detail, path, action]) => <section key={path} className="space-y-3 rounded-xl border bg-white p-6">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-700">{label}</p>
+          <h2 className="text-xl font-bold">{title}</h2>
+          <p className="text-sm leading-relaxed text-slate-600">{detail}</p>
+          <Link href={path} className="inline-flex min-h-11 items-center font-semibold text-blue-700 underline underline-offset-4">{action} →</Link>
+        </section>)}
       </div>
     </>}
-    <footer className="customerHomeFooter"><Link href="/">Open existing Command Center</Link></footer>
+    <footer className="text-sm text-slate-600"><Link href="/" className="underline">Existing Command Center</Link> · Read-only preview</footer>
   </main>;
 }
