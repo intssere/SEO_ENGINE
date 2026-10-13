@@ -21,10 +21,10 @@ export async function observeDisposableFencedEvidence(raw:string,key:DisposableO
   const read=await db.begin("isolation level repeatable read",async tx=>{
    // The independent observer must never acquire write capability.
    await tx`SET TRANSACTION READ ONLY`;
+   // Non-locking repeatable-read snapshot: READ ONLY forbids SELECT FOR SHARE.
    const jobs=await tx`SELECT worker_id,fence,attempts
     FROM ugp11_transport_fixture.jobs
-    WHERE identity=${key.jobIdentity} AND tenant_id=${key.tenantId} AND site_id=${key.siteId}
-    FOR SHARE`;
+    WHERE identity=${key.jobIdentity} AND tenant_id=${key.tenantId} AND site_id=${key.siteId}`;
    if(jobs.length!==1) return {kind:"incomplete" as const,reason:"job_not_unique"};
    const markers=await tx`SELECT attempt_id,tenant_id,site_id,job_identity,payload_fingerprint,
       prior_fence,committed_fence FROM ugp11_transport_fixture.commit_attempts
