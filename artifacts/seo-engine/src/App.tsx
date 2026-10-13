@@ -12,7 +12,7 @@ import {
 
 import { Layout } from './components/layout';
 import { AuthProvider } from './lib/auth-client';
-const DashboardPage = lazy(() => import('./pages/dashboard'));
+import DashboardPage from './pages/dashboard';
 const CustomerOnboardingPage = lazy(() => import('./pages/customer-onboarding'));
 import CustomerHomePage from './pages/customer-home';
 import NotFound from './pages/not-found';
@@ -50,7 +50,7 @@ function Router() {
     <RoutedErrorBoundary>
       <Layout>
         <Switch>
-          <Route path="/">{() => <Suspense fallback={<div role="status" className="content">Loading dashboard…</div>}><DashboardPage /></Suspense>}</Route>
+          <Route path="/" component={DashboardPage} />
           <Route path="/home" component={CustomerHomePage} />
           <Route path="/onboarding">{() => <Suspense fallback={<div role="status" className="content">Loading website setup…</div>}><CustomerOnboardingPage /></Suspense>}</Route>
           <Route path="/opportunities" component={OpportunitiesPage} />
