@@ -46,6 +46,11 @@ test("resolved independent PostgreSQL transaction supplies exact fenced evidence
  const missing=await observeDisposableFencedEvidence(raw,{...key,attemptId:"no-such-attempt"});
  assert.equal(missing.kind,"partial");
  assert.equal(reconcileFencedCommitEvidence(expected,missing).outcome,"manual_intervention_required");
+ for(const suffix of ["?host=example.invalid","?sslmode=disable","#unexpected"]){
+  const altered=await observeDisposableFencedEvidence(raw+suffix,key);
+  assert.equal(altered.kind,"unavailable","unexpected URL suffix must fail closed: "+suffix);
+  assert.equal(reconcileFencedCommitEvidence(expected,altered).outcome,"manual_intervention_required");
+ }
  const forbidden=await observeDisposableFencedEvidence(raw.replace("/seo_engine_test","/postgres"),key);
  assert.equal(forbidden.kind,"unavailable");
  const refused=await observeDisposableFencedEvidence(raw.replace(":5432/",":59999/"),key);
