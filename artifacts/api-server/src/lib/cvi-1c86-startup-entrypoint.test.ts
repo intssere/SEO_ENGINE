@@ -28,6 +28,7 @@ test("CVI-1C.86: isolated API entrypoint startup outcomes (current policy charac
             "./app": `export default { listen(port, callback) { console.log("CVI_LISTEN:" + port); callback(null); } };`,
             "./lib/logger": `export const logger = { info(...args) { console.log("CVI_LOG:" + JSON.stringify(args)); }, error() { console.log("CVI_ERROR"); } };`,
             "./lib/p8-8-w09c2e-r4-binding-boundary.js": `export const productionBindingSupplier = null;`,
+            "pilot-orchestration": `export async function resumeQueuedPilots() { console.log("CVI_RESUME"); }`,
             "@workspace/db": `export async function ensureDiamondShelfIdentity() { console.log("CVI_IDENTITY_CHECK"); return { status: process.env.CVI_TEST_IDENTITY_STATUS || "ready", reason: "synthetic_fixture", tableCount: 0 }; };`,
           };
           plugin.onResolve({ filter: /.*/ }, (args) =>
@@ -43,10 +44,7 @@ test("CVI-1C.86: isolated API entrypoint startup outcomes (current policy charac
             path: "pilot-orchestration",
             namespace: "cvi-startup-mock",
           }));
-          plugin.onLoad({ filter: /^pilot-orchestration$/, namespace: "cvi-startup-mock" }, () => ({
-            contents: `export async function resumeQueuedPilots() { console.log("CVI_RESUME"); }`,
-            loader: "js",
-          }));
+
         },
       }],
     });
