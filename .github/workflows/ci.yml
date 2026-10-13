@@ -227,4 +227,6 @@ jobs:
           echo "EXPECTED_SOURCE_BRANCH=ci-build" >> "$GITHUB_ENV"
 
       - name: Build
+        env:
+          UX_CH_BUNDLE_REPORT: '1'
         run: pnpm build
