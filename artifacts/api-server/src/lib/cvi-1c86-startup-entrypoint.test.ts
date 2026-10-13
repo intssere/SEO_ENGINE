@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -28,7 +28,6 @@ test("CVI-1C.86: isolated API entrypoint startup outcomes (current policy charac
             "./app": `export default { listen(port, callback) { console.log("CVI_LISTEN:" + port); callback(null); } };`,
             "./lib/logger": `export const logger = { info(...args) { console.log("CVI_LOG:" + JSON.stringify(args)); }, error() { console.log("CVI_ERROR"); } };`,
             "./lib/p8-8-w09c2e-r4-binding-boundary.js": `export const productionBindingSupplier = null;`,
-            "./lib/startup-runtime.js": `export const loadStartupRuntimeConfig = () => ({ databaseConfigured: Boolean(process.env.DATABASE_URL?.trim()), pilotQueueResumeEnabled: false });`,
             "@workspace/db": `export async function ensureDiamondShelfIdentity() { console.log("CVI_IDENTITY_CHECK"); return { status: process.env.CVI_TEST_IDENTITY_STATUS || "ready", reason: "synthetic_fixture", tableCount: 0 }; };`,
           };
           plugin.onResolve({ filter: /.*/ }, (args) =>
