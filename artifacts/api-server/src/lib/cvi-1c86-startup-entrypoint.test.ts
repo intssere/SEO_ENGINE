@@ -25,7 +25,7 @@ test("CVI-1C.86: isolated API entrypoint startup outcomes (current policy charac
         name: "no-io-startup-dependencies",
         setup(plugin) {
           const modules: Record<string, string> = {
-            "./app": `export default { listen(port, callback) { console.log("CVI_LISTEN:" + port); callback(null); } };`,
+            "./app": `export default { listen(port, callback) { console.log("CVI_LISTEN:" + port); callback(process.env.CVI_TEST_LISTEN_FAILURE === "true" ? new Error("synthetic_listen_failure") : null); } };`,
             "./lib/logger": `export const logger = { info(...args) { console.log("CVI_LOG:" + JSON.stringify(args)); }, error() { console.log("CVI_ERROR"); } };`,
             "./lib/p8-8-w09c2e-r4-binding-boundary.js": `export const productionBindingSupplier = null;`,
             "pilot-orchestration": `export async function resumeQueuedPilots() { console.log("CVI_RESUME"); }`,
@@ -49,13 +49,14 @@ test("CVI-1C.86: isolated API entrypoint startup outcomes (current policy charac
       }],
     });
 
-    function run(databaseUrl: string | undefined, identityStatus = "ready") {
+    function run(databaseUrl: string | undefined, identityStatus = "ready", options: { port?: string | null; listenFailure?: boolean; resumeGate?: string } = {}) {
       const env: Record<string, string> = {
         PATH: process.env.PATH ?? "",
-        PORT: "38127",
+        ...(options.port === null ? {} : { PORT: options.port ?? "38127" }),
         NODE_ENV: "test",
         CVI_TEST_IDENTITY_STATUS: identityStatus,
-        PILOT_INGESTION_QUEUE_RESUME_ENABLED: "false",
+        PILOT_INGESTION_QUEUE_RESUME_ENABLED: options.resumeGate ?? "false",
+        CVI_TEST_LISTEN_FAILURE: String(options.listenFailure ?? false),
       };
       if (databaseUrl !== undefined) env.DATABASE_URL = databaseUrl;
       const result = spawnSync(process.execPath, [output], {
@@ -87,6 +88,35 @@ test("CVI-1C.86: isolated API entrypoint startup outcomes (current policy charac
       assert.match(result.stdout, /CVI_IDENTITY_CHECK/);
       assert.doesNotMatch(result.stdout, /CVI_LISTEN:38127|CVI_RESUME/);
       assert.match(result.stderr, /Database identity verification blocked startup/);
+    }
+
+    // CVI-1C.87: input validation must reject startup without an attempted listener.
+    for (const port of [null, "", "0", "-1", "not-a-port"]) {
+      const result = run(undefined, "ready", { port });
+      assert.notEqual(result.status, 0);
+      assert.doesNotMatch(result.stdout, /CVI_LISTEN|CVI_IDENTITY_CHECK|CVI_RESUME/);
+      assert.match(result.stderr, /PORT environment variable is required|Invalid PORT value/);
+    }
+
+    // A failing listen callback must exit nonzero and must not resume queued pilots.
+    const listenFailure = run("postgres://synthetic.invalid/test", "ready", {
+      listenFailure: true,
+      resumeGate: "true",
+    });
+    assert.equal(listenFailure.status, 1);
+    assert.match(listenFailure.stdout, /CVI_IDENTITY_CHECK|CVI_LISTEN/);
+    assert.match(listenFailure.stdout, /CVI_ERROR/);
+    assert.doesNotMatch(listenFailure.stdout, /CVI_RESUME/);
+
+    // Even with queue resumption explicitly requested, a rejected site identity
+    // must prevent listener invocation and any pilot orchestration import.
+    for (const status of ["blocked", "invalid"]) {
+      const result = run("postgres://synthetic.invalid/test", status, {
+        resumeGate: "true",
+      });
+      assert.notEqual(result.status, 0);
+      assert.match(result.stdout, /CVI_IDENTITY_CHECK/);
+      assert.doesNotMatch(result.stdout, /CVI_LISTEN|CVI_RESUME/);
     }
   } finally {
     rmSync(directory, { recursive: true, force: true });
