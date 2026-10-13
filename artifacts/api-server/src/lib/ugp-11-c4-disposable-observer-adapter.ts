@@ -13,6 +13,7 @@ export async function observeDisposableFencedEvidence(raw:string,key:DisposableO
  if(!["postgres:","postgresql:"].includes(u.protocol)||
   !["127.0.0.1","localhost"].includes(u.hostname)||
   u.port!=="5432"||u.pathname!=="/seo_engine_test"||
+  u.search!==""||u.hash!==""||
   !key.attemptId||!key.tenantId||!key.siteId||!/^[0-9a-f]{64}$/.test(key.jobIdentity))
   return {kind:"unavailable"};
  const db=postgres(raw,{max:1,prepare:false,connect_timeout:5,idle_timeout:2});
