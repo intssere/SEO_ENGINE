@@ -1,5 +1,8 @@
 # INT-02C-07 — Historical structural binding evidence reconciliation
 
+> **Current status overlay — 2026-10-13 (INT-02D-03):** The formal Path B **target architecture** is owner-approved and merged in PR #1108, main `f61932a1f241b7ed41b4b4f6fc7dfc471be87299` (post-merge CI passed). The table's `Formal Path B architecture adoption | Proposed` entry below reflects the historical assessment when authored, not current target-architecture status. All reported binding observations remain historical and **do not** attest the current unresolved reference or Production database authority. No permission for secrets, SQL, migration, infrastructure changes or deployment follows.
+
+
 **Status: operator-reported structural reference FOUND; independent current binding ATTESTATION STILL PENDING.**
 
 ## Direct evidence located
