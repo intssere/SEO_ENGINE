@@ -29,7 +29,7 @@ test("CVI-1C.86: isolated API entrypoint startup outcomes (current policy charac
             "./lib/logger": `export const logger = { info(...args) { console.log("CVI_LOG:" + JSON.stringify(args)); }, error() { console.log("CVI_ERROR"); } };`,
             "./lib/p8-8-w09c2e-r4-binding-boundary.js": `export const productionBindingSupplier = null;`,
             "pilot-orchestration": `export async function resumeQueuedPilots() { console.log("CVI_RESUME"); }`,
-            "@workspace/db": `export async function ensureDiamondShelfIdentity() { console.log("CVI_IDENTITY_CHECK"); return { status: process.env.CVI_TEST_IDENTITY_STATUS || "ready", reason: "synthetic_fixture", tableCount: 0 }; };`,
+            "@workspace/db": `export async function ensureDiamondShelfIdentity() { console.log("CVI_IDENTITY_CHECK"); if (process.env.CVI_TEST_IDENTITY_STATUS === "throw") throw new Error("synthetic_identity_exception"); return { status: process.env.CVI_TEST_IDENTITY_STATUS || "ready", reason: "synthetic_fixture", tableCount: 0 }; };`,
           };
           plugin.onResolve({ filter: /.*/ }, (args) =>
             Object.hasOwn(modules, args.path)
@@ -88,6 +88,18 @@ test("CVI-1C.86: isolated API entrypoint startup outcomes (current policy charac
       assert.match(result.stdout, /CVI_IDENTITY_CHECK/);
       assert.doesNotMatch(result.stdout, /CVI_LISTEN:38127|CVI_RESUME/);
       assert.match(result.stderr, /Database identity verification blocked startup/);
+    }
+
+    // CVI-1C.88: a thrown asynchronous identity verification error must
+    // terminate startup before listener invocation and pilot queue resumption.
+    for (const gate of ["false", "true"]) {
+      const result = run("postgres://synthetic.invalid/test", "throw", {
+        resumeGate: gate,
+      });
+      assert.notEqual(result.status, 0);
+      assert.match(result.stdout, /CVI_IDENTITY_CHECK/);
+      assert.match(result.stderr, /synthetic_identity_exception/);
+      assert.doesNotMatch(result.stdout, /CVI_LISTEN|CVI_RESUME/);
     }
 
     // CVI-1C.87: input validation must reject startup without an attempted listener.
