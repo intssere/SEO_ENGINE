@@ -19,6 +19,8 @@ export async function observeDisposableFencedEvidence(raw:string,key:DisposableO
  try{
   // Only this resolved transaction can supply a completed observation.
   const read=await db.begin("isolation level repeatable read",async tx=>{
+   // The independent observer must never acquire write capability.
+   await tx`SET TRANSACTION READ ONLY`;
    const jobs=await tx`SELECT worker_id,fence,attempts
     FROM ugp11_transport_fixture.jobs
     WHERE identity=${key.jobIdentity} AND tenant_id=${key.tenantId} AND site_id=${key.siteId}
