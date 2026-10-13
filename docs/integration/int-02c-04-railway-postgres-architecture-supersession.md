@@ -1,5 +1,8 @@
 # INT-02C-04 — Railway PostgreSQL target-architecture decision (proposed C2Y supersession)
 
+> **Current status overlay — 2026-10-13 (INT-02D-03):** Path B (Railway-managed PostgreSQL) received owner target-architecture approval in issue #1156 and PR #1108 was merged into canonical main as `f61932a1f241b7ed41b4b4f6fc7dfc471be87299`; post-merge CI run #38408381426 passed. This supersedes the earlier C2Y Path A **as the target architecture decision only**. References below to a Draft PR or pending architectural merger are historical pre-merge statements. The identified Railway service/volume, current application binding, database authority, historical migration ledger, and recovery remain **uncertified**. No Production SQL, credential access, migration, infrastructure changes or deployment are authorized.
+
+
 **Decision date:** 2026-10-12. **Decision source:** Explicit user instruction: "go with railway postgrsql". **Status:** User-selected target architecture; Draft PR proposal for accountable architecture and security approval. This document does **not** certify a Production database, change the deployed runtime binding, or authorize DB mutations.
 
 ## Decision

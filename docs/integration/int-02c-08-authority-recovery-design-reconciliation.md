@@ -1,5 +1,8 @@
 # INT-02C-08 — Production DB authority and recovery design reconciliation
 
+> **Current status overlay — 2026-10-13 (INT-02D-03):** The owner approved Railway PostgreSQL (Path B) as SEO ENGINE's future target architecture; the supersession proposal and canonical reconciliation merged through PR #1108, main `f61932a1f241b7ed41b4b4f6fc7dfc471be87299` with passing post-merge CI. C2Y Path A remains the **historical previous target**, rather than today's normative target architecture. Earlier sections describing Path A as currently normative, a Draft PR, or unassigned external reviewers document the former checkpoint. **No current Production DB source-of-truth certification** is implied: binding, identity, SQL channel, migration ledger and PITR/recovery evidence remain unresolved, and all execution gates below remain intact. No SQL, credentials, migration, cutover, infrastructure change or deployment is authorized.
+
+
 **Scope:** source-only comparison; no database credentials, SQL, deployments, provider changes, merge, cutover, or live data inspection.
 
 ## Compared authoritative and proposed documents
