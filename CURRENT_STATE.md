@@ -1,5 +1,15 @@
 # SEO ENGINE — Current State Checkpoint
 
+
+## INT-02C — proposed Railway PostgreSQL architecture; external review gate (October 13, 2026)
+
+PR #1108 is **Ready for Review**, not merged. Verified review checkpoint HEAD `6247b5b6dd73df6a22596d45484bcf8f3b1b0b9e` passed canonical CI and dedicated offline metadata tests before the present canonical-doc proposal edits; rerun PR checks at every new HEAD. Reviewers had not been formally assigned at that checkpoint. This section is a **source-only proposed future state**, not an assertion that GitHub `main`, live deployment or database authority has changed.
+
+User-selected future architecture: Railway-managed PostgreSQL (Path B), formal supersession of merged C2Y Path A **pending independent architecture/security approval and authorized merge**. Candidate primary `Postgres` service `b69e0633-7ab9-40ab-85f3-c9edd6acb031`, volume `5e7f09d1-c436-4a49-9526-c3150d0e820a`; restored service `ad459f76-e3fa-4aef-bcb7-0bff509aa326` remains separate. Previous operator reported application unresolved `DATABASE_URL` reference to `${{Postgres.DATABASE_URL}}`; fresh independent provider-origin binding attestation is **missing**. Safe SQL execution mechanism and exact migration-ledger history are **missing**. Potential main/UGP `0008–0011` historical collision unresolved.
+
+Authority gates: `RAILWAY_TARGET_PROPOSED / C2Y_STILL_NORMATIVE / REVIEWERS_PENDING / CURRENT_BINDING_UNATTESTED / HISTORICAL_SOURCE_PENDING / PRODUCTION_MIGRATION_BLOCKED`. Do not merge, deploy, query Production, retrieve credentials or alter providers from this status. Reconcile this proposed checkpoint against actual main and live resources after any separately approved lifecycle transition.
+
+
 ## Verified P12.2 Packet 014 checkpoint — October 8, 2026
 
 The canonical source of truth is GitHub `main`, verified at merge commit `1ccfde1ee6d531ee5bb0273822dc9df5ed8d8213`.

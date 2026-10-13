@@ -1,5 +1,15 @@
 # SEO ENGINE Architecture
 
+
+## Proposed database architecture supersession — INT-02C / PR #1108 (pending approval)
+
+**Proposed direction:** Path B — Railway-managed PostgreSQL for the future SEO ENGINE Production database architecture. **Current normative decision remains** `docs/p8-8-w09c2y-railway-database-architecture-decision.md`, Path A (Railway application plus independently certified external Neon), until an accountable architecture/security review and an explicitly authorized merger of a successor decision. Do not interpret this proposal as evidence of a successful cutover or current data authority.
+
+Candidate Railway primary: project `52265e29-921b-4652-ac0d-9da4e5e69936`, environment `7f8d920f-f6c6-44f0-b9fe-252cb4f32298`, `Postgres` service `b69e0633-7ab9-40ab-85f3-c9edd6acb031`, volume `5e7f09d1-c436-4a49-9526-c3150d0e820a`. Restored service `ad459f76-e3fa-4aef-bcb7-0bff509aa326` is a distinct recovery candidate, not an automatic Production replacement. The application service `seo-engine-shadow` (`1e8c1e7d-16f7-4c63-8193-1021bcbe6d90`) exposes the `DATABASE_URL` variable name; the historical unresolved reference is operator-reported only, and the current binding is unauthenticated.
+
+**Trust boundaries:** provider/volume and session identity, private least-privilege database access, read-only transactions, independently witnessed current structural binding, verified historical migration ledger/source checksums (including main/UGP `0008–0011`), recovery continuity and RPO/RTO, and separate cutover approval. Offline query contracts in `docs/integration/int-02c-05a-railway-metadata-query-contract.mjs` and subsequent 05B–05D safeguards are non-executing or fixture-only and do not establish these facts. Consult `docs/integration/int-02c-04-railway-postgres-architecture-supersession.md` and `docs/integration/int-02c-08-authority-recovery-design-reconciliation.md` for decision gates. No Production SQL, migration, provider, credential or deployment authority is granted.
+
+
 ## Purpose
 
 SEO ENGINE is the control plane for evidence-driven SEO/GEO/AIO analysis and progressively bounded execution for Diamond Shelf (`diamondshelf.us`). It is designed to automate research, opportunity discovery, proposal generation, approval workflows, measurement, and eventually tightly controlled site changes without allowing ambiguous state or broad autonomous mutation.
