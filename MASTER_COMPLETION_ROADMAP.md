@@ -1,5 +1,16 @@
 # SEO ENGINE — Master Completion Roadmap
 
+
+## INT-02C — Railway PostgreSQL target architecture supersession proposal (review milestone)
+
+**Scope:** PR #1108, source-only architecture and database-authority certification preparation. User selected Railway-managed PostgreSQL (Path B) as the proposed long-term target, but historical merged C2Y Path A (external Neon) remains normative until accountable architecture/security approval and separately authorized merge. No existing Railway instance is declared Production-authoritative by this planning entry.
+
+- **Prepared:** INT-02C-05A fixed/fingerprinted offline catalog queries, 05B disposable-injected adapter, 05C/05D fail-closed untrusted-evidence guards, 06 operator procedure, 07 historical binding handoff, 08 reconciliation with P12.2 recovery design. PR #1108 was CI-green at `6247b5b6dd73df6a22596d45484bcf8f3b1b0b9e`; additional edits require new exact-HEAD CI.
+- **Pending reviews:** accountable architect, independent database/security owner, privacy/recovery ownership and decision explicitly distinguishing proposed architecture from Production certification.
+- **Evidence gaps:** current authenticated application-to-Postgres binding; least-privilege private metadata-only SQL channel; migration-ledger identities/recorded historical hashes and main/UGP `0008–0011` collisions; independent PITR/WAL and rollback continuity; separate live authorization.
+- **Execution order:** approve/reconcile proposed ADR → independently attest binding/identity and secure read-only access → separately authorize catalog and ledger observation → reconcile historical migrations → separately certify recovery/cutover and only then request any Production writes or deployment. No implied merge or release.
+
+
 **Program tracker:** GitHub issue #139 — `PROGRAM — SEO ENGINE industry-grade completion roadmap`  
 **Purpose:** provide one durable, repository-resident plan that lets any future ChatGPT session, coding agent, Replit session, IDE assistant, or human engineer continue from the current checkpoint through a complete industry-grade SEO/GEO operating system without rediscovering scope or weakening safety boundaries.
 
