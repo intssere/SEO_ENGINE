@@ -36,3 +36,14 @@ test("legacy pilot queue resume requires both database and explicit gate", () =>
     true,
   );
 });
+
+test("CVI-1C.85: missing or whitespace-only database binding never resumes pilots", () => {
+  for (const databaseUrl of [undefined, "", " ", "\t\n"]) {
+    const config = loadStartupRuntimeConfig({
+      DATABASE_URL: databaseUrl,
+      [PILOT_QUEUE_RESUME_GATE]: "true",
+    });
+    assert.equal(config.databaseConfigured, false);
+    assert.equal(config.pilotQueueResumeEnabled, false);
+  }
+});
