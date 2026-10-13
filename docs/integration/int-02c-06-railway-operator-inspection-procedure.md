@@ -1,5 +1,8 @@
 # INT-02C-06 — Railway-native metadata inspection: operator-run procedure and decision record
 
+> **Current status overlay — 2026-10-13 (INT-02D-03):** INT-02C Path B target architecture was owner-approved and merged by PR #1108 at main `f61932a1f241b7ed41b4b4f6fc7dfc471be87299` (post-merge CI #38408381426 succeeded). The G0 architecture *selection* is complete; the pre-merge wording below is historical. G1–G5 live authority/evidence gates remain open, including independent binding attestation, safe least-privilege SQL channel, fresh bounded authorization, database identity and historical migration proof. This overlay does **not** waive any stop condition, permit a collector, credentials, variable resolution, SQL, migration or deployment.
+
+
 **Status: PROCEDURE DESIGNED / LIVE INSPECTION BLOCKED.** This is a source-only, offline operational handoff. No credentials, database connections, configuration changes, migrations, or deployments are authorized by this document.
 
 ## Current verified provider boundary
