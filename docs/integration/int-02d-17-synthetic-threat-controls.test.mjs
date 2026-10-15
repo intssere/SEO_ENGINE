@@ -45,7 +45,7 @@ export function inspectSyntheticEvidence(e) {
     return reject("execution_bounds");
   if (!Array.isArray(e.queries) || e.queries.length !== 4 ||
       e.queries.some((q, i) => q?.id !== SYNTHETIC_QUERY_IDS[i] ||
-        q?.fixedSql === false || !Array.isArray(q?.params) || q.params.length))
+        q?.fixedSql !== true || !Array.isArray(q?.params) || q.params.length))
     return reject("query_contract_mismatch");
   if (!Array.isArray(e.resultCounts) || e.resultCounts.length !== 4 ||
       e.resultCounts.some((n, i) => !Number.isSafeInteger(n) || n < 0 || n > SYNTHETIC_CAPS[i]))
@@ -109,6 +109,7 @@ test("rejects arbitrary/extended query contract",()=>{
   expectRejection(e=>{e.queries[0].id="customer_rows"},"query_contract_mismatch");
   expectRejection(e=>{e.queries[0].params=["injection"]},"query_contract_mismatch");
   expectRejection(e=>{e.queries[1].fixedSql=false},"query_contract_mismatch");
+  expectRejection(e=>{delete e.queries[1].fixedSql},"query_contract_mismatch");
 });
 test("rejects oversized/invalid synthetic results",()=>{
   expectRejection(e=>{e.resultCounts[1]=129},"result_bounds");
