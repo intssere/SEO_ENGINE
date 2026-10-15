@@ -50,7 +50,7 @@ export default defineConfig({
     },
     react(),
     tailwindcss(),
-    ...(process.env.NODE_ENV !== 'production' ? [runtimeErrorOverlay()] : []),
+    runtimeErrorOverlay(),
     ...(process.env.NODE_ENV !== 'production' &&
     process.env.REPL_ID !== undefined
       ? [
@@ -85,6 +85,8 @@ export default defineConfig({
     // CH-R02G experiment: ES2022-target browsers natively support modulepreload.
     // Keep this only if CI budgets and cross-browser runtime certification pass.
     modulePreload: { polyfill: false },
+    // CH-R02I: test Rollup's whitespace-compacted output; preserve app semantics.
+    rollupOptions: { output: { compact: true } },
   },
   server: {
     port,
