@@ -87,7 +87,7 @@ export default defineConfig({
     modulePreload: { polyfill: false },
     // CH-R02L: retain measured const bindings; trial arrow functions in ES2022 Rollup output.
     // Keep only if exact-head CI measures savings and runtime/browser tests pass.
-    rollupOptions: { output: { generatedCode: { constBindings: true, arrowFunctions: true } } },
+    rollupOptions: { output: { generatedCode: { constBindings: true, arrowFunctions: true, reservedNamesAsProps: true } } },
   },
   server: {
     port,
