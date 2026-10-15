@@ -85,9 +85,9 @@ export default defineConfig({
     // CH-R02G experiment: ES2022-target browsers natively support modulepreload.
     // Keep this only if CI budgets and cross-browser runtime certification pass.
     modulePreload: { polyfill: false },
-    // CH-R02J: try const bindings in generated Rollup output (ES2022 experiment).
+    // CH-R02L: retain measured const bindings; trial arrow functions in ES2022 Rollup output.
     // Keep only if exact-head CI measures savings and runtime/browser tests pass.
-    rollupOptions: { output: { generatedCode: { constBindings: true, objectShorthand: true } } },
+    rollupOptions: { output: { generatedCode: { constBindings: true, arrowFunctions: true } } },
   },
   server: {
     port,
