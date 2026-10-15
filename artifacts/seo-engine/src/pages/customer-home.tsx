@@ -14,10 +14,12 @@ export default function CustomerHomePage() {
         <p className="muted">Provider data and crawl coverage are not independently verified here.</p>
       </section>}
     <nav className="commandCenterWorkGrid" aria-label="SEO workspaces">
-      <Link href="/connections">Connections</Link>
-      <Link href="/technical-seo">Technical SEO</Link>
-      <Link href="/opportunities">Opportunities</Link>
-      <Link href="/performance">Performance</Link>
+      {[
+        ["/connections", "Connections"],
+        ["/technical-seo", "Technical SEO"],
+        ["/opportunities", "Opportunities"],
+        ["/performance", "Performance"],
+      ].map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}
     </nav>
     <p><Link href="/">Operations Command Center</Link></p>
   </main>;
