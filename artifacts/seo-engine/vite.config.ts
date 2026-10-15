@@ -87,7 +87,7 @@ export default defineConfig({
     modulePreload: { polyfill: false },
     // CH-R02J: try const bindings in generated Rollup output (ES2022 experiment).
     // Keep only if exact-head CI measures savings and runtime/browser tests pass.
-    rollupOptions: { output: { generatedCode: { constBindings: true } } },
+    rollupOptions: { output: { generatedCode: { constBindings: true, objectShorthand: true } } },
   },
   server: {
     port,
