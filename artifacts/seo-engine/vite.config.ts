@@ -82,6 +82,9 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
     target: 'es2022',
+    // CH-R02G experiment: ES2022-target browsers natively support modulepreload.
+    // Keep this only if CI budgets and cross-browser runtime certification pass.
+    modulePreload: { polyfill: false },
   },
   server: {
     port,
