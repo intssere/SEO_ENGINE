@@ -1,0 +1,26 @@
+name: INT-02D-24 offline query-contract regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/integration/int-02c-05a-railway-metadata-query-contract.mjs"
+      - "docs/integration/int-02d-24-query-contract-negative.test.mjs"
+      - ".github/workflows/int-02d-24-query-contract-negative.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Run offline negative tests
+        run: node --test docs/integration/int-02d-24-query-contract-negative.test.mjs
