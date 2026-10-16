@@ -2,6 +2,12 @@ name: UX-CH Cross-browser Certification
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - workstream/ux-ch-recovery-customer-home-v1
+    paths:
+      - '.github/workflows/ux-ch-cross-browser.yml'
+      - 'artifacts/seo-engine/**'
 
 permissions:
   contents: read
