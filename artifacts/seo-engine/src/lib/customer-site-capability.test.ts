@@ -13,7 +13,7 @@ const base = {
 
 test("no site requires null site and no invented metrics", () => {
   assert.equal(validateCustomerSiteCapability({
-    ...base, state: "no_site", site: null, metrics: [], authorized: false,
+    ...base, state: "no_site", site: null, metrics: [], sources: [], authorized: false,
   }), true);
   assert.equal(validateCustomerSiteCapability({ ...base, state: "no_site", site: null }), false);
 });
@@ -42,4 +42,20 @@ test("positive metrics require provenance and finite numbers", () => {
   assert.equal(validateCustomerSiteCapability({
     ...base, metrics: [{ label: "Clicks", unit: "count", value: 0, source: "GSC", observedAt: "2026-10-18T00:00:00Z" }],
   }), true);
+});
+
+test("no-site state rejects authorization and source leakage", () => {
+  assert.equal(validateCustomerSiteCapability({ ...base, state: "no_site", site: null, metrics: [], sources: [], authorized: true }), false);
+  assert.equal(validateCustomerSiteCapability({ ...base, state: "no_site", site: null, metrics: [], authorized: false }), false);
+});
+
+test("unknown or stale provider evidence cannot certify operational readiness", () => {
+  assert.equal(validateCustomerSiteCapability({ ...base, state: "site_operational", sources: [] }), false);
+  assert.equal(validateCustomerSiteCapability({ ...base, state: "site_operational", sources: [{ name: "GSC", status: "available", observedAt: null }] }), false);
+  assert.equal(validateCustomerSiteCapability({ ...base, sources: [{ name: "GSC", status: "invented", observedAt: null }] }), false);
+});
+
+test("missing or malformed metric provenance fails closed", () => {
+  assert.equal(validateCustomerSiteCapability({ ...base, metrics: [{ label: "Clicks", unit: "count", value: null, source: "GSC", observedAt: null }] }), false);
+  assert.equal(validateCustomerSiteCapability({ ...base, metrics: [{ label: "Clicks", unit: "count", value: 2, source: "GSC", observedAt: "not a time" }] }), false);
 });
