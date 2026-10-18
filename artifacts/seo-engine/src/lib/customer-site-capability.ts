@@ -26,8 +26,19 @@ export interface CustomerSiteCapability {
 export function validateCustomerSiteCapability(value: CustomerSiteCapability): boolean {
   if (!["no_site", "setup_required", "analysis_pending", "site_operational", "site_degraded"].includes(value.state)) return false;
   if (!value.reason.trim()) return false;
-  if (value.state === "no_site") return value.site === null && value.metrics.length === 0;
-  if (!value.authorized || !value.site?.id || !value.site.domain) return false;
-  if (value.state === "site_operational" && value.sources.some(source => source.status !== "available")) return false;
-  return value.metrics.every(metric => metric.value === null || (Number.isFinite(metric.value) && !!metric.source && !!metric.observedAt));
+  if (value.state === "no_site") return !value.authorized && value.site === null && value.metrics.length === 0 && value.sources.length === 0;
+  if (!value.authorized || !value.site?.id.trim() || !value.site.domain.trim()) return false;
+  if (!value.sources.every(source =>
+    !!source.name.trim() &&
+    ["available", "unavailable", "stale", "unknown"].includes(source.status) &&
+    (source.observedAt === null || Number.isFinite(Date.parse(source.observedAt)))
+  )) return false;
+  if (value.state === "site_operational" && (value.sources.length === 0 || value.sources.some(source => source.status !== "available" || !source.observedAt))) return false;
+  return value.metrics.every(metric =>
+    !!metric.label.trim() && !!metric.unit.trim() &&
+    (metric.value === null
+      ? metric.source === null && metric.observedAt === null
+      : Number.isFinite(metric.value) && !!metric.source?.trim() &&
+        !!metric.observedAt && Number.isFinite(Date.parse(metric.observedAt)))
+  );
 }
