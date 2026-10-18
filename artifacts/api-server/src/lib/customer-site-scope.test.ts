@@ -28,3 +28,17 @@ test("rejects missing, empty or unrelated grants", () => {
   assert.deepEqual(resolveCustomerSiteScope({ principalSubject: "user-a", requestedSiteId: "site-a", grants: [] }), { ok: false, reason: "site_not_authorized" });
   assert.deepEqual(resolveCustomerSiteScope({ principalSubject: "user-a", requestedSiteId: null, grants: [] }), { ok: false, reason: "site_required" });
 });
+
+test("conflicting organization grants for same site fail closed independent of input order", () => {
+  const a = { principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true };
+  const b = { principalSubject: "user-a", organizationId: "org-other", siteId: "site-a", active: true };
+  for (const records of [[a, b], [b, a]]) {
+    assert.deepEqual(resolveCustomerSiteScope({ principalSubject: "user-a", requestedSiteId: "site-a", grants: records }), { ok: false, reason: "site_not_authorized" });
+    assert.deepEqual(resolveCustomerSiteScope({ principalSubject: "user-a", requestedSiteId: null, grants: records }), { ok: false, reason: "site_required" });
+  }
+});
+
+test("duplicate identical grants do not introduce ambiguous selection", () => {
+  const grant = { principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true };
+  assert.deepEqual(resolveCustomerSiteScope({ principalSubject: "user-a", requestedSiteId: null, grants: [grant, grant] }), { ok: true, organizationId: "org-a", siteId: "site-a" });
+});
