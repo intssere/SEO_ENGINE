@@ -27,10 +27,10 @@ BEGIN
   IF n <> 0 THEN RAISE EXCEPTION 'inactive memberships unexpectedly authorized'; END IF;
 
   INSERT INTO customer_organization_memberships(organization_id,principal_subject,active)
-    VALUES (org_b,'ux-user-a',true);
+    VALUES (org_b,'ux-user-b',true);
   BEGIN
     INSERT INTO customer_site_memberships(organization_id,site_id,principal_subject,active)
-      VALUES (org_b,site_a,'ux-user-a',true);
+      VALUES (org_b,site_a,'ux-user-b',true);
     RAISE EXCEPTION 'cross-organization site membership was accepted';
   EXCEPTION WHEN foreign_key_violation THEN NULL;
   END;
