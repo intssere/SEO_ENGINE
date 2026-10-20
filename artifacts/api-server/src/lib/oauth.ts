@@ -28,6 +28,8 @@ export const TASK53_SHOPIFY_WRITE_RETURN_TO = "/connections?task53_write_product
 export const TASK53_SHOPIFY_WRITE_SCOPE = "write_products";
 export const GSC_READONLY_RETURN_TO = "/connections?gsc_read_only=1";
 export const GSC_READONLY_RUNTIME_GATE = "GSC_READONLY_OAUTH_RUNTIME_ENABLED";
+// The legacy combined GSC+GA4 OAuth path is compatibility-only, never a pilot default.
+export const LEGACY_GOOGLE_OAUTH_CONSENT_GATE = "LEGACY_GOOGLE_OAUTH_CONSENT_ENABLED";
 
 const required = (name: string) => {
   const v = process.env[name]?.trim();
@@ -62,6 +64,10 @@ export function open(value: string | undefined): OAuthStateRecord {
 
 export function isGscReadonlyOAuthRuntimeEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return env[GSC_READONLY_RUNTIME_GATE]?.trim().toLowerCase() === "true";
+}
+
+export function isLegacyGoogleOAuthConsentEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env[LEGACY_GOOGLE_OAUTH_CONSENT_GATE]?.trim().toLowerCase() === "true";
 }
 
 export function classifyGoogleOAuthState(state: OAuthStateRecord): "legacy" | typeof GSC_READONLY_PROFILE {

@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "artifacts/api-server/src/lib/oauth.ts"
+      - "artifacts/api-server/src/lib/oauth.test.ts"
+      - "artifacts/api-server/src/routes/connections.ts"
       - "artifacts/seo-engine/src/pages/connections.tsx"
       - "artifacts/seo-engine/src/pages/connections-gsc-guard.test.mjs"
       - ".github/workflows/pilot-01-gsc-auth-ui-guard.yml"

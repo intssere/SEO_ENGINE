@@ -10,6 +10,7 @@ import {
   classifyGoogleOAuthState,
   isGoogleSelectionDiscovered,
   isGscReadonlyOAuthRuntimeEnabled,
+  isLegacyGoogleOAuthConsentEnabled,
 } from "./oauth.js";
 
 const metadata = {
@@ -60,4 +61,14 @@ test("unknown Google OAuth purpose fails closed before any runtime branch can be
 test("legacy Google state cannot be coerced into the GSC profile", () => {
   const legacy = createOAuthState("google");
   assert.throws(() => asGscReadonlyState(legacy), /gsc_oauth_purpose_required/);
+});
+
+test("PILOT-01 legacy combined Google OAuth consent is independently default-off", () => {
+  assert.equal(isLegacyGoogleOAuthConsentEnabled({}), false);
+  assert.equal(isLegacyGoogleOAuthConsentEnabled({ LEGACY_GOOGLE_OAUTH_CONSENT_ENABLED: "" }), false);
+  assert.equal(isLegacyGoogleOAuthConsentEnabled({ LEGACY_GOOGLE_OAUTH_CONSENT_ENABLED: "false" }), false);
+  assert.equal(isLegacyGoogleOAuthConsentEnabled({ LEGACY_GOOGLE_OAUTH_CONSENT_ENABLED: "1" }), false);
+  assert.equal(isLegacyGoogleOAuthConsentEnabled({ LEGACY_GOOGLE_OAUTH_CONSENT_ENABLED: "yes" }), false);
+  assert.equal(isLegacyGoogleOAuthConsentEnabled({ GSC_READONLY_OAUTH_RUNTIME_ENABLED: "true" }), false);
+  assert.equal(isLegacyGoogleOAuthConsentEnabled({ LEGACY_GOOGLE_OAUTH_CONSENT_ENABLED: " true " }), true);
 });
