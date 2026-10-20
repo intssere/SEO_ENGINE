@@ -56,6 +56,9 @@ export function createCustomerCapabilityHandler(readGrants: CustomerGrantReader,
           !capability.reason.trim() ||
           !["setup_required", "analysis_pending", "site_operational", "site_degraded"].includes(capability.state) ||
           !Array.isArray(capability.sources) || !Array.isArray(capability.metrics) ||
+          (capability.state === "site_operational" &&
+            (capability.sources.length === 0 || capability.sources.some(source =>
+              !source || source.status !== "available" || !source.observedAt))) ||
           !capability.sources.every(source => source && !!source.name?.trim() &&
             ["available", "unavailable", "stale", "unknown"].includes(source.status) &&
             (source.observedAt === null || Number.isFinite(Date.parse(source.observedAt)))) ||
