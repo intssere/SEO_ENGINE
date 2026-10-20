@@ -7,6 +7,7 @@ import { useSearch } from "wouter";
 type ConnectionsStatus = {
   readOnly?: boolean;
   shopify: { connected: boolean; domain?: string };
+  gscReadonlyRuntime?: { enabled?: boolean; liveTransportBound?: boolean };
   google: {
     connected: boolean;
     authorized?: boolean;
@@ -96,6 +97,7 @@ export default function ConnectionsPage() {
   }, []);
 
   const oauthDisabled = status?.readOnly === false;
+  const gscConsentReady = status?.gscReadonlyRuntime?.enabled === true && status?.gscReadonlyRuntime?.liveTransportBound === true && !oauthDisabled;
   const task53WriteConnected = task53Capability?.connected === true
     && task53Capability.writeProductsScopePresent === true
     && task53Capability.credentialAvailable === true;
@@ -284,31 +286,32 @@ export default function ConnectionsPage() {
                     </div>
                   </dl>
                 </div>
-                {!oauthDisabled && (
+                {gscConsentReady && (
                   <a
-                    href="/api/connections/google/start"
+                    href="/api/connections/google/gsc-readonly/start"
                     className="inline-block w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]"
                   >
                     Reauthorize Google
                   </a>
                 )}
+                {!gscConsentReady && <p role="status" className="text-xs text-[var(--status-warning-fg)]">Google Search Console reauthorization is blocked until dedicated read-only transport certification.</p>}
               </div>
             ) : (
               <div>
                 <p className="text-sm text-[#455168] mb-4">Connect your Google account to import Search Console metrics and track verified impact.</p>
-                {oauthDisabled ? (
+                {!gscConsentReady ? (
                   <button disabled className="w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm opacity-50 cursor-not-allowed">
                     Authorize Google
                   </button>
                 ) : (
                   <a
-                    href="/api/connections/google/start"
+                    href="/api/connections/google/gsc-readonly/start"
                     className="inline-block w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]"
                   >
                     Authorize Google
                   </a>
                 )}
-                {oauthDisabled && <p className="text-xs text-[var(--status-warning-fg)] mt-2 text-center">Connecting disabled in current autonomy mode.</p>}
+                {!gscConsentReady && <p role="status" className="text-xs text-[var(--status-warning-fg)] mt-2 text-center">Google Search Console authorization is unavailable until the dedicated read-only transport is certified. No authorization was started.</p>}
               </div>
             )}
           </section>
