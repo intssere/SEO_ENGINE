@@ -56,3 +56,16 @@ test("cross-tenant evidence and unavailable source storage fail closed before at
   }), { ok: false, reason: "source_evidence_unavailable" });
   assert.equal(attestations, 0);
 });
+
+test("oversized unbounded evidence responses fail closed before any attestation access", async () => {
+  let attestationReads = 0;
+  const result = await loadProvenanceCertifiedCustomerReadiness({
+    ...base,
+    readEvidence: async () => Array.from({ length: 101 }, () => ({
+      ...scope, source: "gsc", kind: "search-observation", observedAt: at,
+    })),
+    readAttestation: async () => { attestationReads++; return null; },
+  });
+  assert.deepEqual(result, { ok: false, reason: "source_evidence_unavailable" });
+  assert.equal(attestationReads, 0);
+});
