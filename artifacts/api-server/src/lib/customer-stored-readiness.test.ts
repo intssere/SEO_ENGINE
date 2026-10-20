@@ -39,3 +39,16 @@ test("database errors and wrong-site attestations fail closed", async () => {
     ...base, readAttestation: async () => ({ ...scope, siteId: "site-b", evidenceId: "proof-a", authority: "certifier", complete: true, verifiedAt: date }),
   })).state, "unverified");
 });
+
+test("future-dated or expired sources cannot certify operational readiness", async () => {
+  const future = await assessStoredCustomerReadiness({
+    ...base, sourceStatuses: [{ status: "available", observedAt: "2026-10-21T00:00:00Z" }],
+  });
+  assert.equal(future.state, "site_degraded");
+  const expired = await assessStoredCustomerReadiness({
+    ...base, sourceStatuses: [{ status: "available", observedAt: "2026-10-18T00:00:00Z" }],
+  });
+  assert.equal(expired.state, "site_degraded");
+  const fresh = await assessStoredCustomerReadiness(base);
+  assert.equal(fresh.state, "site_operational");
+});
