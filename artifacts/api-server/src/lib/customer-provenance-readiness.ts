@@ -28,7 +28,7 @@ export async function loadProvenanceCertifiedCustomerReadiness(input: {
   let evidence: readonly EvidenceCandidate[];
   try {
     evidence = await input.readEvidence(scope);
-    if (!Array.isArray(evidence) || evidence.some(item =>
+    if (!Array.isArray(evidence) || evidence.length > 100 || evidence.some(item =>
       !item || typeof item.source !== "string" || typeof item.kind !== "string" ||
       typeof item.observedAt !== "string" || typeof item.siteId !== "string" ||
       typeof item.organizationId !== "string" ||
