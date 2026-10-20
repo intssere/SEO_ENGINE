@@ -26,8 +26,8 @@ test("UI requires explicit true readiness on both independent fields, with write
   assert.match(ui, /gscReadonlyRuntime\?\.enabled === true && status\?\.gscReadonlyRuntime\?\.liveTransportBound === true && !oauthDisabled/);
   assert.match(ui, /\{gscConsentReady && \(/);
   assert.match(ui, /\{!gscConsentReady \? \(/);
-  assert.match(ui, /Google Search Console authorization is unavailable until the dedicated read-only transport is certified/);
-  assert.match(ui, /Google Search Console reauthorization is blocked until dedicated read-only transport certification/);
+  assert.match(ui, /GSC authorization is unavailable until its read-only transport is certified/);
+  assert.match(ui, /GSC reauthorization requires certified read-only transport/);
 });
 
 test("GSC server must advertise transport as unbound and refuse direct start before URL creation", () => {
