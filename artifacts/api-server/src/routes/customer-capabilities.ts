@@ -6,7 +6,18 @@ import { loadCustomerSiteScope, type CustomerGrantReader } from "../lib/customer
  * projection require separate review. Even with global auth enforcement disabled,
  * this customer route MUST require a verified server-side principal.
  */
-export function createCustomerCapabilityHandler(readGrants: CustomerGrantReader) {
+export type ScopedCapabilityReader = (scope: { organizationId: string; siteId: string }) => Promise<{
+  state: "setup_required" | "analysis_pending" | "site_operational" | "site_degraded";
+  site: { id: string; name: string; domain: string };
+  organizationId: string;
+  authorized: true;
+  reason: string;
+  sources: readonly { name: string; status: "available" | "unavailable" | "stale" | "unknown"; observedAt: string | null }[];
+  metrics: readonly { label: string; value: number | null; unit: string; observedAt: string | null; source: string | null }[];
+} | null>;
+
+/** The optional reader is server-injected only; never obtained from an HTTP request. */
+export function createCustomerCapabilityHandler(readGrants: CustomerGrantReader, readCapability?: ScopedCapabilityReader) {
   return async (req: Request, res: Response): Promise<void> => {
     if (!req.auth?.subject) {
       res.status(401).json({ error: "authentication_required" });
@@ -29,8 +40,37 @@ export function createCustomerCapabilityHandler(readGrants: CustomerGrantReader)
       res.status(status).json({ error: result.reason });
       return;
     }
-    // No customer-scoped metrics/readiness loader exists yet. Never reuse
-    // the global operator dashboard or invent a capability document.
-    res.status(503).json({ error: "customer_capabilities_not_implemented" });
+    // Without a reviewed site-scoped projection, never reuse operator aggregates.
+    if (!readCapability) {
+      res.status(503).json({ error: "customer_capabilities_not_implemented" });
+      return;
+    }
+    try {
+      const capability = await readCapability({ organizationId: result.organizationId, siteId: result.siteId });
+      if (!capability) {
+        res.status(503).json({ error: "customer_capabilities_unavailable" });
+        return;
+      }
+      if (capability.organizationId !== result.organizationId || capability.site?.id !== result.siteId ||
+          capability.authorized !== true || !capability.site.name.trim() || !capability.site.domain.trim() ||
+          !capability.reason.trim() ||
+          !["setup_required", "analysis_pending", "site_operational", "site_degraded"].includes(capability.state) ||
+          !Array.isArray(capability.sources) || !Array.isArray(capability.metrics) ||
+          !capability.sources.every(source => source && !!source.name?.trim() &&
+            ["available", "unavailable", "stale", "unknown"].includes(source.status) &&
+            (source.observedAt === null || Number.isFinite(Date.parse(source.observedAt)))) ||
+          !capability.metrics.every(metric => metric && !!metric.label?.trim() && !!metric.unit?.trim() &&
+            (metric.value === null ? metric.source === null && metric.observedAt === null :
+              Number.isFinite(metric.value) && !!metric.source?.trim() && !!metric.observedAt &&
+              Number.isFinite(Date.parse(metric.observedAt))))) {
+        res.status(503).json({ error: "customer_capabilities_unavailable" });
+        return;
+      }
+      // Keep database organization identity server-side; never include it in the public payload.
+      const { organizationId: _privateOrganizationId, ...response } = capability;
+      res.status(200).json(response);
+    } catch {
+      res.status(503).json({ error: "customer_capabilities_unavailable" });
+    }
   };
 }
