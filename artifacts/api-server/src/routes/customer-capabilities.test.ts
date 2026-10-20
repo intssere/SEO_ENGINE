@@ -114,3 +114,22 @@ test("authorized but unavailable capability data fails closed without leaking si
   });
   assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
 });
+
+test("operational capability cannot be claimed with missing or stale source evidence", async () => {
+  const readGrants = async () => [{ principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true }];
+  for (const sources of [
+    [],
+    [{ name: "GSC", status: "unknown" as const, observedAt: null }],
+    [{ name: "GSC", status: "available" as const, observedAt: null }],
+  ]) {
+    const result = await invoke({
+      subject: "user-a", siteId: "site-a", readGrants,
+      readCapability: async () => ({
+        organizationId: "org-a", state: "site_operational", authorized: true,
+        reason: "Claimed operational", site: { id: "site-a", name: "Example", domain: "example.test" },
+        sources, metrics: [],
+      }),
+    });
+    assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
+  }
+});
