@@ -66,9 +66,11 @@ export function createCustomerCapabilityHandler(readGrants: CustomerGrantReader,
         res.status(503).json({ error: "customer_capabilities_unavailable" });
         return;
       }
-      // Keep database organization identity server-side; never include it in the public payload.
-      const { organizationId: _privateOrganizationId, ...response } = capability;
-      res.status(200).json(response);
+      // Explicit allowlist: never expose internal or future persistence fields.
+      res.status(200).json({
+        state: capability.state, site: capability.site, reason: capability.reason,
+        authorized: true, sources: capability.sources, metrics: capability.metrics,
+      });
     } catch {
       res.status(503).json({ error: "customer_capabilities_unavailable" });
     }
