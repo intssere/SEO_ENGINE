@@ -83,3 +83,34 @@ test("wrong-site capability payload fails closed with no foreign site details", 
   });
   assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
 });
+
+test("unauthorized cross-site request never invokes customer capability reader", async () => {
+  let reads = 0;
+  const result = await invoke({
+    subject: "user-a", siteId: "site-foreign",
+    readGrants: async () => [{ principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true }],
+    readCapability: async () => { reads++; throw Error("must not be accessed"); },
+  });
+  assert.deepEqual(result, { code: 404, body: { error: "site_not_authorized" } });
+  assert.equal(reads, 0);
+});
+
+test("membership database failure never invokes capability reader", async () => {
+  let reads = 0;
+  const result = await invoke({
+    subject: "user-a", siteId: "site-a",
+    readGrants: async () => { throw Error("membership store unavailable"); },
+    readCapability: async () => { reads++; return null; },
+  });
+  assert.deepEqual(result, { code: 503, body: { error: "membership_unavailable" } });
+  assert.equal(reads, 0);
+});
+
+test("authorized but unavailable capability data fails closed without leaking site information", async () => {
+  const result = await invoke({
+    subject: "user-a", siteId: "site-a",
+    readGrants: async () => [{ principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true }],
+    readCapability: async () => { throw Error("internal source details"); },
+  });
+  assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
+});
