@@ -154,3 +154,20 @@ test("non-null metrics require matching available source observed no earlier tha
     assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
   }
 });
+
+test("capability responses strip unrecognized nested provider secrets and internal fields", async () => {
+  const result = await invoke({
+    subject: "user-a", siteId: "site-a",
+    readGrants: async () => [{ principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true }],
+    readCapability: async () => ({
+      organizationId: "org-a", state: "site_operational", authorized: true,
+      reason: "Verified", site: { id: "site-a", name: "Example", domain: "example.test" },
+      sources: [{ name: "GSC", status: "available", observedAt: "2026-10-20T12:00:00Z", credential: "secret" }],
+      metrics: [{ label: "Clicks", value: 2, unit: "clicks", observedAt: "2026-10-20T11:00:00Z", source: "GSC", internalToken: "private" }],
+    }),
+  });
+  assert.equal(result.code, 200);
+  const body = result.body as { sources: unknown[]; metrics: unknown[] };
+  assert.deepEqual(body.sources, [{ name: "GSC", status: "available", observedAt: "2026-10-20T12:00:00Z" }]);
+  assert.deepEqual(body.metrics, [{ label: "Clicks", value: 2, unit: "clicks", observedAt: "2026-10-20T11:00:00Z", source: "GSC" }]);
+});
