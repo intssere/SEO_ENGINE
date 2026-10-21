@@ -75,7 +75,9 @@ export function createCustomerCapabilityHandler(readGrants: CustomerGrantReader,
       // Explicit allowlist: never expose internal or future persistence fields.
       res.status(200).json({
         state: capability.state, site: capability.site, reason: capability.reason,
-        authorized: true, sources: capability.sources, metrics: capability.metrics,
+        authorized: true,
+        sources: capability.sources.map(source => ({ name: source.name, status: source.status, observedAt: source.observedAt })),
+        metrics: capability.metrics.map(metric => ({ label: metric.label, value: metric.value, unit: metric.unit, observedAt: metric.observedAt, source: metric.source })),
       });
     } catch {
       res.status(503).json({ error: "customer_capabilities_unavailable" });
