@@ -210,7 +210,19 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 43
 
       - name: Test all current workspace packages
-        run: pnpm -r --if-present test
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm -r --if-present test 2>&1 | tee "$RUNNER_TEMP/ux-ch-workspace-tests.log"
+
+      - name: Upload workspace test diagnostic on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ux-ch-workspace-test-diagnostic
+          path: ${{ runner.temp }}/ux-ch-workspace-tests.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Test P11.10 synthetic load scale
         run: pnpm --filter @workspace/api-server test:scale
