@@ -133,3 +133,24 @@ test("operational capability cannot be claimed with missing or stale source evid
     assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
   }
 });
+
+test("non-null metrics require matching available source observed no earlier than metric", async () => {
+  const at = "2026-10-20T12:00:00Z";
+  const readGrants = async () => [{ principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true }];
+  for (const sources of [
+    [],
+    [{ name: "GSC", status: "stale" as const, observedAt: at }],
+    [{ name: "Bing", status: "available" as const, observedAt: at }],
+    [{ name: "GSC", status: "available" as const, observedAt: "2026-10-19T12:00:00Z" }],
+  ]) {
+    const result = await invoke({
+      subject: "user-a", siteId: "site-a", readGrants,
+      readCapability: async () => ({
+        organizationId: "org-a", state: "analysis_pending", authorized: true,
+        reason: "Analysis in progress", site: { id: "site-a", name: "Example", domain: "example.test" },
+        sources, metrics: [{ label: "Clicks", value: 10, unit: "clicks", source: "GSC", observedAt: at }],
+      }),
+    });
+    assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
+  }
+});
