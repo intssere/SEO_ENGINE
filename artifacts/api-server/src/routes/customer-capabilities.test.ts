@@ -156,15 +156,18 @@ test("non-null metrics require matching available source observed no earlier tha
 });
 
 test("capability responses strip unrecognized nested provider secrets and internal fields", async () => {
+  // Construct an external reader result first so TypeScript's excess-property
+  // checking does not prevent simulating unexpected runtime persistence fields.
+  const externalPayload = {
+    organizationId: "org-a", state: "site_operational" as const, authorized: true as const,
+    reason: "Verified", site: { id: "site-a", name: "Example", domain: "example.test" },
+    sources: [{ name: "GSC", status: "available" as const, observedAt: "2026-10-20T12:00:00Z", credential: "secret" }],
+    metrics: [{ label: "Clicks", value: 2, unit: "clicks", observedAt: "2026-10-20T11:00:00Z", source: "GSC", internalToken: "private" }],
+  };
   const result = await invoke({
     subject: "user-a", siteId: "site-a",
     readGrants: async () => [{ principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true }],
-    readCapability: async () => ({
-      organizationId: "org-a", state: "site_operational", authorized: true,
-      reason: "Verified", site: { id: "site-a", name: "Example", domain: "example.test" },
-      sources: [{ name: "GSC", status: "available", observedAt: "2026-10-20T12:00:00Z", credential: "secret" }],
-      metrics: [{ label: "Clicks", value: 2, unit: "clicks", observedAt: "2026-10-20T11:00:00Z", source: "GSC", internalToken: "private" }],
-    }),
+    readCapability: async () => externalPayload,
   });
   assert.equal(result.code, 200);
   const body = result.body as { sources: unknown[]; metrics: unknown[] };
