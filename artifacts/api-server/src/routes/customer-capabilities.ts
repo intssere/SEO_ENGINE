@@ -65,7 +65,10 @@ export function createCustomerCapabilityHandler(readGrants: CustomerGrantReader,
           !capability.metrics.every(metric => metric && !!metric.label?.trim() && !!metric.unit?.trim() &&
             (metric.value === null ? metric.source === null && metric.observedAt === null :
               Number.isFinite(metric.value) && !!metric.source?.trim() && !!metric.observedAt &&
-              Number.isFinite(Date.parse(metric.observedAt))))) {
+              Number.isFinite(Date.parse(metric.observedAt)) &&
+              capability.sources.some(source => source.name === metric.source &&
+                source.status === "available" && !!source.observedAt &&
+                Date.parse(source.observedAt) >= Date.parse(metric.observedAt))))) {
         res.status(503).json({ error: "customer_capabilities_unavailable" });
         return;
       }
