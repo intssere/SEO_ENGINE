@@ -40,3 +40,23 @@ test("cannot authorize expired attestations despite valid proof", async () => {
   assert.deepEqual(await verifyStoredCustomerAttestation({ ...base, maxAgeMs: 1000 }),
     { ok: false, reason: "attestation_freshness_invalid" });
 });
+
+test("proof must not be created after attestation verification", async () => {
+  const result = await verifyStoredCustomerAttestation({
+    ...base,
+    readProof: async () => ({
+      id: "evidence-a", source: "crawl", observedAt: "2026-10-19T01:00:00Z",
+    }),
+  });
+  assert.deepEqual(result, { ok: false, reason: "attestation_proof_temporal_invalid" });
+});
+
+test("stale proof cannot retrospectively certify a fresh attestation", async () => {
+  const result = await verifyStoredCustomerAttestation({
+    ...base,
+    readProof: async () => ({
+      id: "evidence-a", source: "crawl", observedAt: "2026-10-17T00:00:00Z",
+    }),
+  });
+  assert.deepEqual(result, { ok: false, reason: "attestation_proof_temporal_invalid" });
+});
