@@ -43,3 +43,24 @@ test("empty evidence is not operational readiness", async () => {
   const read = createCustomerSourceFreshnessReader(async () => []);
   assert.deepEqual(await read(scope, now, day), []);
 });
+
+test("duplicate source results cannot silently overstate freshness", async () => {
+  const read = createCustomerSourceFreshnessReader(async () => [
+    { site_id: "site-a", source: "gsc", observed_at: "2026-10-20T10:00:00Z" },
+    { site_id: "site-a", source: "gsc", observed_at: "2026-10-18T10:00:00Z" },
+  ]);
+  assert.equal(await read(scope, now, day), null);
+});
+
+test("malformed or oversized source results are rejected", async () => {
+  const malformed = createCustomerSourceFreshnessReader(async () => [
+    { site_id: "site-a", source: "gsc", observed_at: null as unknown as string },
+  ]);
+  assert.equal(await malformed(scope, now, day), null);
+  const oversized = createCustomerSourceFreshnessReader(async () =>
+    Array.from({ length: 101 }, (_, i) => ({
+      site_id: "site-a", source: `source-${i}`, observed_at: "2026-10-20T10:00:00Z",
+    })),
+  );
+  assert.equal(await oversized(scope, now, day), null);
+});
