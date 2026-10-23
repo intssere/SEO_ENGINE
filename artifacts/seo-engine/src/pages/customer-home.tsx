@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { buildCustomerHomeView } from "./customer-home-view";
 import "./customer-home.css";
 
 /**
@@ -7,6 +8,8 @@ import "./customer-home.css";
  * operator dashboard data as if it belonged to this customer.
  */
 export default function CustomerHomePage() {
+  // No certified customer capability endpoint exists yet. Never substitute operator data.
+  const view = buildCustomerHomeView(null);
   return <main className="customerHome">
     <header className="customerHomeHero">
       <div>
@@ -20,11 +23,11 @@ export default function CustomerHomePage() {
       <div className="customerHomePanelHeader">
         <div>
           <p className="customerHomeEyebrow">WEBSITE STATUS</p>
-          <h2 id="customer-home-status">Verification pending</h2>
+          <h2 id="customer-home-status">{view.kind === "unverified" ? view.heading : view.site.name}</h2>
         </div>
         <span className="customerHomeTag">Status unverified</span>
       </div>
-      <p className="customerHomeSubtle">We cannot display customer site identity, SEO results, or readiness until a site-scoped data source has passed authorization and provenance checks. No metrics are inferred from the operator dashboard.</p>
+      <p className="customerHomeSubtle">{view.kind === "unverified" ? view.description : view.reason} No metrics are inferred from the operator dashboard.</p>
       <Link className="customerHomeTextLink" href="/onboarding">Review website setup</Link>
     </section>
     <div className="customerHomeGrid">
