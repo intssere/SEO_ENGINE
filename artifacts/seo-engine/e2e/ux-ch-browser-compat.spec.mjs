@@ -16,9 +16,9 @@ for (const viewport of [
     const errors = monitorBrowserErrors(page);
 
     await page.goto("/home");
-    await expect(page.getByRole("heading", { name: "Website overview" })).toBeVisible();
-    await expect(page.getByRole("navigation", { name: "SEO workspaces" })).toBeVisible();
-    await expect(page.getByText("example.test", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your website workspace" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Verification pending" })).toBeVisible();
+    await expect(page.getByText("Status unverified", { exact: true })).toBeVisible();
 
     // Exercise the lazy dynamic import with the browser's actual module loader.
     await page.getByRole("link", { name: "Website setup" }).click();
