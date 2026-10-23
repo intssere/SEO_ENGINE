@@ -42,6 +42,6 @@ export function validateCustomerSiteCapability(value: CustomerSiteCapability): b
         !!metric.observedAt && Number.isFinite(Date.parse(metric.observedAt)) &&
         value.sources.some(source => source.name === metric.source &&
           source.status === "available" && !!source.observedAt &&
-          Date.parse(source.observedAt) >= Date.parse(metric.observedAt)))
+          Date.parse(source.observedAt) >= Date.parse(metric.observedAt!)))
   );
 }
