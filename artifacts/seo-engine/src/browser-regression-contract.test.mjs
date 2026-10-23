@@ -23,7 +23,10 @@ test("P4.10 browser server and browser are local deterministic Chromium", () => 
   assert.ok(config.includes('timezoneId: "UTC"'));
   assert.ok(config.includes('reducedMotion: "reduce"'));
   assert.ok(config.includes('workers: 1'));
-  assert.ok(config.includes('command: "pnpm run test:e2e:server"'));
+  assert.ok(config.includes('process.env.UX_CH_PRODUCTION_PREVIEW === "1"'));
+  assert.ok(config.includes('"pnpm run serve"'));
+  assert.ok(config.includes('"pnpm run test:e2e:server"'));
+  assert.ok(config.includes('reuseExistingServer: !process.env.CI'));
 });
 
 test("synthetic browser network boundary blocks external and unmocked API traffic", () => {
