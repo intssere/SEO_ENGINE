@@ -40,7 +40,8 @@ test("positive metrics require provenance and finite numbers", () => {
     ...base, metrics: [{ label: "Clicks", unit: "count", value: Infinity, source: "GSC", observedAt: "2026-10-18T00:00:00Z" }],
   }), false);
   assert.equal(validateCustomerSiteCapability({
-    ...base, metrics: [{ label: "Clicks", unit: "count", value: 0, source: "GSC", observedAt: "2026-10-18T00:00:00Z" }],
+    ...base, sources: [{ name: "GSC", status: "available", observedAt: "2026-10-18T00:00:00Z" }],
+    metrics: [{ label: "Clicks", unit: "count", value: 0, source: "GSC", observedAt: "2026-10-18T00:00:00Z" }],
   }), true);
 });
 
@@ -58,4 +59,25 @@ test("unknown or stale provider evidence cannot certify operational readiness", 
 test("missing or malformed metric provenance fails closed", () => {
   assert.equal(validateCustomerSiteCapability({ ...base, metrics: [{ label: "Clicks", unit: "count", value: null, source: "GSC", observedAt: null }] }), false);
   assert.equal(validateCustomerSiteCapability({ ...base, metrics: [{ label: "Clicks", unit: "count", value: 2, source: "GSC", observedAt: "not a time" }] }), false);
+});
+
+test("frontend rejects metrics without a matching available evidence source", () => {
+  const metric = { label: "Clicks", value: 10, unit: "count", source: "GSC", observedAt: "2026-10-18T12:00:00Z" };
+  for (const sources of [
+    [],
+    [{ name: "Other", status: "available", observedAt: "2026-10-18T13:00:00Z" }],
+    [{ name: "GSC", status: "stale", observedAt: "2026-10-18T13:00:00Z" }],
+    [{ name: "GSC", status: "available", observedAt: "2026-10-18T11:00:00Z" }],
+  ]) {
+    assert.equal(validateCustomerSiteCapability({ ...base, sources, metrics: [metric] }), false);
+  }
+  assert.equal(validateCustomerSiteCapability({
+    ...base,
+    sources: [{ name: "GSC", status: "available", observedAt: "2026-10-18T13:00:00Z" }],
+    metrics: [metric],
+  }), true);
+});
+
+test("site identity must have a nonempty name", () => {
+  assert.equal(validateCustomerSiteCapability({ ...base, site: { ...base.site, name: "" } }), false);
 });
