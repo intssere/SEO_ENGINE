@@ -10,10 +10,12 @@ test("customer homepage does not import operator dashboard endpoints or show ope
   assert.doesNotMatch(source, /useGetDashboard|api-client-react|data\.siteName|data\.domain/);
   assert.match(source, /membership authorization and verified evidence/);
   assert.match(source, /No metrics are inferred from the operator dashboard/);
+  assert.match(source, /buildCustomerHomeView/);
 });
 
 test("read-only preview has an explicit unverified status and setup path", () => {
-  assert.match(source, /Verification pending/);
+  assert.match(source, /buildCustomerHomeView\(null\)/);
+  assert.match(source, /view\.heading/);
   assert.match(source, /Customer data is not yet enabled/);
   assert.match(source, /href="\/onboarding"/);
   assert.match(source, /Status unverified/);
