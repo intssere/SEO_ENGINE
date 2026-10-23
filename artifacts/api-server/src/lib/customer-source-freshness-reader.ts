@@ -24,7 +24,10 @@ export function createCustomerSourceFreshnessReader(sql: SourceFreshnessQuery) {
       ORDER BY e.source
       LIMIT 100
     `;
-    if (rows.some(row => row.site_id !== scope.siteId || !row.source.trim())) return null;
+    if (!Array.isArray(rows) || rows.length > 100 || rows.some(row =>
+      !row || row.site_id !== scope.siteId || typeof row.source !== "string" ||
+      !row.source.trim() || !(row.observed_at instanceof Date) && typeof row.observed_at !== "string") ||
+      new Set(rows.map(row => row.source)).size !== rows.length) return null;
     return rows.map(row => {
       const observedAt = row.observed_at instanceof Date ? row.observed_at.toISOString() : row.observed_at;
       const at = Date.parse(observedAt);
