@@ -121,6 +121,45 @@ test("proxy failures during shape verification stay closed", () => {
   assert.ok(result.findings.includes("packet_must_be_plain_record"));
 });
 
+test("Proxy get traps cannot substitute claims after descriptor validation", () => {
+  let gets = 0;
+  const input = new Proxy({ ...sourceFixture }, {
+    get(_target, _key) {
+      gets += 1;
+      throw new Error("input property read must never occur");
+    },
+  });
+  const result = reviewGscStage0StaticContract(input);
+  assert.equal(gets, 0);
+  assert.equal(result.structurallyConformant, true);
+  assert.equal(result.runtimeBindingAuthorized, false);
+  assert.equal(result.consentAuthorized, false);
+});
+
+test("readonly scope tuple uses descriptors, not Proxy element getters", () => {
+  let reads = 0;
+  const readonlyScope = new Proxy([GSC_READONLY_SCOPE], {
+    get() {
+      reads += 1;
+      throw new Error("scope get trap must never run");
+    },
+  });
+  const result = reviewGscStage0StaticContract({ ...sourceFixture, requestedScopes: readonlyScope });
+  assert.equal(reads, 0);
+  assert.equal(result.structurallyConformant, true);
+  assert.equal(result.providerReadAuthorized, false);
+  assert.equal(result.credentialWriteAuthorized, false);
+});
+
+test("scope tuple with extra own element or symbol is rejected", () => {
+  const extraKey = [GSC_READONLY_SCOPE] as string[] & { unexpected?: string };
+  extraKey.unexpected = "synthetic";
+  checkBlocked({ requestedScopes: extraKey }, "scope_must_be_exactly_gsc_readonly");
+  const hidden = [GSC_READONLY_SCOPE];
+  Object.defineProperty(hidden, Symbol("synthetic"), { value: "extra" });
+  checkBlocked({ requestedScopes: hidden }, "scope_must_be_exactly_gsc_readonly");
+});
+
 test("reject missing or stale structural identity", () => {
   checkBlocked({ version: "obsolete" }, "version_mismatch");
   checkBlocked({ environment: "production" }, "environment_mismatch");

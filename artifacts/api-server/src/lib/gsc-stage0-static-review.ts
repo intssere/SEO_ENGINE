@@ -100,26 +100,44 @@ function isUnverifiedHttpsOrigin(value: unknown): value is string {
   }
 }
 
+function isExactReadonlyScopeTuple(value: unknown): boolean {
+  try {
+    if (!Array.isArray(value)) return false;
+    const keys = Reflect.ownKeys(value);
+    if (keys.length !== 2 || !keys.includes("0") || !keys.includes("length")) return false;
+    const length = Object.getOwnPropertyDescriptor(value, "length");
+    const first = Object.getOwnPropertyDescriptor(value, "0");
+    return length !== undefined && "value" in length && length.value === 1
+      && first !== undefined && "value" in first && first.value === GSC_READONLY_SCOPE;
+  } catch {
+    return false;
+  }
+}
+
 export function reviewGscStage0StaticContract(input: unknown): GscStage0StaticReview {
   const findings: string[] = [];
   if (!isPlainRecord(input)) {
     findings.push("packet_must_be_plain_record");
   } else {
-    // Require explicitly provided, enumerable own data fields. Inspect
-    // descriptors before reading values so caller getters cannot run.
+    // Snapshot own data DESCRIPTORS instead of reading the caller's object.
+    // A Proxy can forge a data descriptor but return unrelated values from a
+    // get trap; no access to input[key] is permitted after this point.
+    const values: Record<string, unknown> = Object.create(null);
     try {
       const keys = Reflect.ownKeys(input);
       if (keys.some((key) => typeof key !== "string" || !ALLOWED_KEYS.has(key))) {
         findings.push("unexpected_packet_field");
       }
-      if ([...ALLOWED_KEYS].some((key) => !Object.prototype.hasOwnProperty.call(input, key))) {
+      if ([...ALLOWED_KEYS].some((key) => !keys.includes(key))) {
         findings.push("required_packet_field_missing");
       }
-      if (keys.some((key) => {
+      for (const key of keys) {
         const descriptor = Object.getOwnPropertyDescriptor(input, key);
-        return !descriptor || !descriptor.enumerable || !("value" in descriptor);
-      })) {
-        findings.push("packet_requires_enumerable_data_fields");
+        if (!descriptor || !descriptor.enumerable || !("value" in descriptor)) {
+          findings.push("packet_requires_enumerable_data_fields");
+        } else if (typeof key === "string" && ALLOWED_KEYS.has(key)) {
+          values[key] = descriptor.value;
+        }
       }
     } catch {
       findings.push("packet_introspection_failed");
@@ -137,31 +155,30 @@ export function reviewGscStage0StaticContract(input: unknown): GscStage0StaticRe
         runtimeBindingAuthorized: false,
       };
     }
-    if (input.version !== GSC_S0_PACKET_VERSION) findings.push("version_mismatch");
-    if (input.environment !== "production_candidate") findings.push("environment_mismatch");
-    if (input.siteId !== GSC_S0_HISTORICAL_SITE_ID) findings.push("historical_site_id_mismatch");
-    if (input.canonicalOrigin !== GSC_S0_CANONICAL_ORIGIN) findings.push("canonical_origin_mismatch");
-    if (input.targetProperty !== GSC_S0_TARGET_PROPERTY) findings.push("target_property_mismatch");
-    if (input.profile !== GSC_READONLY_PROFILE) findings.push("profile_mismatch");
-    if (input.externalAccountId !== GSC_READONLY_EXTERNAL_ACCOUNT_ID) findings.push("external_account_mismatch");
-    const scopes = input.requestedScopes;
-    if (!Array.isArray(scopes) || scopes.length !== 1 || scopes[0] !== GSC_READONLY_SCOPE) {
+    if (values.version !== GSC_S0_PACKET_VERSION) findings.push("version_mismatch");
+    if (values.environment !== "production_candidate") findings.push("environment_mismatch");
+    if (values.siteId !== GSC_S0_HISTORICAL_SITE_ID) findings.push("historical_site_id_mismatch");
+    if (values.canonicalOrigin !== GSC_S0_CANONICAL_ORIGIN) findings.push("canonical_origin_mismatch");
+    if (values.targetProperty !== GSC_S0_TARGET_PROPERTY) findings.push("target_property_mismatch");
+    if (values.profile !== GSC_READONLY_PROFILE) findings.push("profile_mismatch");
+    if (values.externalAccountId !== GSC_READONLY_EXTERNAL_ACCOUNT_ID) findings.push("external_account_mismatch");
+    if (!isExactReadonlyScopeTuple(values.requestedScopes)) {
       findings.push("scope_must_be_exactly_gsc_readonly");
     }
-    if (input.includeGrantedScopes !== false) findings.push("incremental_scope_grants_forbidden");
-    if (input.pkce !== "S256") findings.push("pkce_s256_required");
-    if (input.stateRequired !== true) findings.push("state_required");
-    if (input.clientIdConfigKey !== "GSC_OAUTH_CLIENT_ID") findings.push("dedicated_client_id_slot_required");
-    if (input.clientSecretConfigKey !== "GSC_OAUTH_CLIENT_SECRET") findings.push("dedicated_client_secret_slot_required");
-    if (!isUnverifiedHttpsOrigin(input.appOrigin)) {
+    if (values.includeGrantedScopes !== false) findings.push("incremental_scope_grants_forbidden");
+    if (values.pkce !== "S256") findings.push("pkce_s256_required");
+    if (values.stateRequired !== true) findings.push("state_required");
+    if (values.clientIdConfigKey !== "GSC_OAUTH_CLIENT_ID") findings.push("dedicated_client_id_slot_required");
+    if (values.clientSecretConfigKey !== "GSC_OAUTH_CLIENT_SECRET") findings.push("dedicated_client_secret_slot_required");
+    if (!isUnverifiedHttpsOrigin(values.appOrigin)) {
       findings.push("app_origin_must_be_single_https_origin");
     }
-    if (input.appOrigin !== GSC_S0_CANDIDATE_APP_ORIGIN) {
+    if (values.appOrigin !== GSC_S0_CANDIDATE_APP_ORIGIN) {
       findings.push("operator_reported_origin_candidate_mismatch");
     }
     if (
-      !isUnverifiedHttpsOrigin(input.appOrigin)
-      || input.redirectUri !== input.appOrigin + GSC_S0_CALLBACK_PATH
+      !isUnverifiedHttpsOrigin(values.appOrigin)
+      || values.redirectUri !== values.appOrigin + GSC_S0_CALLBACK_PATH
     ) {
       findings.push("exact_callback_redirect_required");
     }
