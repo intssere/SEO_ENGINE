@@ -32,6 +32,16 @@ export async function verifyStoredCustomerAttestation(input: {
       !Number.isFinite(Date.parse(proof.observedAt))) {
     return { ok: false as const, reason: "attestation_proof_unverified" as const };
   }
+  // Proof must exist before certification and be recent enough at the time
+  // the attestation was issued. Otherwise stale or future-created evidence
+  // could retroactively certify completion.
+  const proofAt = Date.parse(proof.observedAt);
+  const attestedAt = Date.parse(a.verifiedAt);
+  if (!Number.isFinite(attestedAt) || !Number.isFinite(proofAt) ||
+      !Number.isFinite(input.maxAgeMs) || input.maxAgeMs <= 0 ||
+      proofAt > attestedAt || attestedAt - proofAt > input.maxAgeMs) {
+    return { ok: false as const, reason: "attestation_proof_temporal_invalid" as const };
+  }
   return verifyReadinessAttestation({
     scope: input.scope,
     attestation: a,
