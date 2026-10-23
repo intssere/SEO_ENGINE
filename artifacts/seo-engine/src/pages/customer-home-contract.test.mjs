@@ -16,5 +16,7 @@ test("read-only preview has an explicit unverified status and setup path", () =>
   assert.match(source, /Verification pending/);
   assert.match(source, /Customer data is not yet enabled/);
   assert.match(source, /href="\/onboarding"/);
-  assert.match(source, /href="\/connections"/);
+  assert.match(source, /Status unverified/);
+  assert.doesNotMatch(source, /href="\/(connections|technical-seo|opportunities|performance|)"/);
+  assert.doesNotMatch(source, /Not yet connected/);
 });
