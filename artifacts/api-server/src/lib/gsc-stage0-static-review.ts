@@ -75,8 +75,12 @@ export type GscStage0StaticReview = {
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
-  const proto = Object.getPrototypeOf(value);
-  return proto === Object.prototype || proto === null;
+  try {
+    const proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+  } catch {
+    return false;
+  }
 }
 
 function isUnverifiedHttpsOrigin(value: unknown): value is string {
@@ -101,10 +105,37 @@ export function reviewGscStage0StaticContract(input: unknown): GscStage0StaticRe
   if (!isPlainRecord(input)) {
     findings.push("packet_must_be_plain_record");
   } else {
-    // Disallow secrets, access tokens, opaque authorizations or arbitrary extra
-    // fields from masquerading as a sanitized, public shape.
-    if (Object.keys(input).some((key) => !ALLOWED_KEYS.has(key))) {
-      findings.push("unexpected_packet_field");
+    // Require explicitly provided, enumerable own data fields. Inspect
+    // descriptors before reading values so caller getters cannot run.
+    try {
+      const keys = Reflect.ownKeys(input);
+      if (keys.some((key) => typeof key !== "string" || !ALLOWED_KEYS.has(key))) {
+        findings.push("unexpected_packet_field");
+      }
+      if ([...ALLOWED_KEYS].some((key) => !Object.prototype.hasOwnProperty.call(input, key))) {
+        findings.push("required_packet_field_missing");
+      }
+      if (keys.some((key) => {
+        const descriptor = Object.getOwnPropertyDescriptor(input, key);
+        return !descriptor || !descriptor.enumerable || !("value" in descriptor);
+      })) {
+        findings.push("packet_requires_enumerable_data_fields");
+      }
+    } catch {
+      findings.push("packet_introspection_failed");
+    }
+    if (findings.length > 0) {
+      return {
+        kind: "structural_review_only",
+        structurallyConformant: false,
+        findings,
+        consentAuthorized: false,
+        tokenExchangeAuthorized: false,
+        providerReadAuthorized: false,
+        credentialWriteAuthorized: false,
+        evidenceWriteAuthorized: false,
+        runtimeBindingAuthorized: false,
+      };
     }
     if (input.version !== GSC_S0_PACKET_VERSION) findings.push("version_mismatch");
     if (input.environment !== "production_candidate") findings.push("environment_mismatch");

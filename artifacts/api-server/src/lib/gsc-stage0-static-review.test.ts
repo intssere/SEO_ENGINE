@@ -76,6 +76,51 @@ test("reject unexpected fields including inline credentials and fake authorizati
   checkBlocked({ databaseGrant: { issuedBy: "fake" } }, "unexpected_packet_field");
 });
 
+test("missing own keys are denied before structural validation", () => {
+  const missing = { ...sourceFixture } as Record<string, unknown>;
+  delete missing.profile;
+  const result = reviewGscStage0StaticContract(missing);
+  assert.equal(result.structurallyConformant, false);
+  assert.ok(result.findings.includes("required_packet_field_missing"));
+  assert.equal(result.consentAuthorized, false);
+});
+
+test("non-enumerable and symbol keys cannot conceal claims", () => {
+  const hidden = { ...sourceFixture };
+  Object.defineProperty(hidden, "clientSecret", { value: "synthetic", enumerable: false });
+  const hiddenResult = reviewGscStage0StaticContract(hidden);
+  assert.ok(hiddenResult.findings.includes("unexpected_packet_field"));
+  assert.ok(hiddenResult.findings.includes("packet_requires_enumerable_data_fields"));
+
+  const symbol = Symbol("authorization");
+  const symbolResult = reviewGscStage0StaticContract({ ...sourceFixture, [symbol]: "synthetic" });
+  assert.ok(symbolResult.findings.includes("unexpected_packet_field"));
+  assert.equal(symbolResult.structurallyConformant, false);
+});
+
+test("untrusted packet accessors are denied without executing their getters", () => {
+  let calls = 0;
+  const packet = { ...sourceFixture };
+  Object.defineProperty(packet, "profile", {
+    enumerable: true,
+    get() { calls += 1; throw new Error("forbidden getter"); },
+  });
+  const result = reviewGscStage0StaticContract(packet);
+  assert.equal(calls, 0);
+  assert.ok(result.findings.includes("packet_requires_enumerable_data_fields"));
+  assert.equal(result.structurallyConformant, false);
+  assert.equal(result.runtimeBindingAuthorized, false);
+});
+
+test("proxy failures during shape verification stay closed", () => {
+  const proxy = new Proxy({ ...sourceFixture }, {
+    getPrototypeOf() { throw new Error("malformed proxy"); },
+  });
+  const result = reviewGscStage0StaticContract(proxy);
+  assert.equal(result.structurallyConformant, false);
+  assert.ok(result.findings.includes("packet_must_be_plain_record"));
+});
+
 test("reject missing or stale structural identity", () => {
   checkBlocked({ version: "obsolete" }, "version_mismatch");
   checkBlocked({ environment: "production" }, "environment_mismatch");
