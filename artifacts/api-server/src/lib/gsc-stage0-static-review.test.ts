@@ -160,6 +160,16 @@ test("scope tuple with extra own element or symbol is rejected", () => {
   checkBlocked({ requestedScopes: hidden }, "scope_must_be_exactly_gsc_readonly");
 });
 
+test("revoked Proxy input never throws or yields a conformant result", () => {
+  const { proxy, revoke } = Proxy.revocable({ ...sourceFixture }, {});
+  revoke();
+  const result = reviewGscStage0StaticContract(proxy);
+  assert.equal(result.structurallyConformant, false);
+  assert.ok(result.findings.includes("packet_must_be_plain_record"));
+  assert.equal(result.runtimeBindingAuthorized, false);
+  assert.equal(result.consentAuthorized, false);
+});
+
 test("reject missing or stale structural identity", () => {
   checkBlocked({ version: "obsolete" }, "version_mismatch");
   checkBlocked({ environment: "production" }, "environment_mismatch");
