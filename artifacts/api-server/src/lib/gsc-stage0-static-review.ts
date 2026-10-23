@@ -13,6 +13,8 @@ import {
 export const GSC_S0_PACKET_VERSION = "pilot-01-gsc02-s0-static-review-v1";
 export const GSC_S0_CANONICAL_ORIGIN = "https://diamondshelf.us";
 export const GSC_S0_TARGET_PROPERTY = "sc-domain:diamondshelf.us";
+// Operator-reported Railway deployment candidate; NOT independently attested.
+export const GSC_S0_CANDIDATE_APP_ORIGIN = "https://seo-engine-shadow-production.up.railway.app";
 // Historical identifier from committed pilot documents, NOT current DB proof.
 export const GSC_S0_HISTORICAL_SITE_ID = "eb1da9ee-539c-4200-8f04-f64ccaea7768";
 export const GSC_S0_CALLBACK_PATH = "/api/connections/google/callback";
@@ -122,6 +124,9 @@ export function reviewGscStage0StaticContract(input: unknown): GscStage0StaticRe
     if (input.clientSecretConfigKey !== "GSC_OAUTH_CLIENT_SECRET") findings.push("dedicated_client_secret_slot_required");
     if (!isUnverifiedHttpsOrigin(input.appOrigin)) {
       findings.push("app_origin_must_be_single_https_origin");
+    }
+    if (input.appOrigin !== GSC_S0_CANDIDATE_APP_ORIGIN) {
+      findings.push("operator_reported_origin_candidate_mismatch");
     }
     if (
       !isUnverifiedHttpsOrigin(input.appOrigin)

@@ -3,6 +3,7 @@ import test from "node:test";
 import { GSC_READONLY_EXTERNAL_ACCOUNT_ID, GSC_READONLY_PROFILE, GSC_READONLY_SCOPE } from "@seo-engine/oauth-connection-manager/gsc-readonly";
 import {
   GSC_S0_CANONICAL_ORIGIN,
+  GSC_S0_CANDIDATE_APP_ORIGIN,
   GSC_S0_HISTORICAL_SITE_ID,
   GSC_S0_PACKET_VERSION,
   GSC_S0_TARGET_PROPERTY,
@@ -24,8 +25,8 @@ const sourceFixture: GscStage0StaticPacket = {
   stateRequired: true,
   clientIdConfigKey: "GSC_OAUTH_CLIENT_ID",
   clientSecretConfigKey: "GSC_OAUTH_CLIENT_SECRET",
-  appOrigin: "https://app.example.test",
-  redirectUri: "https://app.example.test/api/connections/google/callback",
+  appOrigin: GSC_S0_CANDIDATE_APP_ORIGIN,
+  redirectUri: GSC_S0_CANDIDATE_APP_ORIGIN + "/api/connections/google/callback",
 };
 
 function checkBlocked(patch: Record<string, unknown>, expected: string) {
@@ -111,13 +112,14 @@ test("reject unsafe or non-exact redirect values without attempting network IO",
   checkBlocked({ appOrigin: "https://127.0.0.1" }, "app_origin_must_be_single_https_origin");
   checkBlocked({ appOrigin: "https://evil@app.example.test" }, "app_origin_must_be_single_https_origin");
   checkBlocked({ appOrigin: "https://app.example.test/" }, "app_origin_must_be_single_https_origin");
+  checkBlocked({ appOrigin: "https://app.example.test" }, "operator_reported_origin_candidate_mismatch");
   checkBlocked({ redirectUri: "https://app.example.test/api/connections/google/callback?next=/foo" }, "exact_callback_redirect_required");
   checkBlocked({ redirectUri: "https://wrong.example/api/connections/google/callback" }, "exact_callback_redirect_required");
   checkBlocked({ redirectUri: "https://app.example.test/api/connections/google/gsc/callback" }, "exact_callback_redirect_required");
 });
 
 test("operator-provided source packet cannot certify live runtime readiness", () => {
-  const result = reviewGscStage0StaticContract({ ...sourceFixture, appOrigin: "https://seo-engine-shadow-production.up.railway.app", redirectUri: "https://seo-engine-shadow-production.up.railway.app/api/connections/google/callback" });
+  const result = reviewGscStage0StaticContract(sourceFixture);
   assert.equal(result.structurallyConformant, true);
   assert.equal(result.kind, "structural_review_only");
   assert.equal(result.runtimeBindingAuthorized, false);
