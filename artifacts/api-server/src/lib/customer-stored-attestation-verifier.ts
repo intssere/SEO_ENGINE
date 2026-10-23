@@ -22,6 +22,16 @@ export async function verifyStoredCustomerAttestation(input: {
       !a.evidenceId.trim() || !a.authority.trim() || !input.trustedAuthorities.includes(a.authority)) {
     return { ok: false as const, reason: "attestation_precheck_failed" as const };
   }
+  // Reject invalid or expired attestations before accessing canonical evidence.
+  // This avoids unnecessary proof reads for records that cannot certify readiness.
+  const verifiedAt = Date.parse(a.verifiedAt);
+  const nowAt = input.now.getTime();
+  if (!Number.isFinite(verifiedAt) || !Number.isFinite(nowAt) ||
+      !Number.isFinite(input.maxAgeMs) || input.maxAgeMs <= 0 ||
+      verifiedAt > nowAt || nowAt - verifiedAt > input.maxAgeMs ||
+      typeof a.complete !== "boolean") {
+    return { ok: false as const, reason: "attestation_precheck_failed" as const };
+  }
   let proof: Awaited<ReturnType<ScopedProofReader>>;
   try {
     proof = await input.readProof(input.scope, a.evidenceId);
