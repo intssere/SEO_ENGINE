@@ -27,7 +27,7 @@ export function validateCustomerSiteCapability(value: CustomerSiteCapability): b
   if (!["no_site", "setup_required", "analysis_pending", "site_operational", "site_degraded"].includes(value.state)) return false;
   if (!value.reason.trim()) return false;
   if (value.state === "no_site") return !value.authorized && value.site === null && value.metrics.length === 0 && value.sources.length === 0;
-  if (!value.authorized || !value.site?.id.trim() || !value.site.domain.trim()) return false;
+  if (!value.authorized || !value.site?.id.trim() || !value.site.name.trim() || !value.site.domain.trim()) return false;
   if (!value.sources.every(source =>
     !!source.name.trim() &&
     ["available", "unavailable", "stale", "unknown"].includes(source.status) &&
@@ -39,6 +39,9 @@ export function validateCustomerSiteCapability(value: CustomerSiteCapability): b
     (metric.value === null
       ? metric.source === null && metric.observedAt === null
       : Number.isFinite(metric.value) && !!metric.source?.trim() &&
-        !!metric.observedAt && Number.isFinite(Date.parse(metric.observedAt)))
+        !!metric.observedAt && Number.isFinite(Date.parse(metric.observedAt)) &&
+        value.sources.some(source => source.name === metric.source &&
+          source.status === "available" && !!source.observedAt &&
+          Date.parse(source.observedAt) >= Date.parse(metric.observedAt)))
   );
 }
