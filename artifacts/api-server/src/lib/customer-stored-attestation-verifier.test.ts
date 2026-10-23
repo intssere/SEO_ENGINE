@@ -60,3 +60,25 @@ test("stale proof cannot retrospectively certify a fresh attestation", async () 
   });
   assert.deepEqual(result, { ok: false, reason: "attestation_proof_temporal_invalid" });
 });
+
+test("expired or future attestations never trigger a proof database read", async () => {
+  for (const verifiedAt of ["2026-10-17T00:00:00Z", "2026-10-20T00:00:00Z", "not-a-timestamp"]) {
+    let reads = 0;
+    const result = await verifyStoredCustomerAttestation({
+      ...base, attestation: { ...attestation, verifiedAt },
+      readProof: async () => { reads++; throw Error("proof must not be fetched"); },
+    });
+    assert.deepEqual(result, { ok: false, reason: "attestation_freshness_invalid" });
+    assert.equal(reads, 0);
+  }
+});
+
+test("invalid completion flag never triggers a proof read", async () => {
+  let reads = 0;
+  const result = await verifyStoredCustomerAttestation({
+    ...base, attestation: { ...attestation, complete: "true" as unknown as boolean },
+    readProof: async () => { reads++; return null; },
+  });
+  assert.deepEqual(result, { ok: false, reason: "attestation_completion_invalid" });
+  assert.equal(reads, 0);
+});
