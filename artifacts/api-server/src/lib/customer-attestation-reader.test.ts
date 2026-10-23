@@ -35,3 +35,10 @@ test("missing site scope cannot query attestation persistence", async () => {
   assert.equal(await read({ ...scope, siteId: "" }, "setup"), null);
   assert.equal(queries, 0);
 });
+
+test("unsupported attestation kinds cannot query persistence even at runtime", async () => {
+  let queries = 0;
+  const read = createCustomerAttestationReader(async () => { queries++; return [row]; });
+  assert.equal(await read(scope, "other" as "setup"), null);
+  assert.equal(queries, 0);
+});
