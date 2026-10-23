@@ -28,6 +28,7 @@ import {
   classifyGoogleOAuthState,
   asGscReadonlyState,
   isGscReadonlyOAuthRuntimeEnabled,
+  isLegacyGoogleOAuthConsentEnabled,
   GOOGLE_STATE_COOKIE,
   SHOPIFY_STATE_COOKIE,
   origin,
@@ -35,6 +36,9 @@ import {
 
 const router: IRouter = Router();
 const blocked = () => process.env.PUBLIC_SITE_WRITES_ENABLED?.trim().toLowerCase() === "true";
+// Task #75's isolated callback transport is deliberately not wired. This source-level
+// capability must not be inferred from an operator-provided environment flag.
+const gscReadonlyLiveTransportBound = false;
 const shopPattern = /^[a-z0-9][a-z0-9-]*\.myshopify\.com$/;
 const oauthCookieOptions = {
   httpOnly: true,
@@ -119,7 +123,7 @@ router.get("/connections/status", async (_req, res) => {
         supported: true,
         profile: GSC_READONLY_PROFILE,
         enabled: isGscReadonlyOAuthRuntimeEnabled(),
-        liveTransportBound: false,
+        liveTransportBound: gscReadonlyLiveTransportBound,
         providerWrites: false,
         publicSiteWrites: false,
       },
@@ -159,6 +163,7 @@ router.get("/connections/shopify/task53-write/start", (req, res) => {
 router.get("/connections/google/gsc-readonly/start", (_req, res) => {
   try {
     if (blocked()) throw new Error("gsc_oauth_requires_public_writes_disabled");
+    if (!gscReadonlyLiveTransportBound) throw new Error("gsc_oauth_live_transport_unbound");
     const { state, url } = startGscReadonlyUrl();
     res.cookie(GOOGLE_STATE_COOKIE, seal(state), oauthCookieOptions);
     return res.redirect(url);
@@ -170,6 +175,9 @@ router.get("/connections/google/gsc-readonly/start", (_req, res) => {
 router.get("/connections/google/start", (_req, res) => {
   try {
     if (blocked()) throw new Error();
+    // Explicit, default-off compatibility exception only. Never infer permission
+    // from a stored legacy credential or the frontend.
+    if (!isLegacyGoogleOAuthConsentEnabled()) throw new Error("legacy_google_oauth_consent_disabled");
     const { state, url } = startUrl("google");
     res.cookie(GOOGLE_STATE_COOKIE, seal(state), oauthCookieOptions);
     return res.redirect(url);
@@ -237,6 +245,8 @@ router.get("/connections/google/callback", async (req, res) => {
 
     stage = "state_validation";
     assertOAuthState(state, String(req.query.state ?? ""), "google");
+    // Existing sealed legacy-state cookies cannot bypass the default-off consent gate.
+    if (!isLegacyGoogleOAuthConsentEnabled()) throw new Error("legacy_google_oauth_consent_disabled");
 
     stage = "token_exchange";
     const config = {

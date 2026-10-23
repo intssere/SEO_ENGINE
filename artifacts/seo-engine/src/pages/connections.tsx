@@ -7,6 +7,7 @@ import { useSearch } from "wouter";
 type ConnectionsStatus = {
   readOnly?: boolean;
   shopify: { connected: boolean; domain?: string };
+  gscReadonlyRuntime?: { enabled?: boolean; liveTransportBound?: boolean };
   google: {
     connected: boolean;
     authorized?: boolean;
@@ -53,6 +54,25 @@ const errorMessages: Record<string, string> = {
   google_selection: "The selected Google properties could not be saved. Please authorize again.",
 };
 
+// Shared styling tokens preserve the existing Connections UI while keeping the
+// immutable P11.1 frontend JavaScript performance budget below its hard limit.
+const googleConsentActionClass = "inline-block w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]";
+const googlePropertySelectClass = "mt-1 w-full border border-[#dce2eb] rounded-md px-3 py-2 text-sm bg-white";
+const secondaryCaptionClass = "text-xs text-[#647087]";
+const sectionBorderClass = "mt-4 pt-4 border-t border-[#e5e9f0]";
+const connectedPanelClass = "bg-[#f8fafc] p-4 rounded-md border border-[#e5e9f0]";
+const strongHeadingClass = "font-bold text-[#172033]";
+const smallLabelClass = "block text-xs font-semibold text-[#455168]";
+const warningTextClass = "text-xs text-[var(--status-warning-fg)]";
+const definitionRowClass = "flex justify-between gap-4";
+const cardTitleRowClass = "flex items-center justify-between mb-6";
+const loadingStatusClass = "flex justify-center p-6 text-[#647087]";
+const loadingSpinnerClass = "w-5 h-5 animate-spin text-[#3c82f6]";
+const descriptionClass = "text-sm text-[#455168] mb-4";
+const strongValueClass = "font-semibold text-right";
+const brandTitleRowClass = "flex items-center gap-3";
+const smallIconClass = "w-4 h-4";
+
 function discoveryLabel(status?: DiscoveryStatus | null) {
   if (!status) return "Not checked";
   if (status.ok) return "Available";
@@ -96,6 +116,7 @@ export default function ConnectionsPage() {
   }, []);
 
   const oauthDisabled = status?.readOnly === false;
+  const gscConsentReady = status?.gscReadonlyRuntime?.enabled === true && status?.gscReadonlyRuntime?.liveTransportBound === true && !oauthDisabled;
   const task53WriteConnected = task53Capability?.connected === true
     && task53Capability.writeProductsScopePresent === true
     && task53Capability.credentialAvailable === true;
@@ -123,26 +144,26 @@ export default function ConnectionsPage() {
 
         {successMessage && (
           <div role="status" aria-live="polite" className="mb-6 p-4 bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-[var(--status-success-fg)] rounded-md text-sm font-medium flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+            <CheckCircle2 className={smallIconClass} aria-hidden="true" />
             {successMessage}
           </div>
         )}
 
         {errorMessage && (
           <div role="alert" className="mb-6 p-4 bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-[var(--status-danger-fg)] rounded-md text-sm font-medium flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" aria-hidden="true" />
+            <AlertCircle className={smallIconClass} aria-hidden="true" />
             {errorMessage}
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <section className="card">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
+            <div className={cardTitleRowClass}>
+              <div className={brandTitleRowClass}>
                 <div className="w-10 h-10 bg-[#95bf47] rounded-md flex items-center justify-center text-white font-bold text-xl">S</div>
                 <div>
-                  <h3 className="font-bold text-[#172033]">Shopify</h3>
-                  <p className="text-xs text-[#647087]">Storefront & Products</p>
+                  <h3 className={strongHeadingClass}>Shopify</h3>
+                  <p className={secondaryCaptionClass}>Storefront & Products</p>
                 </div>
               </div>
               <StatusBadge tone={connectionTone(status?.shopify.connected === true)}>
@@ -151,18 +172,18 @@ export default function ConnectionsPage() {
             </div>
 
             {loading ? (
-              <div className="flex justify-center p-6 text-[#647087]" role="status" aria-live="polite">
-                <Loader2 className="w-5 h-5 animate-spin text-[#3c82f6]" aria-hidden="true" />
+              <div className={loadingStatusClass} role="status" aria-live="polite">
+                <Loader2 className={loadingSpinnerClass} aria-hidden="true" />
                 <span className="sr-only">Loading Shopify connection status</span>
               </div>
             ) : status?.shopify.connected ? (
-              <div className="bg-[#f8fafc] p-4 rounded-md border border-[#e5e9f0]">
+              <div className={connectedPanelClass}>
                 <p className="text-sm text-[#455168] mb-1">Authenticated store:</p>
-                <p className="font-bold text-[#172033]">{status.shopify.domain}</p>
-                <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
-                  <p className="text-xs text-[#647087]">Read-only access granted. Engine cannot modify your live theme without explicit deployment.</p>
+                <p className={strongHeadingClass}>{status.shopify.domain}</p>
+                <div className={sectionBorderClass}>
+                  <p className={secondaryCaptionClass}>Read-only access granted. Engine cannot modify your live theme without explicit deployment.</p>
                 </div>
-                <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
+                <div className={sectionBorderClass}>
                   <p className="text-xs font-semibold text-[#455168] mb-2">Task #53 isolated write credential</p>
                   {task53WriteConnected ? (
                     <div className="text-xs text-[var(--status-success-fg)] flex items-start gap-2">
@@ -173,7 +194,7 @@ export default function ConnectionsPage() {
                     <form action="/api/connections/shopify/task53-write/start" method="POST" className="space-y-3">
                       <input type="hidden" name="shop" value="vcuxm7-76.myshopify.com" />
                       <input type="hidden" name="confirmation" value="AUTHORIZE_SHOPIFY_WRITE_SCOPE:write_products" />
-                      <p className="text-xs text-[#647087]">
+                      <p className={secondaryCaptionClass}>
                         This requests only the isolated <b>write_products</b> credential. It does not authorize Task #53 execute, a Shopify mutation, or a public-site write.
                       </p>
                       <button type="submit" className="w-full bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]">
@@ -181,7 +202,7 @@ export default function ConnectionsPage() {
                       </button>
                     </form>
                   ) : (
-                    <p className="text-xs text-[var(--status-warning-fg)]">
+                    <p className={warningTextClass}>
                       Task #53 write-scope authorization is unavailable unless the approved Diamond Shelf store is connected in read-only mode.
                     </p>
                   )}
@@ -189,7 +210,7 @@ export default function ConnectionsPage() {
               </div>
             ) : (
               <div>
-                <p className="text-sm text-[#455168] mb-4">Enter your `.myshopify.com` domain to begin authorization.</p>
+                <p className={descriptionClass}>Enter your `.myshopify.com` domain to begin authorization.</p>
                 <form action="/api/connections/shopify/start" method="GET" className="flex gap-2">
                   <label htmlFor="shopify-domain" className="sr-only">Shopify store domain</label>
                   <input
@@ -213,12 +234,12 @@ export default function ConnectionsPage() {
           </section>
 
           <section className="card">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
+            <div className={cardTitleRowClass}>
+              <div className={brandTitleRowClass}>
                 <div className="w-10 h-10 bg-[#ea4335] rounded-md flex items-center justify-center text-white font-bold text-xl">G</div>
                 <div>
-                  <h3 className="font-bold text-[#172033]">Google Search Console</h3>
-                  <p className="text-xs text-[#647087]">Search Performance Data</p>
+                  <h3 className={strongHeadingClass}>Google Search Console</h3>
+                  <p className={secondaryCaptionClass}>Search Performance Data</p>
                 </div>
               </div>
               <StatusBadge tone={connectionTone(status?.google.connected === true, status?.google.authorized === true)}>
@@ -227,25 +248,25 @@ export default function ConnectionsPage() {
             </div>
 
             {loading ? (
-              <div className="flex justify-center p-6 text-[#647087]" role="status" aria-live="polite">
-                <Loader2 className="w-5 h-5 animate-spin text-[#3c82f6]" aria-hidden="true" />
+              <div className={loadingStatusClass} role="status" aria-live="polite">
+                <Loader2 className={loadingSpinnerClass} aria-hidden="true" />
                 <span className="sr-only">Loading Google connection status</span>
               </div>
             ) : status?.google.needsConfirmation ? (
               <form action="/api/connections/google/select" method="POST" className="space-y-4">
                 <p className="text-sm text-[#455168]">Confirm the Diamond Shelf properties discovered with read-only access.</p>
-                <label className="block text-xs font-semibold text-[#455168]">
+                <label className={smallLabelClass}>
                   Search Console property
-                  <select name="gscSiteUrl" required className="mt-1 w-full border border-[#dce2eb] rounded-md px-3 py-2 text-sm bg-white">
+                  <select name="gscSiteUrl" required className={googlePropertySelectClass}>
                     <option value="">Select a property</option>
                     {status.google.searchConsoleProperties?.map((item) => item.siteUrl ? (
                       <option key={item.siteUrl} value={item.siteUrl}>{item.siteUrl}</option>
                     ) : null)}
                   </select>
                 </label>
-                <label className="block text-xs font-semibold text-[#455168]">
+                <label className={smallLabelClass}>
                   GA4 property
-                  <select name="ga4PropertyId" required className="mt-1 w-full border border-[#dce2eb] rounded-md px-3 py-2 text-sm bg-white">
+                  <select name="ga4PropertyId" required className={googlePropertySelectClass}>
                     <option value="">Select a property</option>
                     {status.google.ga4Properties?.map((item) => item.propertyId ? (
                       <option key={item.propertyId} value={item.propertyId}>
@@ -259,10 +280,10 @@ export default function ConnectionsPage() {
                 </button>
               </form>
             ) : status?.google.connected ? (
-              <div className="bg-[#f8fafc] p-4 rounded-md border border-[#e5e9f0]">
-                <p className="font-bold text-[#172033]">Google authorization stored securely</p>
-                <div className="mt-4 pt-4 border-t border-[#e5e9f0]">
-                  <p className="text-xs text-[#647087]">Read-only access granted. Engine relies on this for impact verification.</p>
+              <div className={connectedPanelClass}>
+                <p className={strongHeadingClass}>Google authorization stored securely</p>
+                <div className={sectionBorderClass}>
+                  <p className={secondaryCaptionClass}>Read-only access granted. Engine relies on this for impact verification.</p>
                 </div>
               </div>
             ) : status?.google.authorized ? (
@@ -270,45 +291,46 @@ export default function ConnectionsPage() {
                 <div className="bg-[var(--status-warning-bg)] p-4 rounded-md border border-[var(--status-warning-border)]">
                   <p className="font-bold text-[var(--status-warning-fg)]">Authorization needs attention</p>
                   <dl className="mt-3 space-y-2 text-xs text-[#455168]">
-                    <div className="flex justify-between gap-4">
+                    <div className={definitionRowClass}>
                       <dt>Refresh access</dt>
                       <dd className="font-semibold">{status.google.hasRefreshToken ? "Ready" : "Reauthorization required"}</dd>
                     </div>
-                    <div className="flex justify-between gap-4">
+                    <div className={definitionRowClass}>
                       <dt>Search Console discovery</dt>
-                      <dd className="font-semibold text-right">{discoveryLabel(status.google.searchConsoleDiscovery)}</dd>
+                      <dd className={strongValueClass}>{discoveryLabel(status.google.searchConsoleDiscovery)}</dd>
                     </div>
-                    <div className="flex justify-between gap-4">
+                    <div className={definitionRowClass}>
                       <dt>GA4 discovery</dt>
-                      <dd className="font-semibold text-right">{discoveryLabel(status.google.ga4Discovery)}</dd>
+                      <dd className={strongValueClass}>{discoveryLabel(status.google.ga4Discovery)}</dd>
                     </div>
                   </dl>
                 </div>
-                {!oauthDisabled && (
+                {gscConsentReady && (
                   <a
-                    href="/api/connections/google/start"
-                    className="inline-block w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]"
+                    href="/api/connections/google/gsc-readonly/start"
+                    className={googleConsentActionClass}
                   >
                     Reauthorize Google
                   </a>
                 )}
+                {!gscConsentReady && <p role="status" className={warningTextClass}>GSC reauthorization requires certified read-only transport.</p>}
               </div>
             ) : (
               <div>
-                <p className="text-sm text-[#455168] mb-4">Connect your Google account to import Search Console metrics and track verified impact.</p>
-                {oauthDisabled ? (
+                <p className={descriptionClass}>Connect your Google account to import Search Console metrics and track verified impact.</p>
+                {!gscConsentReady ? (
                   <button disabled className="w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm opacity-50 cursor-not-allowed">
                     Authorize Google
                   </button>
                 ) : (
                   <a
-                    href="/api/connections/google/start"
-                    className="inline-block w-full text-center bg-[#172744] text-white px-4 py-2 rounded-md font-medium text-sm transition-colors hover:bg-[#0c1730]"
+                    href="/api/connections/google/gsc-readonly/start"
+                    className={googleConsentActionClass}
                   >
                     Authorize Google
                   </a>
                 )}
-                {oauthDisabled && <p className="text-xs text-[var(--status-warning-fg)] mt-2 text-center">Connecting disabled in current autonomy mode.</p>}
+                {!gscConsentReady && <p role="status" className="text-xs text-[var(--status-warning-fg)] mt-2 text-center">GSC authorization is unavailable until its read-only transport is certified.</p>}
               </div>
             )}
           </section>

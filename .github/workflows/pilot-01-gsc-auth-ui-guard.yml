@@ -1,0 +1,30 @@
+name: PILOT-01 GSC consent UI safety regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "artifacts/api-server/src/lib/oauth.ts"
+      - "artifacts/api-server/src/lib/oauth.test.ts"
+      - "artifacts/api-server/src/lib/gsc-consent-route.test.ts"
+      - "artifacts/api-server/src/routes/connections.ts"
+      - "artifacts/seo-engine/src/pages/connections.tsx"
+      - "artifacts/seo-engine/src/pages/connections-gsc-guard.test.mjs"
+      - ".github/workflows/pilot-01-gsc-auth-ui-guard.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-gsc-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Assert Google consent remains fail closed
+        run: node --test artifacts/seo-engine/src/pages/connections-gsc-guard.test.mjs
