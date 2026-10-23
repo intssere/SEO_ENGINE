@@ -28,9 +28,11 @@ export async function verifyStoredCustomerAttestation(input: {
   const nowAt = input.now.getTime();
   if (!Number.isFinite(verifiedAt) || !Number.isFinite(nowAt) ||
       !Number.isFinite(input.maxAgeMs) || input.maxAgeMs <= 0 ||
-      verifiedAt > nowAt || nowAt - verifiedAt > input.maxAgeMs ||
-      typeof a.complete !== "boolean") {
-    return { ok: false as const, reason: "attestation_precheck_failed" as const };
+      verifiedAt > nowAt || nowAt - verifiedAt > input.maxAgeMs) {
+    return { ok: false as const, reason: "attestation_freshness_invalid" as const };
+  }
+  if (typeof a.complete !== "boolean") {
+    return { ok: false as const, reason: "attestation_completion_invalid" as const };
   }
   let proof: Awaited<ReturnType<ScopedProofReader>>;
   try {
