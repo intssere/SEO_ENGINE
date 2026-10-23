@@ -13,7 +13,8 @@ export type AttestationRowQuery = (
 
 export function createCustomerAttestationReader(sql: AttestationRowQuery) {
   return async (scope: { organizationId: string; siteId: string }, kind: "setup" | "initial_analysis") => {
-    if (!scope.organizationId.trim() || !scope.siteId.trim()) return null;
+    if (!scope.organizationId.trim() || !scope.siteId.trim() ||
+        (kind !== "setup" && kind !== "initial_analysis")) return null;
     const rows = await sql`
       SELECT a.organization_id, a.site_id, a.kind, a.evidence_id,
              a.authority, a.complete, a.verified_at
