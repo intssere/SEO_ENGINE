@@ -26,8 +26,8 @@ test("uses evidence-backed operational state without changing the supplied snaps
 test("incomplete setup, unfinished analysis and unknown sources yield bounded states", () => {
   assert.equal(projectCustomerCapability(scope, { ...evidence, setupComplete: false })?.state, "setup_required");
   assert.equal(projectCustomerCapability(scope, { ...evidence, analysisComplete: false })?.state, "analysis_pending");
-  assert.equal(projectCustomerCapability(scope, { ...evidence, sources: [] })?.state, "site_degraded");
-  assert.equal(projectCustomerCapability(scope, { ...evidence, sources: [{ name: "GSC", status: "unknown" as const, observedAt: null }] })?.state, "site_degraded");
+  assert.equal(projectCustomerCapability(scope, { ...evidence, sources: [], metrics: [] })?.state, "site_degraded");
+  assert.equal(projectCustomerCapability(scope, { ...evidence, sources: [{ name: "Search Console", status: "unknown" as const, observedAt: null }], metrics: [] })?.state, "site_degraded");
 });
 
 test("rejects improperly attributed metrics and malformed source freshness", () => {
