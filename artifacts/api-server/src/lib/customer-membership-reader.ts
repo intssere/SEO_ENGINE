@@ -31,6 +31,16 @@ export function createCustomerGrantReader(sql: MembershipQuery) {
         AND s.is_active = true
       ORDER BY sm.site_id
     `;
+    // Query-scoping alone is insufficient if the persistence adapter returns
+    // malformed or mixed-tenant rows. Reject the entire result, not a subset.
+    if (!Array.isArray(rows) || rows.length > 100 || rows.some(row =>
+      !row || typeof row.organization_id !== "string" ||
+      typeof row.site_id !== "string" || typeof row.principal_subject !== "string" ||
+      !row.organization_id.trim() || !row.site_id.trim() ||
+      row.principal_subject !== subject) ||
+      new Set(rows.map(row => row.site_id)).size !== rows.length) {
+      throw new Error("customer_membership_rows_invalid");
+    }
     return rows.map(row => ({
       organizationId: row.organization_id,
       siteId: row.site_id,
