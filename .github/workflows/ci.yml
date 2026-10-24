@@ -67,6 +67,11 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_customer_membership_cert -v ON_ERROR_STOP=1 -f lib/db/migrations/0015_customer_memberships_candidate.sql
           psql -h 127.0.0.1 -U postgres -d seo_engine_customer_membership_cert -v ON_ERROR_STOP=1 -f artifacts/api-server/src/lib/customer-membership-postgres-cert.sql
 
+      - name: Certify actual UX-CH membership and identity readers in isolated PostgreSQL
+        env:
+          UX_CH_MEMBERSHIP_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_customer_membership_cert
+        run: pnpm --filter @workspace/api-server exec tsx --test src/lib/customer-membership-identity.ephemeral.test.ts
+
       - name: Validate legacy PostgreSQL core schema
         run: |
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
