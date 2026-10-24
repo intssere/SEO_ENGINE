@@ -85,6 +85,10 @@ BEGIN
   SELECT count(*) INTO n FROM sites s
   WHERE s.id=site_a AND s.organization_id=org_a AND s.is_active;
   IF n <> 0 THEN RAISE EXCEPTION 'inactive site identity was available'; END IF;
+  SELECT count(*) INTO n FROM evidence e JOIN sites s ON s.id=e.site_id
+  WHERE s.id=site_a AND s.organization_id=org_a AND s.is_active
+    AND e.source='gsc' AND e.kind='search_observation';
+  IF n <> 0 THEN RAISE EXCEPTION 'inactive site exposed evidence'; END IF;
 
   DELETE FROM customer_organization_memberships WHERE organization_id=org_a;
   SELECT count(*) INTO n FROM customer_site_memberships WHERE site_id=site_a;
