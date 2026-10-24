@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import type { Request, Response } from "express";
 import { createCustomerCapabilityHandler } from "./customer-capabilities.js";
+import { createScopedCustomerCapabilityReader } from "../lib/customer-capability-loader.js";
 
 async function invoke(input: {
   subject?: string;
@@ -174,4 +175,47 @@ test("capability responses strip unrecognized nested provider secrets and intern
   assert.deepEqual(body.site, { id: "site-a", name: "Example", domain: "example.test" });
   assert.deepEqual(body.sources, [{ name: "GSC", status: "available", observedAt: "2026-10-20T12:00:00Z" }]);
   assert.deepEqual(body.metrics, [{ label: "Clicks", value: 2, unit: "clicks", observedAt: "2026-10-20T11:00:00Z", source: "GSC" }]);
+});
+
+test("integrated synthetic membership, projection and HTTP handler preserve tenant scope", async () => {
+  const requested: Array<{ organizationId: string; siteId: string }> = [];
+  const reader = createScopedCustomerCapabilityReader(async scope => {
+    requested.push(scope);
+    return {
+      ...scope, name: "Site A", domain: "example.test",
+      setupComplete: true, analysisComplete: false,
+      sources: [{ name: "GSC", status: "available", observedAt: "2026-10-20T12:00:00Z" }],
+      metrics: [{ label: "Clicks", value: 3, unit: "clicks", source: "GSC", observedAt: "2026-10-20T11:00:00Z" }],
+    };
+  });
+  const grants = async () => [{ principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true }];
+  const authorized = await invoke({
+    subject: "user-a", siteId: "site-a", readGrants: grants, readCapability: reader,
+  });
+  assert.equal(authorized.code, 200);
+  assert.deepEqual(requested, [{ organizationId: "org-a", siteId: "site-a" }]);
+  assert.deepEqual(authorized.body, {
+    state: "analysis_pending", site: { id: "site-a", name: "Site A", domain: "example.test" },
+    authorized: true, reason: "Verified site analysis has not completed",
+    sources: [{ name: "GSC", status: "available", observedAt: "2026-10-20T12:00:00Z" }],
+    metrics: [{ label: "Clicks", value: 3, unit: "clicks", source: "GSC", observedAt: "2026-10-20T11:00:00Z" }],
+  });
+  const denied = await invoke({
+    subject: "user-a", siteId: "site-b", readGrants: grants, readCapability: reader,
+  });
+  assert.deepEqual(denied, { code: 404, body: { error: "site_not_authorized" } });
+  assert.equal(requested.length, 1, "cross-site denial must not read evidence");
+});
+
+test("integrated projection cannot expose tenant-mismatched evidence via HTTP", async () => {
+  const reader = createScopedCustomerCapabilityReader(async scope => ({
+    ...scope, siteId: "site-foreign", name: "Foreign", domain: "foreign.test",
+    setupComplete: true, analysisComplete: true, sources: [], metrics: [],
+  }));
+  const result = await invoke({
+    subject: "user-a", siteId: "site-a",
+    readGrants: async () => [{ principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true }],
+    readCapability: reader,
+  });
+  assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
 });
