@@ -69,6 +69,9 @@ BEGIN
   JOIN sites s ON s.id=sm.site_id AND s.organization_id=sm.organization_id
   WHERE sm.principal_subject='ux-user-a' AND sm.active AND om.active AND s.is_active;
   IF n <> 0 THEN RAISE EXCEPTION 'inactive site was authorized'; END IF;
+  SELECT count(*) INTO n FROM sites s
+  WHERE s.id=site_a AND s.organization_id=org_a AND s.is_active;
+  IF n <> 0 THEN RAISE EXCEPTION 'inactive site identity was available'; END IF;
 
   DELETE FROM customer_organization_memberships WHERE organization_id=org_a;
   SELECT count(*) INTO n FROM customer_site_memberships WHERE site_id=site_a;
