@@ -7,7 +7,7 @@ const evidence = {
   ...scope, name: "Site A", domain: "example.test",
   setupComplete: true, analysisComplete: true,
   sources: [{ name: "Search Console", status: "available" as const, observedAt: "2026-10-18T00:00:00Z" }],
-  metrics: [{ label: "Clicks", value: 12, unit: "count", source: "GSC", observedAt: "2026-10-18T00:00:00Z" }],
+  metrics: [{ label: "Clicks", value: 12, unit: "count", source: "Search Console", observedAt: "2026-10-18T00:00:00Z" }],
 };
 
 test("projects only exact authorized organization and site", () => {
@@ -33,4 +33,16 @@ test("incomplete setup, unfinished analysis and unknown sources yield bounded st
 test("rejects improperly attributed metrics and malformed source freshness", () => {
   assert.equal(projectCustomerCapability(scope, { ...evidence, metrics: [{ ...evidence.metrics[0], source: null }] }), null);
   assert.equal(projectCustomerCapability(scope, { ...evidence, sources: [{ name: "GSC", status: "available" as const, observedAt: "invalid" }] }), null);
+});
+
+test("projection rejects unavailable, unmatched, and older source observations for metrics", () => {
+  const metric = evidence.metrics[0];
+  for (const sources of [
+    [],
+    [{ name: "GSC", status: "available" as const, observedAt: "2026-10-18T00:00:00Z" }],
+    [{ name: "Search Console", status: "stale" as const, observedAt: "2026-10-18T00:00:00Z" }],
+    [{ name: "Search Console", status: "available" as const, observedAt: "2026-10-17T00:00:00Z" }],
+  ]) {
+    assert.equal(projectCustomerCapability(scope, { ...evidence, sources, metrics: [metric] }), null);
+  }
 });
