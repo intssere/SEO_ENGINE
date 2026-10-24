@@ -55,6 +55,19 @@ BEGIN
   WHERE s.id=site_a AND s.organization_id=org_b AND s.is_active;
   IF n <> 0 THEN RAISE EXCEPTION 'foreign organization accessed site identity'; END IF;
 
+  -- The attestation proof reader must resolve canonical evidence through
+  -- the same active site and organization scope as membership authorization.
+  INSERT INTO evidence(site_id,source,kind,observed_at)
+    VALUES (site_a,'gsc','search_observation','2026-10-20T12:00:00Z');
+  SELECT count(*) INTO n FROM evidence e JOIN sites s ON s.id=e.site_id
+  WHERE s.id=site_a AND s.organization_id=org_a AND s.is_active
+    AND e.source='gsc' AND e.kind='search_observation';
+  IF n <> 1 THEN RAISE EXCEPTION 'authorized scoped evidence unavailable'; END IF;
+  SELECT count(*) INTO n FROM evidence e JOIN sites s ON s.id=e.site_id
+  WHERE s.id=site_a AND s.organization_id=org_b AND s.is_active
+    AND e.source='gsc' AND e.kind='search_observation';
+  IF n <> 0 THEN RAISE EXCEPTION 'foreign organization accessed evidence'; END IF;
+
   UPDATE customer_organization_memberships SET active=false WHERE organization_id=org_a;
   SELECT count(*) INTO n FROM customer_site_memberships sm
   JOIN customer_organization_memberships om USING (organization_id,principal_subject)
