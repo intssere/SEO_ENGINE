@@ -160,7 +160,7 @@ test("capability responses strip unrecognized nested provider secrets and intern
   // checking does not prevent simulating unexpected runtime persistence fields.
   const externalPayload = {
     organizationId: "org-a", state: "site_operational" as const, authorized: true as const,
-    reason: "Verified", site: { id: "site-a", name: "Example", domain: "example.test" },
+    reason: "Verified", site: { id: "site-a", name: "Example", domain: "example.test", secretRef: "hidden-credential", organizationId: "org-a" },
     sources: [{ name: "GSC", status: "available" as const, observedAt: "2026-10-20T12:00:00Z", credential: "secret" }],
     metrics: [{ label: "Clicks", value: 2, unit: "clicks", observedAt: "2026-10-20T11:00:00Z", source: "GSC", internalToken: "private" }],
   };
@@ -170,7 +170,8 @@ test("capability responses strip unrecognized nested provider secrets and intern
     readCapability: async () => externalPayload,
   });
   assert.equal(result.code, 200);
-  const body = result.body as { sources: unknown[]; metrics: unknown[] };
+  const body = result.body as { site: unknown; sources: unknown[]; metrics: unknown[] };
+  assert.deepEqual(body.site, { id: "site-a", name: "Example", domain: "example.test" });
   assert.deepEqual(body.sources, [{ name: "GSC", status: "available", observedAt: "2026-10-20T12:00:00Z" }]);
   assert.deepEqual(body.metrics, [{ label: "Clicks", value: 2, unit: "clicks", observedAt: "2026-10-20T11:00:00Z", source: "GSC" }]);
 });
