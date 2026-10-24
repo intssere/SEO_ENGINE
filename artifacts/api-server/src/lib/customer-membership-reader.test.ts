@@ -32,3 +32,25 @@ test("database errors propagate to the fail-closed scope loader", async () => {
   const read = createCustomerGrantReader(async () => { throw Error("database offline"); });
   await assert.rejects(() => read("user-1"), /database offline/);
 });
+
+test("unexpected subjects, duplicate site grants and malformed memberships fail closed", async () => {
+  const row = { organization_id: "org-a", site_id: "site-a", principal_subject: "user-a" };
+  for (const rows of [
+    [{ ...row, principal_subject: "user-b" }],
+    [{ ...row, organization_id: "" }],
+    [row, row],
+    [{ ...row, site_id: null as unknown as string }],
+  ]) {
+    const read = createCustomerGrantReader(async () => rows);
+    await assert.rejects(() => read("user-a"), /customer_membership_rows_invalid/);
+  }
+});
+
+test("oversized membership results cannot be converted to authorized grants", async () => {
+  const read = createCustomerGrantReader(async () =>
+    Array.from({ length: 101 }, (_, index) => ({
+      organization_id: "org-a", site_id: `site-${index}`, principal_subject: "user-a",
+    })),
+  );
+  await assert.rejects(() => read("user-a"), /customer_membership_rows_invalid/);
+});
