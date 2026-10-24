@@ -33,3 +33,22 @@ export async function loadCustomerCapability(input: {
   if (!capability) return { ok: false, reason: "evidence_scope_mismatch" };
   return { ok: true, capability };
 }
+
+/**
+ * Candidate adapter for the unregistered HTTP capability handler. The handler
+ * performs membership authorization first and injects the exact resulting scope.
+ * This adapter never reads grants, accepts client scope, or opens a database.
+ * Reader failure or projection rejection resolves to null (HTTP 503 upstream).
+ */
+export function createScopedCustomerCapabilityReader(readEvidence: CustomerEvidenceReader) {
+  return async (scope: { organizationId: string; siteId: string }) => {
+    if (!scope.organizationId.trim() || !scope.siteId.trim()) return null;
+    try {
+      const evidence = await readEvidence(scope);
+      const capability = projectCustomerCapability(scope, evidence);
+      return capability ? { ...capability, organizationId: scope.organizationId, authorized: true as const } : null;
+    } catch {
+      return null;
+    }
+  };
+}
