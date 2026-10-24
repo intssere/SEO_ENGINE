@@ -35,7 +35,9 @@ test("unauthorized site cannot reach canonical identity storage", async () => {
   });
   const result = await loadCustomerSiteScope({ principalSubject, requestedSiteId: "site-b", readGrants });
   assert.deepEqual(result, { ok: false, reason: "site_not_authorized" });
-  if (result.ok) await readIdentity({ organizationId: result.organizationId, siteId: result.siteId });
+  assert.equal(result.ok, false);
+  // An unauthorized outcome must not be passed into the identity reader.
+  assert.equal(typeof readIdentity, "function");
   assert.equal(identityReads, 0);
 });
 
