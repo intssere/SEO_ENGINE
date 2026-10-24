@@ -46,6 +46,15 @@ BEGIN
   WHERE sm.principal_subject='ux-user-a' AND sm.active AND om.active AND s.is_active;
   IF n <> 1 THEN RAISE EXCEPTION 'active membership did not authorize'; END IF;
 
+  -- Canonical identity must be retrievable only under the exact authorized
+  -- site and organization pair. Never infer site identity from domain alone.
+  SELECT count(*) INTO n FROM sites s
+  WHERE s.id=site_a AND s.organization_id=org_a AND s.is_active;
+  IF n <> 1 THEN RAISE EXCEPTION 'authorized canonical site identity unavailable'; END IF;
+  SELECT count(*) INTO n FROM sites s
+  WHERE s.id=site_a AND s.organization_id=org_b AND s.is_active;
+  IF n <> 0 THEN RAISE EXCEPTION 'foreign organization accessed site identity'; END IF;
+
   UPDATE customer_organization_memberships SET active=false WHERE organization_id=org_a;
   SELECT count(*) INTO n FROM customer_site_memberships sm
   JOIN customer_organization_memberships om USING (organization_id,principal_subject)
