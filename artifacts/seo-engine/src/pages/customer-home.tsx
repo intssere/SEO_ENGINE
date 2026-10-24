@@ -16,7 +16,7 @@ export default function CustomerHomePage() {
         <h1>Your website workspace</h1>
         <p className="muted">A site-specific overview will appear after membership authorization and verified evidence are available.</p>
       </div>
-      <Link className="linkButton" href="/onboarding">Website setup</Link>
+      <Link className="linkButton" style={{ color: "#244dc1" }} href="/onboarding">Website setup</Link>
     </header>
     <section className="card" aria-labelledby="customer-home-status">
       <div className="commandCenterHero">
