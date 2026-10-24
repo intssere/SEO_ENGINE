@@ -1,14 +1,18 @@
+// GSC-02 S0B: legacy all-in-one callback helper RETIRED.
+// No live route imports this module. The previous implementation sequenced
+// token exchange, GSC discovery and Production credential persistence in one
+// invocation. Those steps require separate, independently verified grants.
+// Never re-enable this helper as an OAuth transport or credential writer.
 import type { GoogleOAuthConfig, TokenBundle } from "@seo-engine/oauth-connection-manager";
 import {
   GSC_READONLY_EXTERNAL_ACCOUNT_ID,
   GSC_READONLY_PROFILE,
-  assertGscReadonlyState,
-  buildGscReadonlyConnectionMetadata,
-  hasExactGscReadonlyScope,
   type GscDiscoveryResult,
   type GscReadonlyState,
 } from "@seo-engine/oauth-connection-manager/gsc-readonly";
 
+// Preserve the existing type surface for source compatibility and review.
+// These types are NOT authorization grants or operational interfaces.
 export type GscReadonlyPersistenceInput = {
   provider: "google";
   externalAccountId: typeof GSC_READONLY_EXTERNAL_ACCOUNT_ID;
@@ -38,40 +42,21 @@ export type GscReadonlyCallbackResult = {
   connectionState: "authorized_pending_property_selection";
 };
 
+/**
+ * @deprecated Permanently fail-closed. Do not bind to any route or schedule.
+ *
+ * GSC-02 does not have a certified, principal/site/client-generation-bound,
+ * one-time state transaction, a separately attested credential-write path,
+ * or independent provider-discovery authorization. The old helper coupled
+ * exchange -> sites.list -> database upsert with no stage authorization.
+ *
+ * This compatibility function intentionally invokes NONE of its dependencies.
+ * A future separately reviewed source-only stage must define distinct handlers;
+ * a live binding additionally needs exact operator authorization and #1159.
+ */
 export async function runGscReadonlyCallback(
-  input: GscReadonlyCallbackInput,
-  dependencies: GscReadonlyRuntimeDependencies,
+  _input: GscReadonlyCallbackInput,
+  _dependencies: GscReadonlyRuntimeDependencies,
 ): Promise<GscReadonlyCallbackResult> {
-  assertGscReadonlyState(input.state, input.receivedState);
-  const code = input.code.trim();
-  if (!code) throw new Error("gsc_oauth_code_required");
-
-  const bundle = await dependencies.exchangeCode(input.config, code, input.state);
-  if (!hasExactGscReadonlyScope(bundle.scopes)) throw new Error("gsc_oauth_scope_mismatch");
-
-  const discovered = await dependencies.discover(bundle);
-  if (!discovered.status.ok) throw new Error(`gsc_oauth_discovery_failed:${discovered.status.category}`);
-
-  const metadata = {
-    ...buildGscReadonlyConnectionMetadata(bundle, discovered.properties, null),
-    gscDiscovery: discovered.status,
-    connectionState: "authorized_pending_property_selection",
-    needsPropertySelection: true,
-  };
-
-  await dependencies.persist({
-    provider: "google",
-    externalAccountId: GSC_READONLY_EXTERNAL_ACCOUNT_ID,
-    bundle,
-    metadata,
-    status: "pending",
-  });
-
-  return {
-    profile: GSC_READONLY_PROFILE,
-    externalAccountId: GSC_READONLY_EXTERNAL_ACCOUNT_ID,
-    propertyCount: discovered.properties.length,
-    hasRefreshToken: Boolean(bundle.refreshToken),
-    connectionState: "authorized_pending_property_selection",
-  };
+  throw new Error("gsc_oauth_combined_callback_retired_separate_grants_required");
 }
