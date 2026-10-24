@@ -219,3 +219,27 @@ test("integrated projection cannot expose tenant-mismatched evidence via HTTP", 
   });
   assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
 });
+
+test("integrated adapter masks evidence backend failures and never exposes internal errors", async () => {
+  const reader = createScopedCustomerCapabilityReader(async () => {
+    throw Error("private database address and provider credentials");
+  });
+  const result = await invoke({
+    subject: "user-a", siteId: "site-a",
+    readGrants: async () => [{ principalSubject: "user-a", organizationId: "org-a", siteId: "site-a", active: true }],
+    readCapability: reader,
+  });
+  assert.deepEqual(result, { code: 503, body: { error: "customer_capabilities_unavailable" } });
+});
+
+test("integrated adapter never accesses evidence when authentication is absent", async () => {
+  let evidenceReads = 0;
+  const reader = createScopedCustomerCapabilityReader(async () => { evidenceReads++; return null; });
+  const result = await invoke({
+    siteId: "site-a",
+    readGrants: async () => { throw Error("membership must not be accessed"); },
+    readCapability: reader,
+  });
+  assert.deepEqual(result, { code: 401, body: { error: "authentication_required" } });
+  assert.equal(evidenceReads, 0);
+});
