@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { loadCustomerCapability } from "./customer-capability-loader.js";
+import { createScopedCustomerCapabilityReader, loadCustomerCapability } from "./customer-capability-loader.js";
 
 const grant = { principalSubject: "subject-a", organizationId: "org-a", siteId: "site-a", active: true };
 const evidence = {
@@ -47,4 +47,27 @@ test("missing evidence cannot imply zero metrics or operational readiness", asyn
     readGrants: async () => [grant], readEvidence: async () => null,
   });
   assert.deepEqual(result, { ok: false, reason: "evidence_unavailable" });
+});
+
+test("scoped adapter supplies handler-compatible authorization and site provenance", async () => {
+  const reader = createScopedCustomerCapabilityReader(async scope => {
+    assert.deepEqual(scope, { organizationId: "org-a", siteId: "site-a" });
+    return evidence;
+  });
+  const result = await reader({ organizationId: "org-a", siteId: "site-a" });
+  assert.equal(result?.organizationId, "org-a");
+  assert.equal(result?.site.id, "site-a");
+  assert.equal(result?.state, "setup_required");
+  assert.equal(result?.authorized, true);
+});
+
+test("scoped adapter rejects foreign evidence and backend errors without exposing details", async () => {
+  const scope = { organizationId: "org-a", siteId: "site-a" };
+  assert.equal(await createScopedCustomerCapabilityReader(async () => ({ ...evidence, siteId: "site-b" }))(scope), null);
+  assert.equal(await createScopedCustomerCapabilityReader(async () => { throw Error("internal database secret"); })(scope), null);
+  let reads = 0;
+  assert.equal(await createScopedCustomerCapabilityReader(async () => { reads++; return evidence; })({
+    organizationId: "", siteId: "site-a",
+  }), null);
+  assert.equal(reads, 0);
 });
