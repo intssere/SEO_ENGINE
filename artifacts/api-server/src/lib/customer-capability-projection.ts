@@ -46,7 +46,7 @@ export function projectCustomerCapability(
         !!source.observedAt && Date.parse(source.observedAt) >= Date.parse(metric.observedAt!))))) return null;
 
   const degraded = sources.some(source => source.status !== "available" || !source.observedAt);
-  const state = !evidence.setupComplete ? "setup_required" :
+  const state: "setup_required" | "analysis_pending" | "site_degraded" | "site_operational" = !evidence.setupComplete ? "setup_required" :
     !evidence.analysisComplete ? "analysis_pending" :
     degraded || sources.length === 0 ? "site_degraded" : "site_operational";
   const reason = state === "setup_required" ? "Verified site setup is incomplete" :
