@@ -41,7 +41,9 @@ export function projectCustomerCapability(
   if (!metrics.every(metric => metric.label.trim() && metric.unit.trim() &&
       (metric.value === null ? metric.source === null && metric.observedAt === null :
       Number.isFinite(metric.value) && !!metric.source?.trim() &&
-      !!metric.observedAt && Number.isFinite(Date.parse(metric.observedAt))))) return null;
+      !!metric.observedAt && Number.isFinite(Date.parse(metric.observedAt)) &&
+      sources.some(source => source.name === metric.source && source.status === "available" &&
+        !!source.observedAt && Date.parse(source.observedAt) >= Date.parse(metric.observedAt!))))) return null;
 
   const degraded = sources.some(source => source.status !== "available" || !source.observedAt);
   const state = !evidence.setupComplete ? "setup_required" :
