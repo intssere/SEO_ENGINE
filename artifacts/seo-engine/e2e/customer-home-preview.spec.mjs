@@ -48,6 +48,12 @@ for (const width of [320, 390, 768, 1024, 1440]) {
 test("customer onboarding stays local and never claims a connection", async ({ page }) => {
   const boundary = await installSyntheticNetwork(page);
   const errors = monitorBrowserErrors(page);
+  const operatorRequests = [];
+  page.on("request", (request) => {
+    if (/\/api\/(dashboard|actions|approvals|command)(?:[/?]|$)/.test(new URL(request.url()).pathname)) {
+      operatorRequests.push(request.url());
+    }
+  });
   await page.goto("/onboarding");
   await expect(page.getByRole("heading", { name: "Connect your website" })).toBeVisible();
   const website = page.getByLabel("Website URL");
@@ -63,6 +69,7 @@ test("customer onboarding stays local and never claims a connection", async ({ p
   await page.getByRole("button", { name: /Review readiness/ }).click();
   await expect(page.getByRole("heading", { name: "Ready for verified setup" })).toBeVisible();
   await expect(page.getByText("No data has been sent, no website added, and no analysis scheduled.")).toBeVisible();
+  expect(operatorRequests).toEqual([]);
   expect(boundary.unknownApiRequests).toEqual([]);
   expect(boundary.externalRequests).toEqual([]);
   expect(errors.pageErrors).toEqual([]);
