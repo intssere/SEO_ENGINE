@@ -7,7 +7,7 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
   const view = buildCustomerHomeView(capability);
   const verified = view.kind === "verified";
   const reason = verified ? view.reason : view.description;
-  return <main className="content commandCenter">
+  return <div className="content commandCenter">
     <header className="commandCenterHero">
       <div>
         <p className="eyebrow">CUSTOMER HOME · {verified ? "VERIFIED" : "PREVIEW"}</p>
@@ -49,7 +49,7 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
     <footer className="commandCenterHero">
       <span>{verified ? "Read-only verified customer presentation." : "Read-only preview. Customer data is not yet enabled."}</span>
     </footer>
-  </main>;
+  </div>;
 }
 export default function CustomerHomePage() {
   return <CustomerHomePresentation capability={null} />;
