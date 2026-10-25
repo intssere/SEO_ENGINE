@@ -23,7 +23,7 @@ export default function CustomerOnboardingPage() {
     <header className="customerOnboardingHeader">
       <div><p className="customerEyebrow">GETTING STARTED</p><h1>Connect your website</h1>
       <p>Set up SEO ENGINE without changing your website.</p></div>
-      <Link href="/" className="customerBackLink">Back to Command Center</Link>
+      <Link href="/home" className="customerBackLink">Back to customer home</Link>
     </header>
     <ol className="customerSteps" aria-label="Onboarding steps">
       {["Website", "Data sources", "Readiness"].map((name, i) => <li key={name} className={step === i+1 ? "current" : step > i+1 ? "completed" : ""} aria-current={step===i+1 ? "step" : undefined}><span>{step>i+1 ? "✓" : i+1}</span>{name}</li>)}
@@ -52,7 +52,7 @@ export default function CustomerOnboardingPage() {
           <p>Live setup requires verified backend access.</p>
           {[["Requested website",normalized],["Platform selection",platform],["Ownership verification","Not started"],["Analysis job","Not started"]].map(([name,value])=><div className="customerReview" key={name}><span>{name}</span><strong>{value}</strong></div>)}
           <p className="customerNotice">No data has been sent, no website added, and no analysis scheduled.</p>
-          <div className="customerButtonRow"><button className="customerSecondaryButton" onClick={()=>setStep(2)}>Back</button><Link href="/connections" className="customerPrimaryButton">View existing connections →</Link></div>
+          <div className="customerButtonRow"><button className="customerSecondaryButton" onClick={()=>setStep(2)}>Back</button><Link href="/home" className="customerPrimaryButton">Return to customer home →</Link></div>
         </>}
       </section>
       <aside className="customerOnboardingAside">
