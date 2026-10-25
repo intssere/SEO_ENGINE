@@ -50,7 +50,8 @@ export default defineConfig({
     },
     react(),
     tailwindcss(),
-    runtimeErrorOverlay(),
+    // Development-only diagnostic overlay; exclude it from customer production assets.
+    ...(process.env.NODE_ENV !== 'production' ? [runtimeErrorOverlay()] : []),
     ...(process.env.NODE_ENV !== 'production' &&
     process.env.REPL_ID !== undefined
       ? [
