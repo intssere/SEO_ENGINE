@@ -60,6 +60,11 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_customer_attestation_cert -v ON_ERROR_STOP=1 -f lib/db/migrations/0016_customer_attestations_candidate.sql
           psql -h 127.0.0.1 -U postgres -d seo_engine_customer_attestation_cert -v ON_ERROR_STOP=1 -f artifacts/api-server/src/lib/customer-attestation-postgres-cert.sql
 
+      - name: Certify actual UX-CH attestation and proof readers in isolated PostgreSQL
+        env:
+          UX_CH_ATTESTATION_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_customer_attestation_cert
+        run: pnpm --filter @workspace/api-server exec tsx --test src/lib/customer-attestation-readers.ephemeral.test.ts
+
       - name: Certify proposed UX-CH memberships in isolated PostgreSQL
         run: |
           createdb -h 127.0.0.1 -U postgres seo_engine_customer_membership_cert
