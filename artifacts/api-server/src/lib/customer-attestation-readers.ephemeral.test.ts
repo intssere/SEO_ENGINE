@@ -12,6 +12,7 @@ import { createCertifiedCustomerEvidenceReader } from "./customer-certified-evid
 import { createScopedCustomerCapabilityReader } from "./customer-capability-loader.js";
 import { createCustomerGrantReader, type MembershipQuery } from "./customer-membership-reader.js";
 import { createCustomerCapabilityHandler } from "../routes/customer-capabilities.js";
+import { createCustomerStagingHandlerCandidate } from "./customer-staging-handler-candidate.js";
 import type { Request, Response } from "express";
 
 function certificationUrl(): string | null {
@@ -132,6 +133,34 @@ test("actual scoped attestation and proof readers certify only owned evidence in
       assert.deepEqual(await invoke("foreign-customer", site.id), {
         code: 404, body: { error: "site_not_authorized" },
       });
+      // Certify the reviewed-policy candidate factory with the real scoped DB
+      // adapters before any HTTP route is registered.
+      const staged = createCustomerStagingHandlerCandidate({
+        policy: { trustedAuthorities: ["offline-certifier"], maxAgeMs: 86400000 },
+        readGrants: createCustomerGrantReader(tx as unknown as MembershipQuery),
+        readers: {
+          readIdentity: createCustomerSiteIdentityReader(tx as unknown as SiteIdentityQuery),
+          readAttestation, readProof, readSources,
+        },
+        now: () => new Date("2026-10-20T02:00:00Z"),
+      });
+      assert.ok(staged);
+      const stageRequest = async (subject: string | null) => {
+        let status = 200;
+        let body: unknown;
+        const req = { auth: subject ? { subject } : undefined,
+          query: { siteId: site.id } } as unknown as Request;
+        const res = {
+          status(value: number) { status = value; return this; },
+          json(value: unknown) { body = value; return this; },
+        } as unknown as Response;
+        await staged(req, res);
+        return { status, body };
+      };
+      assert.equal((await stageRequest("certified-customer")).status, 200);
+      assert.deepEqual((await stageRequest("certified-customer")).body, response.body);
+      assert.equal((await stageRequest(null)).status, 401);
+      assert.equal((await stageRequest("foreign-customer")).status, 404);
       // Revocation must be observable on the very next authenticated request:
       // neither cached authorization nor stale site data may bypass the DB.
       await tx`UPDATE customer_site_memberships SET active=false
