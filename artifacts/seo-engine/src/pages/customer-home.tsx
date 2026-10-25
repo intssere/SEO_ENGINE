@@ -12,7 +12,7 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
       <div>
         <p className="eyebrow">CUSTOMER HOME · {verified ? "VERIFIED" : "PREVIEW"}</p>
         <h1>Your website workspace</h1>
-        <p className="muted">{verified ? "Read-only authorized website evidence." : "A site-specific overview requires membership authorization and verified evidence."}</p>
+        <p className="muted">{verified ? "Authorized website evidence." : "Site authorization and verified evidence required."}</p>
       </div>
       <Link className="linkButton" href="/onboarding">Website setup</Link>
     </header>
@@ -30,7 +30,7 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
       <p className="eyebrow">WEBSITE STATUS</p>
       <h2 id="customer-home-status">{verified ? view.site.name : view.heading}</h2>
       <p className="muted">{verified ? view.state.replaceAll("_", " ") : "Status unverified"}</p>
-      <p>{reason} No metrics are inferred from the operator dashboard.</p>
+      <p>{reason}</p>
       <Link className="linkButton" href="/onboarding">Review website setup</Link>
     </section>
     <div className="commandCenterWorkGrid">
@@ -48,7 +48,6 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
     </div>
     <footer className="commandCenterHero">
       <span>{verified ? "Read-only verified customer presentation." : "Read-only preview. Customer data is not yet enabled."}</span>
-      <span>Operational workspaces are separate from this customer preview.</span>
     </footer>
   </main>;
 }
