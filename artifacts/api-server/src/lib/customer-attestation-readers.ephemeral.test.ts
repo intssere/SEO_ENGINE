@@ -6,6 +6,8 @@ import { createAttestationEvidenceVerifier, type AttestationEvidenceQuery } from
 import { verifyStoredCustomerAttestation } from "./customer-stored-attestation-verifier.js";
 import { assessStoredCustomerReadiness } from "./customer-stored-readiness.js";
 import { createCustomerSourceFreshnessReader, type SourceFreshnessQuery } from "./customer-source-freshness-reader.js";
+import { createCustomerSiteIdentityReader, type SiteIdentityQuery } from "./customer-site-identity-reader.js";
+import { projectCustomerCapability } from "./customer-capability-projection.js";
 
 function certificationUrl(): string | null {
   const raw = process.env.UX_CH_ATTESTATION_EPHEMERAL_DATABASE_URL;
@@ -65,6 +67,28 @@ test("actual scoped attestation and proof readers certify only owned evidence in
       assert.deepEqual(await assessStoredCustomerReadiness(readinessInput), {
         state: "site_operational", reason: "verified_sources_available",
       });
+      // Project only authoritative identity, verified completion and scoped
+      // source observations. Metrics remain empty until separately certified.
+      const identity = await createCustomerSiteIdentityReader(tx as unknown as SiteIdentityQuery)(scope);
+      assert.ok(identity);
+      const assessment = await assessStoredCustomerReadiness(readinessInput);
+      assert.equal(assessment.state, "site_operational");
+      const capability = projectCustomerCapability(scope, {
+        ...scope, name: identity.name, domain: identity.domain,
+        setupComplete: true, analysisComplete: true,
+        sources: (sourceStatuses ?? []).map(source => ({
+          name: source.source, status: source.status, observedAt: source.observedAt,
+        })),
+        metrics: [],
+      });
+      assert.equal(capability?.state, "site_operational");
+      assert.deepEqual(capability?.site, { id: site.id, name: "Attestation Site", domain: "reader-att.example" });
+      assert.deepEqual(capability?.metrics, []);
+      assert.equal(projectCustomerCapability({ organizationId: b.id, siteId: site.id }, {
+        ...scope, name: identity.name, domain: identity.domain,
+        setupComplete: true, analysisComplete: true,
+        sources: [], metrics: [],
+      }), null);
       await tx`UPDATE sites SET is_active=false WHERE id=${site.id}::uuid`;
       assert.equal(await readAttestation(scope, "setup"), null);
       assert.equal(await readProof(scope, proof.id), null);
