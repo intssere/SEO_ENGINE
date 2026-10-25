@@ -4,6 +4,7 @@ import postgres from "postgres";
 import { createCustomerAttestationReader, type AttestationRowQuery } from "./customer-attestation-reader.js";
 import { createAttestationEvidenceVerifier, type AttestationEvidenceQuery } from "./customer-attestation-evidence-reader.js";
 import { verifyStoredCustomerAttestation } from "./customer-stored-attestation-verifier.js";
+import { assessStoredCustomerReadiness } from "./customer-stored-readiness.js";
 
 function certificationUrl(): string | null {
   const raw = process.env.UX_CH_ATTESTATION_EPHEMERAL_DATABASE_URL;
@@ -45,6 +46,20 @@ test("actual scoped attestation and proof readers certify only owned evidence in
       assert.equal(await readAttestation({ organizationId: b.id, siteId: site.id }, "setup"), null);
       assert.equal(await readProof({ organizationId: b.id, siteId: site.id }, proof.id), null);
       assert.equal(await readAttestation(scope, "initial_analysis"), null);
+      const readinessInput = {
+        scope, readAttestation, readProof,
+        trustedAuthorities: ["offline-certifier"],
+        now: new Date("2026-10-20T02:00:00Z"), maxAgeMs: 86400000,
+        sourceStatuses: [{ status: "available" as const, observedAt: "2026-10-20T00:00:00Z" }],
+      };
+      assert.deepEqual(await assessStoredCustomerReadiness(readinessInput), {
+        state: "unverified", reason: "analysis_attestation_unavailable",
+      });
+      await tx`INSERT INTO customer_readiness_attestations(organization_id,site_id,kind,evidence_id,authority,complete,verified_at)
+        VALUES (${a.id}::uuid,${site.id}::uuid,'initial_analysis',${proof.id}::uuid,'offline-certifier',true,'2026-10-20T01:00:00Z')`;
+      assert.deepEqual(await assessStoredCustomerReadiness(readinessInput), {
+        state: "site_operational", reason: "verified_sources_available",
+      });
       await tx`UPDATE sites SET is_active=false WHERE id=${site.id}::uuid`;
       assert.equal(await readAttestation(scope, "setup"), null);
       assert.equal(await readProof(scope, proof.id), null);
