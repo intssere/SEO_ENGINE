@@ -33,7 +33,7 @@ export default defineConfig({
     {
       name: 'ux-ch-module-attribution',
       generateBundle(_options, bundle) {
-        if (process.env.UX_CH_BUNDLE_REPORT !== '1') return;
+        if (process.env.UX_CH_BUNDLE_REPORT !== '1' && process.env.CI !== 'true') return;
         const sizes = new Map<string, number>();
         for (const asset of Object.values(bundle)) {
           if (asset.type !== 'chunk') continue;
