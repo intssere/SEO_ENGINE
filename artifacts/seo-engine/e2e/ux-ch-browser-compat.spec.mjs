@@ -21,7 +21,7 @@ for (const viewport of [
     await expect(page.getByText("Status unverified", { exact: true })).toBeVisible();
 
     // Exercise the lazy dynamic import with the browser's actual module loader.
-    await page.locator("main > header").getByRole("link", { name: "Website setup", exact: true }).click();
+    await page.getByRole("navigation", { name: "Customer preview navigation" }).getByRole("link", { name: "Website setup" }).click();
     await expect(page).toHaveURL(/\/onboarding$/);
     await expect(page.locator("#main-content")).toBeVisible();
 
