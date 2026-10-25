@@ -11,6 +11,7 @@ import {
 } from 'wouter';
 
 import { Layout } from './components/layout';
+import { CustomerPreviewLayout } from './components/customer-preview-layout';
 import { AuthProvider } from './lib/auth-client';
 import DashboardPage from './pages/dashboard';
 const CustomerOnboardingPage = lazy(() => import('./pages/customer-onboarding'));
@@ -46,9 +47,12 @@ const queryClient = new QueryClient({
 });
 
 function Router() {
+  const [location] = useLocation();
+  const isCustomerPreview = location === '/home' || location === '/onboarding';
+  const Shell = isCustomerPreview ? CustomerPreviewLayout : Layout;
   return (
     <RoutedErrorBoundary>
-      <Layout>
+      <Shell>
         <Switch>
           <Route path="/" component={DashboardPage} />
           <Route path="/home">{() => <Suspense fallback={<div role="status" className="content">Loading customer workspace…</div>}><CustomerHomePage /></Suspense>}</Route>
@@ -75,7 +79,7 @@ function Router() {
 
           <Route component={NotFound} />
         </Switch>
-      </Layout>
+      </Shell>
     </RoutedErrorBoundary>
   );
 }
