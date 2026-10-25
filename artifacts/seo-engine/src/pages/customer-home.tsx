@@ -12,9 +12,9 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
   return <main className="content commandCenter">
     <header className="commandCenterHero">
       <div>
-        <p className="eyebrow">CUSTOMER HOME · PREVIEW</p>
+        <p className="eyebrow">{view.kind === "verified" ? "CUSTOMER HOME · VERIFIED" : "CUSTOMER HOME · PREVIEW"}</p>
         <h1>Your website workspace</h1>
-        <p className="muted">A site-specific overview will appear after membership authorization and verified evidence are available.</p>
+        <p className="muted">{view.kind === "verified" ? "Read-only overview of the authorized website and independently verified evidence." : "A site-specific overview will appear after membership authorization and verified evidence are available."}</p>
       </div>
       <Link className="linkButton" style={{ color: "#244dc1" }} href="/onboarding">Website setup</Link>
     </header>
@@ -44,7 +44,7 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
     <div className="commandCenterWorkGrid">
       <section className="card">
         <p className="eyebrow">SEARCH DATA</p><h2>{view.kind === "verified" ? "Verified source status" : "Awaiting verified sources"}</h2>
-        <p>{view.kind === "verified" ? "Source observations are shown above. Detailed search measurements remain unavailable until separately certified." : "Search analytics and indexing data will appear only when the authorized sources and their observation times are validated."}</p>
+        <p>{view.kind === "verified" ? "Source observations are shown above. Only independently certified measurements are displayed above." : "Search analytics and indexing data will appear only when the authorized sources and their observation times are validated."}</p>
         <Link className="linkButton" href="/onboarding">Review website setup</Link>
       </section>
       <section className="card">
