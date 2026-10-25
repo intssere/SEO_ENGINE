@@ -1,3 +1,4 @@
+import "./customer-preview-light.css";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 
