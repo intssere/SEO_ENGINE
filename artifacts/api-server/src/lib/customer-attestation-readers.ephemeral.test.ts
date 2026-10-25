@@ -10,6 +10,9 @@ import { createCustomerSiteIdentityReader, type SiteIdentityQuery } from "./cust
 import { projectCustomerCapability } from "./customer-capability-projection.js";
 import { createCertifiedCustomerEvidenceReader } from "./customer-certified-evidence-reader.js";
 import { createScopedCustomerCapabilityReader } from "./customer-capability-loader.js";
+import { createCustomerGrantReader, type MembershipQuery } from "./customer-membership-reader.js";
+import { createCustomerCapabilityHandler } from "../routes/customer-capabilities.js";
+import type { Request, Response } from "express";
 
 function certificationUrl(): string | null {
   const raw = process.env.UX_CH_ATTESTATION_EPHEMERAL_DATABASE_URL;
@@ -98,6 +101,37 @@ test("actual scoped attestation and proof readers certify only owned evidence in
       assert.deepEqual(integrated?.site, capability?.site);
       assert.deepEqual(integrated?.metrics, []);
       assert.equal(await certified({ organizationId: b.id, siteId: site.id }), null);
+      // Exercise unregistered HTTP handler with a real PostgreSQL membership
+      // lookup and certified capability reader; never mount any route.
+      await tx`INSERT INTO customer_organization_memberships(organization_id,principal_subject,active)
+        VALUES (${a.id}::uuid,'certified-customer',true)`;
+      await tx`INSERT INTO customer_site_memberships(organization_id,site_id,principal_subject,active)
+        VALUES (${a.id}::uuid,${site.id}::uuid,'certified-customer',true)`;
+      const handler = createCustomerCapabilityHandler(
+        createCustomerGrantReader(tx as unknown as MembershipQuery), certified,
+      );
+      const invoke = async (subject: string | null, requestedSiteId: string) => {
+        let code = 200;
+        let body: unknown = null;
+        const req = { auth: subject ? { subject } : undefined,
+          query: { siteId: requestedSiteId } } as unknown as Request;
+        const res = {
+          status(value: number) { code = value; return this; },
+          json(value: unknown) { body = value; return this; },
+        } as unknown as Response;
+        await handler(req, res);
+        return { code, body };
+      };
+      const response = await invoke("certified-customer", site.id);
+      assert.equal(response.code, 200);
+      assert.deepEqual((response.body as { site: unknown }).site, integrated?.site);
+      assert.deepEqual((response.body as { metrics: unknown }).metrics, []);
+      assert.deepEqual(await invoke(null, site.id), {
+        code: 401, body: { error: "authentication_required" },
+      });
+      assert.deepEqual(await invoke("foreign-customer", site.id), {
+        code: 404, body: { error: "site_not_authorized" },
+      });
       assert.equal(projectCustomerCapability({ organizationId: b.id, siteId: site.id }, {
         ...scope, name: identity.name, domain: identity.domain,
         setupComplete: true, analysisComplete: true,
