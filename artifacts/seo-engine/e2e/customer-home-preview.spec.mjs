@@ -56,6 +56,7 @@ test("customer onboarding stays local and never claims a connection", async ({ p
   });
   await page.goto("/onboarding");
   await expect(page.getByRole("heading", { name: "Connect your website" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to customer home" })).toHaveAttribute("href", "/home");
   const website = page.getByLabel("Website URL");
   const continueButton = page.getByRole("button", { name: /Continue/ });
   await expect(continueButton).toBeDisabled();
@@ -69,6 +70,8 @@ test("customer onboarding stays local and never claims a connection", async ({ p
   await page.getByRole("button", { name: /Review readiness/ }).click();
   await expect(page.getByRole("heading", { name: "Ready for verified setup" })).toBeVisible();
   await expect(page.getByText("No data has been sent, no website added, and no analysis scheduled.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Return to customer home" })).toHaveAttribute("href", "/home");
+  await expect(page.getByRole("link", { name: /Command Center|existing connections/i })).toHaveCount(0);
   expect(operatorRequests).toEqual([]);
   expect(boundary.unknownApiRequests).toEqual([]);
   expect(boundary.externalRequests).toEqual([]);
