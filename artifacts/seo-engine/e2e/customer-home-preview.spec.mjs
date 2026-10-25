@@ -21,6 +21,8 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     await expect(page.getByRole("region", { name: "Verified website overview" })).toHaveCount(0);
     await expect(page.getByText("Organic clicks")).toHaveCount(0);
     await expect(page.getByText("Diamond Shelf Test")).toHaveCount(0);
+    await expect(page.getByText("Engine online")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Ask SEO|Ask AI|Ask assistant/i })).toHaveCount(0);
 
     const horizontalOverflow = await page.evaluate(() =>
       document.documentElement.scrollWidth > window.innerWidth
