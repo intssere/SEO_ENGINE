@@ -32,3 +32,28 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     expect(errors.consoleErrors).toEqual([]);
   });
 }
+
+
+test("customer onboarding stays local and never claims a connection", async ({ page }) => {
+  const boundary = await installSyntheticNetwork(page);
+  const errors = monitorBrowserErrors(page);
+  await page.goto("/onboarding");
+  await expect(page.getByRole("heading", { name: "Connect your website" })).toBeVisible();
+  const website = page.getByLabel("Website URL");
+  const continueButton = page.getByRole("button", { name: /Continue/ });
+  await expect(continueButton).toBeDisabled();
+  await website.fill("http://localhost:3000");
+  await expect(continueButton).toBeDisabled();
+  await website.fill("https://example.com");
+  await expect(continueButton).toBeEnabled();
+  await continueButton.click();
+  await expect(page.getByRole("heading", { name: "Choose your data connections" })).toBeVisible();
+  await expect(page.getByText("This preview does not start OAuth or grant access.", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: /Review readiness/ }).click();
+  await expect(page.getByRole("heading", { name: "Ready for verified setup" })).toBeVisible();
+  await expect(page.getByText("No data has been sent, no website added, and no analysis scheduled.")).toBeVisible();
+  expect(boundary.unknownApiRequests).toEqual([]);
+  expect(boundary.externalRequests).toEqual([]);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
