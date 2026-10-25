@@ -14,7 +14,7 @@ import { Layout } from './components/layout';
 import { AuthProvider } from './lib/auth-client';
 import DashboardPage from './pages/dashboard';
 const CustomerOnboardingPage = lazy(() => import('./pages/customer-onboarding'));
-import CustomerHomePage from './pages/customer-home';
+const CustomerHomePage = lazy(() => import('./pages/customer-home'));
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
 import GovernancePage from './pages/governance';
@@ -51,7 +51,7 @@ function Router() {
       <Layout>
         <Switch>
           <Route path="/" component={DashboardPage} />
-          <Route path="/home" component={CustomerHomePage} />
+          <Route path="/home">{() => <Suspense fallback={<div role="status" className="content">Loading customer workspace…</div>}><CustomerHomePage /></Suspense>}</Route>
           <Route path="/onboarding">{() => <Suspense fallback={<div role="status" className="content">Loading website setup…</div>}><CustomerOnboardingPage /></Suspense>}</Route>
           <Route path="/opportunities" component={OpportunitiesPage} />
           <Route path="/governance" component={GovernancePage} />
