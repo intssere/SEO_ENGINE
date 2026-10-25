@@ -27,3 +27,36 @@ test("unmatched metrics cannot leak into customer home", () => {
     label: "Clicks", value: 4, unit: "clicks", source: "Unrelated", observedAt: "2026-10-20T11:00:00Z",
   }] }).kind, "unverified");
 });
+
+test("certified site without measurements preserves empty data and source freshness", () => {
+  const view = buildCustomerHomeView({
+    ...candidate, state: "site_degraded",
+    sources: [{ name: "GSC", status: "stale", observedAt: "2026-10-18T12:00:00Z" }],
+    metrics: [],
+  });
+  assert.equal(view.kind, "verified");
+  if (view.kind !== "verified") return;
+  assert.equal(view.state, "site_degraded");
+  assert.deepEqual(view.metrics, []);
+  assert.equal(view.sources[0].status, "stale");
+});
+
+test("operational claim with stale or absent evidence remains unverified", () => {
+  for (const sources of [
+    [], [{ name: "GSC", status: "stale" as const, observedAt: "2026-10-18T12:00:00Z" }],
+    [{ name: "GSC", status: "available" as const, observedAt: null }],
+  ]) {
+    assert.equal(buildCustomerHomeView({
+      ...candidate, state: "site_operational", sources, metrics: [],
+    }).kind, "unverified");
+  }
+});
+
+test("null measurements cannot be replaced by zero in the customer view", () => {
+  const view = buildCustomerHomeView({
+    ...candidate, metrics: [{ label: "Clicks", value: null, unit: "clicks", source: null, observedAt: null }],
+  });
+  assert.equal(view.kind, "verified");
+  if (view.kind !== "verified") return;
+  assert.equal(view.metrics[0].value, null);
+});
