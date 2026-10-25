@@ -10,6 +10,12 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     const boundary = await installSyntheticNetwork(page);
     const errors = monitorBrowserErrors(page);
+    const operatorRequests = [];
+    page.on("request", (request) => {
+      if (/\/api\/(dashboard|actions|approvals|command)(?:[/?]|$)/.test(new URL(request.url()).pathname)) {
+        operatorRequests.push(request.url());
+      }
+    });
 
     await page.goto("/home");
     await expect(page.getByRole("heading", { name: "Your website workspace" })).toBeVisible();
@@ -28,6 +34,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
       document.documentElement.scrollWidth > window.innerWidth
     );
     expect(horizontalOverflow, `horizontal overflow at ${width}px`).toBe(false);
+    expect(operatorRequests).toEqual([]);
     expect(boundary.unknownApiRequests).toEqual([]);
     expect(boundary.externalRequests).toEqual([]);
     expect(errors.pageErrors).toEqual([]);
