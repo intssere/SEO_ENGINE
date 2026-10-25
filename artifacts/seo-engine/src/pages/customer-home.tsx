@@ -43,13 +43,13 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
     </section>
     <div className="commandCenterWorkGrid">
       <section className="card">
-        <p className="eyebrow">SEARCH DATA</p><h2>Awaiting verified sources</h2>
-        <p>Search analytics and indexing data will appear only when the authorized sources and their observation times are validated.</p>
+        <p className="eyebrow">SEARCH DATA</p><h2>{view.kind === "verified" ? "Verified source status" : "Awaiting verified sources"}</h2>
+        <p>{view.kind === "verified" ? "Source observations are shown above. Detailed search measurements remain unavailable until separately certified." : "Search analytics and indexing data will appear only when the authorized sources and their observation times are validated."}</p>
         <Link className="linkButton" href="/onboarding">Review website setup</Link>
       </section>
       <section className="card">
-        <p className="eyebrow">SITE ANALYSIS</p><h2>No certified results yet</h2>
-        <p>Technical findings and opportunities require independently verified site-specific evidence before they can be shown here.</p>
+        <p className="eyebrow">SITE ANALYSIS</p><h2>{view.kind === "verified" ? "Site readiness" : "No certified results yet"}</h2>
+        <p>{view.kind === "verified" ? view.reason : "Technical findings and opportunities require independently verified site-specific evidence before they can be shown here."}</p>
         <Link className="linkButton" href="/onboarding">Review website setup</Link>
       </section>
     </div>
