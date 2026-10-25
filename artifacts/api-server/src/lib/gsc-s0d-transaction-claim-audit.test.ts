@@ -15,7 +15,7 @@ const bindings = {
   principalFingerprint: id("3"), sessionFingerprint: id("4"),
   clientGenerationFingerprint: id("5"), redirectFingerprint: id("6"),
 };
-function fixture(length = GSC_S0D_STAGES.length): GscS0dClaimChain {
+function fixture(length: number = GSC_S0D_STAGES.length): GscS0dClaimChain {
   const events = GSC_S0D_STAGES.slice(0, length).map((stage, i): GscS0dClaimEvent => ({
     stage, atUtc: new Date(Date.parse("2026-10-24T17:00:00.000Z") + i * 60_000).toISOString(),
     claimFingerprint: id("abcdef"[i]!), ...bindings,
