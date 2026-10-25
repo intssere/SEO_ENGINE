@@ -4,6 +4,7 @@ import postgres from "postgres";
 import { createCustomerGrantReader, type MembershipQuery } from "./customer-membership-reader.js";
 import { createCustomerSiteIdentityReader, type SiteIdentityQuery } from "./customer-site-identity-reader.js";
 import { loadCustomerSiteScope } from "./customer-site-scope-loader.js";
+import { createAttestationEvidenceVerifier, type AttestationEvidenceQuery } from "./customer-attestation-evidence-reader.js";
 
 /** Only a specially named localhost database created by CI may be used. */
 function isolatedUrl() {
@@ -49,6 +50,15 @@ test("actual parameterized membership and canonical identity readers honor Postg
         organizationId: orgA.id, siteId: site.id, name: "Customer A", domain: "ch-reader.example",
       });
       assert.equal(await identity({ organizationId: orgB.id, siteId: site.id }), null);
+      const [proof] = await tx`INSERT INTO evidence(site_id,source,kind,observed_at)
+        VALUES (${site.id}::uuid,'gsc','search_observation','2026-10-20T12:00:00Z')
+        RETURNING id::text AS id`;
+      const readProof = createAttestationEvidenceVerifier(tx as unknown as AttestationEvidenceQuery);
+      assert.deepEqual(await readProof({ organizationId: orgA.id, siteId: site.id }, proof.id), {
+        id: proof.id, source: "gsc", observedAt: "2026-10-20T12:00:00.000Z",
+      });
+      assert.equal(await readProof({ organizationId: orgB.id, siteId: site.id }, proof.id), null);
+      assert.equal(await readProof({ organizationId: orgA.id, siteId: site.id }, orgB.id), null);
       assert.deepEqual(await loadCustomerSiteScope({ principalSubject: "foreign-subject", requestedSiteId: site.id, readGrants: grants }),
         { ok: false, reason: "site_not_authorized" });
       await tx`UPDATE customer_organization_memberships SET active=false WHERE organization_id=${orgA.id}::uuid`;
@@ -56,6 +66,7 @@ test("actual parameterized membership and canonical identity readers honor Postg
         { ok: false, reason: "site_not_authorized" });
       await tx`UPDATE sites SET is_active=false WHERE id=${site.id}::uuid`;
       assert.equal(await identity({ organizationId: orgA.id, siteId: site.id }), null);
+      assert.equal(await readProof({ organizationId: orgA.id, siteId: site.id }, proof.id), null);
       throw rollback;
     });
   } catch (error) {
