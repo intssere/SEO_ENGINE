@@ -8,6 +8,8 @@ import { assessStoredCustomerReadiness } from "./customer-stored-readiness.js";
 import { createCustomerSourceFreshnessReader, type SourceFreshnessQuery } from "./customer-source-freshness-reader.js";
 import { createCustomerSiteIdentityReader, type SiteIdentityQuery } from "./customer-site-identity-reader.js";
 import { projectCustomerCapability } from "./customer-capability-projection.js";
+import { createCertifiedCustomerEvidenceReader } from "./customer-certified-evidence-reader.js";
+import { createScopedCustomerCapabilityReader } from "./customer-capability-loader.js";
 
 function certificationUrl(): string | null {
   const raw = process.env.UX_CH_ATTESTATION_EPHEMERAL_DATABASE_URL;
@@ -84,6 +86,18 @@ test("actual scoped attestation and proof readers certify only owned evidence in
       assert.equal(capability?.state, "site_operational");
       assert.deepEqual(capability?.site, { id: site.id, name: "Attestation Site", domain: "reader-att.example" });
       assert.deepEqual(capability?.metrics, []);
+      const certified = createScopedCustomerCapabilityReader(createCertifiedCustomerEvidenceReader({
+        readIdentity: createCustomerSiteIdentityReader(tx as unknown as SiteIdentityQuery),
+        readAttestation, readProof, readSources,
+        trustedAuthorities: ["offline-certifier"],
+        now: () => new Date("2026-10-20T02:00:00Z"),
+        maxAgeMs: 86400000,
+      }));
+      const integrated = await certified(scope);
+      assert.equal(integrated?.state, "site_operational");
+      assert.deepEqual(integrated?.site, capability?.site);
+      assert.deepEqual(integrated?.metrics, []);
+      assert.equal(await certified({ organizationId: b.id, siteId: site.id }), null);
       assert.equal(projectCustomerCapability({ organizationId: b.id, siteId: site.id }, {
         ...scope, name: identity.name, domain: identity.domain,
         setupComplete: true, analysisComplete: true,
@@ -92,6 +106,7 @@ test("actual scoped attestation and proof readers certify only owned evidence in
       await tx`UPDATE sites SET is_active=false WHERE id=${site.id}::uuid`;
       assert.equal(await readAttestation(scope, "setup"), null);
       assert.equal(await readProof(scope, proof.id), null);
+      assert.equal(await certified(scope), null);
       throw rollback;
     });
   } catch (error) {
