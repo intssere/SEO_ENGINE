@@ -1,4 +1,4 @@
-import "./customer-preview-light.css";
+import customerPreviewCss from "./customer-preview-light.css?inline";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -10,7 +10,7 @@ const nav = [
 /** CH-R83: Light-only, isolated read-only customer shell. No operator hooks or API calls. */
 export function CustomerPreviewLayout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
-  return <div className="chLightShell">
+  return <div className="chLightShell"><style>{customerPreviewCss}</style>
     <a className="skipLink" href="#main-content">Skip to main content</a>
     <aside className="chLightSidebar" aria-label="Customer workspace">
       <Link href="/home" className="chLightBrand"><span className="chLightBrandMark">✦</span><span>SEO <b>ENGINE</b><small>Customer workspace</small></span></Link>
