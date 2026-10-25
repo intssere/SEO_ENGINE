@@ -132,6 +132,22 @@ test("actual scoped attestation and proof readers certify only owned evidence in
       assert.deepEqual(await invoke("foreign-customer", site.id), {
         code: 404, body: { error: "site_not_authorized" },
       });
+      // Revocation must be observable on the very next authenticated request:
+      // neither cached authorization nor stale site data may bypass the DB.
+      await tx`UPDATE customer_site_memberships SET active=false
+        WHERE organization_id=${a.id}::uuid AND site_id=${site.id}::uuid
+          AND principal_subject='certified-customer'`;
+      assert.deepEqual(await invoke("certified-customer", site.id), {
+        code: 404, body: { error: "site_not_authorized" },
+      });
+      await tx`UPDATE customer_site_memberships SET active=true
+        WHERE organization_id=${a.id}::uuid AND site_id=${site.id}::uuid
+          AND principal_subject='certified-customer'`;
+      await tx`UPDATE customer_organization_memberships SET active=false
+        WHERE organization_id=${a.id}::uuid AND principal_subject='certified-customer'`;
+      assert.deepEqual(await invoke("certified-customer", site.id), {
+        code: 404, body: { error: "site_not_authorized" },
+      });
       assert.equal(projectCustomerCapability({ organizationId: b.id, siteId: site.id }, {
         ...scope, name: identity.name, domain: identity.domain,
         setupComplete: true, analysisComplete: true,
