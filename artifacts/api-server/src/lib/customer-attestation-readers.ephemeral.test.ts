@@ -5,6 +5,7 @@ import { createCustomerAttestationReader, type AttestationRowQuery } from "./cus
 import { createAttestationEvidenceVerifier, type AttestationEvidenceQuery } from "./customer-attestation-evidence-reader.js";
 import { verifyStoredCustomerAttestation } from "./customer-stored-attestation-verifier.js";
 import { assessStoredCustomerReadiness } from "./customer-stored-readiness.js";
+import { createCustomerSourceFreshnessReader, type SourceFreshnessQuery } from "./customer-source-freshness-reader.js";
 
 function certificationUrl(): string | null {
   const raw = process.env.UX_CH_ATTESTATION_EPHEMERAL_DATABASE_URL;
@@ -46,11 +47,15 @@ test("actual scoped attestation and proof readers certify only owned evidence in
       assert.equal(await readAttestation({ organizationId: b.id, siteId: site.id }, "setup"), null);
       assert.equal(await readProof({ organizationId: b.id, siteId: site.id }, proof.id), null);
       assert.equal(await readAttestation(scope, "initial_analysis"), null);
+      const readSources = createCustomerSourceFreshnessReader(tx as unknown as SourceFreshnessQuery);
+      const sourceStatuses = await readSources(scope, new Date("2026-10-20T02:00:00Z"), 86400000);
+      assert.deepEqual(sourceStatuses, [{ source: "crawl", status: "available", observedAt: "2026-10-20T00:00:00.000Z" }]);
+      assert.deepEqual(await readSources({ organizationId: b.id, siteId: site.id }, new Date("2026-10-20T02:00:00Z"), 86400000), []);
       const readinessInput = {
         scope, readAttestation, readProof,
         trustedAuthorities: ["offline-certifier"],
         now: new Date("2026-10-20T02:00:00Z"), maxAgeMs: 86400000,
-        sourceStatuses: [{ status: "available" as const, observedAt: "2026-10-20T00:00:00Z" }],
+        sourceStatuses: sourceStatuses ?? [],
       };
       assert.deepEqual(await assessStoredCustomerReadiness(readinessInput), {
         state: "unverified", reason: "analysis_attestation_unavailable",
