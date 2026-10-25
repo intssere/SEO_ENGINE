@@ -19,6 +19,8 @@ for (const width of [320, 390, 768, 1024, 1440]) {
 
     await page.goto("/home");
     await expect(page.getByRole("heading", { name: "Your website workspace" })).toBeVisible();
+    await expect(page.getByRole("main")).toHaveCount(1);
+    await expect(page.getByRole("navigation", { name: "Customer preview navigation" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Verification pending" })).toBeVisible();
     await expect(page.getByText("Status unverified")).toBeVisible();
     await expect(page.getByText("No certified results yet")).toBeVisible();
