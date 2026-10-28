@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import "./customer-onboarding.css";
 
 /** Preview-only status: never infer a job from onboarding input or fabricate progress. */
 const checks = [
