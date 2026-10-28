@@ -15,6 +15,7 @@ import { AuthProvider } from './lib/auth-client';
 import DashboardPage from './pages/dashboard';
 const CustomerOnboardingPage = lazy(() => import('./pages/customer-onboarding'));
 const CustomerHomePage = lazy(() => import('./pages/customer-home'));
+const CustomerAnalysisPage = lazy(() => import('./pages/customer-analysis'));
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
 import GovernancePage from './pages/governance';
@@ -47,7 +48,7 @@ const queryClient = new QueryClient({
 
 function Router() {
   const [location] = useLocation();
-  const isCustomerPreview = location === '/home' || location === '/onboarding';
+  const isCustomerPreview = location === '/home' || location === '/onboarding' || location === '/analysis';
   const Shell = isCustomerPreview ? CustomerPreviewLayout : Layout;
   return (
     <RoutedErrorBoundary>
@@ -56,6 +57,7 @@ function Router() {
           <Route path="/" component={DashboardPage} />
           <Route path="/home">{() => <Suspense fallback={<div role="status" className="content">Loading customer workspace…</div>}><CustomerHomePage /></Suspense>}</Route>
           <Route path="/onboarding">{() => <Suspense fallback={<div role="status" className="content">Loading website setup…</div>}><CustomerOnboardingPage /></Suspense>}</Route>
+          <Route path="/analysis">{() => <Suspense fallback={<div role="status" className="content">Loading analysis status…</div>}><CustomerAnalysisPage /></Suspense>}</Route>
           <Route path="/opportunities" component={OpportunitiesPage} />
           <Route path="/governance" component={GovernancePage} />
           <Route path="/actions" component={ActionsPage} />
