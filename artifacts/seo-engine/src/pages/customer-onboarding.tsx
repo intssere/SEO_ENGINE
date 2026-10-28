@@ -2,7 +2,8 @@ import "./customer-onboarding.css";
 import { useState } from "react";
 import { Link } from "wouter";
 
-const platforms = ["Auto-detect", "Shopify", "WordPress", "Webflow", "Custom website"];
+const platforms = ["Auto-detect", "Shopify", "WordPress", "Webflow", "Wix", "Squarespace", "Custom website"];
+const platformTiles = ["Shopify", "WordPress", "Webflow", "Wix", "Squarespace", "Custom website"];
 function siteUrl(value: string) {
   try {
     const raw = value.trim();
@@ -36,8 +37,7 @@ export default function CustomerOnboardingPage() {
           <label htmlFor="customer-website-url">Website URL</label>
           <input id="customer-website-url" placeholder="https://example.com" autoComplete="url" value={url} onChange={e=>setUrl(e.target.value)} aria-describedby="customer-url-help"/>
           <small id="customer-url-help">{url && !normalized ? "Enter a public HTTPS domain without credentials, IP address or custom port." : "Ownership verification is required for live setup."}</small>
-          <label htmlFor="customer-platform">Website platform</label>
-          <select id="customer-platform" value={platform} onChange={e=>setPlatform(e.target.value)}>{platforms.map(p=><option key={p}>{p}</option>)}</select>
+          <fieldset className="customerPlatformFieldset"><legend>Website platform</legend><p>Choose your platform or leave auto-detect selected. No detection is performed in this preview.</p><div className="customerPlatformTabs" role="group" aria-label="Platform selection">{platforms.map(p=><button key={p} type="button" aria-pressed={platform===p} className={platform===p ? "selected" : ""} onClick={()=>setPlatform(p)}>{p}</button>)}</div><div className="customerPlatformGrid">{platformTiles.map(p=><button key={p} type="button" className={platform===p ? "customerPlatformTile selected" : "customerPlatformTile"} aria-pressed={platform===p} onClick={()=>setPlatform(p)}><span className="customerPlatformGlyph" aria-hidden="true">{p==="Shopify"?"S":p==="WordPress"?"W":p==="Webflow"?"Wf":p==="Wix"?"Wi":p==="Squarespace"?"Sq":"⌘"}</span><strong>{p}</strong><small>{platform===p?"Selected":"Choose platform"}</small></button>)}</div></fieldset>
           <button className="customerPrimaryButton" disabled={!normalized} onClick={()=>setStep(2)}>Continue →</button>
         </>}
         {step===2 && <>
