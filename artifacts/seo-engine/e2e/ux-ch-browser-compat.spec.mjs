@@ -16,12 +16,11 @@ for (const viewport of [
     const errors = monitorBrowserErrors(page);
 
     await page.goto("/home");
-    await expect(page.getByRole("heading", { name: "Your website workspace" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Verification pending" })).toBeVisible();
-    await expect(page.getByText("Status unverified", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Welcome to SEO ENGINE" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Customer preview navigation" })).toHaveCount(0);
 
     // Exercise the lazy dynamic import with the browser's actual module loader.
-    await page.getByRole("navigation", { name: "Customer preview navigation" }).getByRole("link", { name: "Website setup" }).click();
+    await page.getByRole("link", { name: /Get started/ }).click();
     await expect(page).toHaveURL(/\/onboarding$/);
     await expect(page.locator("#main-content")).toBeVisible();
 
