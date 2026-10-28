@@ -29,7 +29,7 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
     </section>}
     {verified && <section className="card" aria-labelledby="customer-home-status">
       <p className="eyebrow">WEBSITE STATUS</p>
-      <h2 id="customer-home-status">{verified ? view.site.name : view.heading}</h2>
+      <h2 id="customer-home-status">{view.site.name}</h2>
       <p className="muted">{verified ? view.state.replaceAll("_", " ") : "Status unverified"}</p>
       <p>{reason}</p>
       <Link className="linkButton" href="/onboarding">Review website setup</Link>
