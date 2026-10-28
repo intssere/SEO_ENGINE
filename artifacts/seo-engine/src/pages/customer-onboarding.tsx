@@ -1,4 +1,4 @@
-import "./customer-onboarding.css";
+import onboardingStyles from "./customer-onboarding.css?inline";
 import { useState } from "react";
 import { Link } from "wouter";
 
@@ -20,7 +20,7 @@ export default function CustomerOnboardingPage() {
   const [platform, setPlatform] = useState("Auto-detect");
   const [step, setStep] = useState(1);
   const normalized = siteUrl(url);
-  return <div className="customerOnboarding">
+  return <div className="customerOnboarding"><style>{onboardingStyles}</style>
     <header className="customerOnboardingHeader">
       <div><p className="customerEyebrow">GETTING STARTED</p><h1>Connect your website</h1>
       <p>Set up SEO ENGINE without changing your website.</p></div>
