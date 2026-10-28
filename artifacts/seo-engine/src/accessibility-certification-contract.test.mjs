@@ -17,6 +17,7 @@ const EXPECTED_ROUTES = [
   "/",
   "/home",
   "/onboarding",
+  "/analysis",
   "/opportunities",
   "/governance",
   "/actions",
