@@ -1,35 +1,33 @@
 import { Link } from "wouter";
 import styles from "./customer-onboarding.css?inline";
 
-/** Read-only empty state: never invent a finding or enable an approval. */
+/** No real findings or website changes in this preview. */
 export default function CustomerOpportunityDetailPage() {
-  return <div className="customerOnboarding" aria-labelledby="detail-title">
+  return <div className="customerOnboarding">
     <style>{styles}</style>
     <header className="customerOnboardingHeader">
       <div><p className="customerEyebrow">OPPORTUNITY DETAIL · PREVIEW</p>
-        <h1 id="detail-title">Before &amp; after</h1>
-        <p>Review evidence and the proposed change before taking action.</p></div>
-      <Link href="/customer-opportunities" className="customerBackLink">Back to opportunities</Link>
+        <h1>Before &amp; after</h1>
+        <p>Review evidence before approving a change.</p></div>
+      <Link href="/customer-opportunities">Back to opportunities</Link>
     </header>
-    <section className="customerOnboardingCard" aria-labelledby="detail-status">
-      <p className="customerEyebrow">NO VERIFIED OPPORTUNITY SELECTED</p>
-      <h2 id="detail-status">Comparison unavailable</h2>
-      <p role="status">No verified finding, affected URL or authorized proposal is available in this preview.</p>
+    <section className="customerOnboardingCard">
+      <h2>No verified opportunity selected</h2>
+      <p role="status">Comparison unavailable. No verified finding or proposal exists.</p>
     </section>
     <div className="customerOnboardingGrid" style={{marginTop:18}}>
-      <section className="customerOnboardingCard" aria-label="Before">
-        <h2>Before · Current state</h2><p>Awaiting a verified observation and supporting evidence.</p>
+      <section className="customerOnboardingCard">
+        <h2>Before · Current state</h2><p>Verified evidence unavailable.</p>
       </section>
-      <section className="customerOnboardingCard" aria-label="After">
-        <h2>After · Proposed change</h2><p>No proposed modification has been reviewed or approved.</p>
+      <section className="customerOnboardingCard">
+        <h2>After · Proposed change</h2><p>No approved proposal exists.</p>
       </section>
     </div>
-    <section className="customerOnboardingCard" style={{marginTop:18}} aria-label="Impact and approval">
+    <section className="customerOnboardingCard" style={{marginTop:18}}>
       <h2>Impact &amp; approval</h2>
       <p>Expected impact: Not assessed. Evidence: Not available.</p>
-      <p>Approval status: Not requested. No website change can run from this preview.</p>
-      <Link href="/customer-opportunities" className="customerBackLink">Return to opportunity queue →</Link>
+      <p>Approval: Not requested. Site changes are disabled in preview.</p>
     </section>
-    <p className="customerNotice">Read-only illustration of the review process. No data, recommendation, approval or site write has been generated.</p>
+    <p className="customerNotice">Read-only preview. No data or site writes have been performed.</p>
   </div>;
 }
