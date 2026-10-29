@@ -11,10 +11,7 @@ export default function CustomerOpportunityDetailPage() {
         <p>Review verified evidence before approval.</p></div>
       <Link href="/customer-opportunities">Back to opportunities</Link>
     </header>
-    <section className="customerOnboardingCard">
-      <h2>Comparison unavailable</h2>
-      <p role="status">No verified opportunity selected.</p>
-    </section>
+    <p role="status">No verified opportunity selected. Comparison unavailable.</p>
     <div className="customerOnboardingGrid">
       {["Before · Current state","After · Proposed change"].map(title=>
         <section className="customerOnboardingCard" key={title}>
@@ -25,6 +22,6 @@ export default function CustomerOpportunityDetailPage() {
       <h2>Impact &amp; approval</h2>
       <p>Impact unknown. No approval requested; site changes disabled.</p>
     </section>
-    <p className="customerNotice">Read-only preview. No site action occurred.</p>
+
   </div>;
 }
