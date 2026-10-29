@@ -65,3 +65,15 @@ test("a declared PASS cannot override a mismatched serialized digest", () => {
   claims[0]!.traceDigest = hash("e");
   assert.equal(reviewA07SerializedEvidence(packet, traces, JSON.stringify(claims)).status, "INCOMPLETE_OR_UNSAFE");
 });
+
+
+test("enormous ASCII evidence is rejected before UTF-8 encoding", () => {
+  const [packet, traces] = fixtures();
+  const hugeInput = "x".repeat(MAX_A07_EVIDENCE_JSON_BYTES * 8);
+  const result = reviewA07SerializedEvidence(packet, traces, hugeInput);
+  assert.equal(result.status, "INCOMPLETE_OR_UNSAFE");
+  assert.ok(result.issues.includes("invalid_or_oversized_serialized_evidence"));
+  assert.equal(result.stage2bCertified, false);
+  assert.equal(result.executionAuthorized, false);
+  assert.equal(result.operationalAuthority, false);
+});
