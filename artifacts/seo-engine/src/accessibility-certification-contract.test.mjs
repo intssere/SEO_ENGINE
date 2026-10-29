@@ -19,6 +19,7 @@ const EXPECTED_ROUTES = [
   "/onboarding",
   "/analysis",
   "/site-overview",
+  "/customer-opportunities",
   "/opportunities",
   "/governance",
   "/actions",
