@@ -25,14 +25,14 @@ export default function CustomerOpportunitiesPage() {
     <header className="chOppHeader">
       <div><p className="customerEyebrow">OPPORTUNITIES · PREVIEW</p>
         <h1 id="customer-opportunities-title">Your SEO opportunities</h1>
-        <p>Evidence-backed recommendations will help you prioritize improvements without changing your website automatically.</p>
+        <p>Review verified recommendations before approving any changes.</p>
       </div>
       <Link href="/site-overview" className="customerBackLink">Back to site overview →</Link>
     </header>
     <section className="chOppStatus" aria-labelledby="opportunity-readiness">
       <p className="customerEyebrow">READINESS STATUS</p>
       <h2 id="opportunity-readiness">No verified opportunities available</h2>
-      <p role="status">A verified website connection, completed analysis and supporting evidence are required before opportunities can appear.</p>
+      <p role="status">Connect and analyze a verified website to see opportunities.</p>
       <Link href="/onboarding" className="customerPrimaryButton">Review website setup →</Link>
     </section>
     <section aria-label="How recommendations are reviewed" className="chOppFlow">
@@ -49,9 +49,9 @@ export default function CustomerOpportunitiesPage() {
         <span className="chOppFilter" aria-label="Filter unavailable without verified opportunities">All priorities · No records</span>
       </div>
       <div className="chOppEmpty" role="status"><div><h2>No opportunities to display</h2>
-        <p>Recommendations, priority, projected impact and before-and-after comparisons will appear only when grounded in verified site evidence.</p></div>
+        <p>Verified findings and comparisons will appear here.</p></div>
       </div>
     </section>
-    <p className="customerNotice">Read-only preview. No audit job, recommendation, approval, optimization or site modification has been performed.</p>
+    <p className="customerNotice">Read-only preview. No SEO actions have been performed.</p>
   </div>;
 }
