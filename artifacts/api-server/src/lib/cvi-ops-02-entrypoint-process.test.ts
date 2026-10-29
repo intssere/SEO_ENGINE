@@ -29,7 +29,7 @@ const mockPlugin: Plugin = {
 };
 
 test("repository production Docker image establishes NODE_ENV=production before startup", () => {
-  const dockerfile = readFileSync(join(serverRoot, "..", "..", "Dockerfile"), "utf8");
+  const dockerfile = readFileSync(join(serverRoot, "..", "..", "..", "Dockerfile"), "utf8");
   const runtime = dockerfile.slice(dockerfile.indexOf(" AS runtime"));
   assert.match(runtime, /ENV NODE_ENV=production/);
   assert.ok(runtime.includes('CMD ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]'));
