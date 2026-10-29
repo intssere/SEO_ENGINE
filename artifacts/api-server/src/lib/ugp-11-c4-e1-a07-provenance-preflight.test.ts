@@ -83,3 +83,31 @@ test("unhashable hostile traces reject without raising and never confer authorit
     assert.equal(result.operationalAuthority, false);
   }
 });
+
+
+test("hostile getters and Proxy traps fail closed before trace digesting", () => {
+  const hostileGetter = fixture();
+  Object.defineProperty(hostileGetter.manifests[0], "candidate", {
+    enumerable: true, configurable: true, get() { throw new Error("unsafe_claim_getter"); }
+  });
+  const badPacket = fixture();
+  Object.defineProperty(badPacket.packet[0], "testId", {
+    enumerable: true, configurable: true, get() { throw new Error("unsafe_packet_getter"); }
+  });
+  const proxyTrace = fixture();
+  proxyTrace.traces[0] = new Proxy(proxyTrace.traces[0], {
+    get(target, property, receiver) {
+      if (property === "candidate") throw new Error("unsafe_trace_proxy");
+      return Reflect.get(target, property, receiver);
+    }
+  });
+  const cases = [hostileGetter, badPacket, proxyTrace];
+  for (const x of cases) {
+    const result = reviewA07ProvenanceClaims(x.packet, x.traces, x.manifests);
+    assert.equal(result.status, "INCOMPLETE_OR_UNSAFE");
+    assert.ok(result.issues.includes("untrusted_evidence_inspection_failed"));
+    assert.equal(result.stage2bCertified, false);
+    assert.equal(result.executionAuthorized, false);
+    assert.equal(result.operationalAuthority, false);
+  }
+});

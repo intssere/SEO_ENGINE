@@ -18,7 +18,7 @@ function hasExactFields(x: Obj): boolean {
 export function digestA07Trace(trace: unknown): string {
   return createHash("sha256").update(JSON.stringify(trace)).digest("hex");
 }
-export function reviewA07ProvenanceClaims(packet: unknown, traces: unknown, manifests: unknown) {
+function reviewA07ProvenanceClaimsUnchecked(packet: unknown, traces: unknown, manifests: unknown) {
   const issues: string[] = [];
   const cross = reviewC4E1A07CrossEvidence(packet, traces);
   if (cross.status !== "STRUCTURALLY_CONSISTENT_UNVERIFIED") issues.push("cross_evidence_invalid", ...cross.issues);
@@ -64,4 +64,23 @@ export function reviewA07ProvenanceClaims(packet: unknown, traces: unknown, mani
     executionAuthorized: false as const,
     operationalAuthority: false as const
   });
+}
+
+/**
+ * Treat unexpected exceptions from untrusted object access, Proxy traps, and
+ * serialization as unsafe evidence. This does not make arbitrary objects safe:
+ * consume strictly parsed JSON at the future ingress boundary.
+ */
+export function reviewA07ProvenanceClaims(packet: unknown, traces: unknown, manifests: unknown) {
+  try {
+    return reviewA07ProvenanceClaimsUnchecked(packet, traces, manifests);
+  } catch {
+    return Object.freeze({
+      status: "INCOMPLETE_OR_UNSAFE" as const,
+      issues: Object.freeze(["untrusted_evidence_inspection_failed"]),
+      stage2bCertified: false as const,
+      executionAuthorized: false as const,
+      operationalAuthority: false as const
+    });
+  }
 }
