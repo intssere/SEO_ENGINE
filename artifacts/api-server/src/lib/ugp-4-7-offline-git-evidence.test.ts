@@ -32,7 +32,11 @@ const denied = (x: unknown) => {
 test("one coherent synthetic chain is only structurally unverified", () => {
   const a = inspect(fixture()), b = inspect(fixture());
   assert.equal(a.status,"STRUCTURALLY_CONSISTENT_UNVERIFIED");
-  if (a.status !== "STRUCTURALLY_CONSISTENT_UNVERIFIED" ||\n      b.status !== "STRUCTURALLY_CONSISTENT_UNVERIFIED") {\n    assert.fail("valid synthetic evidence must remain structurally consistent");\n  }\n  assert.equal(a.evidenceDigest,b.evidenceDigest);
+  if (a.status !== "STRUCTURALLY_CONSISTENT_UNVERIFIED" ||
+      b.status !== "STRUCTURALLY_CONSISTENT_UNVERIFIED") {
+    assert.fail("valid synthetic evidence must remain structurally consistent");
+  }
+  assert.equal(a.evidenceDigest,b.evidenceDigest);
   assert.equal(a.gitReadAuthorized,false);
   assert.equal(a.gitWriteAuthorized,false);
   assert.equal(a.mergeAuthorized,false);
