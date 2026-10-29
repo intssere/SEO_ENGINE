@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build, type Plugin } from "esbuild";
@@ -26,6 +27,13 @@ const mockPlugin: Plugin = {
       ({ contents: mocks[args.path], loader: "js" }));
   },
 };
+
+test("repository production Docker image establishes NODE_ENV=production before startup", () => {
+  const dockerfile = readFileSync(join(serverRoot, "..", "..", "Dockerfile"), "utf8");
+  const runtime = dockerfile.slice(dockerfile.indexOf(" AS runtime"));
+  assert.match(runtime, /ENV NODE_ENV=production/);
+  assert.match(runtime, /CMD \\[\\\"node\\\", \\"--enable-source-maps\\\", \\"artifacts\\/api-server\\/dist\\/index\\.mjs\\\"\\]/);
+});
 
 test("actual entrypoint: production DB-absence fails before mock app.listen, local test remains compatible", async () => {
   // Esbuild loads the actual index.ts and startup gate; only side-effectful imports are mocked.
