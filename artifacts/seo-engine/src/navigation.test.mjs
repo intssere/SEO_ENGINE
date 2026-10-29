@@ -45,6 +45,8 @@ const engineeringOnlyRoutes = [
   "/customer-opportunities",
   "/opportunity-detail",
   "/automation-settings",
+  "/results-impact",
+  "/customer-portfolio",
   "/rankings",
   "/internal-links",
   "/ai-visibility",
