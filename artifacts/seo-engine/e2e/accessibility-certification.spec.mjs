@@ -18,6 +18,7 @@ const ROUTES = [
   "/",
   "/home",
   "/onboarding",
+  "/analysis",
   "/opportunities",
   "/governance",
   "/actions",
