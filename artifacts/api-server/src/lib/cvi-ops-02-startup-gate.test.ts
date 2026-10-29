@@ -19,10 +19,16 @@ const cases = [
   ["production-blank", { NODE_ENV: "production", DATABASE_URL: "  " }, false],
   ["staging-missing", { NODE_ENV: "production", RAILWAY_ENVIRONMENT_NAME: "staging" }, false],
   ["railway-prod-mislabelled-node", { NODE_ENV: "development", RAILWAY_ENVIRONMENT_NAME: "production" }, false],
+  ["railway-staging-mislabelled-node", { NODE_ENV: "test", RAILWAY_ENVIRONMENT_NAME: "staging" }, false],
+  ["railway-preview-dev-without-db", { NODE_ENV: "development", RAILWAY_ENVIRONMENT_NAME: "preview" }, false],
+  ["railway-custom-dev-without-db", { NODE_ENV: "development", RAILWAY_ENVIRONMENT_NAME: "qa" }, false],
+  ["production-railway-dev-label", { NODE_ENV: "production", RAILWAY_ENVIRONMENT_NAME: "development" }, false],
   ["unclassified-missing", {}, false],
   ["prod-configured", { NODE_ENV: "production", DATABASE_URL: "mock://not-connected" }, true],
   ["development-offline", { NODE_ENV: "development" }, true],
   ["test-offline", { NODE_ENV: "test" }, true],
+  ["development-offline-blank-binding", { NODE_ENV: "development", DATABASE_URL: "  " }, true],
+  ["test-offline-blank-binding", { NODE_ENV: "test", DATABASE_URL: "  " }, true],
 ] as const;
 for (const [name, env, allow] of cases) {
   test(`mock process startup gate: ${name}`, () => {
