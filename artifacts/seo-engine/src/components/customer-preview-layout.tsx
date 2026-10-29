@@ -10,6 +10,8 @@ const nav = [
   { href: "/customer-opportunities", label: "Opportunities", icon: "◇" },
   { href: "/opportunity-detail", label: "Detail preview", icon: "⊞" },
   { href: "/automation-settings", label: "Automation settings", icon: "⚙" },
+  { href: "/results-impact", label: "Results & impact", icon: "↗" },
+  { href: "/customer-portfolio", label: "My websites", icon: "▤" },
 ];
 
 /** CH-R83: Light-only, isolated read-only customer shell. No operator hooks or API calls. */
@@ -27,7 +29,7 @@ export function CustomerPreviewLayout({ children }: { children: ReactNode }) {
       <div className="chLightSidebarFooter"><span className="chLightPreviewDot" /> Preview workspace <small>Read-only · No connected site</small></div>
     </aside>}
     <div className="chLightMainColumn">
-      {!isWelcome && <header className="chLightTopbar"><span>Customer workspace <span aria-hidden="true">/</span> {location === "/onboarding" ? "Website setup" : location === "/analysis" ? "Site analysis" : location === "/site-overview" ? "Site overview" : location === "/customer-opportunities" ? "Opportunities" : location === "/opportunity-detail" ? "Opportunity detail" : location === "/automation-settings" ? "Automation settings" : "Home"}</span><span className="chLightMode">Preview mode</span></header>}
+      {!isWelcome && <header className="chLightTopbar"><span>Customer workspace <span aria-hidden="true">/</span> {location === "/onboarding" ? "Website setup" : location === "/analysis" ? "Site analysis" : location === "/site-overview" ? "Site overview" : location === "/customer-opportunities" ? "Opportunities" : location === "/opportunity-detail" ? "Opportunity detail" : location === "/automation-settings" ? "Automation settings" : location === "/results-impact" ? "Results & impact" : location === "/customer-portfolio" ? "My websites" : "Home"}</span><span className="chLightMode">Preview mode</span></header>}
       <main id="main-content" tabIndex={-1} className="chLightMain"><div className="content chLightContent">{children}</div></main>
     </div>
   </div>;
