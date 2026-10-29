@@ -18,8 +18,10 @@ const mocks: Record<string, string> = {
 const mockPlugin: Plugin = {
   name: "cvi-ops-02-entrypoint-fixture",
   setup(ctx) {
-    ctx.onResolve({ filter: /^(\\.\\/app|\\.\\/lib\\/(?:logger|p8-8-w09c2e-r4-binding-boundary\\.js|startup-runtime\\.js|pilot-orchestration)|@workspace\\/db)$/ }, args =>
-      ({ path: args.path, namespace: "cvi-fixture" }));
+    ctx.onResolve({ filter: /.*/ }, args =>
+      Object.prototype.hasOwnProperty.call(mocks, args.path)
+        ? ({ path: args.path, namespace: "cvi-fixture" })
+        : undefined);
     ctx.onLoad({ filter: /.*/, namespace: "cvi-fixture" }, args =>
       ({ contents: mocks[args.path], loader: "js" }));
   },
