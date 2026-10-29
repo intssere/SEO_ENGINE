@@ -2,23 +2,20 @@ import { Link } from "wouter";
 import styles from "./customer-onboarding.css?inline";
 
 const opportunityStyles = `
-.chOpportunities{max-width:1170px;padding:4px 0 30px}
-.chOppHeader{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:20px}
-.chOppHeader h1{font-size:clamp(27px,3vw,36px);margin:6px 0}
-.chOppHeader p{max-width:670px;font-size:14px;margin:0}
-.chOppStatus,.chOppStep{background:#fff;border:1px solid #dee6f2;border-radius:15px;padding:20px}
-.chOppStatus h2{font-size:21px;margin:8px 0}
-.chOppStatus p,.chOppStep p{font-size:13px;margin:0}
+.chOpportunities{padding:4px 0}
+.chOppHeader,.chOppControls{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.chOppHeader h1{font-size:32px;margin:5px 0}
+.chOppHeader p,.chOppStatus p,.chOppStep p{font-size:13px}
+.chOppStatus,.chOppStep{background:white;border:1px solid #dee6f2;border-radius:14px;padding:20px}
+.chOppStatus h2{font-size:21px}
 .chOppFlow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
-.chOppStep span{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:#edf2ff;color:#335dea;font-weight:800;margin-bottom:12px}
-.chOppStep h3{font-size:15px;margin:0 0 6px}
-.chOppEmpty{border:1px dashed #c7d4e7;border-radius:15px;background:#f9fbff;min-height:155px;padding:22px;display:grid;place-items:center;text-align:center}
-.chOppEmpty h2{font-size:18px;margin:0}
-.chOppEmpty p{font-size:13px;max-width:500px;margin:6px auto 0}
-.chOppControls{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin:24px 0 13px}
-.chOppControls h2{font-size:19px;margin:0}
-.chOppFilter{font-size:12px;border:1px solid #d5dfed;padding:8px 12px;border-radius:8px;background:#fff;color:#52627a}
-@media(max-width:650px){.chOppFlow{grid-template-columns:minmax(0,1fr)}}
+.chOppStep span{display:block;color:#345bea;font-weight:800;margin-bottom:8px}
+.chOppStep h3{font-size:15px}
+.chOppEmpty{border:1px dashed #c7d4e7;border-radius:14px;background:#f9fbff;padding:25px;text-align:center}
+.chOppEmpty p{font-size:13px}
+.chOppControls h2{font-size:19px}
+.chOppFilter{font-size:12px;color:#52627a}
+@media(max-width:650px){.chOppFlow{grid-template-columns:1fr}}
 `;
 
 /** Never show example findings as real opportunities or permit unauthorised site changes. */
