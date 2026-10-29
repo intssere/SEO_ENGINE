@@ -10,6 +10,7 @@ const ROUTES = [
   "/onboarding",
   "/analysis",
   "/site-overview",
+  "/customer-opportunities",
   "/opportunities",
   "/governance",
   "/actions",
@@ -374,7 +375,7 @@ for (const route of ROUTES) {
           ).toBeGreaterThanOrEqual(12);
         }
 
-        if (route === "/home" || route === "/onboarding" || route === "/analysis" || route === "/site-overview") {
+        if (route === "/home" || route === "/onboarding" || route === "/analysis" || route === "/site-overview" || route === "/customer-opportunities") {
           // Customer preview is intentionally isolated from the operator sidebar and mobile navigation.
           expect(state.shellMode.sidebarVisible).toBe(false);
           expect(state.shellMode.mobileNavVisible).toBe(false);
