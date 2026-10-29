@@ -20,6 +20,7 @@ const EXPECTED_ROUTES = [
   "/analysis",
   "/site-overview",
   "/customer-opportunities",
+  "/opportunity-detail",
   "/opportunities",
   "/governance",
   "/actions",
