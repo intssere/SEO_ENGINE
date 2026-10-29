@@ -3,26 +3,22 @@ import styles from "./customer-onboarding.css?inline";
 
 const opportunityStyles = `
 .chOpportunities{max-width:1170px;padding:4px 0 30px}
-.chOpportunities *{box-sizing:border-box}
-.chOppHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px}
-.chOppHeader h1{font-size:clamp(27px,3vw,36px);line-height:1.2;letter-spacing:-.03em;margin:6px 0}
+.chOppHeader{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+.chOppHeader h1{font-size:clamp(27px,3vw,36px);margin:6px 0}
 .chOppHeader p{max-width:670px;font-size:14px;margin:0}
-.chOppHeader a{font-size:13px;text-decoration:none}
-.chOppStatus{background:#fff;border:1px solid #dee6f2;border-radius:16px;padding:24px;box-shadow:0 2px 8px #182f530d}
-.chOppStatus h2{font-size:21px;font-weight:750;margin:8px 0}
-.chOppStatus p{font-size:13px;margin:0}
+.chOppStatus,.chOppStep{background:#fff;border:1px solid #dee6f2;border-radius:15px;padding:20px}
+.chOppStatus h2{font-size:21px;margin:8px 0}
+.chOppStatus p,.chOppStep p{font-size:13px;margin:0}
 .chOppFlow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
-.chOppStep{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:20px}
 .chOppStep span{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:#edf2ff;color:#335dea;font-weight:800;margin-bottom:12px}
-.chOppStep h3{font-size:15px;font-weight:750;margin:0 0 6px}
-.chOppStep p{font-size:12px;margin:0}
-.chOppEmpty{border:1px dashed #c7d4e7;border-radius:16px;background:#f9fbff;min-height:155px;padding:28px;display:grid;place-items:center;text-align:center}
-.chOppEmpty h2{font-size:18px;font-weight:750;margin:0}
+.chOppStep h3{font-size:15px;margin:0 0 6px}
+.chOppEmpty{border:1px dashed #c7d4e7;border-radius:15px;background:#f9fbff;min-height:155px;padding:22px;display:grid;place-items:center;text-align:center}
+.chOppEmpty h2{font-size:18px;margin:0}
 .chOppEmpty p{font-size:13px;max-width:500px;margin:6px auto 0}
-.chOppControls{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin:24px 0 13px}
-.chOppControls h2{font-size:19px;font-weight:750;margin:0}
+.chOppControls{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin:24px 0 13px}
+.chOppControls h2{font-size:19px;margin:0}
 .chOppFilter{font-size:12px;border:1px solid #d5dfed;padding:8px 12px;border-radius:8px;background:#fff;color:#52627a}
-@media(max-width:650px){.chOppFlow{grid-template-columns:minmax(0,1fr)}.chOppStep{padding:17px}.chOppStatus{padding:19px}.chOppEmpty{padding:20px}}
+@media(max-width:650px){.chOppFlow{grid-template-columns:minmax(0,1fr)}}
 `;
 
 /** Never show example findings as real opportunities or permit unauthorised site changes. */
