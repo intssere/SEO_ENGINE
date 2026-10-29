@@ -43,6 +43,7 @@ test("actual entrypoint: production DB-absence fails before mock app.listen, loc
     { name: "railway-staging", env: {NODE_ENV:"development",RAILWAY_ENVIRONMENT_NAME:"staging"}, listen:false },
     { name: "local-dev", env: {NODE_ENV:"development"}, listen:true },
     { name: "local-test", env: {NODE_ENV:"test"}, listen:true },
+    { name: "identity-blocked", env: {NODE_ENV:"production", DATABASE_URL:"mock://nonlive"}, listen:false },
   ] as const) {
     const child = spawnSync(process.execPath, ["--input-type=module", "--eval", script], {
       cwd: serverRoot, encoding: "utf8", timeout: 10000,
