@@ -59,17 +59,18 @@ function Router() {
   return (
     <RoutedErrorBoundary>
       <Shell>
+        <Suspense fallback={<div role="status" className="content">Loading customer workspace…</div>}>
         <Switch>
           <Route path="/" component={DashboardPage} />
-          <Route path="/home">{() => <Suspense fallback={<div role="status" className="content">Loading customer workspace…</div>}><CustomerHomePage /></Suspense>}</Route>
-          <Route path="/onboarding">{() => <Suspense fallback={<div role="status" className="content">Loading website setup…</div>}><CustomerOnboardingPage /></Suspense>}</Route>
-          <Route path="/analysis">{() => <Suspense fallback={<div role="status" className="content">Loading analysis status…</div>}><CustomerAnalysisPage /></Suspense>}</Route>
-          <Route path="/site-overview">{() => <Suspense fallback={<div role="status" className="content">Loading site overview…</div>}><CustomerSiteOverviewPage /></Suspense>}</Route>
-          <Route path="/customer-opportunities">{() => <Suspense fallback={<div role="status" className="content">Loading customer opportunities…</div>}><CustomerOpportunitiesPage /></Suspense>}</Route>
-          <Route path="/opportunity-detail">{() => <Suspense fallback={<div role="status">Loading detail…</div>}><CustomerOpportunityDetailPage /></Suspense>}</Route>
-          <Route path="/automation-settings">{() => <Suspense fallback={<div role="status">Loading automation settings…</div>}><CustomerAutomationSettingsPage /></Suspense>}</Route>
-          <Route path="/results-impact">{() => <Suspense fallback={<div role="status">Loading results…</div>}><CustomerResultsImpactPage /></Suspense>}</Route>
-          <Route path="/customer-portfolio">{() => <Suspense fallback={<div role="status">Loading portfolio…</div>}><CustomerPortfolioPage /></Suspense>}</Route>
+          <Route path="/home" component={CustomerHomePage} />
+          <Route path="/onboarding" component={CustomerOnboardingPage} />
+          <Route path="/analysis" component={CustomerAnalysisPage} />
+          <Route path="/site-overview" component={CustomerSiteOverviewPage} />
+          <Route path="/customer-opportunities" component={CustomerOpportunitiesPage} />
+          <Route path="/opportunity-detail" component={CustomerOpportunityDetailPage} />
+          <Route path="/automation-settings" component={CustomerAutomationSettingsPage} />
+          <Route path="/results-impact" component={CustomerResultsImpactPage} />
+          <Route path="/customer-portfolio" component={CustomerPortfolioPage} />
           <Route path="/opportunities" component={OpportunitiesPage} />
           <Route path="/governance" component={GovernancePage} />
           <Route path="/actions" component={ActionsPage} />
@@ -92,6 +93,7 @@ function Router() {
 
           <Route component={NotFound} />
         </Switch>
+        </Suspense>
       </Shell>
     </RoutedErrorBoundary>
   );
