@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { productionBindingSupplier } from "./lib/p8-8-w09c2e-r4-binding-boundary.js";
 import { loadStartupRuntimeConfig } from "./lib/startup-runtime.js";
+import { assertCviStartupDatabaseBinding } from "./lib/cvi-ops-02-startup-gate.js";
 
 const rawPort = process.env["PORT"];
 
@@ -17,6 +18,8 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
+// Must fail before app.listen in production/staging, retaining explicit local test/development mode.
+assertCviStartupDatabaseBinding(process.env);
 const databaseBinding = process.env.DATABASE_URL;
 
 if (databaseBinding?.trim()) {
