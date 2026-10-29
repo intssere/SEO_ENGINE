@@ -13,6 +13,8 @@ const ROUTES = [
   "/customer-opportunities",
   "/opportunity-detail",
   "/automation-settings",
+  "/results-impact",
+  "/customer-portfolio",
   "/opportunities",
   "/governance",
   "/actions",
@@ -377,7 +379,7 @@ for (const route of ROUTES) {
           ).toBeGreaterThanOrEqual(12);
         }
 
-        if (route === "/home" || route === "/onboarding" || route === "/analysis" || route === "/site-overview" || route === "/customer-opportunities" || route === "/opportunity-detail" || route === "/automation-settings") {
+        if (route === "/home" || route === "/onboarding" || route === "/analysis" || route === "/site-overview" || route === "/customer-opportunities" || route === "/opportunity-detail" || route === "/automation-settings" || route === "/results-impact" || route === "/customer-portfolio") {
           // Customer preview is intentionally isolated from the operator sidebar and mobile navigation.
           expect(state.shellMode.sidebarVisible).toBe(false);
           expect(state.shellMode.mobileNavVisible).toBe(false);
