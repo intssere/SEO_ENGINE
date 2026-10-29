@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {C4_E1_CASES,reviewC4E1EvidencePacket} from "./ugp-11-c4-e1-offline-evidence-structural-validator.js";
+import {C4_E1_CASES,reviewC4E1EvidencePacket,type C4E1Outcome} from "./ugp-11-c4-e1-offline-evidence-structural-validator.js";
 const digest=(c:string)=>c.repeat(64);
 const sha=(c:string)=>c.repeat(40);
 function fixture(){
  return C4_E1_CASES.flatMap(testId=>(["native","pg_boss"] as const).map(candidate=>({
-  testId,candidate,outcome:"PASS" as const,sourceSha:sha("a"),runnerSha:sha("b"),
+  testId,candidate,outcome:"PASS" as C4E1Outcome,sourceSha:sha("a"),runnerSha:sha("b"),
   fixtureSeed:`seed-${testId}`,workFingerprint:digest("c"),observationDigest:digest("d"),
   isolatedTargetId:"proposed-disposable-c4",externalEffectAttempts:0,providerNetworkAttempts:0
  })));
