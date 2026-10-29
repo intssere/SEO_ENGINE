@@ -2,19 +2,11 @@ import { Link } from "wouter";
 import styles from "./customer-onboarding.css?inline";
 
 const opportunityStyles = `
-.chOpportunities{padding:4px 0}
 .chOppHeader,.chOppControls{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
-.chOppHeader h1{font-size:32px;margin:5px 0}
-.chOppHeader p,.chOppStatus p,.chOppStep p{font-size:13px}
-.chOppStatus,.chOppStep{background:white;border:1px solid #dee6f2;border-radius:14px;padding:20px}
-.chOppStatus h2{font-size:21px}
+.chOppStatus,.chOppStep{background:#fff;border:1px solid #dee6f2;border-radius:14px;padding:20px}
 .chOppFlow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
-.chOppStep span{display:block;color:#345bea;font-weight:800;margin-bottom:8px}
-.chOppStep h3{font-size:15px}
+.chOppStep span{color:#345bea;font-weight:800}
 .chOppEmpty{border:1px dashed #c7d4e7;border-radius:14px;background:#f9fbff;padding:25px;text-align:center}
-.chOppEmpty p{font-size:13px}
-.chOppControls h2{font-size:19px}
-.chOppFilter{font-size:12px;color:#52627a}
 @media(max-width:650px){.chOppFlow{grid-template-columns:1fr}}
 `;
 
