@@ -10,3 +10,6 @@
 
 /* Preserve desktop content-gutter acceptance on standalone route. */
 .chWelcomeStandalone .chLightMain .content{padding-left:16px!important;padding-right:16px!important}
+
+/* CH-R86: allow customer preview navigation to reflow on narrow phones. */
+@media(max-width:640px){.chLightSidebar nav{flex-wrap:wrap;min-width:0}.chLightNavItem{min-width:0;max-width:100%;box-sizing:border-box}.chLightTopbar{min-width:0;gap:8px}.chLightTopbar>span:first-child{min-width:0;overflow-wrap:anywhere}}
