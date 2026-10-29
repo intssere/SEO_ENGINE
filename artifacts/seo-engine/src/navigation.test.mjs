@@ -42,6 +42,7 @@ const engineeringOnlyRoutes = [
   "/onboarding",
   "/analysis",
   "/site-overview",
+  "/customer-opportunities",
   "/rankings",
   "/internal-links",
   "/ai-visibility",
