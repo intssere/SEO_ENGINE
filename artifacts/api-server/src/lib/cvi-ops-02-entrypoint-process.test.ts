@@ -32,7 +32,7 @@ test("repository production Docker image establishes NODE_ENV=production before 
   const dockerfile = readFileSync(join(serverRoot, "..", "..", "Dockerfile"), "utf8");
   const runtime = dockerfile.slice(dockerfile.indexOf(" AS runtime"));
   assert.match(runtime, /ENV NODE_ENV=production/);
-  assert.match(runtime, /CMD \\[\\\"node\\\", \\"--enable-source-maps\\\", \\"artifacts\\/api-server\\/dist\\/index\\.mjs\\\"\\]/);
+  assert.ok(runtime.includes('CMD ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]'));
 });
 
 test("actual entrypoint: production DB-absence fails before mock app.listen, local test remains compatible", async () => {
