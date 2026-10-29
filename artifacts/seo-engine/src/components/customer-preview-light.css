@@ -7,29 +7,3 @@
 
 /* CH-R84 standalone customer welcome — no authenticated workspace chrome. */
 .chWelcomeStandalone{display:block;background:linear-gradient(135deg,#f3f7ff,#ffffff 52%,#eef3ff)}.chWelcomeStandalone .chLightMainColumn{width:100%}.chWelcomeStandalone .chLightMain{max-width:1140px;padding:36px 24px 54px}.chWelcomeStandalone .chLightContent{padding:0!important}.chWelcomeStandalone .commandCenter{max-width:none}.chStandaloneWelcome{max-width:1050px;margin:auto}.chStandaloneBrand{display:flex;align-items:center;gap:7px;color:#1c2b49;font-size:15px;font-weight:700;margin:0 0 24px}.chStandaloneMark{background:#365cf5;color:#fff;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:20px}.chStandaloneTag{margin-left:auto;font-size:12px;font-weight:500;color:#52617a}.chStandalonePanel{background:#fff;border:1px solid #e3eaf6;border-radius:22px;box-shadow:0 22px 65px #243f7d12;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr);gap:36px;padding:56px 58px;align-items:center}.chStandaloneIntro h2{font-size:clamp(27px,3.4vw,40px);letter-spacing:-.04em;line-height:1.12;color:#182541;margin:10px 0}.chStandaloneIntro>p:not(.eyebrow){color:#52617a;font-size:15px;line-height:1.6}.chStandaloneIntro .chLightSteps{margin:32px 0}.chStandaloneIntro .chLightStepNumber{background:#d7f8e9;color:#13764f;width:36px;height:36px;font-size:15px}.chStandaloneIntro .chLightStep{gap:15px}.chStandaloneIntro .chLightStep p{color:#52617a}.chStandaloneIntro .chLightPrimary{min-width:180px;background:#3858f5;padding:13px 22px}.chStandaloneIllustration{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}.chIllustrationWindow{width:min(100%,340px);height:255px;background:linear-gradient(145deg,#eaf1ff,#f9fbff);border:9px solid #dbe6ff;border-radius:22px;transform:rotate(-5deg);box-shadow:14px 17px 35px #5068b52c;padding:15px;position:relative}.chIllustrationDots{font-size:12px;letter-spacing:5px;color:#7898e8}.chIllustrationBars{height:150px;display:flex;align-items:flex-end;justify-content:space-evenly;gap:12px;padding:16px}.chIllustrationBars i{display:block;width:32px;background:linear-gradient(#86a8ff,#3b63ee);border-radius:7px 7px 0 0}.chIllustrationBars i:nth-child(1){height:30%}.chIllustrationBars i:nth-child(2){height:45%}.chIllustrationBars i:nth-child(3){height:60%}.chIllustrationBars i:nth-child(4){height:77%}.chIllustrationBars i:nth-child(5){height:94%}.chIllustrationLine{position:absolute;right:28px;top:37px;font-size:42px;color:#4d73e9}.chPlatformPills{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:36px 0 10px}.chPlatformPills span{border:1px solid #e0e8f7;border-radius:9px;padding:9px 12px;background:#fff;font-size:12px;font-weight:700;color:#34547e;box-shadow:0 4px 12px #223c7010}.chStandaloneIllustration>p{text-align:center;max-width:230px;font-size:13px;color:#52617a;line-height:1.6}.chStandaloneFoot{text-align:center;margin:23px 0;color:#52617a;font-size:12px}@media(max-width:760px){.chStandalonePanel{grid-template-columns:minmax(0,1fr);padding:28px 22px;gap:26px}.chStandaloneIllustration{display:none}.chWelcomeStandalone .chLightMain{padding:20px 12px 35px}.chStandaloneTag{display:none}}
-
-/* Preserve desktop content-gutter acceptance on standalone route. */
-.chWelcomeStandalone .chLightMain .content{padding-left:16px!important;padding-right:16px!important}
-
-/* CH-R86: allow customer preview navigation to reflow on narrow phones. */
-@media(max-width:640px){.chLightSidebar nav{flex-wrap:wrap;min-width:0}.chLightNavItem{min-width:0;max-width:100%;box-sizing:border-box}.chLightTopbar{min-width:0;gap:8px}.chLightTopbar>span:first-child{min-width:0;overflow-wrap:anywhere}}
-
-/* CH-R90 customer site overview styles, moved from JS to CSS asset */
-.chOverview{max-width:1170px;padding:4px 0 28px}.chOverview *{box-sizing:border-box}
-.chOverviewHeader,.chOverviewConnection{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
-.chOverviewHeader{margin-bottom:20px}.chOverviewHeader h1{margin:5px 0}.chOverviewHeader p{margin:0}
-.chOverviewCard{background:#fff;border:1px solid #e0e7f1;border-radius:15px;padding:20px;min-width:0}
-.chOverviewConnection{border-left:4px solid #6688f5}.chOverviewConnection h2{font-size:19px}
-.chOverviewConnection .customerPrimaryButton{margin:0}
-.chOverviewStatus{color:#3157aa;font-size:11px;font-weight:750;text-transform:uppercase}
-.chOverviewMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:16px 0}
-.chOverviewMetric strong{display:block;font-size:30px;color:#8390a5;margin:8px 0}
-.chOverviewMetric h2,.chOverviewMetric p{font-size:13px;margin:0}
-.chOverviewSectionTitle{font-size:18px;margin:0 0 12px;font-weight:750}
-.chOverviewEmpty{padding:22px;text-align:center;background:#f9fbff;border:1px dashed #cbd5e1;border-radius:12px}
-.chOverviewWork{margin-top:20px}.chOverviewWorkGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.chOverviewWorkCard{min-height:110px}.chOverviewWorkCard h3{font-size:15px}
-.chOverviewNotice{margin-top:18px}
-@media(max-width:940px){.chOverviewMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.chOverviewWorkGrid{grid-template-columns:1fr}.chOverviewCard{padding:16px}}
-@media(max-width:340px){.chOverviewMetrics{grid-template-columns:1fr}}
