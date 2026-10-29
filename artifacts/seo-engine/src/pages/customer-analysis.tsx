@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import "./customer-onboarding.css";
+import onboardingStyles from "./customer-onboarding.css?inline";
 
 /** Preview-only status: never infer a job from onboarding input or fabricate progress. */
 const checks = [
@@ -13,7 +13,7 @@ const checks = [
 ];
 
 export default function CustomerAnalysisPage() {
-  return <div className="customerOnboarding" aria-labelledby="analysis-title">
+  return <div className="customerOnboarding" aria-labelledby="analysis-title"><style>{onboardingStyles}</style>
     <header className="customerOnboardingHeader">
       <div><p className="customerEyebrow">SITE ANALYSIS · PREVIEW</p><h1 id="analysis-title">Site analysis</h1>
       <p>Review the analysis stages. No verified analysis job is currently available in this preview.</p></div>
