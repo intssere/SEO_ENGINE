@@ -17,7 +17,7 @@ const fail = (issue: string) => Object.freeze({
 
 function decodeEvidenceJSON(input: unknown): unknown {
   if (typeof input !== "string") throw new Error("non_string_json_input");
-  const bytes = utf8.encode(input).length;
+  // UTF-8 byte length is never smaller than JS UTF-16 code-unit length.\n  // Reject huge strings before allocating the encoded buffer.\n  if (input.length > MAX_A07_EVIDENCE_JSON_BYTES) throw new Error("json_input_size_out_of_bounds");\n  const bytes = utf8.encode(input).length;
   if (bytes === 0 || bytes > MAX_A07_EVIDENCE_JSON_BYTES) throw new Error("json_input_size_out_of_bounds");
   return JSON.parse(input) as unknown;
 }
