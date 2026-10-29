@@ -373,7 +373,7 @@ for (const route of ROUTES) {
           ).toBeGreaterThanOrEqual(12);
         }
 
-        if (route === "/home" || route === "/onboarding") {
+        if (route === "/home" || route === "/onboarding" || route === "/analysis") {
           // Customer preview is intentionally isolated from the operator sidebar and mobile navigation.
           expect(state.shellMode.sidebarVisible).toBe(false);
           expect(state.shellMode.mobileNavVisible).toBe(false);
