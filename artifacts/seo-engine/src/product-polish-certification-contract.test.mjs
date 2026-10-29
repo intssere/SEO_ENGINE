@@ -21,6 +21,7 @@ const EXPECTED_ROUTES = [
   "/site-overview",
   "/customer-opportunities",
   "/opportunity-detail",
+  "/automation-settings",
   "/opportunities",
   "/governance",
   "/actions",
