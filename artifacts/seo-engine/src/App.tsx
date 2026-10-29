@@ -17,6 +17,7 @@ const CustomerOnboardingPage = lazy(() => import('./pages/customer-onboarding'))
 const CustomerHomePage = lazy(() => import('./pages/customer-home'));
 const CustomerAnalysisPage = lazy(() => import('./pages/customer-analysis'));
 const CustomerSiteOverviewPage = lazy(() => import('./pages/customer-site-overview'));
+const CustomerOpportunitiesPage = lazy(() => import('./pages/customer-opportunities'));
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
 import GovernancePage from './pages/governance';
@@ -49,7 +50,7 @@ const queryClient = new QueryClient({
 
 function Router() {
   const [location] = useLocation();
-  const isCustomerPreview = location === '/home' || location === '/onboarding' || location === '/analysis' || location === '/site-overview';
+  const isCustomerPreview = location === '/home' || location === '/onboarding' || location === '/analysis' || location === '/site-overview' || location === '/customer-opportunities';
   const Shell = isCustomerPreview ? CustomerPreviewLayout : Layout;
   return (
     <RoutedErrorBoundary>
@@ -60,6 +61,7 @@ function Router() {
           <Route path="/onboarding">{() => <Suspense fallback={<div role="status" className="content">Loading website setup…</div>}><CustomerOnboardingPage /></Suspense>}</Route>
           <Route path="/analysis">{() => <Suspense fallback={<div role="status" className="content">Loading analysis status…</div>}><CustomerAnalysisPage /></Suspense>}</Route>
           <Route path="/site-overview">{() => <Suspense fallback={<div role="status" className="content">Loading site overview…</div>}><CustomerSiteOverviewPage /></Suspense>}</Route>
+          <Route path="/customer-opportunities">{() => <Suspense fallback={<div role="status" className="content">Loading customer opportunities…</div>}><CustomerOpportunitiesPage /></Suspense>}</Route>
           <Route path="/opportunities" component={OpportunitiesPage} />
           <Route path="/governance" component={GovernancePage} />
           <Route path="/actions" component={ActionsPage} />
