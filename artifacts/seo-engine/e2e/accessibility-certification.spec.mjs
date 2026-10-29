@@ -23,6 +23,8 @@ const ROUTES = [
   "/customer-opportunities",
   "/opportunity-detail",
   "/automation-settings",
+  "/results-impact",
+  "/customer-portfolio",
   "/opportunities",
   "/governance",
   "/actions",
