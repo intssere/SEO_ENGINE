@@ -21,6 +21,7 @@ const ROUTES = [
   "/analysis",
   "/site-overview",
   "/customer-opportunities",
+  "/opportunity-detail",
   "/opportunities",
   "/governance",
   "/actions",
