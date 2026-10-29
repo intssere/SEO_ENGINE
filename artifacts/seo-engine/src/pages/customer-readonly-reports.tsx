@@ -9,7 +9,7 @@ function ReadonlyReport({kind}:{kind:keyof typeof copy}) {
  <header className="customerOnboardingHeader"><div><p className="customerEyebrow">{label} · PREVIEW</p><h1>{title}</h1></div></header>
  <section className="customerOnboardingCard"><h2>{empty}</h2><p role="status">{status}</p><Link href="/onboarding">Review website setup</Link></section>
  <section className="customerOnboardingCard"><h2>Evidence required</h2><p>{detail}</p></section>
- <p className="customerNotice">Read-only preview. No simulated results.</p>
+ <p className="customerNotice">Read-only preview.</p>
  </div>;
 }
 export function CustomerResultsImpactPage(){return <ReadonlyReport kind="results"/>}
