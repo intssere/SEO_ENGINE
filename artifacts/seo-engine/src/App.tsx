@@ -20,6 +20,8 @@ const CustomerSiteOverviewPage = lazy(() => import('./pages/customer-site-overvi
 const CustomerOpportunitiesPage = lazy(() => import('./pages/customer-opportunities'));
 const CustomerOpportunityDetailPage = lazy(() => import('./pages/customer-opportunity-detail'));
 const CustomerAutomationSettingsPage = lazy(() => import('./pages/customer-automation-settings'));
+const CustomerResultsImpactPage = lazy(() => import('./pages/customer-results-impact'));
+const CustomerPortfolioPage = lazy(() => import('./pages/customer-portfolio'));
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
 import GovernancePage from './pages/governance';
@@ -52,7 +54,7 @@ const queryClient = new QueryClient({
 
 function Router() {
   const [location] = useLocation();
-  const isCustomerPreview = location === '/home' || location === '/onboarding' || location === '/analysis' || location === '/site-overview' || location === '/customer-opportunities' || location === '/opportunity-detail' || location === '/automation-settings';
+  const isCustomerPreview = location === '/home' || location === '/onboarding' || location === '/analysis' || location === '/site-overview' || location === '/customer-opportunities' || location === '/opportunity-detail' || location === '/automation-settings' || location === '/results-impact' || location === '/customer-portfolio';
   const Shell = isCustomerPreview ? CustomerPreviewLayout : Layout;
   return (
     <RoutedErrorBoundary>
@@ -66,6 +68,8 @@ function Router() {
           <Route path="/customer-opportunities">{() => <Suspense fallback={<div role="status" className="content">Loading customer opportunities…</div>}><CustomerOpportunitiesPage /></Suspense>}</Route>
           <Route path="/opportunity-detail">{() => <Suspense fallback={<div role="status">Loading detail…</div>}><CustomerOpportunityDetailPage /></Suspense>}</Route>
           <Route path="/automation-settings">{() => <Suspense fallback={<div role="status">Loading automation settings…</div>}><CustomerAutomationSettingsPage /></Suspense>}</Route>
+          <Route path="/results-impact">{() => <Suspense fallback={<div role="status">Loading results…</div>}><CustomerResultsImpactPage /></Suspense>}</Route>
+          <Route path="/customer-portfolio">{() => <Suspense fallback={<div role="status">Loading portfolio…</div>}><CustomerPortfolioPage /></Suspense>}</Route>
           <Route path="/opportunities" component={OpportunitiesPage} />
           <Route path="/governance" component={GovernancePage} />
           <Route path="/actions" component={ActionsPage} />
