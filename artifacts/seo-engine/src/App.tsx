@@ -20,8 +20,8 @@ const CustomerSiteOverviewPage = lazy(() => import('./pages/customer-site-overvi
 const CustomerOpportunitiesPage = lazy(() => import('./pages/customer-opportunities'));
 const CustomerOpportunityDetailPage = lazy(() => import('./pages/customer-opportunity-detail'));
 const CustomerAutomationSettingsPage = lazy(() => import('./pages/customer-automation-settings'));
-const CustomerResultsImpactPage = lazy(() => import('./pages/customer-results-impact'));
-const CustomerPortfolioPage = lazy(() => import('./pages/customer-portfolio'));
+const CustomerResultsImpactPage = lazy(() => import('./pages/customer-readonly-reports').then(m => ({default:m.CustomerResultsImpactPage})));
+const CustomerPortfolioPage = lazy(() => import('./pages/customer-readonly-reports').then(m => ({default:m.CustomerPortfolioPage})));
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
 import GovernancePage from './pages/governance';
