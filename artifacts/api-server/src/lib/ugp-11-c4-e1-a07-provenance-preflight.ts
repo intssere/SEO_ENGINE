@@ -44,7 +44,16 @@ export function reviewA07ProvenanceClaims(packet: unknown, traces: unknown, mani
     if (!object(row) || !object(trace)) { issues.push("missing_row_or_trace_" + candidate); continue; }
     if (claim.sourceSha !== row.sourceSha || claim.runnerSha !== row.runnerSha ||
         claim.observationDigest !== row.observationDigest) issues.push("row_manifest_mismatch_" + candidate);
-    if (claim.traceDigest !== digestA07Trace(trace)) issues.push("trace_digest_mismatch_" + candidate);
+    // Untrusted malformed input must be rejected, not abort the review. JSON
+    // serialization can throw for cyclic graphs, BigInt or custom toJSON.
+    let observedDigest: string | null = null;
+    try {
+      observedDigest = digestA07Trace(trace);
+    } catch {
+      issues.push("unhashable_trace_" + candidate);
+    }
+    if (observedDigest !== null && claim.traceDigest !== observedDigest)
+      issues.push("trace_digest_mismatch_" + candidate);
   }
   if (claims.some(x => !object(x) || !candidates.includes(x.candidate as "native" | "pg_boss")))
     issues.push("unknown_manifest_candidate");

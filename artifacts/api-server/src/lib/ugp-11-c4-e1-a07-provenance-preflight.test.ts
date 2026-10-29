@@ -62,3 +62,24 @@ test("invalid cross-evidence cannot be rescued by valid manifests", () => {
   x.packet[0] = { ...x.packet[0]!, outcome: "NOT_RUN" };
   assert.equal(reviewA07ProvenanceClaims(x.packet, x.traces, x.manifests).status, "INCOMPLETE_OR_UNSAFE");
 });
+
+
+test("unhashable hostile traces reject without raising and never confer authority", () => {
+  const cases = [
+    (trace: Record<string, unknown>) => { trace.self = trace; },
+    (trace: Record<string, unknown>) => { trace.unexpected = BigInt(7); },
+    (trace: Record<string, unknown>) => {
+      trace.toJSON = () => { throw new Error("hostile_serializer"); };
+    }
+  ];
+  for (const mutate of cases) {
+    const x = fixture();
+    mutate(x.traces[0] as unknown as Record<string, unknown>);
+    const result = reviewA07ProvenanceClaims(x.packet, x.traces, x.manifests);
+    assert.equal(result.status, "INCOMPLETE_OR_UNSAFE");
+    assert.ok(result.issues.includes("unhashable_trace_native"));
+    assert.equal(result.stage2bCertified, false);
+    assert.equal(result.executionAuthorized, false);
+    assert.equal(result.operationalAuthority, false);
+  }
+});
