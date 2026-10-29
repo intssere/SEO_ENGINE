@@ -10,9 +10,9 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
   return <div className="content commandCenter">
     {verified && <header className="commandCenterHero">
       <div>
-        <p className="eyebrow">CUSTOMER HOME · {verified ? "VERIFIED" : "PREVIEW"}</p>
+        <p className="eyebrow">CUSTOMER HOME · VERIFIED</p>
         <h1>Your website workspace</h1>
-        <p className="muted">{verified ? "Authorized website evidence." : "Site authorization and verified evidence required."}</p>
+        <p className="muted">Authorized website evidence.</p>
       </div>
       <Link className="linkButton" href="/onboarding">Website setup</Link>
     </header>}
@@ -30,16 +30,16 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
     {verified && <section className="card" aria-labelledby="customer-home-status">
       <p className="eyebrow">WEBSITE STATUS</p>
       <h2 id="customer-home-status">{view.site.name}</h2>
-      <p className="muted">{verified ? view.state.replaceAll("_", " ") : "Status unverified"}</p>
+      <p className="muted">{view.state.replaceAll("_", " ")}</p>
       <p>{reason}</p>
       <Link className="linkButton" href="/onboarding">Review website setup</Link>
     </section>}
     {verified && <div className="commandCenterWorkGrid">
       {[
-        ["SEARCH DATA", verified ? "Verified source status" : "Awaiting verified sources",
-          verified ? "Source observations and certified measurements are shown above." : "Search analytics require validated site-specific sources."],
-        ["SITE ANALYSIS", verified ? "Site readiness" : "No certified results yet",
-          verified ? reason : "Technical findings require independently verified site evidence."],
+        ["SEARCH DATA", "Verified source status",
+          "Source observations and certified measurements are shown above."],
+        ["SITE ANALYSIS", "Site readiness",
+          reason],
       ].map(([label, heading, description]) => <section className="card" key={label}>
         <p className="eyebrow">{label}</p>
         <h2>{heading}</h2>
@@ -48,7 +48,7 @@ export function CustomerHomePresentation({ capability }: { capability: CustomerS
       </section>)}
     </div>}
     {verified && <footer className="commandCenterHero">
-      <span>{verified ? "Read-only verified customer presentation." : "Read-only preview. Customer data is not yet enabled."}</span>
+      <span>Read-only verified customer presentation.</span>
     </footer>}
   </div>;
 }
