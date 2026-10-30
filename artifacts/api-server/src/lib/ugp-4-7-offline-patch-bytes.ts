@@ -38,7 +38,7 @@ function decode(x: unknown): Buffer {
   return bytes;
 }
 const blobOid=(bytes: Buffer) => sha1(Buffer.concat([
-  Buffer.from("blob "+bytes.length+"\\0"),bytes
+  Buffer.from("blob "+bytes.length+"\u0000"),bytes
 ]));
 
 /**
