@@ -13,7 +13,7 @@ const mocks: Record<string, string> = {
   "./lib/logger": 'export const logger = { info: () => {}, error: () => {} };',
   "./lib/p8-8-w09c2e-r4-binding-boundary.js": "export const productionBindingSupplier = () => null;",
   "./lib/startup-runtime.js": "export const loadStartupRuntimeConfig = () => ({databaseConfigured:false,pilotQueueResumeEnabled:false});",
-  "@workspace/db": 'export const ensureDiamondShelfIdentity = async () => ({status:"blocked",reason:"mock-only"});',
+  "@workspace/db": `export const ensureDiamondShelfIdentity = async () => {\n    const scenario = process.env.CVI_TEST_IDENTITY_CASE;\n    if (scenario === "ready") return { status: "ready", tableCount: 1 };\n    if (scenario === "inactive") return { status: "blocked", reason: "inactive-site" };\n    if (scenario === "throw") throw new Error("mock-db-connection-error");\n    if (scenario === "reject") return Promise.reject(new Error("mock-db-nonresponsive"));\n    return { status: "blocked", reason: "mock-only" };\n  };`,
   "./lib/pilot-orchestration": "export const resumeQueuedPilots = async () => {};"
 };
 const mockPlugin: Plugin = {
@@ -52,6 +52,10 @@ test("actual entrypoint: production DB-absence fails before mock app.listen, loc
     { name: "local-dev", env: {NODE_ENV:"development"}, listen:true },
     { name: "local-test", env: {NODE_ENV:"test"}, listen:true },
     { name: "identity-blocked", env: {NODE_ENV:"production", DATABASE_URL:"mock://nonlive"}, listen:false },
+    { name: "identity-ready", env: {NODE_ENV:"production", DATABASE_URL:"mock://nonlive", CVI_TEST_IDENTITY_CASE:"ready"}, listen:true },
+    { name: "identity-inactive", env: {NODE_ENV:"production", DATABASE_URL:"mock://nonlive", CVI_TEST_IDENTITY_CASE:"inactive"}, listen:false },
+    { name: "identity-throws", env: {NODE_ENV:"production", DATABASE_URL:"mock://nonlive", CVI_TEST_IDENTITY_CASE:"throw"}, listen:false },
+    { name: "identity-rejects", env: {NODE_ENV:"production", DATABASE_URL:"mock://nonlive", CVI_TEST_IDENTITY_CASE:"reject"}, listen:false },
   ] as const) {
     const child = spawnSync(process.execPath, ["--input-type=module", "--eval", script], {
       cwd: serverRoot, encoding: "utf8", timeout: 10000,
