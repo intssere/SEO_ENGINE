@@ -92,3 +92,20 @@ test("case-fold path collisions and absent exact base commit endpoint deny",()=>
   const b=fixture();b.approvedGetPaths=["/repos/demo-owner/test-repo/git/commits/"+"b".repeat(40)];denies(b);
   const c=fixture();c.approvedGetPaths=["/repos/demo-owner/test-repo/git/trees/"+"a".repeat(40)];denies(c);
 });
+
+test("G0 rejects unbound Git tree and blob GETs, even alongside the exact baseline commit",()=>{
+  const commit="/repos/demo-owner/test-repo/git/commits/"+"a".repeat(40);
+  for(const extra of [
+    "/repos/demo-owner/test-repo/git/trees/"+"b".repeat(40),
+    "/repos/demo-owner/test-repo/git/blobs/"+"c".repeat(40),
+    "/repos/demo-owner/test-repo/git/commits/"+"b".repeat(40),
+    "/repos/demo-owner/test-repo/actions/workflows"
+  ]) {
+    const x=fixture();x.approvedGetPaths=[commit,extra];denies(x);
+    const y=fixture();y.approvedGetPaths=[extra];denies(y);
+  }
+  const duplicate=fixture();duplicate.approvedGetPaths=[commit,commit];denies(duplicate);
+  const exact=check(fixture());
+  assert.equal(exact.status,"REVIEW_REQUIRED_UNAUTHORIZED");
+  assert.equal(exact.g1Authorized,false);
+});
