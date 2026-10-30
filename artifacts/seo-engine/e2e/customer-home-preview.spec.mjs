@@ -77,3 +77,43 @@ test("customer onboarding stays local and never claims a connection", async ({ p
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });
+
+const CUSTOMER_WORKSPACE_ROUTES = [
+  "/onboarding", "/analysis", "/site-overview", "/customer-opportunities",
+  "/opportunity-detail", "/automation-settings", "/results-impact", "/customer-portfolio",
+];
+
+test("CH visual shell: standalone home, light workspace navigation and active route", async ({ page }) => {
+  const boundary = await installSyntheticNetwork(page);
+  const errors = monitorBrowserErrors(page);
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/home");
+    await expect(page.locator(".chWelcomeStandalone")).toBeVisible();
+    await expect(page.locator(".chLightSidebar")).toHaveCount(0);
+    await expect(page.locator(".chLightTopbar")).toHaveCount(0);
+    for (const route of CUSTOMER_WORKSPACE_ROUTES) {
+      await page.goto(route);
+      const sidebar = page.locator(".chLightSidebar");
+      await expect(sidebar).toBeVisible();
+      await expect(page.locator(".chLightTopbar")).toBeVisible();
+      const active = sidebar.locator('a[aria-current="page"]');
+      await expect(active).toHaveCount(1);
+      await expect(active).toHaveAttribute("href", route);
+      const surface = await sidebar.evaluate(element => {
+        const bg = getComputedStyle(element).backgroundColor;
+        const rect = element.getBoundingClientRect();
+        return { bg, left: rect.left, right: rect.right, viewport: innerWidth,
+          overflow: document.documentElement.scrollWidth > innerWidth + 1 };
+      });
+      expect(surface.bg, route + " must have a light sidebar").toBe("rgb(255, 255, 255)");
+      expect(surface.right, route + " sidebar must fit viewport").toBeLessThanOrEqual(surface.viewport + 1);
+      expect(surface.left).toBeGreaterThanOrEqual(-1);
+      expect(surface.overflow, route + " must not overflow horizontally").toBe(false);
+    }
+  }
+  expect(boundary.unknownApiRequests).toEqual([]);
+  expect(boundary.externalRequests).toEqual([]);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
