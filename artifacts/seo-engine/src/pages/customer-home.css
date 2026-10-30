@@ -1,0 +1,16 @@
+.customerHome{max-width:1180px;margin:auto;padding:24px;color:var(--foreground,#162238)}
+.customerHomeHero,.customerHomePanelHeader,.customerHomeFooter{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.customerHomeHero{align-items:center;margin-bottom:24px}
+.customerHome h1{font-size:clamp(29px,3vw,43px);line-height:1.12}
+.customerHome h2{font-size:22px}
+.customerHomeEyebrow{font-size:11px;font-weight:800;letter-spacing:.1em;color:#4263ae}
+.customerHomeLead,.customerHomeSubtle,.customerHomePanel p{line-height:1.6;color:#52627a}
+.customerHomePanel{background:#fff;border:1px solid #e0e5ef;border-radius:16px;padding:24px;min-width:0}
+.customerHomeGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.customerHomePrimary,.customerHomeTextLink{display:inline-flex;align-items:center;min-height:44px;font-weight:700}
+.customerHomePrimary{background:#294bc2;color:#fff;padding:12px 20px;border-radius:10px}
+.customerHomeTextLink{color:#244dc1;text-decoration:underline}
+.customerHomeTag{background:#eef3ff;color:#26479c;padding:8px 12px;border-radius:50px;font-size:12px}
+.customerHomeFooter{margin-top:24px;color:#52627a;font-size:13px}
+.customerHome a:focus-visible{outline:3px solid #4667d5;outline-offset:3px}
+@media(max-width:700px){.customerHomeGrid{grid-template-columns:1fr}.customerHomePrimary{width:100%;justify-content:center}}

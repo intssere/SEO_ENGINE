@@ -3400,3 +3400,33 @@ td:first-child {
 .navItemIcon { flex-shrink:0; display:inline-block; }
 .primaryNav a { display:flex; gap:10px; align-items:center; }
 @media(prefers-reduced-motion:reduce) { .customerShell { transition:none; } }
+
+/* CH-R90 customer preview supporting styles */
+/* Preserve desktop content-gutter acceptance on standalone route. */
+.chWelcomeStandalone .chLightMain .content{padding-left:16px!important;padding-right:16px!important}
+
+/* CH-R86: allow customer preview navigation to reflow on narrow phones. */
+@media(max-width:640px){.chLightSidebar nav{flex-wrap:wrap;min-width:0}.chLightNavItem{min-width:0;max-width:100%;box-sizing:border-box}.chLightTopbar{min-width:0;gap:8px}.chLightTopbar>span:first-child{min-width:0;overflow-wrap:anywhere}}
+
+/* CH-R90 customer site overview styles, moved from JS to CSS asset */
+.chOverview{max-width:1170px;padding:4px 0 28px}.chOverview *{box-sizing:border-box}
+.chOverviewHeader,.chOverviewConnection{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+.chOverviewHeader{margin-bottom:20px}.chOverviewHeader h1{margin:5px 0}.chOverviewHeader p{margin:0}
+.chOverviewCard{background:#fff;border:1px solid #e0e7f1;border-radius:15px;padding:20px;min-width:0}
+.chOverviewConnection{border-left:4px solid #6688f5}.chOverviewConnection h2{font-size:19px}
+.chOverviewConnection .customerPrimaryButton{margin:0}
+.chOverviewStatus{color:#3157aa;font-size:11px;font-weight:750;text-transform:uppercase}
+.chOverviewMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:16px 0}
+.chOverviewMetric strong{display:block;font-size:30px;color:#8390a5;margin:8px 0}
+.chOverviewMetric h2,.chOverviewMetric p{font-size:13px;margin:0}
+.chOverviewSectionTitle{font-size:18px;margin:0 0 12px;font-weight:750}
+.chOverviewEmpty{padding:22px;text-align:center;background:#f9fbff;border:1px dashed #cbd5e1;border-radius:12px}
+.chOverviewWork{margin-top:20px}.chOverviewWorkGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.chOverviewWorkCard{min-height:110px}.chOverviewWorkCard h3{font-size:15px}
+.chOverviewNotice{margin-top:18px}
+@media(max-width:940px){.chOverviewMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.chOverviewWorkGrid{grid-template-columns:1fr}.chOverviewCard{padding:16px}}
+@media(max-width:340px){.chOverviewMetrics{grid-template-columns:1fr}}
+
+/* Customer shell base rules extracted from inline preview CSS for JS asset budget. */
+.chLightShell{display:flex;min-height:100vh;background:#f6f8fc;color:#17243d;font-family:Inter,ui-sans-serif,system-ui,sans-serif}.chLightSidebar{width:236px;flex:0 0 236px;background:#fff;border-right:1px solid #e5eaf3;padding:28px 16px;display:flex;flex-direction:column;gap:26px}.chLightBrand{display:flex;align-items:center;gap:10px;color:#182b4d;text-decoration:none;font-size:15px;font-weight:750;letter-spacing:.01em}.chLightBrandMark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:#345cf5;color:#fff;font-size:22px}

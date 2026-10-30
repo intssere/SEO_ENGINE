@@ -1,8 +1,9 @@
-import "./customer-onboarding.css";
+import onboardingStyles from "./customer-onboarding.css?inline";
 import { useState } from "react";
 import { Link } from "wouter";
 
-const platforms = ["Auto-detect", "Shopify", "WordPress", "Webflow", "Custom website"];
+const platforms = ["Auto-detect", "Shopify", "WordPress", "Webflow", "Wix", "Squarespace", "Custom website"];
+const platformTiles = ["Shopify", "WordPress", "Webflow", "Wix", "Squarespace", "Custom website"];
 function siteUrl(value: string) {
   try {
     const raw = value.trim();
@@ -19,11 +20,11 @@ export default function CustomerOnboardingPage() {
   const [platform, setPlatform] = useState("Auto-detect");
   const [step, setStep] = useState(1);
   const normalized = siteUrl(url);
-  return <div className="customerOnboarding">
+  return <div className="customerOnboarding"><style>{onboardingStyles}</style>
     <header className="customerOnboardingHeader">
       <div><p className="customerEyebrow">GETTING STARTED</p><h1>Connect your website</h1>
       <p>Set up SEO ENGINE without changing your website.</p></div>
-      <Link href="/" className="customerBackLink">Back to Command Center</Link>
+      <Link href="/home" className="customerBackLink">Back to customer home</Link>
     </header>
     <ol className="customerSteps" aria-label="Onboarding steps">
       {["Website", "Data sources", "Readiness"].map((name, i) => <li key={name} className={step === i+1 ? "current" : step > i+1 ? "completed" : ""} aria-current={step===i+1 ? "step" : undefined}><span>{step>i+1 ? "✓" : i+1}</span>{name}</li>)}
@@ -36,8 +37,7 @@ export default function CustomerOnboardingPage() {
           <label htmlFor="customer-website-url">Website URL</label>
           <input id="customer-website-url" placeholder="https://example.com" autoComplete="url" value={url} onChange={e=>setUrl(e.target.value)} aria-describedby="customer-url-help"/>
           <small id="customer-url-help">{url && !normalized ? "Enter a public HTTPS domain without credentials, IP address or custom port." : "Ownership verification is required for live setup."}</small>
-          <label htmlFor="customer-platform">Website platform</label>
-          <select id="customer-platform" value={platform} onChange={e=>setPlatform(e.target.value)}>{platforms.map(p=><option key={p}>{p}</option>)}</select>
+          <fieldset className="customerPlatformFieldset"><legend>Website platform</legend><p>Choose your platform or leave auto-detect selected. No detection is performed in this preview.</p><div className="customerPlatformTabs" role="group" aria-label="Platform selection">{platforms.map(p=><button key={p} type="button" aria-pressed={platform===p} className={platform===p ? "selected" : ""} onClick={()=>setPlatform(p)}>{p}</button>)}</div><div className="customerPlatformGrid">{platformTiles.map(p=><button key={p} type="button" className={platform===p ? "customerPlatformTile selected" : "customerPlatformTile"} aria-pressed={platform===p} onClick={()=>setPlatform(p)}><span className="customerPlatformGlyph" aria-hidden="true">{p==="Shopify"?"S":p==="WordPress"?"W":p==="Webflow"?"Wf":p==="Wix"?"Wi":p==="Squarespace"?"Sq":"⌘"}</span><strong>{p}</strong><small>{platform===p?"Selected":"Choose platform"}</small></button>)}</div></fieldset>
           <button className="customerPrimaryButton" disabled={!normalized} onClick={()=>setStep(2)}>Continue →</button>
         </>}
         {step===2 && <>
@@ -52,7 +52,7 @@ export default function CustomerOnboardingPage() {
           <p>Live setup requires verified backend access.</p>
           {[["Requested website",normalized],["Platform selection",platform],["Ownership verification","Not started"],["Analysis job","Not started"]].map(([name,value])=><div className="customerReview" key={name}><span>{name}</span><strong>{value}</strong></div>)}
           <p className="customerNotice">No data has been sent, no website added, and no analysis scheduled.</p>
-          <div className="customerButtonRow"><button className="customerSecondaryButton" onClick={()=>setStep(2)}>Back</button><Link href="/connections" className="customerPrimaryButton">View existing connections →</Link></div>
+          <div className="customerButtonRow"><button className="customerSecondaryButton" onClick={()=>setStep(2)}>Back</button><Link href="/home" className="customerPrimaryButton">Return to customer home →</Link></div>
         </>}
       </section>
       <aside className="customerOnboardingAside">
