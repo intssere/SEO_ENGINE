@@ -39,6 +39,10 @@ export function assessUGP47G0ProposedIntake(input: unknown) {
         Buffer.byteLength(input,"utf8") > MAX_INPUT_BYTES)
       return deny("invalid_or_oversized_intake");
     const value: unknown = JSON.parse(input);
+    // Accept only the JSON.stringify representation. This denies duplicate object keys,
+    // escaped-key aliases, noncanonical numbers and ambiguous whitespace serializations.
+    // It is a strict local format requirement, NOT an interoperable canonical JSON standard.
+    if (JSON.stringify(value) !== input) return deny("ambiguous_or_noncanonical_json");
     if (!exact(value,keys)) return deny("missing_or_unexpected_intake_field");
     if (value.host !== "github.com" ||
         !Number.isSafeInteger(value.repositoryId) || (value.repositoryId as number) <= 0 ||
@@ -57,14 +61,16 @@ export function assessUGP47G0ProposedIntake(input: unknown) {
       return deny("invalid_or_unreviewed_g0_identity");
     if (!Array.isArray(value.allowedPaths) || value.allowedPaths.length < 1 ||
         value.allowedPaths.length > 10 || !value.allowedPaths.every(path) ||
-        new Set(value.allowedPaths).size !== value.allowedPaths.length)
+        new Set(value.allowedPaths).size !== value.allowedPaths.length ||
+        new Set((value.allowedPaths as string[]).map(p => p.toLowerCase())).size !== value.allowedPaths.length)
       return deny("invalid_allowlisted_paths");
     if (!Array.isArray(value.approvedGetPaths) || value.approvedGetPaths.length < 1 ||
         value.approvedGetPaths.length > 10 ||
         !value.approvedGetPaths.every((p: unknown) =>
           typeof p === "string" && /^\/repos\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+\/(git\/commits\/[0-9a-f]{40}|git\/trees\/[0-9a-f]{40}|git\/blobs\/[0-9a-f]{40})$/.test(p) &&
           p.startsWith("/repos/" + value.owner + "/" + value.repo + "/")) ||
-        new Set(value.approvedGetPaths).size !== value.approvedGetPaths.length)
+        new Set(value.approvedGetPaths).size !== value.approvedGetPaths.length ||
+        !value.approvedGetPaths.includes("/repos/" + value.owner + "/" + value.repo + "/git/commits/" + value.baseSha))
       return deny("invalid_proposed_get_endpoints");
     const digest = createHash("sha256").update(JSON.stringify(value)).digest("hex");
     return Object.freeze({

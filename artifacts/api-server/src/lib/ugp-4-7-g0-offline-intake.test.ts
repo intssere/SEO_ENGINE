@@ -75,3 +75,20 @@ test("rejects untrusted object graphs without inspecting getters",()=>{
   assert.equal(r.status,"INCOMPLETE_OR_UNSAFE");
   assert.equal(r.gitReadAuthorized,false);
 });
+
+test("duplicate top-level JSON keys, escaped aliases and whitespace ambiguity deny",()=>{
+  const valid=JSON.stringify(fixture());
+  const duplicate=valid.replace('"host":"github.com"', '"host":"evil.example","host":"github.com"');
+  const escapedAlias=valid.replace('"host":"github.com"', '"\\u0068ost":"evil.example","host":"github.com"');
+  for(const raw of [duplicate,escapedAlias," "+valid,valid+"\n",valid.replace('"repositoryId":1234','"repositoryId":1.234e3')]) {
+    const r=assessUGP47G0ProposedIntake(raw);
+    assert.equal(r.status,"INCOMPLETE_OR_UNSAFE");
+    assert.equal(r.g0Approved,false);
+    assert.equal(r.g1Authorized,false);
+  }
+});
+test("case-fold path collisions and absent exact base commit endpoint deny",()=>{
+  const a=fixture();a.allowedPaths=["content/Demo.md","content/demo.md"];denies(a);
+  const b=fixture();b.approvedGetPaths=["/repos/demo-owner/test-repo/git/commits/"+"b".repeat(40)];denies(b);
+  const c=fixture();c.approvedGetPaths=["/repos/demo-owner/test-repo/git/trees/"+"a".repeat(40)];denies(c);
+});
