@@ -52,3 +52,6 @@ This is a static source review, not an operational penetration test or deploymen
 - The candidate handler's existing tests exercise unauthenticated (401), foreign-principal (404) and valid synthetic principal behavior, without contacting live providers.
 
 **Release disposition:** candidate customer route not wired through the reviewed API entrypoint. Migration activation remains **unverified** until bootstrap/migration selection is checked. No runtime/database modification made.
+
+### CH-R112 — bootstrap selection confirmed by source inspection
+`lib/db/src/bootstrap-runtime.ts` delegates to `runtime-bootstrap.ts`. The inspected `runtime-bootstrap.ts` resolves exact migration filenames and invokes `applyMigration` for `0001_core.sql` and `0002_auth.sql` only, rather than scanning or executing every file in the migrations directory. No references to `0015_customer_memberships_candidate.sql` or `0016_customer_attestations_candidate.sql` were found in that bootstrap module. This supports **exclusion from this specific runtime bootstrap path**, not a universal guarantee about all scripts, manual deployment processes, or future migration runners. Continue to require specialist schema certification and explicit activation authorization.
