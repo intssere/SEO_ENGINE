@@ -48,3 +48,20 @@ test("candidate handler enforces auth and tenant scope before certified evidence
   assert.equal(payload.site.id, "site-a");
   assert.deepEqual(payload.metrics, []);
 });
+
+test("customer capability route and candidate SQL remain absent from runtime entrypoints", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const { fileURLToPath } = await import("node:url");
+  const read = (relative: string) => readFile(fileURLToPath(new URL(relative, import.meta.url)), "utf8");
+  const [router, server, bootstrap] = await Promise.all([
+    read("../routes/index.ts"),
+    read("../index.ts"),
+    read("../../../../lib/db/src/runtime-bootstrap.ts"),
+  ]);
+  for (const entry of [router, server]) {
+    assert.doesNotMatch(entry, /customer-capabilities|customer-staging-handler-candidate/);
+  }
+  assert.match(bootstrap, /applyMigration\(sql, "0001_core\.sql"\)/);
+  assert.match(bootstrap, /applyMigration\(sql, "0002_auth\.sql"\)/);
+  assert.doesNotMatch(bootstrap, /0015_customer_memberships_candidate|0016_customer_attestations_candidate/);
+});
