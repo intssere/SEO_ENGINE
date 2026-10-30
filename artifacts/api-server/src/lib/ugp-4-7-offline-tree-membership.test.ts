@@ -111,7 +111,7 @@ test("malformed, duplicate-key, oversized and caller object receipts never autho
     JSON.stringify({...f.tree,gitWriteAuthorized:true}),
     JSON.stringify(f.tree).replace('"repositoryId":123','"repositoryId":1,"repositoryId":123')
   ]){
-    const r=attestUGP47OfflineTreeMembership(...args,payload);
+    const r=attestUGP47OfflineTreeMembership(args[0]!,args[1]!,args[2]!,args[3]!,payload);
     assert.equal(r.status,"INCOMPLETE_OR_UNSAFE");
     assert.equal(r.gitWriteAuthorized,false);
   }
