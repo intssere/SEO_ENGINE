@@ -14,7 +14,7 @@ const mocks: Record<string, string> = {
   "./lib/p8-8-w09c2e-r4-binding-boundary.js": "export const productionBindingSupplier = () => null;",
   "./lib/startup-runtime.js": "export const loadStartupRuntimeConfig = () => ({databaseConfigured:false,pilotQueueResumeEnabled:false});",
   "@workspace/db": `export const ensureDiamondShelfIdentity = async () => {\n    const scenario = process.env.CVI_TEST_IDENTITY_CASE;\n    if (scenario === "ready") return { status: "ready", tableCount: 1 };\n    if (scenario === "inactive") return { status: "blocked", reason: "inactive-site" };\n    if (scenario === "throw") throw new Error("mock-db-connection-error");\n    if (scenario === "reject") return Promise.reject(new Error("mock-db-nonresponsive"));\n    return { status: "blocked", reason: "mock-only" };\n  };`,
-  "./lib/pilot-orchestration": "export const resumeQueuedPilots = async () => {};"
+  "./lib/pilot-orchestration": 'export const resumeQueuedPilots = async () => { process.stdout.write("MOCK_PILOT_RESUME\\n"); };'
 };
 const mockPlugin: Plugin = {
   name: "cvi-ops-02-entrypoint-fixture",
@@ -62,6 +62,7 @@ test("actual entrypoint: production DB-absence fails before mock app.listen, loc
       env: { PATH: process.env.PATH, PORT:"49999", NODE_OPTIONS:"", ...fixture.env },
     });
     assert.equal(child.error, undefined, fixture.name + ": " + child.error?.message);
+    assert.equal(child.stdout.includes("MOCK_PILOT_RESUME"), false, fixture.name + ": unexpected pilot resume");
     assert.equal(child.stdout.includes("MOCK_APP_LISTEN"), fixture.listen,
       fixture.name + " stdout=" + child.stdout + " stderr=" + child.stderr);
     if (fixture.listen) assert.equal(child.status, 0, fixture.name + ": " + child.stderr);
