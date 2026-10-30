@@ -21,3 +21,24 @@ Date: 2026-10-30. Scope: PR #1150, `workstream/ux-ch-recovery-customer-home-v1`.
 - Perform real deployed browser screenshots on each route and compare against the user-provided visual references. Record mismatches and fix in isolated PR branch; rerun exact-HEAD CI and Railway budget check.
 - Independent security/schema review of the changed API readers and two inert migration candidates. Confirm no bootstrap path unintentionally includes them.
 - Obtain explicit user authorization for any PR merge; no production, main, live DB/provider operations or migration under this review.
+
+## CH-R110 — independent source inspection of security boundaries (2026-10-30)
+
+This is a static source review, not an operational penetration test or deployment approval.
+
+**Reviewed:** `customer-membership-reader.ts`, `customer-site-scope-loader.ts`, `customer-attestation-trust.ts`, `customer-certified-evidence-reader.ts`, `customer-staging-policy.ts`, `customer-staging-handler-candidate.ts`, `routes/customer-capabilities.ts`, migrations 0015/0016.
+
+**Positive controls observed:**
+- Membership SQL uses a parameterized authenticated principal, checks active organization/site memberships and active site, rejects malformed/mixed-principal result sets and duplicate sites; the scope loader converts lookup failures to `membership_unavailable` rather than escalating.
+- Candidate route requires `req.auth.subject`, resolves site scope server-side, rejects cross-scope capability records, disallows unverified measurements, and emits only allowlisted fields. There is no route-registration side effect in the reviewed module.
+- Attestation verification matches organization/site, reviewed issuer, verified evidence ID and freshness; staging policy rejects malformed issuer lists and invalid ages.
+- The candidate composition is dependency-injected and does not itself touch environment configuration, DB pools, migrations or providers. Both SQL files remain explicitly marked not bootstrapped / review-only; customer membership rows default inactive.
+
+**Unresolved gates and risks:**
+1. Confirm the future HTTP router registers the handler only behind authenticated, securely configured principal creation, and never accepts an HTTP-derived trusted issuer, evidence ID or grant reader. The static candidate alone does not demonstrate that integration.
+2. The generic handler trusts the injected scope reader and injected capability reader to be authoritative. A security reviewer must trace actual reader construction and validate tenant isolation, revocation behavior, atomicity and timing/error behavior before any activation.
+3. The prospective database migration adds composite uniqueness and foreign keys. Validate pre-existing data, lock/rollback consequences, canonical organization scope, compatibility with every migration runner and permission model in a disposable PostgreSQL environment only under separate authorization.
+4. The current preview remains intentionally unconnected. Do not represent returned HTTP 200, passing mock tests or a deployed static preview as proof of customer identity, production data authorization or evidence-backed reporting.
+5. For future integration, independently review source observation and proof-reader trust provenance; an attestation's ID alone is not sufficient evidence without the verified server-side proof chain.
+
+**Disposition:** No immediate fail-open defect identified in the reviewed isolated candidate implementations. Security sign-off is **withheld** until integration, schema, and independent specialist reviews are complete. No activation, migration, merge, live DB or provider work authorized.
