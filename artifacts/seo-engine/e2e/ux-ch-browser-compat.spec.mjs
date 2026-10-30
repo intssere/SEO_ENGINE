@@ -24,6 +24,32 @@ for (const viewport of [
     await expect(page).toHaveURL(/\/onboarding$/);
     await expect(page.locator("#main-content")).toBeVisible();
 
+    for (const route of [
+      "/analysis", "/site-overview", "/customer-opportunities",
+      "/opportunity-detail", "/automation-settings",
+      "/results-impact", "/customer-portfolio",
+    ]) {
+      await page.goto(route);
+      await expect(page.locator("#main-content")).toBeVisible();
+      const active = page.locator('.chLightSidebar a[aria-current="page"]');
+      await expect(active).toHaveAttribute("href", route);
+      await expect(page.locator(".chLightSidebar")).toBeVisible();
+      if (route === "/results-impact" || route === "/customer-portfolio") {
+        const card = page.locator(".chOverviewCard").first();
+        await expect(card).toBeVisible();
+        const appearance = await card.evaluate(el => {
+          const style = getComputedStyle(el);
+          return { background: style.backgroundColor, border: style.borderTopStyle,
+            radius: parseFloat(style.borderTopLeftRadius) };
+        });
+        expect(appearance.background).toBe("rgb(255, 255, 255)");
+        expect(appearance.border).toBe("solid");
+        expect(appearance.radius).toBeGreaterThanOrEqual(10);
+      }
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+      expect(overflow, route + " horizontal overflow").toBe(false);
+    }
+
     await page.goto("/__ux_ch_not_found");
     await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
     await page.getByRole("link", { name: "Return to Command Center" }).click();
