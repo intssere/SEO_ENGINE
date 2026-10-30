@@ -42,3 +42,13 @@ This is a static source review, not an operational penetration test or deploymen
 5. For future integration, independently review source observation and proof-reader trust provenance; an attestation's ID alone is not sufficient evidence without the verified server-side proof chain.
 
 **Disposition:** No immediate fail-open defect identified in the reviewed isolated candidate implementations. Security sign-off is **withheld** until integration, schema, and independent specialist reviews are complete. No activation, migration, merge, live DB or provider work authorized.
+
+## CH-R111 — runtime registration audit (2026-10-30)
+
+- `artifacts/api-server/src/app.ts` mounts only `./routes` under `/api`, after session middleware.
+- `artifacts/api-server/src/routes/index.ts` imports and mounts listed operational/health/auth routers and applies `requireApiAuthentication` before protected routers. It **does not** import or mount `customer-capabilities.ts` or `customer-staging-handler-candidate.ts`. Thus the reviewed candidate route is currently disconnected from this router entrypoint. Other dynamic registration paths were not exhaustively audited.
+- `artifacts/api-server/src/index.ts` starts the application and performs an existing Diamond Shelf identity readiness check when a database binding is configured. It does not reference the candidate customer handler.
+- `lib/db/package.json` defines the `bootstrap:runtime` entrypoint, but the exact migration inclusion/exclusion semantics require a separate inspection of `src/bootstrap-runtime.ts` and its dependency graph. **Do not infer candidate SQL exclusion only from its filename or comments.**
+- The candidate handler's existing tests exercise unauthenticated (401), foreign-principal (404) and valid synthetic principal behavior, without contacting live providers.
+
+**Release disposition:** candidate customer route not wired through the reviewed API entrypoint. Migration activation remains **unverified** until bootstrap/migration selection is checked. No runtime/database modification made.
