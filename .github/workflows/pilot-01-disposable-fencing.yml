@@ -1,0 +1,48 @@
+name: PILOT-01 disposable PostgreSQL fencing rehearsal
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pilot-01-disposable-fencing.yml'
+      - 'artifacts/api-server/src/lib/pilot-01-pg-fencing.ephemeral.test.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  disposable-postgresql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      pilot-postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-ci-only
+          POSTGRES_DB: pilot01_disposable_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pilot01_disposable_ci"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+        with:
+          version: 10.34.5
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Execute disposable synthetic concurrency rehearsal
+        env:
+          PILOT01_DISPOSABLE_PG: I_ACKNOWLEDGE_DISPOSABLE_ONLY
+          PILOT01_DISPOSABLE_DATABASE_URL: postgres://postgres:synthetic-ci-only@127.0.0.1:5432/pilot01_disposable_ci
+        run: pnpm --filter @workspace/api-server exec tsx --test src/lib/pilot-01-pg-fencing.ephemeral.test.ts
