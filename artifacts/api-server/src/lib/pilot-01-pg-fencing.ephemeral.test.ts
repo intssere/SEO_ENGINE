@@ -121,3 +121,64 @@ test("isolated expired-owner takeover and revoke-versus-consume race", {skip:!ar
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated connection restart, durable idempotency and audit consistency", {skip:!armed},async()=>{
+ const url=allowed();
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ let sql=postgres(url,{max:3,prepare:false,connect_timeout:3});
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".jobs (id text PRIMARY KEY, tenant text NOT NULL,site text NOT NULL,state text NOT NULL DEFAULT 'pending',owner text,generation bigint NOT NULL DEFAULT 0,expires_at timestamptz,result text, idempotency_key text UNIQUE)");
+  await sql.unsafe("CREATE TABLE "+ident+".audit (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL,generation bigint)");
+  await sql.unsafe("INSERT INTO "+ident+".jobs(id,tenant,site,idempotency_key) VALUES ('j','t','s','once')");
+  // Claim committed by worker A; shutdown simulates a process boundary after a durable write.
+  const a=await sql.begin(async tx=>{
+   const r=await tx.unsafe("UPDATE "+ident+".jobs SET state='active',owner='A',generation=generation+1,expires_at=clock_timestamp()-interval '1 second' WHERE id='j' AND state='pending' RETURNING generation");
+   await tx.unsafe("INSERT INTO "+ident+".audit(subject,event,generation) VALUES ('j','claimed',$1)",[r[0].generation]);
+   return BigInt(r[0].generation);
+  });
+  assert.equal(a,1n);
+  await sql.end({timeout:3});
+  // Fresh pool and independent connection; never rely on in-memory state.
+  sql=postgres(url,{max:3,prepare:false,connect_timeout:3});
+  const recovered=await sql.begin(async tx=>{
+   const r=await tx.unsafe("UPDATE "+ident+".jobs SET owner='B',generation=generation+1,expires_at=clock_timestamp()+interval '1 minute' WHERE id='j' AND state='active' AND expires_at<=clock_timestamp() RETURNING generation");
+   if(r.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event,generation) VALUES ('j','reclaimed',$1)",[r[0].generation]);
+   return BigInt(r[0].generation);
+  });
+  assert.equal(recovered,2n);
+  const finish=async(owner:string,gen:bigint)=>sql.begin(async tx=>{
+   const r=await tx.unsafe("UPDATE "+ident+".jobs SET state='completed',result='receipt' WHERE id='j' AND owner=$1 AND generation=$2 AND state='active' AND expires_at>clock_timestamp() RETURNING id",[owner,gen.toString()]);
+   if(r.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event,generation) VALUES ('j','completed',$1)",[gen.toString()]);
+   return r.length;
+  });
+  assert.equal(await finish("A",a),0);
+  assert.equal(await finish("B",recovered),1);
+  assert.equal(await finish("B",recovered),0);
+  // A repeated idempotency key may not produce an additional job.
+  const retry=await sql.unsafe("INSERT INTO "+ident+".jobs(id,tenant,site,idempotency_key) VALUES ('duplicate','t','s','once') ON CONFLICT (idempotency_key) DO NOTHING RETURNING id");
+  assert.equal(retry.length,0);
+  const durable=await sql.unsafe("SELECT id,state,owner,generation,result FROM "+ident+".jobs");
+  assert.equal(durable.length,1);
+  assert.equal(durable[0].state,"completed");
+  assert.equal(durable[0].owner,"B");
+  assert.equal(BigInt(durable[0].generation),2n);
+  const events=await sql.unsafe("SELECT event,generation FROM "+ident+".audit WHERE subject='j' ORDER BY id");
+  assert.deepEqual(events.map(e=>e.event),["claimed","reclaimed","completed"]);
+  assert.deepEqual(events.map(e=>BigInt(e.generation)),[1n,2n,2n]);
+  // Audit insertion failure must abort a queued claim, even across connection restarts.
+  await sql.unsafe("INSERT INTO "+ident+".jobs(id,tenant,site,idempotency_key) VALUES ('rollback','t','s','rollback-once')");
+  await assert.rejects(()=>sql.begin(async tx=>{
+   await tx.unsafe("UPDATE "+ident+".jobs SET state='active',owner='X',generation=1 WHERE id='rollback'");
+   await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES (NULL,'invalid')");
+  }));
+  const unchanged=await sql.unsafe("SELECT state,owner,generation FROM "+ident+".jobs WHERE id='rollback'");
+  assert.equal(unchanged[0].state,"pending");
+  assert.equal(unchanged[0].owner,null);
+  assert.equal(BigInt(unchanged[0].generation),0n);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
