@@ -3,7 +3,9 @@
  * Table names are conceptual: pilot01_jobs / pilot01_grants / pilot01_audit.
  * Requires a separately reviewed schema, trusted bound parameters and explicit
  * transaction envelopes for each claim/commit/revoke/consume+audit pair.
- * These text fixtures are NOT a database adapter or evidence of isolation safety.
+ * Lease TTL candidates are constrained to 1..60000 milliseconds; the runtime
+ * must separately enforce policy and trusted ownership. These text fixtures
+ * are NOT a database adapter or evidence of isolation safety.
  */
 export const PILOT01_PG_QUERY_CANDIDATES = Object.freeze({
   claim: `
@@ -13,14 +15,16 @@ UPDATE pilot01_jobs SET
  lease_until = clock_timestamp() + ($5::int * interval '1 millisecond')
 WHERE job_id = $1 AND tenant_id = $2 AND site_id = $3
  AND (status = 'pending' OR (status = 'active' AND lease_until <= clock_timestamp()))
- AND $5::int > 0
+ AND $4 IS NOT NULL AND length(btrim($4)) > 0
+ AND $5::int BETWEEN 1 AND 60000
 RETURNING job_id, tenant_id, site_id, owner_id, generation, lease_until`,
   renew: `
 UPDATE pilot01_jobs SET lease_until = clock_timestamp() + ($6::int * interval '1 millisecond')
 WHERE job_id = $1 AND tenant_id = $2 AND site_id = $3
  AND owner_id = $4 AND generation = $5::bigint
  AND status = 'active' AND lease_until > clock_timestamp()
- AND $6::int > 0
+ AND $4 IS NOT NULL AND length(btrim($4)) > 0
+ AND $6::int BETWEEN 1 AND 60000
 RETURNING job_id, generation, lease_until`,
   complete: `
 UPDATE pilot01_jobs SET status = 'completed', result_digest = $6, updated_at = clock_timestamp()
