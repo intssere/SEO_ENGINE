@@ -71,3 +71,53 @@ test("isolated two-session fencing + atomic grant consumption", {skip:!armed},as
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated expired-owner takeover and revoke-versus-consume race", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".jobs(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,state text NOT NULL,owner text,generation bigint NOT NULL,expires_at timestamptz,result text)");
+  await sql.unsafe("CREATE TABLE "+ident+".grants(id text PRIMARY KEY,state text NOT NULL,actor text NOT NULL,tenant text NOT NULL,site text NOT NULL,expires_at timestamptz NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL,generation bigint)");
+  await sql.unsafe("INSERT INTO "+ident+".jobs VALUES ('j','t','s','active','A',1,clock_timestamp()-interval '1 second',NULL)");
+  const takeover=await sql.begin(async tx=>{
+   const r=await tx.unsafe("UPDATE "+ident+".jobs SET owner='B',generation=generation+1,expires_at=clock_timestamp()+interval '1 minute' WHERE id='j' AND tenant='t' AND site='s' AND state='active' AND expires_at<=clock_timestamp() RETURNING generation");
+   if(r.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event,generation) VALUES ('j','takeover',$1)",[r[0].generation]);
+   return r;
+  });
+  assert.equal(takeover.length,1);
+  assert.equal(BigInt(takeover[0].generation),2n);
+  const complete=async(owner:string,generation:number)=>sql.begin(async tx=>{
+   const r=await tx.unsafe("UPDATE "+ident+".jobs SET state='completed',result=$1 WHERE id='j' AND tenant='t' AND site='s' AND owner=$2 AND generation=$3 AND state='active' AND expires_at>clock_timestamp() RETURNING id",["committed-by-"+owner,owner,generation]);
+   if(r.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event,generation) VALUES ('j','completed',$1)",[generation]);
+   return r.length;
+  });
+  assert.equal(await complete("A",1),0);
+  assert.equal(await complete("B",2),1);
+  assert.equal(await complete("A",1),0);
+  assert.equal(await complete("B",2),0);
+  const job=await sql.unsafe("SELECT owner,generation,result FROM "+ident+".jobs WHERE id='j'");
+  assert.equal(job[0].owner,"B");
+  assert.equal(BigInt(job[0].generation),2n);
+  assert.equal(job[0].result,"committed-by-B");
+  await sql.unsafe("INSERT INTO "+ident+".grants VALUES ('g','issued','actor','t','s',clock_timestamp()+interval '1 hour')");
+  const transition=async(next:"consumed"|"revoked")=>sql.begin(async tx=>{
+   const r=await tx.unsafe("UPDATE "+ident+".grants SET state=$1 WHERE id='g' AND actor='actor' AND tenant='t' AND site='s' AND state='issued' AND expires_at>clock_timestamp() RETURNING id",[next]);
+   if(r.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ('g',$1)",[next]);
+   return r.length;
+  });
+  const outcomes=await Promise.all([transition("consumed"),transition("revoked")]);
+  assert.deepEqual(outcomes.sort(),[0,1]);
+  const grant=await sql.unsafe("SELECT state FROM "+ident+".grants WHERE id='g'");
+  assert.ok(["consumed","revoked"].includes(grant[0].state));
+  const events=await sql.unsafe("SELECT event,count(*)::int AS n FROM "+ident+".audit WHERE subject='g' GROUP BY event");
+  assert.equal(events.length,1);
+  assert.equal(events[0].event,grant[0].state);
+  assert.equal(events[0].n,1);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
