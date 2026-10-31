@@ -11,7 +11,7 @@ test("job claim requires bounded new lease and increments generation",()=>{
 test("renewal and completion match scope, current owner and generation",()=>{
  for(const query of [sql.renew,sql.complete]){
   for(const col of ["job_id","tenant_id","site_id","owner_id","generation"])
-   assert.match(query,new RegExp(col+"\\s*="));
+  assert.match(query,new RegExp(String.raw`\$${ttl}::int\s+BETWEEN\s+1\s+AND\s+60000`));
   assert.match(query,/lease_until\s*>\s*clock_timestamp\(\)/);
   assert.match(query,/status\s*=\s*'active'/);
  }
