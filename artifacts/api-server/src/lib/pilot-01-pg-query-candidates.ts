@@ -16,11 +16,11 @@ WHERE job_id = $1 AND tenant_id = $2 AND site_id = $3
  AND $5::int > 0
 RETURNING job_id, tenant_id, site_id, owner_id, generation, lease_until`,
   renew: `
-UPDATE pilot01_jobs SET lease_until = clock_timestamp() + ($7::int * interval '1 millisecond')
+UPDATE pilot01_jobs SET lease_until = clock_timestamp() + ($6::int * interval '1 millisecond')
 WHERE job_id = $1 AND tenant_id = $2 AND site_id = $3
  AND owner_id = $4 AND generation = $5::bigint
  AND status = 'active' AND lease_until > clock_timestamp()
- AND $7::int > 0
+ AND $6::int > 0
 RETURNING job_id, generation, lease_until`,
   complete: `
 UPDATE pilot01_jobs SET status = 'completed', result_digest = $6, updated_at = clock_timestamp()
