@@ -8,6 +8,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import postgres from "postgres";
+import {randomUUID} from "node:crypto";
 const armed=process.env.PILOT01_DISPOSABLE_PG==="I_ACKNOWLEDGE_DISPOSABLE_ONLY" &&
  Boolean(process.env.PILOT01_DISPOSABLE_DATABASE_URL);
 const allowed=()=> {
@@ -24,8 +25,8 @@ test("isolated two-session fencing + atomic grant consumption", {skip:!armed},as
  const url=allowed();
  const sql=postgres(url,{max:4,prepare:false,connect_timeout:3});
  // Test-only schema generated from cryptographic randomness; never shared data.
- const schema="pilot01_test_"+crypto.randomUUID().replace(/-/g,"");
- const ident=sql(schema);
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
  try {
   await sql.unsafe("CREATE SCHEMA "+ident);
   await sql.unsafe("CREATE TABLE "+ident+".jobs (id text PRIMARY KEY, tenant text NOT NULL, site text NOT NULL, state text NOT NULL DEFAULT 'pending', owner text, generation bigint NOT NULL DEFAULT 0, expires_at timestamptz, result text)");
