@@ -11,7 +11,7 @@ test("job claim requires bounded new lease and increments generation",()=>{
 test("renewal and completion match scope, current owner and generation",()=>{
  for(const query of [sql.renew,sql.complete]){
   for(const col of ["job_id","tenant_id","site_id","owner_id","generation"])
-  assert.match(query,new RegExp(String.raw`\$${ttl}::int\s+BETWEEN\s+1\s+AND\s+60000`));
+   assert.match(query,new RegExp(col+"\\s*="));
   assert.match(query,/lease_until\s*>\s*clock_timestamp\(\)/);
   assert.match(query,/status\s*=\s*'active'/);
  }
@@ -34,6 +34,6 @@ test("revoke acts only on issued grants in tenant/site scope",()=>{
 test("claim and renewal reject missing owner and cap lease duration in SQL fixture",()=>{
  for(const [query,ttl] of [[sql.claim,5],[sql.renew,6]] as const){
   assert.match(query,/length\(btrim\(\$4\)\)\s*>\s*0/);
-  assert.match(query,new RegExp("\\\\$"+ttl+"::int\\\\s+BETWEEN\\\\s+1\\\\s+AND\\\\s+60000"));
+  assert.match(query,new RegExp(String.raw`\$${ttl}::int\s+BETWEEN\s+1\s+AND\s+60000`));
  }
 });
