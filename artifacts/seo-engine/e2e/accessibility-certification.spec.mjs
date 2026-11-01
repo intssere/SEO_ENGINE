@@ -16,7 +16,15 @@ const WCAG_AA_TAGS = [
 
 const ROUTES = [
   "/",
+  "/home",
   "/onboarding",
+  "/analysis",
+  "/site-overview",
+  "/customer-opportunities",
+  "/opportunity-detail",
+  "/automation-settings",
+  "/results-impact",
+  "/customer-portfolio",
   "/opportunities",
   "/governance",
   "/actions",

@@ -1,0 +1,4 @@
+import { Link } from "wouter";
+export default function CustomerResultsImpactPage(){
+return <div className="customerOnboarding"><header className="customerOnboardingHeader"><div><p className="customerEyebrow">RESULTS &amp; IMPACT · PREVIEW</p><h1>Results and impact</h1><p>Verified baseline and follow-up measurements are required before any impact claims.</p></div><Link href="/site-overview">Site overview</Link></header><section className="customerOnboardingCard"><h2>Results unavailable</h2><p role="status">No verified website, measurement period or approved change.</p><Link href="/onboarding">Review website setup</Link></section><section className="customerOnboardingCard"><h2>Before / after and attribution</h2><p>Comparisons and change attribution require source-backed evidence; none is available.</p></section><p className="customerNotice">Read-only preview. No performance or improvement values have been simulated.</p></div>;
+}

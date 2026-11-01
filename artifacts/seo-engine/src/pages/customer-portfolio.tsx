@@ -1,0 +1,4 @@
+import { Link } from "wouter";
+export default function CustomerPortfolioPage(){
+return <div className="customerOnboarding"><header className="customerOnboardingHeader"><div><p className="customerEyebrow">MULTI-SITE PORTFOLIO · PREVIEW</p><h1>Your websites</h1><p>View verified website readiness and comparative results when connected.</p></div><Link href="/home">Welcome</Link></header><section className="customerOnboardingCard"><h2>No verified websites</h2><p role="status">No connected sites or independently verified portfolio records are available.</p><Link href="/onboarding">Review website setup</Link></section><section className="customerOnboardingCard"><h2>Cross-site reporting</h2><p>Site identity, permissions and comparable reporting periods must be verified first.</p></section><p className="customerNotice">Read-only preview. No sites, scores or metrics are invented.</p></div>;
+}

@@ -52,6 +52,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client
 
+      - name: Certify UX-CH attestations in isolated PostgreSQL
+        run: |
+          createdb -h 127.0.0.1 -U postgres seo_engine_customer_attestation_cert
+          psql -h 127.0.0.1 -U postgres -d seo_engine_customer_attestation_cert -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_customer_attestation_cert -v ON_ERROR_STOP=1 -f lib/db/migrations/0015_customer_memberships_candidate.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_customer_attestation_cert -v ON_ERROR_STOP=1 -f lib/db/migrations/0016_customer_attestations_candidate.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_customer_attestation_cert -v ON_ERROR_STOP=1 -f artifacts/api-server/src/lib/customer-attestation-postgres-cert.sql
+
+      - name: Certify actual UX-CH attestation and proof readers in isolated PostgreSQL
+        env:
+          UX_CH_ATTESTATION_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_customer_attestation_cert
+        run: pnpm --filter @workspace/api-server exec tsx --test src/lib/customer-attestation-readers.ephemeral.test.ts
+
+      - name: Certify proposed UX-CH memberships in isolated PostgreSQL
+        run: |
+          createdb -h 127.0.0.1 -U postgres seo_engine_customer_membership_cert
+          psql -h 127.0.0.1 -U postgres -d seo_engine_customer_membership_cert -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_customer_membership_cert -v ON_ERROR_STOP=1 -f lib/db/migrations/0015_customer_memberships_candidate.sql
+          psql -h 127.0.0.1 -U postgres -d seo_engine_customer_membership_cert -v ON_ERROR_STOP=1 -f artifacts/api-server/src/lib/customer-membership-postgres-cert.sql
+
+      - name: Certify actual UX-CH membership and identity readers in isolated PostgreSQL
+        env:
+          UX_CH_MEMBERSHIP_EPHEMERAL_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/seo_engine_customer_membership_cert
+        run: pnpm --filter @workspace/api-server exec tsx --test src/lib/customer-membership-identity.ephemeral.test.ts
+
       - name: Validate legacy PostgreSQL core schema
         run: |
           psql -h 127.0.0.1 -U postgres -d seo_engine_test -v ON_ERROR_STOP=1 -f lib/db/migrations/0001_core.sql
@@ -195,7 +220,19 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d seo_engine_p12_2_prod_lineage_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" | grep -Fxq 43
 
       - name: Test all current workspace packages
-        run: pnpm -r --if-present test
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm -r --if-present test 2>&1 | tee "$RUNNER_TEMP/ux-ch-workspace-tests.log"
+
+      - name: Upload workspace test diagnostic on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ux-ch-workspace-test-diagnostic
+          path: ${{ runner.temp }}/ux-ch-workspace-tests.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Test P11.10 synthetic load scale
         run: pnpm --filter @workspace/api-server test:scale
@@ -227,4 +264,6 @@ jobs:
           echo "EXPECTED_SOURCE_BRANCH=ci-build" >> "$GITHUB_ENV"
 
       - name: Build
+        env:
+          UX_CH_BUNDLE_REPORT: '1'
         run: pnpm build
