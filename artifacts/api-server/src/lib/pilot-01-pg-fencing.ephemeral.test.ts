@@ -182,3 +182,52 @@ test("isolated connection restart, durable idempotency and audit consistency", {
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated transactional outbox: superseded generation cannot enqueue or deliver", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".jobs(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,state text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,expires_at timestamptz NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".outbox(id text PRIMARY KEY,job_id text NOT NULL,tenant text NOT NULL,site text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,kind text NOT NULL CHECK(kind='synthetic_noop'),state text NOT NULL DEFAULT 'pending',UNIQUE(job_id,kind))");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL,generation bigint)");
+  await sql.unsafe("INSERT INTO "+ident+".jobs VALUES ('j','t','s','active','A',1,clock_timestamp()-interval '1 second')");
+  // Two-session takeover: the old generation may not enqueue after B replaces A.
+  const takeover=await sql.begin(async tx=>{
+   const r=await tx.unsafe("UPDATE "+ident+".jobs SET owner='B',generation=generation+1,expires_at=clock_timestamp()+interval '1 minute' WHERE id='j' AND state='active' AND expires_at<=clock_timestamp() RETURNING generation");
+   if(r.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event,generation) VALUES ('j','takeover',$1)",[r[0].generation]);
+   return r.length;
+  });
+  assert.equal(takeover,1);
+  const enqueue=async(owner:string,generation:number)=>sql.begin(async tx=>{
+   const eligible=await tx.unsafe("SELECT id FROM "+ident+".jobs WHERE id='j' AND tenant='t' AND site='s' AND owner=$1 AND generation=$2 AND state='active' AND expires_at>clock_timestamp() FOR UPDATE",[owner,generation]);
+   if(!eligible.length)return 0;
+   const r=await tx.unsafe("INSERT INTO "+ident+".outbox(id,job_id,tenant,site,owner,generation,kind) VALUES ($1,'j','t','s',$2,$3,'synthetic_noop') ON CONFLICT (job_id,kind) DO NOTHING RETURNING id",["intent-"+owner,owner,generation]);
+   if(r.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event,generation) VALUES ('j','enqueued',$1)",[generation]);
+   return r.length;
+  });
+  assert.equal(await enqueue("A",1),0);
+  assert.equal(await enqueue("B",2),1);
+  assert.equal(await enqueue("B",2),0);
+  // An atomic, DB-side recheck fences delivery; no network/provider operation occurs.
+  const deliver=async()=>sql.begin(async tx=>{
+   const r=await tx.unsafe("UPDATE "+ident+".outbox AS o SET state='accepted' FROM "+ident+".jobs AS j WHERE o.job_id=j.id AND o.tenant=j.tenant AND o.site=j.site AND o.owner=j.owner AND o.generation=j.generation AND j.state='active' AND j.expires_at>clock_timestamp() AND o.kind='synthetic_noop' AND o.state='pending' RETURNING o.id,o.generation");
+   if(r.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event,generation) VALUES ('j','accepted',$1)",[r[0].generation]);
+   return r.length;
+  });
+  const delivered=await Promise.all([deliver(),deliver()]);
+  assert.deepEqual(delivered.sort(),[0,1]);
+  const final=await sql.unsafe("SELECT id,owner,generation,state FROM "+ident+".outbox");
+  assert.equal(final.length,1);
+  assert.equal(final[0].owner,"B");
+  assert.equal(BigInt(final[0].generation),2n);
+  assert.equal(final[0].state,"accepted");
+  const audit=await sql.unsafe("SELECT event,generation FROM "+ident+".audit WHERE subject='j' ORDER BY id");
+  assert.deepEqual(audit.map(r=>r.event),["takeover","enqueued","accepted"]);
+  assert.deepEqual(audit.map(r=>BigInt(r.generation)),[2n,2n,2n]);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
