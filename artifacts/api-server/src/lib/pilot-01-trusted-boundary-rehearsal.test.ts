@@ -39,7 +39,7 @@ test("PILOT-01: verified context is bound into synthetic persistence scope",asyn
  const seen:GrantScope[]=[];
  const port=sink(async(_id,scope)=>{seen.push(scope);return "consumed";});
  assert.equal(await consumeAtBoundary(port,"g",request,identity),"consumed");
- assert.deepEqual(seen,[{...request}]);
+ assert.deepEqual(seen,[{...request,diffHash:undefined}]);
 });
 test("PILOT-01: site_write needs exact diff and unavailable store fails closed",async()=>{
  let calls=0;
