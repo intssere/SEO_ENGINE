@@ -370,3 +370,48 @@ test("isolated revoke-before-accept and stale generation block synthetic outbox"
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated concurrent revoke-versus-accept has at most one synthetic authorization receipt", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:6,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".grants(id text PRIMARY KEY,state text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".outbox(id text PRIMARY KEY,grant_id text NOT NULL,state text NOT NULL DEFAULT 'pending',kind text NOT NULL CHECK(kind='synthetic_noop'))");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL)");
+  for(let i=0;i<8;i++){
+   const id="race-"+i;
+   await sql.unsafe("INSERT INTO "+ident+".grants VALUES ($1,'issued')",[id]);
+   await sql.unsafe("INSERT INTO "+ident+".outbox(id,grant_id,kind) VALUES ($1,$1,'synthetic_noop')",[id]);
+   const revoke=()=>sql.begin(async tx=>{
+    // Both competitors acquire the grant row first: one serialized decision per grant.
+    const grant=await tx.unsafe("SELECT state FROM "+ident+".grants WHERE id=$1 FOR UPDATE",[id]);
+    if(grant[0]?.state!=="issued")return 0;
+    const rows=await tx.unsafe("UPDATE "+ident+".grants SET state='revoked' WHERE id=$1 AND state='issued' RETURNING id",[id]);
+    if(rows.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ($1,'revoked')",[id]);
+    return rows.length;
+   });
+   const accept=()=>sql.begin(async tx=>{
+    const grant=await tx.unsafe("SELECT state FROM "+ident+".grants WHERE id=$1 FOR UPDATE",[id]);
+    if(grant[0]?.state!=="issued")return 0;
+    const rows=await tx.unsafe("UPDATE "+ident+".outbox SET state='accepted' WHERE id=$1 AND grant_id=$1 AND kind='synthetic_noop' AND state='pending' RETURNING id",[id]);
+    if(rows.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ($1,'accepted')",[id]);
+    return rows.length;
+   });
+   const [revoked,accepted]=await Promise.all([revoke(),accept()]);
+   assert.equal(revoked,1);
+   assert.ok(accepted===0||accepted===1);
+   const grant=await sql.unsafe("SELECT state FROM "+ident+".grants WHERE id=$1",[id]);
+   const effect=await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id=$1",[id]);
+   const events=await sql.unsafe("SELECT event FROM "+ident+".audit WHERE subject=$1 ORDER BY id",[id]);
+   assert.equal(grant[0].state,"revoked");
+   assert.equal(effect[0].state,accepted===1?"accepted":"pending");
+   assert.deepEqual(events.map(r=>r.event),accepted===1?["accepted","revoked"]:["revoked"]);
+   assert.equal(await accept(),0);
+  }
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
