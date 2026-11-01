@@ -271,3 +271,56 @@ test("isolated outbox cross-tenant and missing-grant fail-closed checks", {skip:
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated signed-claim gate plus durable single-use grant consumption", {skip:!armed},async()=>{
+ const {createHmac,randomBytes,timingSafeEqual}=await import("node:crypto");
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ const secret=randomBytes(32);
+ const claims={issuer:"synthetic-issuer",actor:"actor-a",tenant:"tenant-a",site:"site-a",operation:"analyze",nonce:"once",expires:Date.now()+60000};
+ const body=Buffer.from(JSON.stringify(claims)).toString("base64url");
+ const token=body+"."+createHmac("sha256",secret).update(body).digest("base64url");
+ const verified=(candidate:string,actor:string,tenant:string,site:string)=>{
+  const parts=candidate.split(".");
+  if(parts.length!==2)return false;
+  let provided:Buffer;
+  try{provided=Buffer.from(parts[1],"base64url");}catch{return false;}
+  const expected=createHmac("sha256",secret).update(parts[0]).digest();
+  if(provided.length!==expected.length||!timingSafeEqual(provided,expected))return false;
+  let c:typeof claims;
+  try{c=JSON.parse(Buffer.from(parts[0],"base64url").toString("utf8"));}catch{return false;}
+  return c.issuer===claims.issuer&&c.nonce===claims.nonce&&
+   c.actor===actor&&c.tenant===tenant&&c.site===site&&c.operation==="analyze"&&
+   Number.isFinite(c.expires)&&c.expires>Date.now();
+ };
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".grants(id text PRIMARY KEY,issuer text NOT NULL,nonce text NOT NULL UNIQUE,actor text NOT NULL,tenant text NOT NULL,site text NOT NULL,operation text NOT NULL,state text NOT NULL,expires_at timestamptz NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL)");
+  await sql.unsafe("INSERT INTO "+ident+".grants VALUES ('g','synthetic-issuer','once','actor-a','tenant-a','site-a','analyze','issued',clock_timestamp()+interval '1 minute')");
+  const consume=async(candidate:string,actor:string,tenant:string,site:string)=>{
+   if(!verified(candidate,actor,tenant,site))return 0;
+   return sql.begin(async tx=>{
+    const r=await tx.unsafe("UPDATE "+ident+".grants SET state='consumed' WHERE id='g' AND issuer='synthetic-issuer' AND nonce='once' AND actor=$1 AND tenant=$2 AND site=$3 AND operation='analyze' AND state='issued' AND expires_at>clock_timestamp() RETURNING id",[actor,tenant,site]);
+    if(r.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ('g','consumed')");
+    return r.length;
+   });
+  };
+  assert.equal(await consume(token,"actor-b","tenant-a","site-a"),0);
+  assert.equal(await consume(token,"actor-a","tenant-b","site-a"),0);
+  assert.equal(await consume(token,"actor-a","tenant-a","site-b"),0);
+  const forgedBody=Buffer.from(JSON.stringify({...claims,actor:"actor-b"})).toString("base64url");
+  assert.equal(await consume(forgedBody+"."+token.split(".")[1],"actor-b","tenant-a","site-a"),0);
+  const race=await Promise.all([consume(token,"actor-a","tenant-a","site-a"),consume(token,"actor-a","tenant-a","site-a")]);
+  assert.deepEqual(race.sort(),[0,1]);
+  assert.equal(await consume(token,"actor-a","tenant-a","site-a"),0);
+  const rows=await sql.unsafe("SELECT state FROM "+ident+".grants WHERE id='g'");
+  assert.equal(rows[0].state,"consumed");
+  const receipts=await sql.unsafe("SELECT count(*)::int AS n FROM "+ident+".audit WHERE subject='g' AND event='consumed'");
+  assert.equal(receipts[0].n,1);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
