@@ -67,3 +67,33 @@ test("PILOT-01 signed claim verification alone is replayable and NOT durable aut
  assert.equal(verify(token,grant,now),true);
  // Real replay denial requires a separately audited durable, single-use grant ledger.
 });
+
+
+test("PILOT-01 offline signed grant plus ledger: valid claim consumes once, replay denied",async()=>{
+ const {OfflineGrantLedger}=await import("./pilot-01-offline-grant-ledger.js");
+ const ledger=new OfflineGrantLedger();
+ const token=sign(grant);
+ const fixture={actorId:grant.actorId,tenantId:grant.tenantId,siteId:grant.siteId,
+  operation:grant.operation,nonce:grant.nonce,expiresAtMs:grant.expiresAtMs};
+ assert.equal(ledger.register(fixture),true);
+ const consume=()=>verify(token,grant,now)&&ledger.consume(grant.nonce,{
+  actorId:grant.actorId,tenantId:grant.tenantId,siteId:grant.siteId,
+  operation:grant.operation},now);
+ assert.equal(consume(),true);
+ assert.equal(consume(),false);
+ assert.equal(ledger.register(fixture),false);
+});
+test("PILOT-01 offline signed grant plus ledger: revoked and mismatched claims never consume",async()=>{
+ const {OfflineGrantLedger}=await import("./pilot-01-offline-grant-ledger.js");
+ const ledger=new OfflineGrantLedger();
+ const fixture={actorId:grant.actorId,tenantId:grant.tenantId,siteId:grant.siteId,
+  operation:grant.operation,nonce:"revoke-once",expiresAtMs:grant.expiresAtMs};
+ const revokedGrant={...grant,nonce:fixture.nonce};
+ assert.equal(ledger.register(fixture),true);
+ ledger.revoke(fixture.nonce);
+ assert.equal(verify(sign(revokedGrant),revokedGrant,now),true);
+ assert.equal(ledger.consume(fixture.nonce,{
+  actorId:fixture.actorId,tenantId:fixture.tenantId,siteId:fixture.siteId,
+  operation:fixture.operation},now),false);
+ assert.equal(verify(sign(revokedGrant),{...revokedGrant,tenantId:"tenant-B"},now),false);
+});
