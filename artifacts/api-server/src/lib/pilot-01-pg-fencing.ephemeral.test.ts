@@ -324,3 +324,49 @@ test("isolated signed-claim gate plus durable single-use grant consumption", {sk
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated revoke-before-accept and stale generation block synthetic outbox", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try {
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".jobs(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,state text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,expires_at timestamptz NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".grants(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,state text NOT NULL,expires_at timestamptz NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".outbox(id text PRIMARY KEY,job_id text NOT NULL,grant_id text NOT NULL,tenant text NOT NULL,site text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,kind text NOT NULL CHECK(kind='synthetic_noop'),state text NOT NULL DEFAULT 'pending')");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL)");
+  await sql.unsafe("INSERT INTO "+ident+".jobs VALUES ('j','t','s','active','A',1,clock_timestamp()+interval '1 minute')");
+  await sql.unsafe("INSERT INTO "+ident+".grants VALUES ('g','t','s','issued',clock_timestamp()+interval '1 minute')");
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('intent','j','g','t','s','A',1,'synthetic_noop','pending')");
+  const accept=()=>sql.begin(async tx=>{
+   // Lock both authorization and worker before effect-intent acceptance.
+   const matching=await tx.unsafe("SELECT o.id FROM "+ident+".outbox o JOIN "+ident+".jobs j ON j.id=o.job_id AND j.tenant=o.tenant AND j.site=o.site JOIN "+ident+".grants g ON g.id=o.grant_id AND g.tenant=o.tenant AND g.site=o.site WHERE o.id='intent' AND o.state='pending' AND j.owner=o.owner AND j.generation=o.generation AND j.state='active' AND j.expires_at>clock_timestamp() AND g.state='issued' AND g.expires_at>clock_timestamp() FOR UPDATE OF o,j,g");
+   if(!matching.length)return 0;
+   const row=await tx.unsafe("UPDATE "+ident+".outbox SET state='accepted' WHERE id='intent' AND state='pending' RETURNING id");
+   if(row.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ('intent','accepted')");
+   return row.length;
+  });
+  const revoke=()=>sql.begin(async tx=>{
+   const row=await tx.unsafe("UPDATE "+ident+".grants SET state='revoked' WHERE id='g' AND state='issued' RETURNING id");
+   if(row.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ('g','revoked')");
+   return row.length;
+  });
+  // Revocation strictly precedes delivery authorization.
+  assert.equal(await revoke(),1);
+  assert.equal(await accept(),0);
+  assert.equal((await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id='intent'"))[0].state,"pending");
+  // Restore synthetic grant and supersede worker ownership/generation.
+  await sql.unsafe("UPDATE "+ident+".grants SET state='issued' WHERE id='g'");
+  await sql.unsafe("UPDATE "+ident+".jobs SET owner='B',generation=2 WHERE id='j'");
+  assert.equal(await accept(),0);
+  // Only the current generation can accept; no external effect is executed.
+  await sql.unsafe("UPDATE "+ident+".outbox SET owner='B',generation=2 WHERE id='intent'");
+  assert.equal(await accept(),1);
+  assert.equal(await accept(),0);
+  const events=await sql.unsafe("SELECT event,count(*)::int AS n FROM "+ident+".audit GROUP BY event ORDER BY event");
+  assert.deepEqual(events.map(x=>[x.event,x.n]),[["accepted",1],["revoked",1]]);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
