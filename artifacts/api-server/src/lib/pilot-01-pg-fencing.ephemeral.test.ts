@@ -231,3 +231,43 @@ test("isolated transactional outbox: superseded generation cannot enqueue or del
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated outbox cross-tenant and missing-grant fail-closed checks", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".jobs(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,state text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,expires_at timestamptz NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".grants(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,actor text NOT NULL,operation text NOT NULL,state text NOT NULL,expires_at timestamptz NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".outbox(id text PRIMARY KEY,job_id text NOT NULL,tenant text NOT NULL,site text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,grant_id text NOT NULL,state text NOT NULL DEFAULT 'pending')");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL)");
+  await sql.unsafe("INSERT INTO "+ident+".jobs VALUES ('job-a','tenant-a','site-a','active','worker-a',1,clock_timestamp()+interval '1 minute')");
+  await sql.unsafe("INSERT INTO "+ident+".grants VALUES ('grant-a','tenant-a','site-a','actor-a','analyze','issued',clock_timestamp()+interval '1 minute')");
+  // This synthetic intent is NOT a provider request. Grant and fence must match DB rows.
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('intent-a','job-a','tenant-a','site-a','worker-a',1,'grant-a','pending')");
+  const accept=async(tenant:string,site:string,actor:string,grant:string)=>sql.begin(async tx=>{
+   const rows=await tx.unsafe("UPDATE "+ident+".outbox AS o SET state='accepted' FROM "+ident+".jobs AS j,"+ident+".grants AS g WHERE o.job_id=j.id AND o.grant_id=g.id AND o.tenant=$1 AND o.site=$2 AND g.actor=$3 AND g.id=$4 AND j.tenant=o.tenant AND j.site=o.site AND g.tenant=o.tenant AND g.site=o.site AND j.owner=o.owner AND j.generation=o.generation AND j.state='active' AND j.expires_at>clock_timestamp() AND g.operation='analyze' AND g.state='issued' AND g.expires_at>clock_timestamp() AND o.state='pending' RETURNING o.id",[tenant,site,actor,grant]);
+   if(rows.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ('intent-a','accepted')");
+   return rows.length;
+  });
+  assert.equal(await accept("tenant-b","site-a","actor-a","grant-a"),0);
+  assert.equal(await accept("tenant-a","site-b","actor-a","grant-a"),0);
+  assert.equal(await accept("tenant-a","site-a","actor-forged","grant-a"),0);
+  assert.equal(await accept("tenant-a","site-a","actor-a","grant-missing"),0);
+  await sql.unsafe("UPDATE "+ident+".grants SET state='revoked' WHERE id='grant-a'");
+  assert.equal(await accept("tenant-a","site-a","actor-a","grant-a"),0);
+  await sql.unsafe("UPDATE "+ident+".grants SET state='issued',expires_at=clock_timestamp()-interval '1 second' WHERE id='grant-a'");
+  assert.equal(await accept("tenant-a","site-a","actor-a","grant-a"),0);
+  await sql.unsafe("UPDATE "+ident+".grants SET expires_at=clock_timestamp()+interval '1 minute' WHERE id='grant-a'");
+  const attempts=await Promise.all([accept("tenant-a","site-a","actor-a","grant-a"),accept("tenant-a","site-a","actor-a","grant-a")]);
+  assert.deepEqual(attempts.sort(),[0,1]);
+  const rows=await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id='intent-a'");
+  assert.equal(rows[0].state,"accepted");
+  const audit=await sql.unsafe("SELECT count(*)::int AS n FROM "+ident+".audit");
+  assert.equal(audit[0].n,1);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
