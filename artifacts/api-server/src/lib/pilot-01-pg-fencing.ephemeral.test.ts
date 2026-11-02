@@ -542,3 +542,60 @@ test("isolated ambiguous outcome reconciliation requires matching durable synthe
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated synthetic conflicting receipts and forged proof fail closed", {skip:!armed},async()=>{
+ const {createHmac,randomBytes,timingSafeEqual}=await import("node:crypto");
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ const secret=randomBytes(32);
+ const sign=(id:string,tenant:string,site:string,key:string,outcome:string)=>
+  createHmac("sha256",secret).update(JSON.stringify([id,tenant,site,key,outcome])).digest("hex");
+ const valid=(r:any)=>{
+  if(typeof r.proof!=="string"||!/^[a-f0-9]{64}$/.test(r.proof))return false;
+  const expected=Buffer.from(sign(r.id,r.tenant,r.site,r.idempotency_key,r.outcome),"hex");
+  const observed=Buffer.from(r.proof,"hex");
+  return observed.length===expected.length&&timingSafeEqual(observed,expected);
+ };
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".outbox(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,idempotency_key text NOT NULL,state text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".receipts(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,idempotency_key text NOT NULL,outcome text NOT NULL CHECK(outcome IN ('synthetic_confirmed','synthetic_rejected')),proof text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL)");
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('a','tenant-a','site-a','logical-1','outcome_unknown')");
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('b','tenant-b','site-a','logical-1','outcome_unknown')");
+  const add=async(id:string,tenant:string,site:string,key:string,outcome:string,proof=sign(id,tenant,site,key,outcome))=>
+   sql.unsafe("INSERT INTO "+ident+".receipts VALUES ($1,$2,$3,$4,$5,$6)",[id,tenant,site,key,outcome,proof]);
+  const reconcile=async(intent:string)=>sql.begin(async tx=>{
+   const rows=await tx.unsafe("SELECT * FROM "+ident+".outbox WHERE id=$1 FOR UPDATE",[intent]);
+   if(rows.length!==1||rows[0].state!=="outcome_unknown")return 0;
+   const o=rows[0];
+   const receipts=await tx.unsafe("SELECT * FROM "+ident+".receipts WHERE tenant=$1 AND site=$2 AND idempotency_key=$3 ORDER BY id FOR UPDATE",[o.tenant,o.site,o.idempotency_key]);
+   // Explicitly require one verified, unambiguous synthetic receipt.
+   if(receipts.length!==1||!valid(receipts[0])||receipts[0].outcome!=="synthetic_confirmed")return 0;
+   const changed=await tx.unsafe("UPDATE "+ident+".outbox SET state='synthetic_confirmed' WHERE id=$1 AND state='outcome_unknown' RETURNING id",[intent]);
+   if(changed.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ($1,'synthetic_reconciled')",[intent]);
+   return changed.length;
+  });
+  await add("foreign","tenant-b","site-a","logical-1","synthetic_confirmed");
+  assert.equal(await reconcile("a"),0);
+  await add("forged","tenant-a","site-a","logical-1","synthetic_confirmed","0".repeat(64));
+  assert.equal(await reconcile("a"),0);
+  await add("valid","tenant-a","site-a","logical-1","synthetic_confirmed");
+  // Forged evidence remains present; a valid receipt must not mask ambiguity.
+  assert.equal(await reconcile("a"),0);
+  await sql.unsafe("DELETE FROM "+ident+".receipts WHERE id='forged'");
+  await add("conflict","tenant-a","site-a","logical-1","synthetic_rejected");
+  assert.equal(await reconcile("a"),0);
+  await sql.unsafe("DELETE FROM "+ident+".receipts WHERE id='conflict'");
+  const attempts=await Promise.all([reconcile("a"),reconcile("a")]);
+  assert.deepEqual(attempts.sort(),[0,1]);
+  assert.equal(await reconcile("a"),0);
+  assert.equal((await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id='b'"))[0].state,"outcome_unknown");
+  const audit=await sql.unsafe("SELECT subject,event FROM "+ident+".audit ORDER BY id");
+  assert.deepEqual(audit.map(r=>[r.subject,r.event]),[["a","synthetic_reconciled"]]);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
