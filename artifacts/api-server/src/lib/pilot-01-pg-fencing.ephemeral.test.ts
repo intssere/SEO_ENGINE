@@ -599,3 +599,50 @@ test("isolated synthetic conflicting receipts and forged proof fail closed", {sk
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated synthetic receipt replay and interrupted reconciliation roll back safely", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".outbox(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,logical_key text NOT NULL,state text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".receipts(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,logical_key text NOT NULL,outcome text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".consumed(receipt_id text PRIMARY KEY,intent_id text NOT NULL UNIQUE)");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL)");
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('a','t','s','key-a','outcome_unknown'),('b','t','s','key-b','outcome_unknown')");
+  await sql.unsafe("INSERT INTO "+ident+".receipts VALUES ('receipt-a','t','s','key-a','synthetic_confirmed')");
+  const reconcile=(id:string,receipt:string,interrupt=false)=>sql.begin(async tx=>{
+   const intent=await tx.unsafe("SELECT * FROM "+ident+".outbox WHERE id=$1 FOR UPDATE",[id]);
+   if(intent.length!==1||intent[0].state!=="outcome_unknown")return 0;
+   const proof=await tx.unsafe("SELECT * FROM "+ident+".receipts WHERE id=$1 FOR UPDATE",[receipt]);
+   if(proof.length!==1||proof[0].tenant!==intent[0].tenant||proof[0].site!==intent[0].site||proof[0].logical_key!==intent[0].logical_key||proof[0].outcome!=="synthetic_confirmed")return 0;
+   const use=await tx.unsafe("INSERT INTO "+ident+".consumed(receipt_id,intent_id) VALUES ($1,$2) ON CONFLICT DO NOTHING RETURNING receipt_id",[receipt,id]);
+   if(use.length!==1)return 0;
+   const changed=await tx.unsafe("UPDATE "+ident+".outbox SET state='synthetic_confirmed' WHERE id=$1 AND state='outcome_unknown' RETURNING id",[id]);
+   if(changed.length!==1)throw Error("SYNTHETIC_RECONCILIATION_ATOMICITY");
+   await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ($1,'receipt_consumed')",[id]);
+   if(interrupt)throw Error("SYNTHETIC_INTERRUPTED_BEFORE_COMMIT");
+   return 1;
+  });
+  // An exception after writing but before commit must roll back all evidence of consumption.
+  await assert.rejects(()=>reconcile("a","receipt-a",true),/SYNTHETIC_INTERRUPTED_BEFORE_COMMIT/);
+  assert.equal((await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id='a'"))[0].state,"outcome_unknown");
+  assert.equal((await sql.unsafe("SELECT count(*)::int AS n FROM "+ident+".consumed"))[0].n,0);
+  assert.equal((await sql.unsafe("SELECT count(*)::int AS n FROM "+ident+".audit"))[0].n,0);
+  // A copied receipt does not match a second logical operation.
+  assert.equal(await reconcile("b","receipt-a"),0);
+  const attempts=await Promise.all([reconcile("a","receipt-a"),reconcile("a","receipt-a")]);
+  assert.deepEqual(attempts.sort(),[0,1]);
+  assert.equal(await reconcile("a","receipt-a"),0);
+  assert.equal(await reconcile("b","receipt-a"),0);
+  const consumed=await sql.unsafe("SELECT receipt_id,intent_id FROM "+ident+".consumed");
+  assert.deepEqual(consumed.map(r=>[r.receipt_id,r.intent_id]),[["receipt-a","a"]]);
+  assert.equal((await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id='b'"))[0].state,"outcome_unknown");
+  const audit=await sql.unsafe("SELECT subject,event FROM "+ident+".audit");
+  assert.deepEqual(audit.map(r=>[r.subject,r.event]),[["a","receipt_consumed"]]);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
