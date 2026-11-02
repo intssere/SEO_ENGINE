@@ -461,3 +461,43 @@ test("isolated pre-dispatch revalidation fences revoked grants and stale workers
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated synthetic ambiguous-ack retry stays fail-closed across takeover", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".grants(id text PRIMARY KEY,state text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".jobs(id text PRIMARY KEY,owner text NOT NULL,generation bigint NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".outbox(id text PRIMARY KEY,grant_id text NOT NULL,job_id text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,idempotency_key text NOT NULL UNIQUE,kind text NOT NULL CHECK(kind='synthetic_noop'),state text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL)");
+  await sql.unsafe("INSERT INTO "+ident+".grants VALUES ('g','issued')");
+  await sql.unsafe("INSERT INTO "+ident+".jobs VALUES ('j','A',1)");
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('i','g','j','A',1,'key-1','synthetic_noop','accepted')");
+  const claim=async(id:string)=>sql.begin(async tx=>{
+   const rows=await tx.unsafe("SELECT o.id FROM "+ident+".outbox o JOIN "+ident+".grants g ON g.id=o.grant_id JOIN "+ident+".jobs j ON j.id=o.job_id WHERE o.id=$1 AND o.kind='synthetic_noop' AND o.state='accepted' AND g.state='issued' AND j.owner=o.owner AND j.generation=o.generation FOR UPDATE OF g,j,o",[id]);
+   if(!rows.length)return 0;
+   const updated=await tx.unsafe("UPDATE "+ident+".outbox SET state='outcome_unknown' WHERE id=$1 AND state='accepted' RETURNING id",[id]);
+   if(updated.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ($1,'synthetic_attempt_reserved')",[id]);
+   return updated.length;
+  });
+  // The synthetic attempt was reserved, but its acknowledgement is lost.
+  assert.equal(await claim("i"),1);
+  assert.equal(await claim("i"),0);
+  await sql.unsafe("UPDATE "+ident+".jobs SET owner='B',generation=2 WHERE id='j'");
+  assert.equal(await claim("i"),0);
+  await sql.unsafe("UPDATE "+ident+".grants SET state='revoked' WHERE id='g'");
+  assert.equal(await claim("i"),0);
+  const final=await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id='i'");
+  assert.equal(final[0].state,"outcome_unknown");
+  const audit=await sql.unsafe("SELECT event FROM "+ident+".audit WHERE subject='i' ORDER BY id");
+  assert.deepEqual(audit.map(r=>r.event),["synthetic_attempt_reserved"]);
+  // A repeated logical effect cannot bypass the unique idempotency key.
+  await assert.rejects(()=>sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('duplicate','g','j','B',2,'key-1','synthetic_noop','accepted')"),(err:any)=>err.code==="23505");
+  assert.equal((await sql.unsafe("SELECT count(*)::int AS n FROM "+ident+".outbox"))[0].n,1);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
