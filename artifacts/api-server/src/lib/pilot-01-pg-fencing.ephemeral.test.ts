@@ -501,3 +501,44 @@ test("isolated synthetic ambiguous-ack retry stays fail-closed across takeover",
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated ambiguous outcome reconciliation requires matching durable synthetic receipt", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".outbox(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,idempotency_key text NOT NULL UNIQUE,state text NOT NULL CHECK(state IN ('outcome_unknown','synthetic_confirmed')))");
+  await sql.unsafe("CREATE TABLE "+ident+".receipts(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,idempotency_key text NOT NULL,outcome text NOT NULL CHECK(outcome='synthetic_confirmed'))");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL)");
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('i','tenant-a','site-a','key-a','outcome_unknown')");
+  const reconcile=async(receiptId:string)=>sql.begin(async tx=>{
+   // Synthetic receipt verification is a database comparison, never a provider lookup.
+   const rows=await tx.unsafe("SELECT o.id FROM "+ident+".outbox o JOIN "+ident+".receipts r ON r.tenant=o.tenant AND r.site=o.site AND r.idempotency_key=o.idempotency_key WHERE o.id='i' AND o.state='outcome_unknown' AND r.id=$1 AND r.outcome='synthetic_confirmed' FOR UPDATE OF o,r",[receiptId]);
+   if(!rows.length)return 0;
+   const changed=await tx.unsafe("UPDATE "+ident+".outbox SET state='synthetic_confirmed' WHERE id='i' AND state='outcome_unknown' RETURNING id");
+   if(changed.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ('i','reconciled_from_synthetic_receipt')");
+   return changed.length;
+  });
+  // Missing, wrong-tenant, and wrong-key evidence cannot close an unknown outcome.
+  assert.equal(await reconcile("missing"),0);
+  await sql.unsafe("INSERT INTO "+ident+".receipts VALUES ('foreign','tenant-b','site-a','key-a','synthetic_confirmed')");
+  await sql.unsafe("INSERT INTO "+ident+".receipts VALUES ('wrong-key','tenant-a','site-a','key-b','synthetic_confirmed')");
+  assert.equal(await reconcile("foreign"),0);
+  assert.equal(await reconcile("wrong-key"),0);
+  assert.equal((await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id='i'"))[0].state,"outcome_unknown");
+  // Recovery after a synthetic worker crash: immutable receipt already exists in DB.
+  await sql.unsafe("INSERT INTO "+ident+".receipts VALUES ('valid','tenant-a','site-a','key-a','synthetic_confirmed')");
+  const results=await Promise.all([reconcile("valid"),reconcile("valid")]);
+  assert.deepEqual(results.sort(),[0,1]);
+  assert.equal(await reconcile("valid"),0);
+  assert.equal((await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id='i'"))[0].state,"synthetic_confirmed");
+  const events=await sql.unsafe("SELECT event FROM "+ident+".audit WHERE subject='i'");
+  assert.deepEqual(events.map(x=>x.event),["reconciled_from_synthetic_receipt"]);
+  // Reconciliation never creates a dispatch or a new outbox intent.
+  assert.equal((await sql.unsafe("SELECT count(*)::int AS n FROM "+ident+".outbox"))[0].n,1);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
