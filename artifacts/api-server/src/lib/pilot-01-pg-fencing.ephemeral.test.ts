@@ -415,3 +415,49 @@ test("isolated concurrent revoke-versus-accept has at most one synthetic authori
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated pre-dispatch revalidation fences revoked grants and stale workers", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:4,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".jobs(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,state text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".grants(id text PRIMARY KEY,tenant text NOT NULL,site text NOT NULL,state text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".outbox(id text PRIMARY KEY,job_id text NOT NULL,grant_id text NOT NULL,tenant text NOT NULL,site text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,kind text NOT NULL CHECK(kind='synthetic_noop'),state text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,subject text NOT NULL,event text NOT NULL)");
+  await sql.unsafe("INSERT INTO "+ident+".jobs VALUES ('j','t','s','worker-a',1,'active')");
+  await sql.unsafe("INSERT INTO "+ident+".grants VALUES ('g','t','s','issued')");
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('a','j','g','t','s','worker-a',1,'synthetic_noop','accepted')");
+  const dispatch=async(id:string)=>sql.begin(async tx=>{
+   // This models the last DB-side gate only; absolutely no external call is made.
+   // Lock authorization and generation before changing the synthetic delivery state.
+   const rows=await tx.unsafe("SELECT o.id FROM "+ident+".outbox o JOIN "+ident+".jobs j ON j.id=o.job_id AND j.tenant=o.tenant AND j.site=o.site JOIN "+ident+".grants g ON g.id=o.grant_id AND g.tenant=o.tenant AND g.site=o.site WHERE o.id=$1 AND o.kind='synthetic_noop' AND o.state='accepted' AND j.state='active' AND j.owner=o.owner AND j.generation=o.generation AND g.state='issued' FOR UPDATE OF g,j,o",[id]);
+   if(!rows.length)return 0;
+   const changed=await tx.unsafe("UPDATE "+ident+".outbox SET state='synthetic_dispatched' WHERE id=$1 AND state='accepted' RETURNING id",[id]);
+   if(changed.length)await tx.unsafe("INSERT INTO "+ident+".audit(subject,event) VALUES ($1,'synthetic_dispatched')",[id]);
+   return changed.length;
+  });
+  // The original acceptance is not a durable right to dispatch after revocation.
+  await sql.unsafe("UPDATE "+ident+".grants SET state='revoked' WHERE id='g'");
+  assert.equal(await dispatch("a"),0);
+  assert.equal((await sql.unsafe("SELECT state FROM "+ident+".outbox WHERE id='a'"))[0].state,"accepted");
+  // Synthetic reset is test-only; a new intent retains a stale worker generation.
+  await sql.unsafe("UPDATE "+ident+".grants SET state='issued' WHERE id='g'");
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('b','j','g','t','s','worker-a',1,'synthetic_noop','accepted')");
+  await sql.unsafe("UPDATE "+ident+".jobs SET owner='worker-b',generation=2 WHERE id='j'");
+  assert.equal(await dispatch("b"),0);
+  // A distinct current-generation intent can pass exactly once.
+  await sql.unsafe("INSERT INTO "+ident+".outbox VALUES ('c','j','g','t','s','worker-b',2,'synthetic_noop','accepted')");
+  const attempts=await Promise.all([dispatch("c"),dispatch("c")]);
+  assert.deepEqual(attempts.sort(),[0,1]);
+  assert.equal(await dispatch("c"),0);
+  const audit=await sql.unsafe("SELECT subject,event FROM "+ident+".audit ORDER BY id");
+  assert.deepEqual(audit.map(r=>[r.subject,r.event]),[["c","synthetic_dispatched"]]);
+  const states=await sql.unsafe("SELECT id,state FROM "+ident+".outbox ORDER BY id");
+  assert.deepEqual(states.map(r=>[r.id,r.state]),[["a","accepted"],["b","accepted"],["c","synthetic_dispatched"]]);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
