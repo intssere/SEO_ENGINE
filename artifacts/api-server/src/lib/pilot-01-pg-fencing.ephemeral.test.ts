@@ -646,3 +646,54 @@ test("isolated synthetic receipt replay and interrupted reconciliation roll back
   try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
  }
 });
+
+
+test("isolated timed-out recovery leases cannot replay synthetic reconciliation", {skip:!armed},async()=>{
+ const sql=postgres(allowed(),{max:5,prepare:false,connect_timeout:3});
+ const schema="pilot01_test_"+randomUUID().replace(/-/g,"");
+ const ident='"'+schema+'"';
+ try{
+  await sql.unsafe("CREATE SCHEMA "+ident);
+  await sql.unsafe("CREATE TABLE "+ident+".intents(id text PRIMARY KEY,state text NOT NULL,owner text NOT NULL,generation bigint NOT NULL,lease_until timestamptz NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".receipts(id text PRIMARY KEY,intent_id text NOT NULL,outcome text NOT NULL)");
+  await sql.unsafe("CREATE TABLE "+ident+".audit(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,intent_id text NOT NULL,event text NOT NULL)");
+  await sql.unsafe("INSERT INTO "+ident+".intents VALUES ('i','outcome_unknown','worker-a',1,clock_timestamp()-interval '1 second')");
+  await sql.unsafe("INSERT INTO "+ident+".receipts VALUES ('r','i','synthetic_confirmed')");
+  const takeover=async(owner:string)=>sql.begin(async tx=>{
+   const row=await tx.unsafe("UPDATE "+ident+".intents SET owner=$1,generation=generation+1,lease_until=clock_timestamp()+interval '30 seconds' WHERE id='i' AND state='outcome_unknown' AND lease_until<clock_timestamp() RETURNING generation",[owner]);
+   return row.length?BigInt(row[0].generation):0n;
+  });
+  const reconcile=async(owner:string,generation:bigint)=>sql.begin(async tx=>{
+   const rows=await tx.unsafe("SELECT id FROM "+ident+".intents WHERE id='i' AND state='outcome_unknown' AND owner=$1 AND generation=$2 AND lease_until>clock_timestamp() FOR UPDATE",[owner,generation.toString()]);
+   if(!rows.length)return 0;
+   const proof=await tx.unsafe("SELECT id FROM "+ident+".receipts WHERE intent_id='i' AND outcome='synthetic_confirmed' FOR UPDATE");
+   if(proof.length!==1)return 0;
+   const done=await tx.unsafe("UPDATE "+ident+".intents SET state='synthetic_confirmed' WHERE id='i' AND state='outcome_unknown' RETURNING id");
+   if(done.length)await tx.unsafe("INSERT INTO "+ident+".audit(intent_id,event) VALUES ('i','synthetic_reconciled')");
+   return done.length;
+  });
+  // Restarted workers race for one expired recovery lease.
+  const wins=await Promise.all([takeover("worker-b"),takeover("worker-c")]);
+  assert.equal(wins.filter(v=>v===2n).length,1);
+  assert.equal(wins.filter(v=>v===0n).length,1);
+  const owner=(await sql.unsafe("SELECT owner FROM "+ident+".intents WHERE id='i'"))[0].owner;
+  assert.equal(await reconcile("worker-a",1n),0);
+  assert.equal(await reconcile(owner,1n),0);
+  // Expired recovery lease cannot authorize reconciliation.
+  await sql.unsafe("UPDATE "+ident+".intents SET lease_until=clock_timestamp()-interval '1 second' WHERE id='i'");
+  assert.equal(await reconcile(owner,2n),0);
+  const renewed=await takeover("worker-d");
+  assert.equal(renewed,3n);
+  assert.equal(await reconcile(owner,2n),0);
+  const result=await Promise.all([reconcile("worker-d",3n),reconcile("worker-d",3n)]);
+  assert.deepEqual(result.sort(),[0,1]);
+  assert.equal(await reconcile("worker-d",3n),0);
+  const final=await sql.unsafe("SELECT state,generation FROM "+ident+".intents WHERE id='i'");
+  assert.equal(final[0].state,"synthetic_confirmed");
+  assert.equal(BigInt(final[0].generation),3n);
+  const audit=await sql.unsafe("SELECT event FROM "+ident+".audit");
+  assert.deepEqual(audit.map(r=>r.event),["synthetic_reconciled"]);
+ }finally{
+  try{await sql.unsafe("DROP SCHEMA IF EXISTS "+ident+" CASCADE");}finally{await sql.end({timeout:3});}
+ }
+});
