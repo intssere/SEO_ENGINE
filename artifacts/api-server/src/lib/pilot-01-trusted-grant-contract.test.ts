@@ -94,7 +94,8 @@ test("RT01-A3a: provider and store exceptions, unexpected output fail closed", a
   assert.deepEqual(await rehearseTrustedGrantConsumption(intent, { async resolve() { throw Error("auth unavailable"); } }, store([])), { status: "unavailable" });
   const broken: AtomicGrantReceiptStore = { async consume() { throw Error("DB unavailable"); } };
   assert.deepEqual(await rehearseTrustedGrantConsumption(intent, provider(), broken), { status: "unavailable" });
-  for (const value of [null, undefined, true, { status: "ok" }, { status: "consumed" }, { status: "denied" }, { status: "unavailable" }]) {
+  assert.deepEqual(await rehearseTrustedGrantConsumption(intent, provider(), { async consume() { return undefined as unknown as Awaited<ReturnType<AtomicGrantReceiptStore["consume"]>>; } }), { status: "unavailable" });
+  for (const value of [null, true, { status: "ok" }, { status: "consumed" }, { status: "denied" }, { status: "unavailable" }]) {
     const result = await rehearseTrustedGrantConsumption(intent, provider(), store([], value));
     assert.equal(result.status, value && typeof value === "object" && "status" in value && ["denied", "unavailable"].includes(String(value.status)) ? value.status : "unavailable");
   }
