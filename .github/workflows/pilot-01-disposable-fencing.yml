@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/pilot-01-disposable-fencing.yml'
       - 'artifacts/api-server/src/lib/pilot-01-pg-fencing.ephemeral.test.ts'
+      - 'artifacts/api-server/src/lib/pilot-01-pg-grant-disposable.ts'
+      - 'artifacts/api-server/src/lib/pilot-01-pg-grant-disposable.ephemeral.test.ts'
   workflow_dispatch:
 
 permissions:
@@ -45,4 +47,4 @@ jobs:
         env:
           PILOT01_DISPOSABLE_PG: I_ACKNOWLEDGE_DISPOSABLE_ONLY
           PILOT01_DISPOSABLE_DATABASE_URL: postgres://postgres:synthetic-ci-only@127.0.0.1:5432/pilot01_disposable_ci
-        run: pnpm --filter @workspace/api-server exec tsx --test src/lib/pilot-01-pg-fencing.ephemeral.test.ts
+        run: pnpm --filter @workspace/api-server exec tsx --test src/lib/pilot-01-pg-fencing.ephemeral.test.ts src/lib/pilot-01-pg-grant-disposable.ephemeral.test.ts
