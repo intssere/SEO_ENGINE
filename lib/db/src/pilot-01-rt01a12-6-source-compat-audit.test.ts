@@ -30,7 +30,7 @@ const byId=(s:SourceSnapshot,id:string)=>
 test("A12.6 source inventory remains blocked, never declares production ready",async()=>{
   const s=await snapshot();
   const f=assessCompatibility(s);
-  assert.equal(f.length,18);
+  assert.equal(f.length,19);
   assert.equal(new Set(f.map(x=>x.id)).size,f.length);
   for(const id of ["SESSION_NOT_MEMBERSHIP","ISSUER_CUSTODY","ROLE_POLICY",
     "LEGACY_QUEUE_ISOLATION","FULL_MIGRATION_DRIFT",
@@ -55,7 +55,7 @@ test("A12.6 mutation checks catch tenant FK and security boundary regressions",a
   const cases:[keyof SourceSnapshot,string,string,string][]=[
     ["candidate","FOREIGN KEY (organization_id,site_id)","FOREIGN KEY (site_id)","COMPOSITE_SITE_SCOPE"],
     ["candidate","operation IN ('analyze','recommend')","operation IN ('site_write')","OPERATION_DENY"],
-    ["candidate","ALTER TABLE pilot01.outbox FORCE ROW LEVEL SECURITY;","","ROLE_POLICY"],
+    ["candidate","ALTER TABLE pilot01.outbox FORCE ROW LEVEL SECURITY;","","FORCE_RLS_SHAPE"],
     ["adapter","lease_expires_at>clock_timestamp()","lease_expires_at IS NOT NULL","FENCED_DB_CLOCK"],
     ["adapter",'kind==="outbox_eligible")return {status:"denied"}','kind==="outbox_eligible")return {status:"applied"}',"NO_OUTBOX_DISPATCH"],
     ["adapter","INSERT INTO pilot01.admissions","INSERT INTO pilot01.orphan_receipts","TRANSACTION_SHAPE"],
