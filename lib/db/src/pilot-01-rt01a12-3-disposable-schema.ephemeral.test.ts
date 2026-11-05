@@ -87,11 +87,11 @@ test("A12.3 isolated PG17 schema candidate constraints, RLS and cleanup",
       "VALUES($1,$2,$3,$4,'synthetic-actor','synthetic-issuer','analyze')",
       [job,grant,orgA,site]);
     await t.test("composite job scope prohibits spoofed actor", async () => {
+      // Mutate the existing job so the grant_id UNIQUE constraint does not
+      // mask the composite FK check. This must produce SQLSTATE 23503.
       await assert.rejects(sql.unsafe(
-        "INSERT INTO pilot01.jobs(grant_id,organization_id,site_id," +
-        "actor_subject,issuer_id,operation) " +
-        "VALUES($1,$2,$3,'forged-actor','synthetic-issuer','analyze')",
-        [grant,orgA,site]),(e:any)=>e.code==="23503");
+        "UPDATE pilot01.jobs SET actor_subject='forged-actor' WHERE job_id=$1",
+        [job]),(e:any)=>e.code==="23503");
     });
     const addReceipt = (id:string,key:string) => sql.unsafe(
       "INSERT INTO pilot01.admissions(admission_id,job_id,grant_id," +
