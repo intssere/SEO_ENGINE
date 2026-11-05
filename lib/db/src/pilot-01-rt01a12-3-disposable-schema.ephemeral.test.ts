@@ -24,7 +24,7 @@ test("A12.3 without arming performs zero database I/O", () => {
 });
 test("A12.3 isolated PG17 schema candidate constraints, RLS and cleanup",
   {skip: !armed, timeout: 120000}, async t => {
-  const sql = postgres(disposableUrl(), {max: 3, prepare: false, connect_timeout: 3});
+  const sql = postgres(disposableUrl(), {max: 1, prepare: false, connect_timeout: 3});
   let owns = false;
   let role: string | null = null;
   try {
