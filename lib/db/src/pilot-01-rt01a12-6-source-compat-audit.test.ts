@@ -30,7 +30,7 @@ const byId=(s:SourceSnapshot,id:string)=>
 test("A12.6 source inventory remains blocked, never declares production ready",async()=>{
   const s=await snapshot();
   const f=assessCompatibility(s);
-  assert.equal(f.length,17);
+  assert.equal(f.length,18);
   assert.equal(new Set(f.map(x=>x.id)).size,f.length);
   for(const id of ["SESSION_NOT_MEMBERSHIP","ISSUER_CUSTODY","ROLE_POLICY",
     "LEGACY_QUEUE_ISOLATION","FULL_MIGRATION_DRIFT",
