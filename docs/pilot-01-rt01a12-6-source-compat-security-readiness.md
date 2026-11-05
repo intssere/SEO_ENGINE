@@ -20,7 +20,7 @@
 | C12 — external effects | BLOCKER | Candidate outbox default `blocked`; A12.5 `outbox_eligible` returns denied. No provider dispatch/idempotent ack/outcome-unknown flow exists | External exactly-once effects not established; no provider or public-site writes approved |
 
 ## Regression tests
-`lib/db/src/pilot-01-rt01a12-6-source-compat-audit.test.ts` inspects only repository UTF-8 files (Node fs). It reports and regression-tests **18 checks**, including 8 fixed source-only/blocker statuses. Mutant versions of composite foreign keys, scope, RLS, fence, outbox, admission and trusted boundary must be caught. Checks **do not validate SQL syntax, confirm deployed RLS role state, cryptographically verify identity, or certify migration drift**.
+`lib/db/src/pilot-01-rt01a12-6-source-compat-audit.test.ts` inspects only repository UTF-8 files (Node fs). It reports and regression-tests **19 checks**, including 8 fixed source-only/blocker statuses. Mutant versions of composite foreign keys, scope, RLS, fence, outbox, admission and trusted boundary must be caught. Checks **do not validate SQL syntax, confirm deployed RLS role state, cryptographically verify identity, or certify migration drift**.
 
 ## Release sequencing and hard stop
 1. **This PR:** deliver auditable source findings and offline mutation-negative tests. Remain draft until Standard CI + dedicated offline CI pass and Tahseen formally approves.
