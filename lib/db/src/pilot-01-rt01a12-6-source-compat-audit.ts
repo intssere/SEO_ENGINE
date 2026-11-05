@@ -37,10 +37,13 @@ export function assessCompatibility(s: SourceSnapshot): AuditFinding[] {
     !s.trustedSite.includes("No request handlers, credentials, SQL, HTTP"),
     "Trusted boundary is disconnected and cannot authenticate live request or validate actual membership.");
   check("ROLE_POLICY","blocker",
-    !["grants","jobs","admissions","job_events","outbox"].every(t=>
-      c.includes("ALTER TABLE pilot01."+t+" FORCE ROW LEVEL SECURITY;"))||
-    /CREATE POLICY\s+\S+\s+ON pilot01\./i.test(c),
+    !/CREATE POLICY\s+\S+\s+ON pilot01\./i.test(c),
     "FORCE RLS without tenant policies denies app roles; neither role custody nor effective tenant RLS is certified.");
+  check("FORCE_RLS_SHAPE","blocker",
+    !["grants","jobs","admissions","job_events","outbox"].every(t=>
+      c.includes("ALTER TABLE pilot01."+t+" ENABLE ROW LEVEL SECURITY;") &&
+      c.includes("ALTER TABLE pilot01."+t+" FORCE ROW LEVEL SECURITY;")),
+    "Both ENABLE and FORCE RLS must remain declared on all five PILOT-01 tables.");
   check("OPERATION_DENY","blocker",
     !/operation IN \('analyze','recommend'\)/i.test(c)||
     /site_write|write_products/.test(c),
