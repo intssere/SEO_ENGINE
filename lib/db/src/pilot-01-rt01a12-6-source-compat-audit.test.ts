@@ -22,7 +22,8 @@ async function snapshot():Promise<SourceSnapshot>{
   const pairs=await Promise.all(Object.entries(paths).map(async([k,p])=>
     [k,await readFile(at(p),"utf8")] as const));
   const migrations=await readdir(at("lib/db/migrations"));
-  return {...Object.fromEntries(pairs),migrationPaths:migrations} as SourceSnapshot;
+  const sourceFiles=Object.fromEntries(pairs) as Record<keyof typeof paths,string>;
+  return {...sourceFiles,migrationPaths:migrations};
 }
 const byId=(s:SourceSnapshot,id:string)=>
   assessCompatibility(s).find(f=>f.id===id);
