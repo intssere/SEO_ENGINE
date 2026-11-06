@@ -31,17 +31,17 @@ test("A12.12 refuses DB access unless explicitly disposable-armed",()=>{
 });
 async function attestEmpty(db:Client){
   const r=await db.unsafe<{name:string;version:number;who:string;tables:number;
-    roles:number;otherSchemas:number}[]>(
+    roles:number;other_schemas:number}[]>(
     "SELECT current_database() AS name, current_setting('server_version_num')::int/10000 AS version,"+
     "current_user AS who,(SELECT count(*)::int FROM pg_tables WHERE schemaname='public') AS tables,"+
     "(SELECT count(*)::int FROM pg_roles WHERE rolname LIKE 'pilot01_a12_12_%') AS roles,"+
     "(SELECT count(*)::int FROM pg_namespace WHERE nspname NOT IN "+
     "('public','pg_catalog','information_schema','pg_toast') "+
-    "AND nspname NOT LIKE 'pg_temp_%' AND nspname NOT LIKE 'pg_toast_temp_%') AS otherSchemas");
+    "AND nspname NOT LIKE 'pg_temp_%' AND nspname NOT LIKE 'pg_toast_temp_%') AS other_schemas");
   assert.equal(r[0].name,"pilot01_disposable_rt01a12_12_ci");
   assert.equal(r[0].version,17);assert.equal(r[0].who,"postgres");
   assert.equal(r[0].tables,0);assert.equal(r[0].roles,0);
-  assert.equal(r[0].otherSchemas,0);
+  assert.equal(r[0].other_schemas,0);
 }
 async function asRole<T>(db:Client,role:string,run:(tx:any)=>Promise<T>):Promise<T>{
   return db.begin(async tx=>{
