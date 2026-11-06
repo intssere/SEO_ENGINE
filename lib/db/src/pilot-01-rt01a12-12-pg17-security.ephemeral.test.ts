@@ -207,7 +207,7 @@ test("A12.12 canonical PG17 replay, least-privilege tenant RLS and revocation ra
       assert.equal(rows.length,2);assert.ok(rows.every(r=>!r.rolsuper&&!r.rolbypassrls&&!r.rolcanlogin));
     });
     await t.test("cross-tenant SELECT and INSERT denied by PostgreSQL RLS",async()=>{
-      const reads=await asRole(db,ROLE_B,tx=>tx.unsafe(
+      const reads=await asRole<{subject:string}[]>(db,ROLE_B,tx=>tx.unsafe(
         "SELECT * FROM pilot01.a12_12_memberships WHERE organization_id=$1",[orgA]));
       assert.equal(reads.length,0);
       await assert.rejects(asRole(db,ROLE_B,tx=>tx.unsafe(
@@ -215,7 +215,7 @@ test("A12.12 canonical PG17 replay, least-privilege tenant RLS and revocation ra
         (e:any)=>e.code==="42501");
       await asRole(db,ROLE_A,tx=>tx.unsafe(
         "INSERT INTO pilot01.a12_12_probe(organization_id,marker) VALUES($1,'allowed')",[orgA]));
-      const visible=await asRole(db,ROLE_B,tx=>tx.unsafe(
+      const visible=await asRole<{marker:string}[]>(db,ROLE_B,tx=>tx.unsafe(
         "SELECT marker FROM pilot01.a12_12_probe"));
       assert.equal(visible.length,0);
     });
@@ -227,7 +227,7 @@ test("A12.12 canonical PG17 replay, least-privilege tenant RLS and revocation ra
         const still=await tx.unsafe("SELECT count(*)::int AS n FROM pilot01.a12_12_memberships");
         assert.equal(still[0].n,1,"user GUC must not change role-derived policy");
       });
-      const other=await asRole(db,ROLE_B,tx=>tx.unsafe(
+      const other=await asRole<{n:number}[]>(db,ROLE_B,tx=>tx.unsafe(
         "SELECT count(*)::int AS n FROM pilot01.a12_12_memberships"));
       assert.equal(other[0].n,0);
     });
@@ -297,7 +297,7 @@ test("A12.12 canonical PG17 replay, least-privilege tenant RLS and revocation ra
         "revoked_at=NULL WHERE organization_id=$1",[orgA]);
       assert.equal(await admit(db,{...p,membershipRevision:5}),"committed");
       // Simulated missing acknowledgement: lookup receipt only; no second admission write.
-      const receipt=await asRole(db,ROLE_A,tx=>tx.unsafe(
+      const receipt=await asRole<{grant_id:string;request_sha256:string}[]>(db,ROLE_A,tx=>tx.unsafe(
         "SELECT grant_id,request_sha256 FROM pilot01.admissions "+
         "WHERE organization_id=$1 AND idempotency_key=$2",[orgA,p.key]));
       assert.equal(receipt.length,1);assert.equal(receipt[0].grant_id,p.grant);
