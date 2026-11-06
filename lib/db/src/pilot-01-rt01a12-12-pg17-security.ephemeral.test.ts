@@ -53,26 +53,28 @@ type Scope={org:string;site:string;session:string;subject:string;issuer:string;g
   membershipRevision:number;issuerRevision:number;key:string;hash:string};
 async function admit(db:Client,p:Scope,hook?:()=>Promise<void>):Promise<"committed"|"denied"|"conflict"|"already_committed">{
   return asRole(db,ROLE_A,async tx=>{
-    // FOR SHARE blocks concurrent UPDATE/revocation until commit; all writers
-    // must share the protocol. This is not production authentication.
+    // Test-only transaction advisory lock: every synthetic revocation writer
+    // must use the same tenant lock before mutation; no custody UPDATE grant
+    // to the NOBYPASSRLS application role. Not production authentication.
+    await tx.unsafe("SELECT pg_advisory_xact_lock(hashtextextended($1,0))",["a12_12_custody:"+p.org]);
     const session=await tx.unsafe("SELECT id FROM public.auth_sessions WHERE id=$1 "+
-      "AND subject=$2 AND revoked_at IS NULL AND expires_at>clock_timestamp() FOR SHARE",
+      "AND subject=$2 AND revoked_at IS NULL AND expires_at>clock_timestamp()",
       [p.session,p.subject]);
     if(!session.length)return "denied";
     const site=await tx.unsafe("SELECT id FROM public.sites WHERE id=$1 "+
-      "AND organization_id=$2 AND is_active=true FOR SHARE",[p.site,p.org]);
+      "AND organization_id=$2 AND is_active=true",[p.site,p.org]);
     if(!site.length)return "denied";
     const membership=await tx.unsafe(
       "SELECT revision FROM pilot01.a12_12_memberships WHERE organization_id=$1 "+
       "AND subject=$2 AND active=true AND revoked_at IS NULL AND expires_at>clock_timestamp() "+
-      "AND role IN ('operator','admin') AND revision=$3 FOR SHARE",
+      "AND role IN ('operator','admin') AND revision=$3",
       [p.org,p.subject,p.membershipRevision]);
     if(!membership.length)return "denied";
     if(hook)await hook();
     const issuer=await tx.unsafe(
       "SELECT revision FROM pilot01.a12_12_issuers WHERE issuer_id=$1 AND organization_id=$2 "+
       "AND site_id=$3 AND actor_subject=$4 AND operation='analyze' AND active=true "+
-      "AND revoked_at IS NULL AND expires_at>clock_timestamp() AND revision=$5 FOR SHARE",
+      "AND revoked_at IS NULL AND expires_at>clock_timestamp() AND revision=$5",
       [p.issuer,p.org,p.site,p.subject,p.issuerRevision]);
     if(!issuer.length)return "denied";
     const existing=await tx.unsafe(
@@ -276,9 +278,13 @@ test("A12.12 canonical PG17 replay, least-privilege tenant RLS and revocation ra
       const proceed=new Promise<void>(resolve=>{release=resolve;});
       const a=admit(db,p,async()=>{arrived();await proceed;});
       await held;
-      const revoker=db.unsafe("UPDATE pilot01.a12_12_memberships "+
-        "SET revision=revision+1,active=false,revoked_at=clock_timestamp() "+
-        "WHERE organization_id=$1",[orgA]);
+      const revoker=db.begin(async tx=>{
+        await tx.unsafe("SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
+          ["a12_12_custody:"+orgA]);
+        return tx.unsafe("UPDATE pilot01.a12_12_memberships "+
+          "SET revision=revision+1,active=false,revoked_at=clock_timestamp() "+
+          "WHERE organization_id=$1",[orgA]);
+      });
       release();
       assert.equal(await a,"committed");
       await revoker;
