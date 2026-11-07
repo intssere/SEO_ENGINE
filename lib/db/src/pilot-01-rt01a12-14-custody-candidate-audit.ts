@@ -15,12 +15,11 @@ export function assessCustodySqlCandidate(
   coreMigration:string
 ):StaticCandidateResult{
   const issues:string[]=[];
-  // A comment mentioning an unsafe statement is not executable SQL.
-  // Strip line and block comments for statement-level detection only.
-  const statements=candidate.replace(/--[^\\n]*/g,"").replace(/\\/\\*[\\s\\S]*?\\*\\//g,"");
   if(typeof candidate!=="string"||typeof priorCandidate!=="string"||
     typeof authMigration!=="string"||typeof coreMigration!=="string")
     return {status:"blocked",issues:["missing_source"]};
+  // Parse statement text only: descriptive comments may mention prohibited SQL.
+  const statements=candidate.replace(/--[^\n]*/g,"").replace(/\/\*[\s\S]*?\*\//g,"");
   if(!has(candidate,/UNEXECUTED ADDITIVE CUSTODY PERSISTENCE CANDIDATE/i))
     issues.push("not_marked_unexecuted");
   if(!has(candidate,/\bBEGIN\s*;/i)||!has(candidate,/\bCOMMIT\s*;/i))
