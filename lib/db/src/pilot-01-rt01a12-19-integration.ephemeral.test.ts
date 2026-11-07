@@ -235,8 +235,8 @@ test("A12.19 actual PG17 synthetic custody + durable admission integration",
         "(SELECT count(*)::int FROM pilot01.admissions) AS admissions,"+
         "(SELECT count(*)::int FROM pilot01.job_events) AS events");
       await db.unsafe("CREATE FUNCTION pilot01.a12_19_fail_admit_event() RETURNS trigger "+
-        "LANGUAGE plpgsql AS $ BEGIN IF NEW.event_kind='admitted' THEN "+
-        "RAISE EXCEPTION 'synthetic a12.19 event failure'; END IF; RETURN NEW; END $");
+        "LANGUAGE plpgsql AS $a12fail$ BEGIN IF NEW.event_kind='admitted' THEN "+
+        "RAISE EXCEPTION 'synthetic a12.19 event failure'; END IF; RETURN NEW; END $a12fail$");
       await db.unsafe("CREATE TRIGGER a12_19_synthetic_admission_failure "+
         "BEFORE INSERT ON pilot01.job_events FOR EACH ROW "+
         "EXECUTE FUNCTION pilot01.a12_19_fail_admit_event()");
