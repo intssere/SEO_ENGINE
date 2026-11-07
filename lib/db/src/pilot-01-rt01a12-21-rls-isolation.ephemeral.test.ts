@@ -37,10 +37,10 @@ async function attestEmpty(db:DB){
   assert.equal(r[0].tables,0);assert.equal(r[0].roles,0);
   assert.equal(r[0].extra_schemas,0);assert.equal(r[0].extensions,0);
 }
-async function asRole<T>(db:DB,role:string,fn:(tx:any)=>Promise<T>):Promise<T>{
+async function asRole<T>(db:DB,role:string,fn:(tx:DB)=>Promise<T>):Promise<T>{
   return db.begin(async tx=>{
     await tx.unsafe('SET LOCAL ROLE "'+role+'"');
-    return fn(tx);
+    return fn(tx as unknown as DB);
   }) as Promise<T>;
 }
 async function expectDenied(work:()=>Promise<unknown>):Promise<void>{
