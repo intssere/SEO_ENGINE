@@ -247,7 +247,7 @@ test("A12.19 actual PG17 synthetic custody + durable admission integration",
         await db.unsafe("DROP TRIGGER a12_19_synthetic_admission_failure ON pilot01.job_events");
         await db.unsafe("DROP FUNCTION pilot01.a12_19_fail_admit_event()");
       }
-      const row=await db.unsafe<{state:string}>(
+      const row=await db.unsafe<{state:string}[]>(
         "SELECT state FROM pilot01.grants WHERE grant_id=$1",[i.grantId]);
       assert.equal(row[0].state,"issued");
       const after=await db.unsafe<{jobs:number;admissions:number;events:number}[]>(
