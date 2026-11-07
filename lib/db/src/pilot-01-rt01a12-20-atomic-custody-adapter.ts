@@ -48,7 +48,8 @@ function receiptMatches(r:AdmissionReceipt,x:TransactionRequest):boolean{
 }
 /** Unexported by workspace package index. Constructor requires literal CI-only arming. */
 export class DisposableAtomicCustodyAdapter implements TransactionCustodyPort {
-  constructor(private readonly db:Client,authorization:string,\n    private readonly afterCustodyLocks?:()=>Promise<void>){
+  constructor(private readonly db:Client,authorization:string,
+    private readonly afterCustodyLocks?:()=>Promise<void>){
     if(authorization!=="RT01_A12_20_ATTESTED_EMPTY_PG17_ONLY")throw Error("A12_20_REFUSE_RUNTIME_ADAPTER");
   }
   async admitWithCustody(x:TransactionRequest):Promise<TxResult>{
