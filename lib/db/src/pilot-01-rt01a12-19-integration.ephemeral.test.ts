@@ -228,6 +228,34 @@ test("A12.19 actual PG17 synthetic custody + durable admission integration",
       assert.equal(await attemptSyntheticWorkerStep(admission,token,
         i.requestSha256,"valid"),"blocked");
     });
+    await t.test("injected admission-event failure leaves grant unconsumed and no job or receipt",async()=>{
+      const i=await intent("event-failure");
+      const before=await db.unsafe<{jobs:number;admissions:number;events:number}[]>(
+        "SELECT (SELECT count(*)::int FROM pilot01.jobs) AS jobs,"+
+        "(SELECT count(*)::int FROM pilot01.admissions) AS admissions,"+
+        "(SELECT count(*)::int FROM pilot01.job_events) AS events");
+      await db.unsafe("CREATE FUNCTION pilot01.a12_19_fail_admit_event() RETURNS trigger "+
+        "LANGUAGE plpgsql AS $ BEGIN IF NEW.event_kind='admitted' THEN "+
+        "RAISE EXCEPTION 'synthetic a12.19 event failure'; END IF; RETURN NEW; END $");
+      await db.unsafe("CREATE TRIGGER a12_19_synthetic_admission_failure "+
+        "BEFORE INSERT ON pilot01.job_events FOR EACH ROW "+
+        "EXECUTE FUNCTION pilot01.a12_19_fail_admit_event()");
+      try{
+        const result=await attemptSyntheticAdmission(ports,scope,i);
+        assert.equal(result.status,"blocked");
+      }finally{
+        await db.unsafe("DROP TRIGGER a12_19_synthetic_admission_failure ON pilot01.job_events");
+        await db.unsafe("DROP FUNCTION pilot01.a12_19_fail_admit_event()");
+      }
+      const row=await db.unsafe<{state:string}>(
+        "SELECT state FROM pilot01.grants WHERE grant_id=$1",[i.grantId]);
+      assert.equal(row[0].state,"issued");
+      const after=await db.unsafe<{jobs:number;admissions:number;events:number}[]>(
+        "SELECT (SELECT count(*)::int FROM pilot01.jobs) AS jobs,"+
+        "(SELECT count(*)::int FROM pilot01.admissions) AS admissions,"+
+        "(SELECT count(*)::int FROM pilot01.job_events) AS events");
+      assert.deepEqual(after,before);
+    });
     await t.test("unknown commit blocks rather than retries or re-admits",async()=>{
       const i=await intent("ambiguous");
       forceUnknown=true;
