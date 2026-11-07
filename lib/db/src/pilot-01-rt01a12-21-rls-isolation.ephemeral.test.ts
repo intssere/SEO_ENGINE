@@ -46,6 +46,21 @@ async function asRole<T>(db:DB,role:string,fn:(tx:any)=>Promise<T>):Promise<T>{
 async function expectDenied(work:()=>Promise<unknown>):Promise<void>{
   await assert.rejects(work);
 }
+/** Effective non-superuser session authorization; SET ROLE alone as postgres
+ * is NOT an escalation test because PostgreSQL superusers can SET ROLE freely.
+ * Each disposable connection is discarded after its session identity changes.
+ */
+async function expectNonmemberRoleSwitchDenied(role:string,target:string){
+  const session=postgres(guardedUrl(),{max:1,prepare:false,connect_timeout:4});
+  try{
+    await session.unsafe('SET SESSION AUTHORIZATION "'+role+'"');
+    const who=await session.unsafe<{who:string;session_user:string}[]>(
+      "SELECT current_user AS who,session_user AS session_user");
+    assert.equal(who[0].who,role);
+    assert.equal(who[0].session_user,role);
+    await assert.rejects(session.unsafe('SET ROLE "'+target+'"'));
+  }finally{await session.end({timeout:3});}
+}
 test("A12.21 denies database access without exact disposable sentinel",()=>{
   if(!armed)assert.throws(guardedUrl,/A12_21_NOT_ARMED/);
 });
@@ -176,9 +191,9 @@ test("A12.21 synthetic default-deny, tenant RLS and privilege boundaries in fres
         "SELECT rolname,rolinherit,rolbypassrls,rolcanlogin FROM pg_roles "+
         "WHERE rolname LIKE 'pilot01_a12_21_%'");
       assert.ok(roles.every(x=>!x.rolinherit&&!x.rolbypassrls&&!x.rolcanlogin));
-      await expectDenied(()=>asRole(db,OUTSIDER,tx=>tx.unsafe('SET LOCAL ROLE "'+A+'"')));
-      await expectDenied(()=>asRole(db,API,tx=>tx.unsafe('SET LOCAL ROLE "'+B+'"')));
-      await expectDenied(()=>asRole(db,WORKER,tx=>tx.unsafe('SET LOCAL ROLE "'+API+'"')));
+      await expectNonmemberRoleSwitchDenied(OUTSIDER,A);
+      await expectNonmemberRoleSwitchDenied(API,B);
+      await expectNonmemberRoleSwitchDenied(WORKER,API);
       await expectDenied(()=>asRole(db,A,tx=>tx.unsafe("SELECT * FROM public.auth_sessions")));
     });
     await t.test("pooled connection role and tenant GUC do not leak between transactions",async()=>{
