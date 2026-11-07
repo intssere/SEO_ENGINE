@@ -1,0 +1,57 @@
+name: PILOT-01 RT01-A12.19 isolated custody integration disposable PostgreSQL 17
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pilot-01-rt01a12-19-disposable-pg17-integration.yml'
+      - 'lib/db/src/pilot-01-rt01a12-19-disconnected-integration.ts'
+      - 'lib/db/src/pilot-01-rt01a12-19-integration.ephemeral.test.ts'
+      - 'docs/pilot-01-rt01a12-19-isolated-integration-certification.md'
+      - 'lib/db/src/pilot-01-rt01a12-4-disconnected-admission-contract.ts'
+      - 'lib/db/src/pilot-01-rt01a12-5-disposable-transactional-adapter.ts'
+      - 'lib/db/src/pilot-01-rt01a12-7-disconnected-custody.ts'
+      - 'lib/db/src/pilot-01-rt01a12-8-disconnected-transaction.ts'
+      - 'docs/sql-candidates/rt01-a12-1-pilot01-additive.sql'
+      - 'docs/sql-candidates/rt01-a12-14-canonical-membership-issuer-revocation-additive.sql'
+      - 'docs/sql-candidates/rt01-a12-16-custody-integrity-enforcement-additive.sql'
+      - 'lib/db/migrations/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  freshly-attested-pg17-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      pg17:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-ci-only
+          POSTGRES_DB: pilot01_disposable_rt01a12_19_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pilot01_disposable_rt01a12_19_ci"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+        with:
+          version: 10.34.5
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+      - name: A12.19 synthetic integration validation against attested empty PG17
+        env:
+          PILOT01_A12_19_DISPOSABLE_PG: I_ACKNOWLEDGE_NEW_EMPTY_PG17_ONLY
+          PILOT01_A12_19_DISPOSABLE_DATABASE_URL: postgres://postgres:synthetic-ci-only@127.0.0.1:5432/pilot01_disposable_rt01a12_19_ci
+          PUBLIC_SITE_WRITES_ENABLED: 'false'
+          AI_PROPOSAL_GENERATION_ENABLED: 'false'
+        run: pnpm --filter @workspace/db exec tsx --test src/pilot-01-rt01a12-19-integration.ephemeral.test.ts
