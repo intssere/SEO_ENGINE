@@ -48,7 +48,7 @@ function receiptMatches(r:AdmissionReceipt,x:TransactionRequest):boolean{
 }
 /** Unexported by workspace package index. Constructor requires literal CI-only arming. */
 export class DisposableAtomicCustodyAdapter implements TransactionCustodyPort {
-  constructor(private readonly db:Client,authorization:string){
+  constructor(private readonly db:Client,authorization:string,\n    private readonly afterCustodyLocks?:()=>Promise<void>){
     if(authorization!=="RT01_A12_20_ATTESTED_EMPTY_PG17_ONLY")throw Error("A12_20_REFUSE_RUNTIME_ADAPTER");
   }
   async admitWithCustody(x:TransactionRequest):Promise<TxResult>{
@@ -115,7 +115,7 @@ export class DisposableAtomicCustodyAdapter implements TransactionCustodyPort {
             membershipRevision:Number(m.revision),issuerRevision:Number(u.revision)}
             :{status:"conflict" as const};
         }
-        if(g.state!=="issued")return {status:"denied" as const};
+        if(g.state!=="issued")return {status:"denied" as const};\n        // Synthetic test-only interleaving; locks stay held for the whole transaction.\n        if(this.afterCustodyLocks)await this.afterCustodyLocks();
         const consumed=await tx.unsafe<{grant_id:string}[]>(
           "UPDATE pilot01.grants SET state='consumed',consumed_at=clock_timestamp() "+
           "WHERE grant_id=$1 AND state='issued' AND expires_at>clock_timestamp() RETURNING grant_id",
@@ -155,7 +155,9 @@ export class DisposableAtomicCustodyAdapter implements TransactionCustodyPort {
       if(!found.length)return {status:"unavailable"};
       const r=receipt(found[0]);
       if(!receiptMatches(r,x))return {status:"conflict"};
-      // Read-only reconciliation does not invent a fresh membership/issuer revision.
+      // Read-only lookup never calls the admission write path. If historical
+      // revision provenance is not persisted in the receipt, do not synthesize
+      // a "committed" revision from caller input. Explicitly return unavailable.
       return {status:"unavailable"};
     }catch{return {status:"unavailable"};}
   }
