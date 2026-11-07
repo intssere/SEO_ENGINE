@@ -1,0 +1,34 @@
+name: PILOT-01 RT01-A12.18 offline custody cutover blueprint
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pilot-01-rt01a12-18-offline-cutover.yml'
+      - 'lib/db/src/pilot-01-rt01a12-18-cutover-sequencing.ts'
+      - 'lib/db/src/pilot-01-rt01a12-18-cutover-sequencing.test.ts'
+      - 'lib/db/src/pilot-01-rt01a12-13-integration-readiness.ts'
+      - 'docs/pilot-01-rt01a12-18-source-only-cutover-blueprint.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  disconnected-cutover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+        with:
+          version: 10.34.5
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Execute A12.18 disconnected phase negative tests
+        env:
+          PUBLIC_SITE_WRITES_ENABLED: 'false'
+          AI_PROPOSAL_GENERATION_ENABLED: 'false'
+        run: pnpm --filter @workspace/db exec tsx --test src/pilot-01-rt01a12-18-cutover-sequencing.test.ts
