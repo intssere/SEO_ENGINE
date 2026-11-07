@@ -40,6 +40,8 @@ export function assessCustodyIntegritySql(enforcement:string,base:string,custody
     "actor_subject","operation","provenance_sha256"]){
     const re=new RegExp("NEW\\."+field+"\\s+IS\\s+DISTINCT\\s+FROM\\s+OLD\\."+field,"i");
     require(re,"identity_scope_freeze_missing_"+field);
+    if(field==="organization_id"&&(s.match(re)||[]).length<2)
+      issues.push("tenant_identity_guard_missing_in_one_custody_branch");
   }
   require(/INSERT\s+INTO\s+pilot01\.custody_revocation_events/i,"atomic_audit_insert_missing");
   require(/CREATE\s+FUNCTION\s+pilot01\.append_guarded_custody_revocation\s*\(\s*\)/i,"atomic_audit_function_missing");
