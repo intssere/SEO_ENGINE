@@ -95,7 +95,13 @@ test("A12.23 canonical-to-custody upgrade in attested fresh PG17, rollback and f
       assert.ok(role.every(x=>!x.rolbypassrls&&!x.rolcanlogin));
     });
     await t.test("repeated non-idempotent candidate refuses partial replay",async()=>{
-      await assert.rejects(db.unsafe(candidates[0].sql));
+      // The duplicate candidate starts its own BEGIN and fails mid-transaction.
+      // Do not poison the migration observer connection with PostgreSQL 25P02.
+      const probe=postgres(url(),{max:1,prepare:false,connect_timeout:4});
+      try{
+        await assert.rejects(probe.unsafe(candidates[0].sql));
+        await probe.unsafe("ROLLBACK");
+      }finally{await probe.end({timeout:3});}
       const rows=await db.unsafe<{n:number}[]>(
         "SELECT count(*)::int AS n FROM pg_tables WHERE schemaname='pilot01'");
       assert.equal(rows[0].n,8);
