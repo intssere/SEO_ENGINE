@@ -100,7 +100,7 @@ BEGIN
      initiated_by_subject,authorization_receipt_sha256)
   VALUES
     (NEW.organization_id,v_subject,v_issuer,v_entity,NEW.revision,'revoked',
-     'db-role:' || current_user,encode(digest(v_material,'sha256'),'hex'));
+     'db-role:' || current_user,encode(public.digest(v_material,'sha256'),'hex'));
   RETURN NULL;
 END;
 $append$;
