@@ -116,7 +116,9 @@ export class DisposableAtomicCustodyAdapter implements TransactionCustodyPort {
             membershipRevision:Number(m.revision),issuerRevision:Number(u.revision)}
             :{status:"conflict" as const};
         }
-        if(g.state!=="issued")return {status:"denied" as const};\n        // Synthetic test-only interleaving; locks stay held for the whole transaction.\n        if(this.afterCustodyLocks)await this.afterCustodyLocks();
+        if(g.state!=="issued")return {status:"denied" as const};
+        // Synthetic test-only interleaving; locks stay held for the whole transaction.
+        if(this.afterCustodyLocks)await this.afterCustodyLocks();
         const consumed=await tx.unsafe<{grant_id:string}[]>(
           "UPDATE pilot01.grants SET state='consumed',consumed_at=clock_timestamp() "+
           "WHERE grant_id=$1 AND state='issued' AND expires_at>clock_timestamp() RETURNING grant_id",
