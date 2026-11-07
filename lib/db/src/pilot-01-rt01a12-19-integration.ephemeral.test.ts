@@ -240,6 +240,18 @@ test("A12.19 actual PG17 synthetic custody + durable admission integration",
       try{assert.equal((await attemptSyntheticAdmission(ports,scope,i)).status,"blocked");}
       finally{forceUnavailable=false;}
     });
+    await t.test("revoked and expired canonical sessions cannot start admissions",async()=>{
+      const i=await intent("session-denial");
+      const before=txCalls;
+      await db.unsafe("UPDATE public.auth_sessions SET revoked_at=clock_timestamp() WHERE id=$1",[session]);
+      assert.equal((await attemptSyntheticAdmission(ports,scope,i)).status,"blocked");
+      await db.unsafe("UPDATE public.auth_sessions SET revoked_at=NULL,expires_at=clock_timestamp()-interval '1 minute' WHERE id=$1",[session]);
+      assert.equal((await attemptSyntheticAdmission(ports,scope,i)).status,"blocked");
+      assert.equal(txCalls,before);
+      await db.unsafe("UPDATE public.auth_sessions SET expires_at=clock_timestamp()+interval '1 hour' WHERE id=$1",[session]);
+      const state=await db.unsafe<{state:string}[]>("SELECT state FROM pilot01.grants WHERE grant_id=$1",[i.grantId]);
+      assert.equal(state[0].state,"issued");
+    });
     await t.test("revocation automatically emits audit and blocks future admission",async()=>{
       await db.unsafe("UPDATE pilot01.tenant_memberships SET active=false,"+
         "revoked_at=clock_timestamp(),revision=revision+1 "+
@@ -254,6 +266,18 @@ test("A12.19 actual PG17 synthetic custody + durable admission integration",
       const row=await db.unsafe<{state:string}[]>(
         "SELECT state FROM pilot01.grants WHERE grant_id=$1",[i.grantId]);
       assert.equal(row[0].state,"issued");
+    });
+    await t.test("issuer revocation independently appends audit and blocks admission",async()=>{
+      await db.unsafe("UPDATE pilot01.issuer_custody SET active=false,"+
+        "revoked_at=clock_timestamp(),revision=revision+1 WHERE issuer_id=$1",[issuer]);
+      const ev=await db.unsafe<{entity_type:string}[]>(
+        "SELECT entity_type FROM pilot01.custody_revocation_events WHERE organization_id=$1 ORDER BY entity_type",
+        [org]);
+      assert.deepEqual(ev.map(x=>x.entity_type),["issuer","membership"]);
+      const i=await intent("issuer-revoked");
+      const calls=txCalls;
+      assert.equal((await attemptSyntheticAdmission(ports,scope,i)).status,"blocked");
+      assert.equal(txCalls,calls);
     });
     await t.test("synthetic worker denies revoked custody and all legacy recovery",async()=>{
       const token:LeaseToken={jobId:randomUUID(),organizationId:org,siteId:site,
