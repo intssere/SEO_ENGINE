@@ -15,6 +15,9 @@ export function assessCustodySqlCandidate(
   coreMigration:string
 ):StaticCandidateResult{
   const issues:string[]=[];
+  // A comment mentioning an unsafe statement is not executable SQL.
+  // Strip line and block comments for statement-level detection only.
+  const statements=candidate.replace(/--[^\\n]*/g,"").replace(/\\/\\*[\\s\\S]*?\\*\\//g,"");
   if(typeof candidate!=="string"||typeof priorCandidate!=="string"||
     typeof authMigration!=="string"||typeof coreMigration!=="string")
     return {status:"blocked",issues:["missing_source"]};
@@ -62,9 +65,9 @@ export function assessCustodySqlCandidate(
     issues.push("public_revoke_missing");
   // Future integration has not been authorized. Candidate may not create open RLS
   // policies or assign privileges to application and worker roles.
-  if(has(candidate,/\bCREATE\s+POLICY\b|\bCREATE\s+ROLE\b|\bGRANT\b|\bSECURITY\s+DEFINER\b|\bCREATE\s+TRIGGER\b/i))
+  if(has(statements,/\bCREATE\s+POLICY\b|\bCREATE\s+ROLE\b|\bGRANT\b|\bSECURITY\s+DEFINER\b|\bCREATE\s+TRIGGER\b/i))
     issues.push("operational_privilege_or_mutation_prohibited");
-  if(has(candidate,/\bDROP\s+(?:TABLE|SCHEMA|ROLE|POLICY)\b|\bTRUNCATE\b|\bDELETE\s+FROM\b/i))
+  if(has(statements,/\bDROP\s+(?:TABLE|SCHEMA|ROLE|POLICY)\b|\bTRUNCATE\b|\bDELETE\s+FROM\b/i))
     issues.push("destructive_statement_prohibited");
   return {status:issues.length?"blocked":"candidate_consistent",issues};
 }
