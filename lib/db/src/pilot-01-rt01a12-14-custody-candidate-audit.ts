@@ -55,7 +55,7 @@ export function assessCustodySqlCandidate(
   if(!has(candidate,/FOREIGN\s+KEY\s*\(organization_id\s*,\s*site_id\s*\)\s*REFERENCES\s+public\.sites\s*\(organization_id\s*,\s*id\)/i))
     issues.push("cross_tenant_site_fk_missing");
   if(!has(candidate,/entity_type\s+text\s+NOT\s+NULL\s+CHECK/i)||
-     !has(candidate,/authorization_receipt_sha256/i))
+     !has(candidate,/authorization_receipt_sha256\s+char\(64\)/i))
     issues.push("custody_event_evidence_missing");
   if(!has(candidate,/provenance_sha256\s+char\(64\)/i))
     issues.push("issuer_fingerprint_missing");
