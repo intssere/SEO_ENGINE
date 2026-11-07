@@ -1,0 +1,52 @@
+name: PILOT-01 RT01-A12.23 canonical migration compatibility disposable PG17
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pilot-01-rt01a12-23-disposable-pg17-migration.yml'
+      - 'lib/db/src/pilot-01-rt01a12-23-*'
+      - 'docs/pilot-01-rt01a12-23-migration-compatibility.md'
+      - 'docs/sql-candidates/rt01-a12-*'
+      - 'lib/db/migrations/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  attested-migration-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      pg17:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-ci-only
+          POSTGRES_DB: pilot01_disposable_rt01a12_23_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pilot01_disposable_rt01a12_23_ci"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+        with:
+          version: 10.34.5
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check source migration ledger and collision negative tests
+        run: pnpm --filter @workspace/db exec tsx --test src/pilot-01-rt01a12-23-migration-lineage-gate.test.ts
+      - name: Attest empty loopback PG17 and run synthetic baseline upgrade tests
+        env:
+          PILOT01_A12_23_DISPOSABLE_PG: I_ACKNOWLEDGE_NEW_EMPTY_PG17_ONLY
+          PILOT01_A12_23_DISPOSABLE_DATABASE_URL: postgres://postgres:synthetic-ci-only@127.0.0.1:5432/pilot01_disposable_rt01a12_23_ci
+          PUBLIC_SITE_WRITES_ENABLED: 'false'
+          AI_PROPOSAL_GENERATION_ENABLED: 'false'
+        run: pnpm --filter @workspace/db exec tsx --test src/pilot-01-rt01a12-23-schema-compat.ephemeral.test.ts
