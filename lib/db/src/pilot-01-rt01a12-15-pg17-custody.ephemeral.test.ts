@@ -171,13 +171,90 @@ test("A12.15 replays canonical 0001-0011 + A12.1 + A12.14 in new PG17 only",
         [orgA,subject,null,"membership",2,SHA("denied")])) ,(e:any)=>e.code==="42501");
     });
     await t.test("test-only role-scoped policies cannot leak across tenants or client GUC",async()=>{
-      // Test policies only, never part of candidate or operational role grants.
+      // Test-only role-to-tenant mapping; no caller-controlled tenant GUC in policy.
+      await db.unsafe("CREATE TABLE pilot01.a12_15_role_scope("+
+        "db_role name PRIMARY KEY,organization_id uuid NOT NULL)");
+      await db.unsafe("INSERT INTO pilot01.a12_15_role_scope VALUES($1,$2),($3,$4)",
+        [ROLE_A,orgA,ROLE_B,orgB]);
+      for(const role of [ROLE_A,ROLE_B])
+        await db.unsafe('GRANT SELECT ON pilot01.a12_15_role_scope TO "'+role+'"');
       for(const table of ["tenant_memberships","issuer_custody","custody_revocation_events"]){
         await db.unsafe('CREATE POLICY a12_15_role_scoped ON pilot01.'+table+
           ' FOR SELECT TO "'+ROLE_A+'","'+ROLE_B+'" USING ('+
           "organization_id=(SELECT organization_id FROM pilot01.a12_15_role_scope "+
           "WHERE db_role=current_user))");
+        const a=await asRole<{n:number}[]>(db,ROLE_A,async tx=>{
+          const r=await tx.unsafe("SELECT count(*)::int AS n FROM pilot01."+table);
+          await tx.unsafe("SELECT set_config('pilot01.tenant_id',$1,true)",[orgB]);
+          const after=await tx.unsafe("SELECT count(*)::int AS n FROM pilot01."+table);
+          assert.equal(after[0].n,r[0].n,"user-controlled GUC must not bypass RLS");
+          return r;
+        });
+        const b=await asRole<{n:number}[]>(db,ROLE_B,tx=>tx.unsafe(
+          "SELECT count(*)::int AS n FROM pilot01."+table));
+        assert.equal(b[0].n,0,"other tenant must be denied");
+        if(table!=="custody_revocation_events")assert.equal(a[0].n,1);
       }
+    });
+    await t.test("revocation plus evidence rolls back atomically on invalid event",async()=>{
+      await assert.rejects(db.begin(async tx=>{
+        await tx.unsafe("UPDATE pilot01.tenant_memberships "+
+          "SET active=false,revoked_at=clock_timestamp(),revision=revision+1 "+
+          "WHERE organization_id=$1 AND subject=$2",[orgA,subject]);
+        await tx.unsafe(revocationInsert,[orgA,subject,issuer,"membership",2,SHA("bad-event")]);
+      }),(e:any)=>e.code==="23514");
+      const row=await db.unsafe<{active:boolean;revision:string;revoked_at:Date|null}[]>(
+        "SELECT active,revision::text,revoked_at FROM pilot01.tenant_memberships "+
+        "WHERE organization_id=$1 AND subject=$2",[orgA,subject]);
+      assert.equal(row[0].active,true);
+      assert.equal(row[0].revision,"1");
+      assert.equal(row[0].revoked_at,null);
+      const events=await db.unsafe<{n:number}[]>(
+        "SELECT count(*)::int AS n FROM pilot01.custody_revocation_events");
+      assert.equal(events[0].n,0);
+    });
+    await t.test("valid revoke+event can commit but does not prevent privileged reversal",async()=>{
+      await db.begin(async tx=>{
+        await tx.unsafe("UPDATE pilot01.tenant_memberships "+
+          "SET active=false,revoked_at=clock_timestamp(),revision=revision+1 "+
+          "WHERE organization_id=$1 AND subject=$2",[orgA,subject]);
+        await tx.unsafe(revocationInsert,
+          [orgA,subject,null,"membership",2,SHA("synthetic-revocation")]);
+      });
+      const a=await db.unsafe<{active:boolean;revision:string}[]>(
+        "SELECT active,revision::text FROM pilot01.tenant_memberships "+
+        "WHERE organization_id=$1 AND subject=$2",[orgA,subject]);
+      assert.equal(a[0].active,false);
+      assert.equal(a[0].revision,"2");
+      const ev=await db.unsafe<{n:number}[]>(
+        "SELECT count(*)::int AS n FROM pilot01.custody_revocation_events "+
+        "WHERE organization_id=$1 AND entity_type='membership'",[orgA]);
+      assert.equal(ev[0].n,1);
+      // Deliberately show the missing monotonic guard but roll back the mutation.
+      await assert.rejects(db.begin(async tx=>{
+        const dec=await tx.unsafe<{revision:string}[]>(
+          "UPDATE pilot01.tenant_memberships SET revision=1,active=true,revoked_at=NULL "+
+          "WHERE organization_id=$1 AND subject=$2 RETURNING revision::text",
+          [orgA,subject]);
+        assert.equal(dec[0].revision,"1",
+          "positive CHECK alone permits rollback of revision under privileged writer");
+        throw Error("A12_15_ROLLBACK_UNSAFE_REVIVAL");
+      }),/A12_15_ROLLBACK_UNSAFE_REVIVAL/);
+      const final=await db.unsafe<{active:boolean;revision:string}[]>(
+        "SELECT active,revision::text FROM pilot01.tenant_memberships "+
+        "WHERE organization_id=$1 AND subject=$2",[orgA,subject]);
+      assert.equal(final[0].active,false);
+      assert.equal(final[0].revision,"2");
+    });
+    await t.test("revocation event is not intrinsically immutable to schema owner",async()=>{
+      await assert.rejects(db.begin(async tx=>{
+        const rows=await tx.unsafe<{event_id:string}[]>(
+          "DELETE FROM pilot01.custody_revocation_events "+
+          "WHERE organization_id=$1 RETURNING event_id",[orgA]);
+        assert.equal(rows.length,1,
+          "missing DB trigger allows privileged deletion; application grants stay absent");
+        throw Error("A12_15_ROLLBACK_PRIVILEGED_DELETE");
+      }),/A12_15_ROLLBACK_PRIVILEGED_DELETE/);
     });
   }finally{
     if(attested){
