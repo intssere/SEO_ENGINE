@@ -79,6 +79,7 @@ test("A12.27 reject query injection, wrong fingerprint, scope creep and ledger r
 test("A12.27 reject elevated roles and unsafe transport",()=>{
  const a=fixture();
  for(const variation of [
+  {customerDataSelect:undefined},
   {superuser:true},{databaseOwner:true},{canSetRole:true},
   {existingPrincipal:false},{readOnly:false},{privateTransport:false},
   {clientSecretExposure:true},{singleAttempt:false},
