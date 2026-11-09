@@ -71,7 +71,7 @@ export function evaluateAcquisitionReadiness(request){
   request.sqlSession?.superuser!==false||
   request.sqlSession?.databaseOwner!==false||
   request.sqlSession?.canSetRole!==false||
-  request.sqlSession?.customerDataSelect===true||
+  request.sqlSession?.customerDataSelect!==false||
   request.sqlSession?.privateTransport!==true||
   request.sqlSession?.clientSecretExposure!==false||
   request.sqlSession?.queryTimeoutSeconds!==15||
