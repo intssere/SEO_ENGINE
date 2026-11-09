@@ -1,0 +1,24 @@
+name: PILOT-01 RT01-A12.27 bounded acquisition readiness offline
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pilot-01-rt01a12-27-acquisition-offline.yml'
+      - 'docs/integration/pilot-01-rt01a12-27-bounded-acquisition-readiness*'
+      - 'docs/integration/int-02c-05a-railway-metadata-query-contract.mjs'
+      - 'docs/pilot-01-rt01a12-27-acquisition-readiness.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Run source-only fixed query and adversarial acquisition tests
+        run: node --test docs/integration/pilot-01-rt01a12-27-bounded-acquisition-readiness.test.mjs
