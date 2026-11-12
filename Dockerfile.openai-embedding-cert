@@ -1,0 +1,15 @@
+FROM node:24.19.0-bookworm-slim
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+ENV NODE_ENV=production
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
+
+COPY . .
+RUN pnpm install --frozen-lockfile
+
+USER node
+
+CMD ["pnpm","--filter","@workspace/api-server","exec","tsx","./src/lib/openai-embedding-live-cert-cli.ts"]
