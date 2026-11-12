@@ -47,6 +47,14 @@ jobs:
           test "$(git rev-parse 'HEAD^{tree}')" = "$SOURCE_TREE"
           test "$(git status --porcelain=v1 | wc -l)" -eq 0
 
+      - name: Configure Buildx attestation-capable builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx create --name p12-l1a-builder --driver docker-container --use
+          docker buildx inspect --bootstrap
+          test "$(docker buildx inspect --format '{{.Driver}}')" = "docker-container"
+
       - name: Login to GHCR
         shell: bash
         env:
