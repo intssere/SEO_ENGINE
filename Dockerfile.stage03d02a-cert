@@ -1,0 +1,12 @@
+# Isolated STAGE-03D-02A database migration runner, never used as the customer app image.
+FROM node:24.19.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
+COPY lib/db/package.json lib/db/package.json
+COPY lib/db/src lib/db/src
+COPY lib/db/migrations lib/db/migrations
+COPY scripts/stage03d02a scripts/stage03d02a
+RUN pnpm install --frozen-lockfile --filter @workspace/db...
+USER node
+CMD ["node","scripts/stage03d02a/staging-migration-cert.mjs"]

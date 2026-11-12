@@ -1,0 +1,34 @@
+name: STAGE-03D-02A isolated migration runner build check
+
+on:
+  pull_request:
+    paths:
+      - "scripts/stage03d02a/**"
+      - "Dockerfile.stage03d02a-cert"
+      - ".github/workflows/stage03d02a-runner-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runner-image-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm this job cannot mutate any database
+        run: |
+          test -f Dockerfile.stage03d02a-cert
+          test -f scripts/stage03d02a/staging-migration-cert.mjs
+          node --check scripts/stage03d02a/staging-migration-cert.mjs
+      - name: Build runner image without registry push or credentials
+        run: docker build --no-cache -f Dockerfile.stage03d02a-cert -t seo-engine-stage03d02a-ci-only .
+      - name: Prove startup refuses absent authorization and database
+        run: |
+          set +e
+          output="$(docker run --rm --network none seo-engine-stage03d02a-ci-only 2>&1)"
+          status=$?
+          set -e
+          test "$status" -ne 0
+          printf '%s' "$output" | grep -q "execution_authorization_missing"
