@@ -6,7 +6,15 @@ import {
 
 const ROUTES = [
   "/",
+  "/home",
   "/onboarding",
+  "/analysis",
+  "/site-overview",
+  "/customer-opportunities",
+  "/opportunity-detail",
+  "/automation-settings",
+  "/results-impact",
+  "/customer-portfolio",
   "/opportunities",
   "/governance",
   "/actions",
@@ -371,7 +379,11 @@ for (const route of ROUTES) {
           ).toBeGreaterThanOrEqual(12);
         }
 
-        if (viewport.width <= 820) {
+        if (route === "/home" || route === "/onboarding" || route === "/analysis" || route === "/site-overview" || route === "/customer-opportunities" || route === "/opportunity-detail" || route === "/automation-settings" || route === "/results-impact" || route === "/customer-portfolio") {
+          // Customer preview is intentionally isolated from the operator sidebar and mobile navigation.
+          expect(state.shellMode.sidebarVisible).toBe(false);
+          expect(state.shellMode.mobileNavVisible).toBe(false);
+        } else if (viewport.width <= 820) {
           expect(state.shellMode.sidebarVisible).toBe(false);
           expect(state.shellMode.mobileNavVisible).toBe(true);
         } else {
@@ -441,3 +453,40 @@ test("P11.6 mobile navigation panel remains viewport-safe and touch-ergonomic", 
   assertNetworkBoundary(boundary);
   assertBrowserClean(errors);
 });
+for (const [route, heading] of [
+  ["/results-impact", "Results and impact"],
+  ["/customer-portfolio", "Your websites"],
+]) {
+  test(`CH visual regression: ${route} has a styled read-only card`, async ({ page }) => {
+    for (const viewport of [
+      { name: "desktop", width: 1440, height: 1000 },
+      { name: "phone", width: 390, height: 844 },
+      { name: "narrow phone", width: 320, height: 800 },
+    ]) {
+      const { boundary, errors } = await openSyntheticPage(page, route, viewport);
+      await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+      const card = page.locator("#main-content .chOverviewCard").first();
+      await expect(card).toBeVisible();
+      const styles = await card.evaluate((element) => {
+        const css = getComputedStyle(element);
+        const box = element.getBoundingClientRect();
+        return {
+          background: css.backgroundColor,
+          border: css.borderTopStyle,
+          radius: parseFloat(css.borderTopLeftRadius),
+          padding: parseFloat(css.paddingLeft),
+          right: box.right,
+          viewport: window.innerWidth,
+        };
+      });
+      expect(styles.background, "card background must be white").toBe("rgb(255, 255, 255)");
+      expect(styles.border, "card border must be visible").toBe("solid");
+      expect(styles.radius, "card corners must be rounded").toBeGreaterThanOrEqual(10);
+      expect(styles.padding, "card padding must be present").toBeGreaterThanOrEqual(12);
+      expect(styles.right, "card must fit the viewport").toBeLessThanOrEqual(styles.viewport + 1);
+      await expect(page.getByRole("status").filter({ hasText: /unavailable|verified sites/i })).toBeVisible();
+      assertNetworkBoundary(boundary);
+      assertBrowserClean(errors);
+    }
+  });
+}

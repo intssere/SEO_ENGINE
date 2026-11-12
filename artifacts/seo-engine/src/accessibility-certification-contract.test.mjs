@@ -15,7 +15,15 @@ const packageJson = read("../package.json");
 
 const EXPECTED_ROUTES = [
   "/",
+  "/home",
   "/onboarding",
+  "/analysis",
+  "/site-overview",
+  "/customer-opportunities",
+  "/opportunity-detail",
+  "/automation-settings",
+  "/results-impact",
+  "/customer-portfolio",
   "/opportunities",
   "/governance",
   "/actions",

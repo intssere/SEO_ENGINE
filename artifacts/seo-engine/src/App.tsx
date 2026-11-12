@@ -2,7 +2,6 @@ import { lazy, Suspense, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   Route,
   Switch,
@@ -11,9 +10,18 @@ import {
 } from 'wouter';
 
 import { Layout } from './components/layout';
+import { CustomerPreviewLayout } from './components/customer-preview-layout';
 import { AuthProvider } from './lib/auth-client';
 import DashboardPage from './pages/dashboard';
 const CustomerOnboardingPage = lazy(() => import('./pages/customer-onboarding'));
+const CustomerHomePage = lazy(() => import('./pages/customer-home'));
+const CustomerAnalysisPage = lazy(() => import('./pages/customer-analysis'));
+const CustomerSiteOverviewPage = lazy(() => import('./pages/customer-site-overview'));
+const CustomerOpportunitiesPage = lazy(() => import('./pages/customer-opportunities'));
+const CustomerOpportunityDetailPage = lazy(() => import('./pages/customer-opportunity-detail'));
+const CustomerAutomationSettingsPage = lazy(() => import('./pages/customer-automation-settings'));
+const CustomerResultsImpactPage = lazy(() => import('./pages/customer-readonly-reports').then(m => ({default:m.CustomerResultsImpactPage})));
+const CustomerPortfolioPage = lazy(() => import('./pages/customer-readonly-reports').then(m => ({default:m.CustomerPortfolioPage})));
 import NotFound from './pages/not-found';
 import OpportunitiesPage from './pages/opportunities';
 import GovernancePage from './pages/governance';
@@ -45,12 +53,24 @@ const queryClient = new QueryClient({
 });
 
 function Router() {
+  const [location] = useLocation();
+  const isCustomerPreview = location === '/home' || location === '/onboarding' || location === '/analysis' || location === '/site-overview' || location === '/customer-opportunities' || location === '/opportunity-detail' || location === '/automation-settings' || location === '/results-impact' || location === '/customer-portfolio';
+  const Shell = isCustomerPreview ? CustomerPreviewLayout : Layout;
   return (
     <RoutedErrorBoundary>
-      <Layout>
+      <Shell>
+        <Suspense fallback={<div role="status" className="content">Loading customer workspace…</div>}>
         <Switch>
           <Route path="/" component={DashboardPage} />
-          <Route path="/onboarding">{() => <Suspense fallback={<div role="status" className="content">Loading website setup…</div>}><CustomerOnboardingPage /></Suspense>}</Route>
+          <Route path="/home" component={CustomerHomePage} />
+          <Route path="/onboarding" component={CustomerOnboardingPage} />
+          <Route path="/analysis" component={CustomerAnalysisPage} />
+          <Route path="/site-overview" component={CustomerSiteOverviewPage} />
+          <Route path="/customer-opportunities" component={CustomerOpportunitiesPage} />
+          <Route path="/opportunity-detail" component={CustomerOpportunityDetailPage} />
+          <Route path="/automation-settings" component={CustomerAutomationSettingsPage} />
+          <Route path="/results-impact" component={CustomerResultsImpactPage} />
+          <Route path="/customer-portfolio" component={CustomerPortfolioPage} />
           <Route path="/opportunities" component={OpportunitiesPage} />
           <Route path="/governance" component={GovernancePage} />
           <Route path="/actions" component={ActionsPage} />
@@ -73,7 +93,8 @@ function Router() {
 
           <Route component={NotFound} />
         </Switch>
-      </Layout>
+        </Suspense>
+      </Shell>
     </RoutedErrorBoundary>
   );
 }
@@ -86,14 +107,12 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <AuthProvider>
             <Router />
           </AuthProvider>
         </WouterRouter>
         <Toaster />
-      </TooltipProvider>
     </QueryClientProvider>
   );
 }

@@ -31,9 +31,17 @@ export default defineConfig({
         browserName: "chromium",
       },
     },
+    ...(process.env.UX_CH_CROSS_BROWSER === "1"
+      ? [
+          { name: "firefox", use: { browserName: "firefox" } },
+          { name: "webkit", use: { browserName: "webkit" } },
+        ]
+      : []),
   ],
   webServer: {
-    command: "pnpm run test:e2e:server",
+    command: process.env.UX_CH_PRODUCTION_PREVIEW === "1"
+      ? "pnpm run serve"
+      : "pnpm run test:e2e:server",
     url: "http://127.0.0.1:4174",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

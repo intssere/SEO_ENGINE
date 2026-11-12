@@ -38,7 +38,15 @@ const expectedPrimaryRoutes = [
 ];
 
 const engineeringOnlyRoutes = [
+  "/home",
   "/onboarding",
+  "/analysis",
+  "/site-overview",
+  "/customer-opportunities",
+  "/opportunity-detail",
+  "/automation-settings",
+  "/results-impact",
+  "/customer-portfolio",
   "/rankings",
   "/internal-links",
   "/ai-visibility",

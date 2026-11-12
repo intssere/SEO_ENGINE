@@ -1,0 +1,18 @@
+FROM node:24.19.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS build
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
+COPY . .
+RUN pnpm install --frozen-lockfile
+ENV PORT=4174 BASE_PATH=/ NODE_ENV=production
+RUN pnpm --filter @workspace/seo-engine run build
+
+FROM node:24.19.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS runtime
+ENV NODE_ENV=production PORT=3000
+WORKDIR /app
+COPY --from=build --chown=node:node /app/artifacts/seo-engine/dist/public ./public
+COPY --chown=node:node artifacts/seo-engine/preview-static-server.mjs ./preview-static-server.mjs
+USER node
+EXPOSE 3000
+CMD ["node", "preview-static-server.mjs"]
