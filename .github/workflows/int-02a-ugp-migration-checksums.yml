@@ -1,0 +1,38 @@
+name: INT-02A UGP migration immutable SHA256 audit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/int-02a-ugp-migration-checksums.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-checksums:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout audit source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Pin and hash immutable UGP migration source bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          UGP=5cecb83da3352fd6a2e79423abbb69f2e7e9105b
+          git fetch --no-tags origin "$UGP"
+          for item in \
+            "0008_ugp_10_3_authority_outreach_review_events.sql:a8a38a277d486aae95fcfb1c416e2842904aeeb4" \
+            "0009_ugp_10_31_outbound_safety_ledger.sql:60c3682ceceae897ca76d7843284d0aeaa82b43f" \
+            "0010_ugp_10_32_single_send_execution.sql:846b78c56b2aeee6c24a6ccd4d8820c8ef695b67" \
+            "0011_ugp_10_33_controlled_https_certification.sql:50c9861d02ab0caebc25190141fa9fe5ade8e98c"
+          do
+            name="${item%%:*}"
+            expected_blob="${item#*:}"
+            file="lib/db/migrations/$name"
+            actual_blob="$(git rev-parse "$UGP:$file")"
+            test "$actual_blob" = "$expected_blob"
+            echo "UGP_MIGRATION_SOURCE $name blob=$actual_blob sha256=$(git show "$UGP:$file" | sha256sum | cut -d ' ' -f1)"
+          done
+          echo "Source-only SHA256 evidence. No SQL, database or deployment."
